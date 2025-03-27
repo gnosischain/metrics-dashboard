@@ -129,15 +129,18 @@ export default async function handler(req, res) {
     const from = req.query.from || getDefaultFromDate();
     const to = req.query.to || getTodayDate();
     
+    // Check if mock data is requested
+    const useMock = req.query.useMock === 'true' || process.env.USE_MOCK_DATA === 'true';
+    
     // If a specific metric is requested
     if (metricId) {
-      const metricData = await fetchMetricData(metricId, from, to);
+      const metricData = await fetchMetricData(metricId, from, to, useMock);
       return res.status(200).json(metricData);
     } 
     
     // If all metrics are requested
     else {
-      const allMetricsData = await fetchAllMetricsData(from, to);
+      const allMetricsData = await fetchAllMetricsData(from, to, useMock);
       return res.status(200).json(allMetricsData);
     }
   } catch (error) {
@@ -156,9 +159,10 @@ export default async function handler(req, res) {
  * @param {string} metricId - Metric identifier
  * @param {string} from - Start date in ISO format (YYYY-MM-DD)
  * @param {string} to - End date in ISO format (YYYY-MM-DD)
+ * @param {boolean} useMock - Whether to use mock data
  * @returns {Promise<Array>} Array of data points
  */
-async function fetchMetricData(metricId, from, to) {
+async function fetchMetricData(metricId, from, to, useMock = false) {
   // Get the query for this metric
   const query = getQueryForMetric(metricId, from, to);
   
@@ -169,10 +173,11 @@ async function fetchMetricData(metricId, from, to) {
     throw error;
   }
   
-  // Execute the query against ClickHouse
-  const rawData = await executeClickHouseQuery(query);
+  // Execute the query against ClickHouse or use mock data
+  const rawData = useMock 
+    ? generateMockData(query)
+    : await executeClickHouseQuery(query);
   
-  console.log(`Fetched data for ${metricId}:`, JSON.stringify(rawData).substring(0, 200) + '...');
   // Transform the data into a consistent format
   // Handle different response formats properly
   const dataArray = Array.isArray(rawData) ? rawData : 
@@ -189,15 +194,16 @@ async function fetchMetricData(metricId, from, to) {
  * Fetch data for all metrics
  * @param {string} from - Start date in ISO format (YYYY-MM-DD)
  * @param {string} to - End date in ISO format (YYYY-MM-DD)
+ * @param {boolean} useMock - Whether to use mock data
  * @returns {Promise<Object>} Object with metric data
  */
-async function fetchAllMetricsData(from, to) {
+async function fetchAllMetricsData(from, to, useMock = false) {
   // Get all metric IDs
   const metricIds = availableMetrics;
   
   // Fetch each metric in parallel
   const promises = metricIds.map(metricId => 
-    fetchMetricData(metricId, from, to)
+    fetchMetricData(metricId, from, to, useMock)
       .then(data => ({ [metricId]: data }))
       .catch(error => {
         console.error(`Error fetching ${metricId}:`, error);
@@ -257,7 +263,25 @@ async function executeClickHouseQuery(query) {
       timeout: 8000 // 8 second timeout
     });
     
-    console.log('ClickHouse response:', JSON.stringify(response.data).substring(0, 200) + '...');
+    console.log('ClickHouse response:', typeof response.data === 'string' 
+      ? response.data.substring(0, 200) + '...' 
+      : JSON.stringify(response.data).substring(0, 200) + '...');
+    
+    // NEW: Handle JSONEachRow format (string with newline-separated JSON objects)
+    if (typeof response.data === 'string' && response.data.includes('\n')) {
+      return response.data
+        .split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => {
+          try {
+            return JSON.parse(line);
+          } catch (err) {
+            console.error('Error parsing JSON line:', line, err);
+            return null;
+          }
+        })
+        .filter(item => item !== null);
+    }
     
     // Handle different response formats
     if (Array.isArray(response.data)) {
