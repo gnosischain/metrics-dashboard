@@ -5,11 +5,12 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-    "prebuild": "cd api && npm install",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "export-queries": "node scripts/export-queries.js",
-    "vercel-build": "npm run export-queries && npm run prebuild && DISABLE_ESLINT_PLUGIN=true npm run build"
+    "install-api-deps": "cd api && node install-deps.js",
+    "postinstall": "npm run install-api-deps",
+    "vercel-build": "npm run export-queries && npm run install-api-deps && DISABLE_ESLINT_PLUGIN=true npm run build"
   },
   "dependencies": {
     "axios": "^1.6.2",

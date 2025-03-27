@@ -1,10 +1,32 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
+    { 
+      "src": "api/**/*.js", 
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["api/package.json"]
+      }
+    },
+    { 
+      "src": "package.json", 
+      "use": "@vercel/static-build", 
+      "config": { 
+        "distDir": "build" 
+      }
+    }
   ],
   "routes": [
+    { 
+      "src": "/api/test", 
+      "dest": "/api/test.js",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
     { 
       "src": "/api/metrics", 
       "dest": "/api/metrics.js",
