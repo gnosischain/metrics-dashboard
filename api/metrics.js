@@ -172,6 +172,7 @@ async function fetchMetricData(metricId, from, to) {
   // Execute the query against ClickHouse
   const rawData = await executeClickHouseQuery(query);
   
+  console.log(`Fetched data for ${metricId}:`, JSON.stringify(rawData).substring(0, 200) + '...');
   // Transform the data into a consistent format
   // Handle different response formats properly
   const dataArray = Array.isArray(rawData) ? rawData : 
