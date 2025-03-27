@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    { 
+      "src": "api/**/*.js", 
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["api/package.json", "api/node_modules/**"]
+      }
+    },
+    { 
+      "src": "package.json", 
+      "use": "@vercel/static-build", 
+      "config": { 
+        "distDir": "build" 
+      }
+    }
+  ],
+  "routes": [
+    { 
+      "src": "/api/metrics", 
+      "dest": "/api/metrics.js",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS,POST",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
+    { 
+      "src": "/api/metrics/(.*)", 
+      "dest": "/api/metrics.js",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS,POST",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
