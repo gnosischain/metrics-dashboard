@@ -1,4 +1,4 @@
-# Metrics Dashboard
+![metrics-dashboard Header](img/header-metrics_dashboard.png)
 
 A simple, modular dashboard to visualize ClickHouse metrics built with React and deployed on Vercel.
 
@@ -435,4 +435,4 @@ To add a new metric:
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
