@@ -5,7 +5,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-    "preinstall": "cd api && npm install",
     "prebuild": "cd api && npm install",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
