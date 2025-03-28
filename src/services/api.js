@@ -24,24 +24,37 @@ class ApiService {
 
   /**
    * Fetch metrics data from the API
-   * @param {string} metricName - Name of the metric to fetch
+   * @param {string} metricId - ID of the metric to fetch
    * @param {Object} params - Query parameters
    * @returns {Promise} Metrics data
    */
-  async fetchMetric(metricName, params = {}) {
+  async fetchMetric(metricId, params = {}) {
     try {
-      console.log(`Fetching ${metricName} from ${this.baseUrl}/metrics/${metricName}`);
-      const response = await this.client.get(`/metrics/${metricName}`, { params });
+      console.log(`Fetching ${metricId} from ${this.baseUrl}/metrics/${metricId}`);
+      const response = await this.client.get(`/metrics/${metricId}`, { params });
       
-      // Ensure the response is an array of valid data points
-      if (response.data && Array.isArray(response.data)) {
-        return response.data;
-      } else {
-        console.error(`Invalid response format for ${metricName}:`, response.data);
-        return []; // Return empty array as fallback
+      // Check if the response is an object with all metrics or just the array for the requested metric
+      if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        // If we got back an object with all metrics, extract just the one we want
+        if (response.data[metricId] && Array.isArray(response.data[metricId])) {
+          console.log(`Extracted ${metricId} data from full response`);
+          return response.data[metricId];
+        } else {
+          console.error(`Metric ${metricId} not found in response:`, response.data);
+          return []; // Return empty array as fallback
+        }
       }
+      
+      // If the response is already an array, use it directly
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      
+      // If the response is invalid, return an empty array
+      console.error(`Invalid response format for ${metricId}:`, response.data);
+      return [];
     } catch (error) {
-      console.error(`Error fetching metric ${metricName}:`, error);
+      console.error(`Error fetching metric ${metricId}:`, error);
       return []; // Return empty array instead of throwing
     }
   }
@@ -54,7 +67,14 @@ class ApiService {
   async fetchAllMetrics(params = {}) {
     try {
       const response = await this.client.get('/metrics', { params });
-      return response.data;
+      
+      // Ensure we have an object with metric data
+      if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        console.error('Invalid response format for all metrics:', response.data);
+        return {}; // Return empty object as fallback
+      }
     } catch (error) {
       console.error('Error fetching all metrics:', error);
       return {}; // Return empty object instead of throwing
@@ -73,14 +93,14 @@ class MockApiService {
     console.log('Mock API Service initialized');
   }
   
-  async fetchMetric(metricName, params = {}) {
-    console.log(`Mock API: Fetching ${metricName} with params:`, params);
+  async fetchMetric(metricId, params = {}) {
+    console.log(`Mock API: Fetching ${metricId} with params:`, params);
     
     // Generate random data based on metric name
     const dateRange = params.range || '7d';
     const days = parseInt(dateRange.replace('d', ''), 10);
     
-    return this._generateMockData(metricName, days);
+    return this._generateMockData(metricId, days);
   }
 
   async fetchAllMetrics(params = {}) {
