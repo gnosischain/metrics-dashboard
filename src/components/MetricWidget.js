@@ -25,9 +25,22 @@ const MetricWidget = ({ metricId, dateRange }) => {
       setLoading(true);
       const metricData = await metricsService.fetchMetricData(metricId, dateRange);
       
+      // Debug log to see what we're getting from the API
+      console.log(`Data received for ${metricId}:`, metricData);
+      
       // Make sure metricData is an array and has valid elements
       if (Array.isArray(metricData) && metricData.length > 0) {
-        setData(metricData);
+        // Create a safe copy of the data with validation
+        const safeData = metricData.map(item => ({
+          date: item.date || new Date().toISOString().split('T')[0],
+          value: typeof item.value === 'number' ? item.value : 0
+        }));
+        
+        // Debug log for the processed data
+        console.log(`Processed data for ${metricId}:`, safeData);
+        
+        setData(safeData);
+        setError(null);
       } else {
         console.warn(`Received invalid data for ${metricId}:`, metricData);
         setData([]);
@@ -58,7 +71,7 @@ const MetricWidget = ({ metricId, dateRange }) => {
     if (!Array.isArray(data) || data.length === 0) return 0;
     
     const validValues = data
-      .filter(item => item && typeof item.value !== 'undefined')
+      .filter(item => item && typeof item.value === 'number')
       .map(item => item.value);
       
     if (validValues.length === 0) return 0;
