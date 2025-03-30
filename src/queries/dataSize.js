@@ -33,6 +33,7 @@ const dataSize = {
           nebula.visits 
         WHERE
           peer_properties.next_fork_version LIKE '%064'
+          AND visit_ended_at BETWEEN '{from}' AND '{to} 23:59:59'
         GROUP BY 1, 2
       )
         GROUP BY 1
