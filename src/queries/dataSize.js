@@ -17,7 +17,7 @@ const dataSize = {
   ],
   query: `
       SELECT
-        day
+        date
         ,SUM(if(splitByChar('/', agent_version)[1] ='Lighthouse',1,0)) AS Lighthouse
         ,SUM(if(splitByChar('/', agent_version)[1] ='teku',1,0)) AS Teku
         ,SUM(if(splitByChar('/', agent_version)[1] ='lodestar',1,0)) AS Lodestar
@@ -26,7 +26,7 @@ const dataSize = {
         ,SUM(if(splitByChar('/', agent_version)[1] ='',1,0)) AS Unknown
       FROM (
         SELECT 
-          toStartOfDay(visit_ended_at) AS day
+          toDate(visit_ended_at) AS date
           ,peer_id
           ,any_value(agent_version) AS agent_version
         FROM    
