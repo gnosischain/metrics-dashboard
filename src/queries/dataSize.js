@@ -1,34 +1,43 @@
 /**
- * Data Size Metric Definition
- * 
- * This metric measures the amount of data processed by queries in bytes.
+ * Client Distribution Metric Definition
  */
-
 const dataSize = {
-    id: 'dataSize',
-    name: 'Data Processed',
-    description: 'Amount of data processed by queries',
-    format: 'formatBytes',
-    chartType: 'line',
-    color: '#34A853',
-    query: `
-      SELECT 
-      toStartOfHour(t2.created_at) AS hour
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='Lighthouse',1,0)) AS Lighthouse
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='teku',1,0)) AS Teku
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='lodestar',1,0)) AS Lodestar
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='nimbus',1,0)) AS Nimbus
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='erigon',1,0)) AS Erigon
-      ,SUM(if(splitByChar('/', t1.agent_version)[1] ='',1,0)) AS Unknown
-    FROM    
-      nebula.visits t1
-    INNER JOIN
-      nebula.crawls t2
-      ON t2.id = t1.crawl_id
-    WHERE
-        peer_properties.next_fork_version LIKE '%064'
-    GROUP BY 1
-    `
-  };
-  
-  export default dataSize;
+  id: 'dataSize',
+  name: 'Client Distribution',
+  description: 'Distribution of client implementations across the network',
+  format: 'formatNumber',
+  chartType: 'stackedBar', // Options: 'line', 'bar', 'stackedBar'
+  color: [
+    '#4285F4', // Lighthouse - Blue
+    '#34A853', // Teku - Green
+    '#FBBC05', // Lodestar - Yellow
+    '#EA4335', // Nimbus - Red
+    '#8AB4F8', // Erigon - Light Blue
+    '#A0A0A0'  // Unknown - Gray
+  ],
+  query: `
+      SELECT
+        day
+        ,SUM(if(splitByChar('/', agent_version)[1] ='Lighthouse',1,0)) AS Lighthouse
+        ,SUM(if(splitByChar('/', agent_version)[1] ='teku',1,0)) AS Teku
+        ,SUM(if(splitByChar('/', agent_version)[1] ='lodestar',1,0)) AS Lodestar
+        ,SUM(if(splitByChar('/', agent_version)[1] ='nimbus',1,0)) AS Nimbus
+        ,SUM(if(splitByChar('/', agent_version)[1] ='erigon',1,0)) AS Erigon
+        ,SUM(if(splitByChar('/', agent_version)[1] ='',1,0)) AS Unknown
+      FROM (
+        SELECT 
+          toStartOfDay(visit_ended_at) AS day
+          ,peer_id
+          ,any_value(agent_version) AS agent_version
+        FROM    
+          nebula.visits 
+        WHERE
+          peer_properties.next_fork_version LIKE '%064'
+        GROUP BY 1, 2
+      )
+        GROUP BY 1
+        ORDER BY 1
+  `
+};
+
+export default dataSize;

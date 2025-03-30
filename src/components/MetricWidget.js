@@ -6,10 +6,6 @@ import * as formatters from '../utils/formatter';
 
 /**
  * MetricWidget component for displaying a single metric
- * @param {Object} props - Component props
- * @param {string} props.metricId - ID of the metric to display
- * @param {string} props.dateRange - Current date range
- * @returns {JSX.Element} MetricWidget component
  */
 const MetricWidget = ({ metricId, dateRange }) => {
   const [data, setData] = useState([]);
@@ -23,23 +19,20 @@ const MetricWidget = ({ metricId, dateRange }) => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      console.log(`Fetching data for ${metricId} with range ${dateRange}`);
+      
       const metricData = await metricsService.fetchMetricData(metricId, dateRange);
       
-      // Debug log to see what we're getting from the API
+      // Log what we received to help with debugging
       console.log(`Data received for ${metricId}:`, metricData);
       
-      // Make sure metricData is an array and has valid elements
-      if (Array.isArray(metricData) && metricData.length > 0) {
-        // Create a safe copy of the data with validation
-        const safeData = metricData.map(item => ({
-          date: item.date || new Date().toISOString().split('T')[0],
-          value: typeof item.value === 'number' ? item.value : 0
-        }));
-        
-        // Debug log for the processed data
-        console.log(`Processed data for ${metricId}:`, safeData);
-        
-        setData(safeData);
+      // Check if we have valid data
+      const isValidData = 
+        (Array.isArray(metricData) && metricData.length > 0) || 
+        (typeof metricData === 'object' && metricData.labels && metricData.datasets);
+      
+      if (isValidData) {
+        setData(metricData);
         setError(null);
       } else {
         console.warn(`Received invalid data for ${metricId}:`, metricData);
@@ -60,28 +53,59 @@ const MetricWidget = ({ metricId, dateRange }) => {
     fetchData();
   }, [fetchData]);
   
+  // Check if we have multi-series data
+  const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && data.labels && data.datasets;
+  
   // Calculate summary values
   const getLatestValue = () => {
-    if (!Array.isArray(data) || data.length === 0) return 0;
-    const lastItem = data[data.length - 1];
-    return lastItem && typeof lastItem.value !== 'undefined' ? lastItem.value : 0;
+    if (isMultiSeries) {
+      // For multi-series, show total of the last point across all series
+      if (data.datasets && data.datasets.length > 0 && data.datasets[0].data.length > 0) {
+        const lastIndex = data.datasets[0].data.length - 1;
+        return data.datasets.reduce((total, dataset) => {
+          return total + (parseFloat(dataset.data[lastIndex]) || 0);
+        }, 0);
+      }
+      return 0;
+    } else if (Array.isArray(data) && data.length > 0) {
+      const lastItem = data[data.length - 1];
+      return lastItem && typeof lastItem.value !== 'undefined' ? parseFloat(lastItem.value) : 0;
+    }
+    return 0;
   };
   
   const getAverageValue = () => {
-    if (!Array.isArray(data) || data.length === 0) return 0;
-    
-    const validValues = data
-      .filter(item => item && typeof item.value === 'number')
-      .map(item => item.value);
+    if (isMultiSeries) {
+      // For multi-series, calculate average across all series and points
+      if (data.datasets && data.datasets.length > 0) {
+        let totalSum = 0;
+        let totalPoints = 0;
+        
+        data.datasets.forEach(dataset => {
+          const validValues = dataset.data.filter(val => val !== null && val !== undefined)
+            .map(val => parseFloat(val));
+          totalSum += validValues.reduce((sum, val) => sum + val, 0);
+          totalPoints += validValues.length;
+        });
+        
+        return totalPoints > 0 ? totalSum / totalPoints : 0;
+      }
+      return 0;
+    } else if (Array.isArray(data) && data.length > 0) {
+      const validValues = data
+        .filter(item => item && item.value !== null && item.value !== undefined)
+        .map(item => parseFloat(item.value));
+        
+      if (validValues.length === 0) return 0;
       
-    if (validValues.length === 0) return 0;
-    
-    const sum = validValues.reduce((acc, val) => acc + val, 0);
-    return sum / validValues.length;
+      const sum = validValues.reduce((acc, val) => acc + val, 0);
+      return sum / validValues.length;
+    }
+    return 0;
   };
   
   // Get formatter function for this metric
-  const formatter = formatters[metricConfig.format];
+  const formatter = formatters[metricConfig.format] || formatters.formatNumber;
   
   // Format values using the appropriate formatter
   const formatValue = (value) => {
@@ -110,7 +134,8 @@ const MetricWidget = ({ metricId, dateRange }) => {
             </div>
           </div>
           
-          {Array.isArray(data) && data.length > 0 ? (
+          {(Array.isArray(data) && data.length > 0) || 
+           (isMultiSeries && data.labels && data.labels.length > 0) ? (
             <Chart 
               data={data}
               title={metricConfig.name}

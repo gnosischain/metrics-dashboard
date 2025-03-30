@@ -25,31 +25,58 @@ ChartJS.register(
 );
 
 /**
- * Chart component for visualizing metric data
- * @param {Object} props - Component props
- * @param {Array} props.data - Chart data
- * @param {string} props.title - Chart title
- * @param {string} props.type - Chart type (line, bar)
- * @param {string} props.color - Chart color
- * @returns {JSX.Element} Chart component
+ * Universal chart component that handles both simple and multi-series data
  */
 const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
-  // Prepare data for ChartJS
-  const chartData = {
-    labels: data.map(item => item.date),
-    datasets: [
-      {
-        label: title,
-        data: data.map(item => item.value),
-        backgroundColor: color,
-        borderColor: color,
-        borderWidth: 2,
-        tension: 0.3,
-        pointRadius: 3,
-        pointHoverRadius: 5
-      }
-    ]
-  };
+  // Check if data is in multi-series format (has labels and datasets)
+  const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && data.labels && data.datasets;
+  
+  let chartData;
+  
+  if (isMultiSeries) {
+    // Multi-series data format
+    chartData = {
+      labels: data.labels,
+      datasets: data.datasets.map((dataset, index) => {
+        // Determine color for this dataset
+        let datasetColor;
+        if (Array.isArray(color)) {
+          datasetColor = color[index % color.length];
+        } else {
+          // Generate colors if none provided
+          const hue = (index * 137) % 360; // Golden angle approximation for nice distribution
+          datasetColor = `hsl(${hue}, 70%, 60%)`;
+        }
+        
+        return {
+          ...dataset,
+          backgroundColor: datasetColor,
+          borderColor: datasetColor,
+          borderWidth: 2,
+        };
+      })
+    };
+  } else {
+    // Simple date/value format
+    chartData = {
+      labels: (data || []).map(item => {
+        // If date has time component, remove it
+        if (item.date && item.date.includes(' ')) {
+          return item.date.split(' ')[0];
+        }
+        return item.date;
+      }),
+      datasets: [
+        {
+          label: title,
+          data: (data || []).map(item => parseFloat(item.value)),
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 2,
+        }
+      ]
+    };
+  }
 
   // Chart options
   const options = {
@@ -57,7 +84,8 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        display: isMultiSeries, // Only show legend for multi-series
+        position: 'top',
       },
       tooltip: {
         enabled: true,
@@ -75,15 +103,18 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
         beginAtZero: true,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'
-        }
+        },
+        stacked: type === 'stackedBar' // Stack bars only if stackedBar type
       }
     }
   };
 
-  // Render the appropriate chart type
+  // Determine which chart type to render
+  const chartType = type === 'stackedBar' ? 'bar' : type;
+
   return (
     <div className="chart-container">
-      {type === 'line' ? (
+      {chartType === 'line' ? (
         <Line data={chartData} options={options} />
       ) : (
         <Bar data={chartData} options={options} />

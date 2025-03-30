@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const mockData = require('./mock');
 
 /**
  * Load all query definitions from JSON files
@@ -61,16 +62,26 @@ function getDefaultQueries() {
       ORDER BY date
     `,
     
-    // Amount of data processed
+    // Amount of data processed - Complex multi-column query
     dataSize: `
       SELECT 
-        toDate(event_time) AS date, 
-        sum(read_bytes) AS value
-      FROM system.query_log
-      WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
-        AND type = 'QueryFinish'
-      GROUP BY date
-      ORDER BY date
+        toStartOfHour(t2.created_at) AS hour
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='Lighthouse',1,0)) AS Lighthouse
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='teku',1,0)) AS Teku
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='lodestar',1,0)) AS Lodestar
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='nimbus',1,0)) AS Nimbus
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='erigon',1,0)) AS Erigon
+        ,SUM(if(splitByChar('/', t1.agent_version)[1] ='',1,0)) AS Unknown
+      FROM    
+        nebula.visits t1
+      INNER JOIN
+        nebula.crawls t2
+        ON t2.id = t1.crawl_id
+      WHERE
+        peer_properties.next_fork_version LIKE '%064'
+        AND t2.created_at BETWEEN '{from}' AND '{to} 23:59:59'
+      GROUP BY 1
+      ORDER BY 1
     `,
     
     // Average query duration
@@ -108,7 +119,7 @@ console.log(`Loaded ${availableMetrics.length} metric queries: ${availableMetric
 /**
  * Vercel API handler for metrics
  */
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // Handle preflight OPTIONS request for CORS
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -152,7 +163,7 @@ export default async function handler(req, res) {
       message: error.message || 'Internal server error'
     });
   }
-}
+};
 
 /**
  * Fetch data for a specific metric
@@ -173,21 +184,19 @@ async function fetchMetricData(metricId, from, to, useMock = false) {
     throw error;
   }
   
-  // Execute the query against ClickHouse or use mock data
-  const rawData = useMock 
-    ? generateMockData(query)
-    : await executeClickHouseQuery(query);
-  
-  // Transform the data into a consistent format
-  // Handle different response formats properly
-  const dataArray = Array.isArray(rawData) ? rawData : 
-                   (rawData && rawData.data && Array.isArray(rawData.data)) ? rawData.data :
-                   (typeof rawData === 'object' && rawData !== null) ? [rawData] : [];
-                   
-  return dataArray.map(row => ({
-    date: row.date || new Date().toISOString().split('T')[0],
-    value: parseFloat(row.value || 0)
-  }));
+  try {
+    // Execute the query against ClickHouse or use mock data
+    const rawData = useMock 
+      ? generateMockData(query, metricId)
+      : await executeClickHouseQuery(query);
+    
+    // Always preserve the original structure of the data
+    // This handles both simple date/value and complex multi-column responses
+    return rawData;
+  } catch (error) {
+    console.error(`Error fetching metric ${metricId}:`, error);
+    return []; // Return empty array on error
+  }
 }
 
 /**
@@ -225,7 +234,7 @@ async function executeClickHouseQuery(query) {
   try {
     // Check if we're in development mode or USE_MOCK_DATA is enabled
     if (process.env.USE_MOCK_DATA === 'true' || !process.env.CLICKHOUSE_HOST) {
-      console.log('Using mock data for query:', query);
+      console.log('Using mock data for query');
       return generateMockData(query);
     }
     
@@ -263,11 +272,7 @@ async function executeClickHouseQuery(query) {
       timeout: 8000 // 8 second timeout
     });
     
-    console.log('ClickHouse response:', typeof response.data === 'string' 
-      ? response.data.substring(0, 200) + '...' 
-      : JSON.stringify(response.data).substring(0, 200) + '...');
-    
-    // NEW: Handle JSONEachRow format (string with newline-separated JSON objects)
+    // Handle JSONEachRow format (string with newline-separated JSON objects)
     if (typeof response.data === 'string' && response.data.includes('\n')) {
       return response.data
         .split('\n')
@@ -276,7 +281,7 @@ async function executeClickHouseQuery(query) {
           try {
             return JSON.parse(line);
           } catch (err) {
-            console.error('Error parsing JSON line:', line, err);
+            console.error('Error parsing JSON line:', line);
             return null;
           }
         })
@@ -340,22 +345,10 @@ function getQueryForMetric(metricId, from, to) {
 /**
  * Generate mock data for development/testing
  * @param {string} query - The original query
+ * @param {string} metricId - Optional metric ID
  * @returns {Array} Mock data points
  */
-function generateMockData(query) {
-  // Parse the query to determine which metric it's for
-  let metricType = 'unknown';
-  
-  if (query.includes('count()')) {
-    metricType = 'queryCount';
-  } else if (query.includes('sum(read_bytes)')) {
-    metricType = 'dataSize';
-  } else if (query.includes('avg(query_duration_ms)')) {
-    metricType = 'queryDuration';
-  } else if (query.includes('countIf(exception')) {
-    metricType = 'errorRate';
-  }
-  
+function generateMockData(query, metricId = null) {
   // Extract date range from query
   const fromMatch = query.match(/BETWEEN '(.+?)'/);
   const toMatch = query.match(/AND '(.+?)'/);
@@ -363,52 +356,13 @@ function generateMockData(query) {
   const from = fromMatch ? fromMatch[1] : getDefaultFromDate();
   const to = toMatch ? toMatch[1].split(' ')[0] : getTodayDate();
   
-  // Generate appropriate mock data
-  return generateDateRangeData(from, to, metricType);
-}
-
-/**
- * Generate mock data for a date range
- * @param {string} from - Start date
- * @param {string} to - End date
- * @param {string} metricType - Type of metric
- * @returns {Array} Generated data
- */
-function generateDateRangeData(from, to, metricType) {
-  const data = [];
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
-  const currentDate = new Date(fromDate);
-  
-  // Generate data for each day in the range
-  while (currentDate <= toDate) {
-    const dateStr = currentDate.toISOString().split('T')[0];
-    
-    let value;
-    switch (metricType) {
-      case 'queryCount':
-        value = Math.floor(Math.random() * 1000) + 500;
-        break;
-      case 'dataSize':
-        value = Math.floor(Math.random() * 1000000000) + 100000000;
-        break;
-      case 'queryDuration':
-        value = Math.random() * 2 + 0.1;
-        break;
-      case 'errorRate':
-        value = Math.random() * 2;
-        break;
-      default:
-        value = Math.random() * 100;
-    }
-    
-    data.push({ date: dateStr, value });
-    
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
+  // Check if this is a dataSize metric (complex multi-column query)
+  if (metricId === 'dataSize') {
+    return mockData.generateClientDistributionData(from, to);
+  } else {
+    // For simple metrics
+    return mockData.generateMetricData(metricId || 'unknown', from, to);
   }
-  
-  return data;
 }
 
 /**
