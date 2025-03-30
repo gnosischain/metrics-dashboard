@@ -97,7 +97,8 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
       x: {
         grid: {
           display: false
-        }
+        },
+        stacked: type === 'stackedBar'
       },
       y: {
         beginAtZero: true,
