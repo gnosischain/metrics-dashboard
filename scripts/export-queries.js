@@ -1,9 +1,7 @@
 /**
  * Script to export query definitions from frontend to API proxy
  * 
- * This script reads all query definitions from the src/queries directory,
- * extracts the query information, and exports them to the api/queries directory
- * as JSON files that can be loaded by the API proxy.
+ * A simplified version that directly requires the JS modules and extracts the id and query.
  * 
  * Usage: node scripts/export-queries.js
  */
@@ -21,50 +19,51 @@ if (!fs.existsSync(apiQueriesDir)) {
   fs.mkdirSync(apiQueriesDir, { recursive: true });
 }
 
-// Find all JavaScript files in the src/queries directory (excluding index.js and README.md)
+// Find all JavaScript files in the src/queries directory (excluding index.js and template files)
 const queryFiles = fs.readdirSync(srcQueriesDir)
-  .filter(file => file.endsWith('.js') && file !== 'index.js');
+  .filter(file => file.endsWith('.js') && file !== 'index.js' && !file.includes('template'));
 
 console.log(`Found ${queryFiles.length} query definitions to export`);
 
-// Process each query file
+// Process each query file by directly requiring it
 queryFiles.forEach(file => {
   const filePath = path.join(srcQueriesDir, file);
+  const fileName = path.basename(file, '.js');
   
   try {
-    // Read the file content
-    const content = fs.readFileSync(filePath, 'utf8');
+    // Use a cleaner approach - directly require the module
+    // This assumes all metric files use module.exports or export default
+    const relativePath = '../src/queries/' + fileName;
     
-    // Extract the query object using regex
-    // This pattern matches both direct exports and variable exports
-    const exportMatch = content.match(/export\s+default\s+({[\s\S]*?});?\s*$/) || 
-                        content.match(/const\s+\w+\s*=\s*({[\s\S]*?});\s*export\s+default/);
+    // Delete the module from cache if it exists
+    delete require.cache[require.resolve(relativePath)];
     
-    if (!exportMatch) {
-      console.error(`Could not find export in ${file}`);
+    // Directly require the metric module
+    const metricModule = require(relativePath);
+    const metricConfig = metricModule.default || metricModule;
+    
+    // Extract the id and query from the loaded module
+    if (!metricConfig || !metricConfig.id || !metricConfig.query) {
+      console.error(`Missing id or query in ${file}`);
+      console.log('Metric structure:', JSON.stringify(metricConfig, null, 2));
       return;
     }
     
-    // Get the object literal as a string
-    const objectStr = exportMatch[1];
-    
-    // Convert to a proper JavaScript object using eval (safe in this controlled context)
-    // eslint-disable-next-line no-eval
-    const queryObj = eval(`(${objectStr})`);
+    const { id, query } = metricConfig;
     
     // Create a simplified JSON object with just id and query
-    const jsonObj = {
-      id: queryObj.id,
-      query: queryObj.query
-    };
+    const jsonObj = { id, query };
     
     // Write to the api/queries directory
-    const outputPath = path.join(apiQueriesDir, `${queryObj.id}.json`);
+    const outputPath = path.join(apiQueriesDir, `${id}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(jsonObj, null, 2));
     
-    console.log(`Exported ${queryObj.id} to ${outputPath}`);
+    console.log(`Exported ${id} to ${outputPath}`);
   } catch (error) {
     console.error(`Error processing ${file}:`, error);
+    if (error.stack) {
+      console.error(error.stack);
+    }
   }
 });
 

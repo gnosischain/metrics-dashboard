@@ -13,24 +13,13 @@ const config = {
   api: {
     // Using relative path for same-domain API endpoints
     url: process.env.REACT_APP_API_URL || '/api',
-    key: process.env.REACT_APP_API_KEY || ''
+    key: process.env.REACT_APP_API_KEY || '',
+    useMockData: process.env.REACT_APP_USE_MOCK_DATA === 'true'
   },
   
   // Dashboard configuration
   dashboard: {
-    title: process.env.REACT_APP_DASHBOARD_TITLE || 'ClickHouse Metrics Dashboard',
-    refreshInterval: parseInt(process.env.REACT_APP_REFRESH_INTERVAL || '86400000', 10) // Default: 24 hours
-  },
-  
-  // Default date ranges
-  dateRanges: {
-    default: '7d',
-    options: [
-      { label: 'Last 24 hours', value: '1d' },
-      { label: 'Last 7 days', value: '7d' },
-      { label: 'Last 30 days', value: '30d' },
-      { label: 'Last 90 days', value: '90d' }
-    ]
+    title: process.env.REACT_APP_DASHBOARD_TITLE || 'ClickHouse Metrics Dashboard'
   }
 };
   

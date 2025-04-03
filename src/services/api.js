@@ -24,20 +24,22 @@ class ApiService {
   /**
    * Fetch metrics data from the API
    * @param {string} metricId - ID of the metric to fetch
-   * @param {Object} params - Query parameters
    * @returns {Promise} Metrics data
    */
-  async fetchMetric(metricId, params = {}) {
+  async fetchMetric(metricId) {
     try {
       console.log(`Fetching ${metricId} from ${this.baseUrl}/metrics`);
+      
+      // Always use the cached version if available
+      const params = { 
+        metricId, 
+        useCached: 'true' 
+      };
       
       // Add useMock=true for development if configured
       if (process.env.NODE_ENV === 'development' && config.api.useMockData === 'true') {
         params.useMock = 'true';
       }
-      
-      // Add metricId to the params instead of the URL to ensure consistency
-      params.metricId = metricId;
       
       const response = await this.client.get(`/metrics`, { params });
       
@@ -56,12 +58,14 @@ class ApiService {
 
   /**
    * Fetch all metrics data
-   * @param {Object} params - Query parameters (date range, etc.)
    * @returns {Promise} All metrics data
    */
-  async fetchAllMetrics(params = {}) {
+  async fetchAllMetrics() {
     try {
       console.log('Fetching all metrics');
+      
+      // Always use the cached version if available
+      const params = { useCached: 'true' };
       
       // Add useMock=true for development if configured
       if (process.env.NODE_ENV === 'development' && config.api.useMockData === 'true') {

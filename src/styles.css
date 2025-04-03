@@ -32,8 +32,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
 }
 
 .header-title h1 {
@@ -47,46 +45,12 @@ body {
   color: #666;
 }
 
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.date-range-selector {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.date-range-selector select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #fff;
-  font-size: 0.9rem;
-}
-
-.refresh-button {
-  padding: 0.5rem 1rem;
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.refresh-button:hover {
-  background-color: #3367d6;
-}
-
 .dashboard-content {
   padding: 1.5rem;
   flex: 1;
 }
 
-/* Metrics grid - UPDATED: Changed to a single column layout */
+/* Metrics grid - Single column layout */
 .metrics-grid {
   display: flex;
   flex-direction: column;
@@ -137,7 +101,8 @@ body {
 
 /* Loading and error states */
 .loading-indicator, 
-.error-message {
+.error-message,
+.no-data-message {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,12 +119,6 @@ body {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .header-controls {
-    width: 100%;
     flex-direction: column;
     align-items: flex-start;
   }

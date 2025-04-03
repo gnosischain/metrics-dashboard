@@ -1,7 +1,8 @@
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const mockData = require('./mock');
+const cacheManager = require('./cache');
+const cronManager = require('./cron');
 
 /**
  * Load all query definitions from JSON files
@@ -24,10 +25,15 @@ function loadQueries() {
       if (file.endsWith('.json')) {
         const queryPath = path.join(queriesDir, file);
         const queryContent = fs.readFileSync(queryPath, 'utf8');
-        const queryDef = JSON.parse(queryContent);
         
-        if (queryDef.id && queryDef.query) {
-          queries[queryDef.id] = queryDef.query;
+        try {
+          const queryDef = JSON.parse(queryContent);
+          
+          if (queryDef.id && queryDef.query) {
+            queries[queryDef.id] = queryDef.query;
+          }
+        } catch (parseError) {
+          console.error(`Error parsing JSON in ${file}:`, parseError);
         }
       }
     }
@@ -116,6 +122,15 @@ const availableMetrics = Object.keys(allQueries);
 
 console.log(`Loaded ${availableMetrics.length} metric queries: ${availableMetrics.join(', ')}`);
 
+// Check and refresh cache if needed (runs on server start)
+(async () => {
+  try {
+    await cronManager.checkAndRefreshIfNeeded(allQueries);
+  } catch (error) {
+    console.error('Error checking/refreshing cache:', error);
+  }
+})();
+
 /**
  * Vercel API handler for metrics
  */
@@ -137,21 +152,27 @@ module.exports = async (req, res) => {
   try {
     // Parse request parameters
     const { metricId } = req.query;
-    const from = req.query.from || getDefaultFromDate();
-    const to = req.query.to || getTodayDate();
-    
-    // Check if mock data is requested
     const useMock = req.query.useMock === 'true' || process.env.USE_MOCK_DATA === 'true';
+    const useCached = req.query.useCached !== 'false'; // Default to using cache
+    
+    // Force cache refresh if explicitly requested
+    if (req.query.refreshCache === 'true') {
+      if (metricId) {
+        await cronManager.refreshMetricCache(metricId, allQueries);
+      } else {
+        await cronManager.refreshAllCaches(allQueries);
+      }
+    }
     
     // If a specific metric is requested
     if (metricId) {
-      const metricData = await fetchMetricData(metricId, from, to, useMock);
+      const metricData = await fetchMetricData(metricId, useMock, useCached);
       return res.status(200).json(metricData);
     } 
     
     // If all metrics are requested
     else {
-      const allMetricsData = await fetchAllMetricsData(from, to, useMock);
+      const allMetricsData = await fetchAllMetricsData(useMock, useCached);
       return res.status(200).json(allMetricsData);
     }
   } catch (error) {
@@ -168,14 +189,13 @@ module.exports = async (req, res) => {
 /**
  * Fetch data for a specific metric
  * @param {string} metricId - Metric identifier
- * @param {string} from - Start date in ISO format (YYYY-MM-DD)
- * @param {string} to - End date in ISO format (YYYY-MM-DD)
  * @param {boolean} useMock - Whether to use mock data
+ * @param {boolean} useCached - Whether to use cached data
  * @returns {Promise<Array>} Array of data points
  */
-async function fetchMetricData(metricId, from, to, useMock = false) {
+async function fetchMetricData(metricId, useMock = false, useCached = true) {
   // Get the query for this metric
-  const query = getQueryForMetric(metricId, from, to);
+  const query = allQueries[metricId];
   
   if (!query) {
     const error = new Error(`Unknown metric: ${metricId}`);
@@ -185,34 +205,71 @@ async function fetchMetricData(metricId, from, to, useMock = false) {
   }
   
   try {
+    // First check if we can use cache
+    if (useCached) {
+      const cachedData = cacheManager.getCache(metricId);
+      if (cachedData) {
+        console.log(`Using cached data for ${metricId}`);
+        return cachedData;
+      }
+    }
+    
+    // If we need to generate new data
+    // Default to last 90 days
+    const to = new Date();
+    const from = new Date(to);
+    from.setDate(from.getDate() - 90);
+    
+    // Format dates for query
+    const fromStr = from.toISOString().split('T')[0];
+    const toStr = to.toISOString().split('T')[0];
+    
+    // Process the query with date placeholders
+    const processedQuery = query
+      .replace(/\{from\}/g, fromStr)
+      .replace(/\{to\}/g, toStr);
+    
     // Execute the query against ClickHouse or use mock data
     const rawData = useMock 
-      ? generateMockData(query, metricId)
-      : await executeClickHouseQuery(query);
+      ? generateMockData(processedQuery, metricId)
+      : await cronManager.executeClickHouseQuery(processedQuery);
     
-    // Always preserve the original structure of the data
-    // This handles both simple date/value and complex multi-column responses
+    // Cache the results
+    if (rawData && rawData.length > 0) {
+      cacheManager.setCache(metricId, rawData);
+    }
+    
+    // Return the data
     return rawData;
   } catch (error) {
     console.error(`Error fetching metric ${metricId}:`, error);
-    return []; // Return empty array on error
+    
+    // Try to use cache as a fallback
+    if (!useCached) {
+      const cachedData = cacheManager.getCache(metricId);
+      if (cachedData) {
+        console.log(`Using cached data as fallback for ${metricId}`);
+        return cachedData;
+      }
+    }
+    
+    return []; // Return empty array if all fails
   }
 }
 
 /**
  * Fetch data for all metrics
- * @param {string} from - Start date in ISO format (YYYY-MM-DD)
- * @param {string} to - End date in ISO format (YYYY-MM-DD)
  * @param {boolean} useMock - Whether to use mock data
+ * @param {boolean} useCached - Whether to use cached data
  * @returns {Promise<Object>} Object with metric data
  */
-async function fetchAllMetricsData(from, to, useMock = false) {
+async function fetchAllMetricsData(useMock = false, useCached = true) {
   // Get all metric IDs
   const metricIds = availableMetrics;
   
   // Fetch each metric in parallel
   const promises = metricIds.map(metricId => 
-    fetchMetricData(metricId, from, to, useMock)
+    fetchMetricData(metricId, useMock, useCached)
       .then(data => ({ [metricId]: data }))
       .catch(error => {
         console.error(`Error fetching ${metricId}:`, error);
@@ -223,123 +280,6 @@ async function fetchAllMetricsData(from, to, useMock = false) {
   // Combine all results
   const results = await Promise.all(promises);
   return Object.assign({}, ...results);
-}
-
-/**
- * Execute a query against ClickHouse
- * @param {string} query - SQL query to execute
- * @returns {Promise<Array>} Query results
- */
-async function executeClickHouseQuery(query) {
-  try {
-    // Check if we're in development mode or USE_MOCK_DATA is enabled
-    if (process.env.USE_MOCK_DATA === 'true' || !process.env.CLICKHOUSE_HOST) {
-      console.log('Using mock data for query');
-      return generateMockData(query);
-    }
-    
-    // Verify ClickHouse connection details
-    if (!process.env.CLICKHOUSE_HOST) {
-      throw new Error('Missing ClickHouse connection details');
-    }
-    
-    // Determine the proper URL format and connection details
-    const clickhouseHost = process.env.CLICKHOUSE_HOST;
-    const clickhousePort = process.env.CLICKHOUSE_PORT || '8443';
-    const clickhouseUser = process.env.CLICKHOUSE_USER || 'default';
-    const clickhousePassword = process.env.CLICKHOUSE_PASSWORD || '';
-    const clickhouseDatabase = process.env.CLICKHOUSE_DATABASE || 'default';
-    
-    // Construct URL if it doesn't include protocol
-    const url = clickhouseHost.startsWith('http') 
-      ? clickhouseHost 
-      : `https://${clickhouseHost}:${clickhousePort}`;
-    
-    // Execute the actual query
-    console.log(`Executing ClickHouse query to ${url}`);
-    const response = await axios({
-      method: 'post',
-      url,
-      auth: {
-        username: clickhouseUser,
-        password: clickhousePassword
-      },
-      params: {
-        query,
-        database: clickhouseDatabase,
-        default_format: 'JSONEachRow'
-      },
-      timeout: 8000 // 8 second timeout
-    });
-    
-    // Handle JSONEachRow format (string with newline-separated JSON objects)
-    if (typeof response.data === 'string' && response.data.includes('\n')) {
-      return response.data
-        .split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => {
-          try {
-            return JSON.parse(line);
-          } catch (err) {
-            console.error('Error parsing JSON line:', line);
-            return null;
-          }
-        })
-        .filter(item => item !== null);
-    }
-    
-    // Handle different response formats
-    if (Array.isArray(response.data)) {
-      return response.data;
-    } else if (typeof response.data === 'object' && response.data !== null) {
-      // If it's a single object or has data property
-      if (response.data.data && Array.isArray(response.data.data)) {
-        return response.data.data;
-      } else {
-        // Convert to array if it's a single object
-        return [response.data];
-      }
-    }
-    
-    // Return empty array if no valid data
-    return [];
-  } catch (error) {
-    // Handle ClickHouse-specific errors
-    if (error.response && error.response.data) {
-      console.error('ClickHouse error response:', error.response.data);
-      
-      const errorObj = new Error('ClickHouse query error');
-      errorObj.status = 500;
-      errorObj.code = 'ClickHouseError';
-      errorObj.details = error.response.data;
-      throw errorObj;
-    }
-    
-    // Handle network or other errors
-    console.error('Query execution error:', error.message);
-    throw new Error(`Failed to execute query: ${error.message}`);
-  }
-}
-
-/**
- * Get the appropriate query for a given metric
- * @param {string} metricId - Metric identifier
- * @param {string} from - Start date in ISO format
- * @param {string} to - End date in ISO format
- * @returns {string|null} SQL query or null if metric not found
- */
-function getQueryForMetric(metricId, from, to) {
-  // Get query template for this metric
-  const queryTemplate = allQueries[metricId];
-  
-  if (!queryTemplate) {
-    return null;
-  }
-  
-  // Replace placeholders with actual values
-  return queryTemplate
-    .replace(/\{from\}/g, from)
-    .replace(/\{to\}/g, to);
 }
 
 /**
@@ -356,8 +296,10 @@ function generateMockData(query, metricId = null) {
   const from = fromMatch ? fromMatch[1] : getDefaultFromDate();
   const to = toMatch ? toMatch[1].split(' ')[0] : getTodayDate();
   
-  // Check if this is a dataSize metric (complex multi-column query)
-  if (metricId === 'dataSize') {
+  // Detect if query returns a complex multi-series result
+  const hasMultipleSeries = query.includes('SUM(if') || query.includes('COUNT(if');
+  
+  if (hasMultipleSeries) {
     return mockData.generateClientDistributionData(from, to);
   } else {
     // For simple metrics
@@ -366,12 +308,12 @@ function generateMockData(query, metricId = null) {
 }
 
 /**
- * Get the default "from" date (7 days ago)
+ * Get the default "from" date (90 days ago)
  * @returns {string} Date in YYYY-MM-DD format
  */
 function getDefaultFromDate() {
   const date = new Date();
-  date.setDate(date.getDate() - 7);
+  date.setDate(date.getDate() - 3);
   return date.toISOString().split('T')[0];
 }
 

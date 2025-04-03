@@ -1,13 +1,14 @@
-![metrics-dashboard Header](img/header-metrics_dashboard.png)
+# ClickHouse Metrics Dashboard
 
-A simple, modular dashboard to visualize ClickHouse metrics built with React and deployed on Vercel.
+A simple, modular dashboard to visualize ClickHouse metrics built with React and deployed on Vercel with server-side caching.
 
 ## Features
 
 - Connects to ClickHouse Cloud via API
+- Server-side caching to minimize ClickHouse queries
 - Secure handling of credentials (not exposed to frontend)
 - Responsive design for all devices
-- Auto-refresh with configurable interval
+- Simplified UI with single-column metric display
 - Modular architecture for easy addition of new metrics
 - Deployment to Vercel with serverless functions
 
@@ -20,7 +21,7 @@ A simple, modular dashboard to visualize ClickHouse metrics built with React and
 
 ## Architecture
 
-This application follows a two-component architecture to securely handle ClickHouse credentials:
+This application follows a two-component architecture with server-side caching:
 
 1. **Frontend Dashboard** - React application deployed to Vercel
    - Visualizes metrics data using Chart.js
@@ -28,8 +29,15 @@ This application follows a two-component architecture to securely handle ClickHo
 
 2. **API Proxy** - Serverless API functions that interface with ClickHouse
    - Handles authentication securely
+   - Implements caching to minimize ClickHouse queries
    - Executes queries and returns results to the dashboard
    - Deployed as Vercel Serverless Functions in the same project
+
+3. **Caching System** - Reduces load on ClickHouse
+   - Uses `/tmp` directory in Vercel functions for file-based caching
+   - Falls back to in-memory caching if file operations fail
+   - Automatic daily refresh of cache data
+   - Configurable TTL (time to live) for cache entries
 
 ## Quick Setup
 
@@ -63,19 +71,76 @@ This application follows a two-component architecture to securely handle ClickHo
 
 ```
 ├── README.md
-├── api/                     # API proxy serverless functions
-│   ├── metrics.js           # Main API endpoint for metrics
-│   ├── package.json         # API dependencies
-│   └── queries/             # Query definitions as JSON
-├── public/                  # Static assets
+├── api/
+│   ├── cache.js                # Cache management implementation
+│   ├── cron.js                 # Automatic refresh functionality
+│   ├── metrics.js              # Main API endpoint with caching support
+│   ├── mock.js                 # Mock data generator
+│   ├── test.js                 # Cache status API endpoint
+│   ├── package.json            # API dependencies
+│   └── queries/                # Query definitions as JSON
+├── public/                     # Static assets
 ├── scripts/
-│   └── export-queries.js    # Script to export queries from frontend to API
+│   └── export-queries.js       # Script to export queries from frontend to API
 ├── src/
-│   ├── components/          # React components
-│   ├── queries/             # Metric query definitions
-│   ├── services/            # API and data services
-│   └── utils/               # Utility functions
-└── vercel.json              # Vercel deployment configuration
+│   ├── components/
+│   │   ├── Card.js             # Card component 
+│   │   ├── Chart.js            # Chart component
+│   │   ├── Dashboard.js        # Main dashboard component
+│   │   ├── Header.js           # Simplified header component
+│   │   └── MetricWidget.js     # Individual metric display
+│   ├── services/
+│   │   ├── api.js              # API service with cache support
+│   │   └── metrics.js          # Metrics service
+│   ├── queries/                # Frontend metric definitions
+│   ├── utils/
+│   │   ├── config.js           # Application configuration
+│   │   ├── dates.js            # Date utilities
+│   │   └── formatter.js        # Value formatters
+│   └── styles.css              # Application styles
+└── vercel.json                 # Vercel deployment configuration
+```
+
+## Caching System
+
+The dashboard implements a server-side caching system to minimize ClickHouse queries:
+
+### How Caching Works
+
+1. **First Request**: On first request, the system queries ClickHouse and caches the results
+2. **Subsequent Requests**: Future requests use cached data (until cache expires)
+3. **Automatic Refresh**: Cache is automatically refreshed once per day
+4. **Fallback Mechanism**: If ClickHouse queries fail, system uses cached data
+
+### Cache Configuration
+
+Configure caching behavior with these environment variables:
+
+- `CACHE_TTL_HOURS`: How long cache entries are valid (default: 24 hours)
+- `CACHE_REFRESH_HOURS`: How often the cache is refreshed (default: 24 hours)
+
+### Vercel Deployment Considerations
+
+When deploying to Vercel's serverless environment:
+
+1. **File System Limitations**: The system uses `/tmp` directory for caching
+2. **In-Memory Fallback**: Falls back to in-memory caching if file operations fail
+3. **Ephemeral Storage**: Cache might reset between function invocations
+
+### Checking Cache Status
+
+Check cache status by visiting:
+```
+https://your-deployment-url/api/test
+```
+
+Include your API key in the `X-API-Key` header.
+
+### Manual Cache Refresh
+
+Force a cache refresh by adding `refreshCache=true` to your API requests:
+```
+https://your-deployment-url/api/metrics?refreshCache=true
 ```
 
 ## Vercel Deployment
@@ -88,95 +153,6 @@ To deploy this dashboard, you'll need:
 2. A ClickHouse instance or ClickHouse Cloud account
 3. Your ClickHouse connection details
 
-### Preparing for Deployment
-
-1. **Ensure API dependencies are properly configured**:
-
-   Make sure your `api/package.json` contains the necessary dependencies:
-   ```json
-   {
-     "name": "clickhouse-metrics-api",
-     "version": "1.0.0",
-     "description": "API for ClickHouse metrics dashboard",
-     "main": "metrics.js",
-     "dependencies": {
-       "axios": "^1.6.2",
-       "cors": "^2.8.5"
-     }
-   }
-   ```
-
-2. **Update your main `package.json`** to include pre-build scripts:
-   ```json
-   {
-     "scripts": {
-       "start": "react-scripts start",
-       "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-       "preinstall": "cd api && npm install",
-       "prebuild": "cd api && npm install",
-       "test": "react-scripts test",
-       "eject": "react-scripts eject",
-       "export-queries": "node scripts/export-queries.js",
-       "vercel-build": "npm run export-queries && npm run prebuild && DISABLE_ESLINT_PLUGIN=true npm run build"
-     }
-   }
-   ```
-
-3. **Update `vercel.json`** to ensure proper builds and dependency installation:
-   ```json
-   {
-     "version": 2,
-     "builds": [
-       { 
-         "src": "api/**/*.js", 
-         "use": "@vercel/node",
-         "config": {
-           "includeFiles": ["api/package.json", "api/node_modules/**"]
-         }
-       },
-       { 
-         "src": "package.json", 
-         "use": "@vercel/static-build", 
-         "config": { 
-           "distDir": "build" 
-         }
-       }
-     ],
-     "routes": [
-       { 
-         "src": "/api/metrics", 
-         "dest": "/api/metrics.js",
-         "headers": {
-           "Access-Control-Allow-Credentials": "true",
-           "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "GET,OPTIONS,POST",
-           "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
-         }
-       },
-       { 
-         "src": "/api/metrics/(.*)", 
-         "dest": "/api/metrics.js",
-         "headers": {
-           "Access-Control-Allow-Credentials": "true",
-           "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "GET,OPTIONS,POST",
-           "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
-         }
-       },
-       { "src": "/(.*)", "dest": "/$1" }
-     ]
-   }
-   ```
-
-4. **Test locally with Vercel CLI**:
-   ```bash
-   # Install Vercel CLI globally if not installed
-   npm install -g vercel
-   
-   # Test the build locally
-   vercel dev
-   ```
-
 ### Deployment Steps
 
 1. **Install and log in to Vercel CLI**:
@@ -185,9 +161,9 @@ To deploy this dashboard, you'll need:
    vercel login
    ```
 
-2. **Deploy with force flag** to ensure clean dependency installation:
+2. **Deploy with Vercel**:
    ```bash
-   vercel --force
+   vercel --prod
    ```
 
 3. **Configure environment variables in Vercel**:
@@ -202,116 +178,23 @@ To deploy this dashboard, you'll need:
      - `REACT_APP_API_URL`: `/api` (relative path)
      - `REACT_APP_API_KEY`: Same value as `API_KEY`
      - `REACT_APP_DASHBOARD_TITLE` (optional): Custom dashboard title
-     - `REACT_APP_REFRESH_INTERVAL` (optional): Refresh interval in milliseconds
-
-4. **Deploy to production** with environment variables:
-   ```bash
-   vercel --prod
-   ```
+     - `CACHE_TTL_HOURS` (optional): Cache validity period in hours
+     - `CACHE_REFRESH_HOURS` (optional): Cache refresh interval in hours
 
 ### Troubleshooting Deployment Issues
 
-If you encounter issues with dependencies in Vercel:
+If you encounter issues:
 
-1. **Verify Dependencies Installation**:
-   Check the build logs to see if dependencies are being installed correctly:
-   ```bash
-   vercel logs your-deployment-url --source=build
-   ```
-
-2. **Force NPM Installation in API Directory**:
-   Create a file called `api/build.js` and include it in your deployment:
-   ```javascript
-   const { exec } = require('child_process');
-   const path = require('path');
-
-   // Run npm install in the api directory
-   exec('npm install', { cwd: path.join(__dirname) }, (error, stdout, stderr) => {
-     if (error) {
-       console.error(`Error installing API dependencies: ${error}`);
-       return;
-     }
-     console.log(`API dependencies installed: ${stdout}`);
-   });
-   ```
-
-3. **Use Mock Data Temporarily**:
-   As a workaround during deployment testing, you can set `USE_MOCK_DATA=true` in your environment variables to bypass the need for API calls to ClickHouse.
-
-4. **Check Vercel Runtime Logs**:
+1. **Check Vercel Logs**:
    ```bash
    vercel logs your-deployment-url
    ```
 
-5. **Check for Dependency Conflicts**:
-   Sometimes specific versions of axios might have compatibility issues. Try updating to the latest version:
-   ```bash
-   cd api && npm install axios@latest && cd ..
-   ```
+2. **Check Cache Status**:
+   Visit `/api/test` to see cache information.
 
-6. **Manual Deployment of API Dependencies**:
-   If all else fails, you can try to manually include the node_modules in your deployment:
-   ```bash
-   # Install API dependencies locally
-   cd api && npm install && cd ..
-   
-   # Create a .vercelignore file to prevent ignoring node_modules in API
-   echo '!api/node_modules' > .vercelignore
-   
-   # Deploy with all files
-   vercel --force
-   ```
-
-## API Proxy Implementation
-
-The API proxy is implemented as a Vercel Serverless Function in `api/metrics.js`. It provides the following endpoints:
-
-- `GET /api/metrics`: Get data for all metrics
-- `GET /api/metrics/{metricId}`: Get data for a specific metric
-
-### API Setup for Serverless Deployment
-
-For proper deployment as a serverless function, ensure:
-
-1. Your API functions have their **own package.json** with all required dependencies
-2. The **directory structure** follows Vercel conventions (functions in `api/` directory)
-3. The `vercel.json` **build configuration** is correctly set up to include API files
-4. API **dependencies are installed** during the build process
-
-### Security Considerations
-
-1. API authentication is handled with a custom API key header:
-   ```
-   X-API-Key: your-api-key
-   ```
-
-2. CORS headers are configured in `vercel.json` to allow cross-origin requests.
-
-3. ClickHouse credentials are stored as environment variables and never exposed to the client.
-
-### API Request Parameters
-
-The API accepts the following parameters:
-
-- `from`: Start date in YYYY-MM-DD format
-- `to`: End date in YYYY-MM-DD format
-- `range`: Shorthand date range (e.g., `7d`, `30d`)
-
-Example request:
-```
-GET /api/metrics/queryCount?from=2023-01-01&to=2023-01-31
-```
-
-## Development Mode
-
-For local development without ClickHouse:
-
-1. Set the `USE_MOCK_DATA` environment variable to `true`:
-   ```
-   USE_MOCK_DATA=true
-   ```
-
-2. The API will generate mock data instead of querying ClickHouse.
+3. **Use Mock Data Temporarily**:
+   Set `USE_MOCK_DATA=true` in environment variables during testing.
 
 ## Adding New Metrics
 
@@ -363,75 +246,16 @@ To add a new metric:
    vercel --prod
    ```
 
-## Complete Package Configuration
+## Development Mode
 
-### Main `package.json`
+For local development without ClickHouse:
 
-```json
-{
-  "name": "metrics-dashboard",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-    "preinstall": "cd api && npm install",
-    "prebuild": "cd api && npm install",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "export-queries": "node scripts/export-queries.js",
-    "vercel-build": "npm run export-queries && npm run prebuild && DISABLE_ESLINT_PLUGIN=true npm run build"
-  },
-  "dependencies": {
-    "axios": "^1.6.2",
-    "chart.js": "^4.4.0",
-    "react": "^18.2.0",
-    "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "cors": "^2.8.5"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ],
-    "rules": {
-      "import/no-anonymous-default-export": "off",
-      "react-hooks/exhaustive-deps": "warn"
-    }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "vercel": "^32.7.0"
-  }
-}
-```
+1. Set the `USE_MOCK_DATA` environment variable to `true`:
+   ```
+   USE_MOCK_DATA=true
+   ```
 
-### API `package.json`
-
-```json
-{
-  "name": "clickhouse-metrics-api",
-  "version": "1.0.0",
-  "description": "API for ClickHouse metrics dashboard",
-  "main": "metrics.js",
-  "dependencies": {
-    "axios": "^1.6.2",
-    "cors": "^2.8.5"
-  }
-}
-```
+2. The API will generate mock data instead of querying ClickHouse.
 
 ## License
 

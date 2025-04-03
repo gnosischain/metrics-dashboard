@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { DEFAULT_COLORS } from '../utils/colors';
 
 // Register ChartJS components
 ChartJS.register(
@@ -27,7 +28,7 @@ ChartJS.register(
 /**
  * Universal chart component that handles both simple and multi-series data
  */
-const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
+const Chart = ({ data, title, type = 'line', color = DEFAULT_COLORS[0] }) => {
   // Check if data is in multi-series format (has labels and datasets)
   const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && data.labels && data.datasets;
   
@@ -38,21 +39,13 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
     chartData = {
       labels: data.labels,
       datasets: data.datasets.map((dataset, index) => {
-        // Determine color for this dataset
-        let datasetColor;
-        if (Array.isArray(color)) {
-          datasetColor = color[index % color.length];
-        } else {
-          // Generate colors if none provided
-          const hue = (index * 137) % 360; // Golden angle approximation for nice distribution
-          datasetColor = `hsl(${hue}, 70%, 60%)`;
-        }
-        
+        // Color is already set in the dataset
         return {
           ...dataset,
-          backgroundColor: datasetColor,
-          borderColor: datasetColor,
           borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: false,
         };
       })
     };
@@ -73,6 +66,9 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
           backgroundColor: color,
           borderColor: color,
           borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: false,
         }
       ]
     };
@@ -106,6 +102,11 @@ const Chart = ({ data, title, type = 'line', color = '#4285F4' }) => {
           color: 'rgba(0, 0, 0, 0.05)'
         },
         stacked: type === 'stackedBar' // Stack bars only if stackedBar type
+      }
+    },
+    elements: {
+      line: {
+        tension: 0.2 // Slight curve to lines
       }
     }
   };

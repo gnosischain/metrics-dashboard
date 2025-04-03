@@ -2,12 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from './Card';
 import Chart from './Chart';
 import metricsService from '../services/metrics';
-import * as formatters from '../utils/formatter';
 
 /**
  * MetricWidget component for displaying a single metric
  */
-const MetricWidget = ({ metricId, dateRange }) => {
+const MetricWidget = ({ metricId }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,12 +18,9 @@ const MetricWidget = ({ metricId, dateRange }) => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log(`Fetching data for ${metricId} with range ${dateRange}`);
+      console.log(`Fetching data for ${metricId}`);
       
-      const metricData = await metricsService.fetchMetricData(metricId, dateRange);
-      
-      // Log what we received to help with debugging
-      console.log(`Data received for ${metricId}:`, metricData);
+      const metricData = await metricsService.fetchMetricData(metricId);
       
       // Check if we have valid data
       const isValidData = 
@@ -46,9 +42,9 @@ const MetricWidget = ({ metricId, dateRange }) => {
     } finally {
       setLoading(false);
     }
-  }, [metricId, dateRange, metricConfig.name]);
+  }, [metricId, metricConfig.name]);
   
-  // Fetch data on mount and when date range changes
+  // Fetch data on mount
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -76,7 +72,7 @@ const MetricWidget = ({ metricId, dateRange }) => {
               color={metricConfig.color}
             />
           ) : (
-            <div className="no-data-message">No data available for the selected period</div>
+            <div className="no-data-message">No data available</div>
           )}
         </>
       )}

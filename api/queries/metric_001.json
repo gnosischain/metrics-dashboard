@@ -1,0 +1,4 @@
+{
+  "id": "metric_001",
+  "query": "SELECT * FROM dbt.p2p_gnosis_peers_clients_daily"
+}

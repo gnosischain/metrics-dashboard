@@ -1,0 +1,53 @@
+/**
+ * Label-based Metric Definition Template
+ * 
+ * This template is for metrics that return data with a time, value, and label structure.
+ * Each label will become a separate line in a multi-line chart.
+ * 
+ * To create a new labeled metric:
+ * 1. Copy this file and rename it to something meaningful (e.g., clientQueryTimes.js)
+ * 2. Update the metric configuration below
+ * 3. Run `npm run export-queries` to update the API
+ */
+
+const labeledMetricTemplate = {
+  // Unique identifier for this metric - use lowercase with no spaces
+  id: 'labeledMetricId',
+  
+  // Display name shown on the dashboard
+  name: 'Labeled Metric Name',
+  
+  // Description shown as a subtitle
+  description: 'Description of the metric with multiple labels',
+  
+  // Formatter function to use: formatNumber, formatBytes, formatPercentage, formatDuration
+  format: 'formatNumber',
+  
+  // Chart type: 'line', 'bar', 'stackedBar'
+  chartType: 'line',
+  
+  // Specify which column contains the label information
+  labelField: 'client',
+  
+  // Optionally specify which column contains the value (defaults to 'value')
+  valueField: 'value',
+  
+  // Optional: Array of colors for different labels
+  // If not specified, colors will be generated automatically
+  // color: ['#4285F4', '#34A853', '#FBBC05', '#EA4335'],
+  
+  // ClickHouse SQL query with {from} and {to} placeholders for date filtering
+  query: `
+    SELECT 
+      toDate(event_time) AS date,
+      client_name AS client, 
+      avg(query_duration_ms) / 1000 AS value
+    FROM system.query_log
+    WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
+      AND type = 'QueryFinish'
+    GROUP BY date, client
+    ORDER BY date, client
+  `
+};
+
+export default labeledMetricTemplate;
