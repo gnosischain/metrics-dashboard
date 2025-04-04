@@ -11,7 +11,7 @@ const queryCount = {
   format: 'formatNumber',
   chartType: 'line',
   color: '#4285F4',
-  tab: 'Performance',
+  tab: '03 - Consensus',
   size: 'medium',
   query: `
     SELECT 

@@ -13,7 +13,7 @@ const customMetricExample = {
     color: '#34A853',
     
     // Specify which tab this metric should appear in
-    tab: 'Examples',
+    tab: '04 - ESG',
     
     // Specify the size of this metric in the grid
     // Options: 'small', 'medium', 'large', 'full'

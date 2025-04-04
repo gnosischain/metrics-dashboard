@@ -11,6 +11,7 @@ import metricsService from '../services/metrics';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('');
   const [tabs, setTabs] = useState([]);
+  const [tabMetrics, setTabMetrics] = useState([]);
   
   // Get all metrics configurations and organize tabs
   useEffect(() => {
@@ -24,13 +25,24 @@ const Dashboard = () => {
     }
   }, []);
   
+  // Update metrics when active tab changes
+  useEffect(() => {
+    if (activeTab) {
+      const metricsForTab = metricsService.getMetricsForTab(activeTab);
+      setTabMetrics(metricsForTab);
+    } else {
+      setTabMetrics([]);
+    }
+  }, [activeTab]);
+  
   // Change the active tab
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
+    if (tab !== activeTab) {
+      // Clear existing metrics first to ensure clean unmounting
+      setTabMetrics([]);
+      setActiveTab(tab);
+    }
   };
-  
-  // Get metrics for the active tab
-  const tabMetrics = activeTab ? metricsService.getMetricsForTab(activeTab) : [];
   
   return (
     <div className="dashboard">
@@ -48,8 +60,7 @@ const Dashboard = () => {
         <div className="dashboard-content">
           {activeTab ? (
             <div className="tab-content">
-             
-              <MetricGrid metrics={tabMetrics} />
+              <MetricGrid key={`grid-${activeTab}`} metrics={tabMetrics} />
             </div>
           ) : (
             <div className="loading-indicator">Loading dashboard...</div>

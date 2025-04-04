@@ -10,6 +10,11 @@ class MetricsService {
    * Available metrics configuration loaded through dynamic import
    */
   metrics = queries;
+  
+  /**
+   * Cache for transformed data to prevent excessive re-computation
+   */
+  dataCache = new Map();
 
   constructor() {
     console.log('Metrics Service initialized with', this.metrics.length, 'metrics');
@@ -24,7 +29,8 @@ class MetricsService {
     this.metrics = this.metrics.map(metric => ({
       ...metric,
       tab: metric.tab || 'General',
-      size: metric.size || 'medium'
+      size: metric.size || 'medium',
+      vSize: metric.vSize || 'medium' // Add default vertical size
     }));
   }
 
@@ -63,7 +69,8 @@ class MetricsService {
       chartType: 'line',
       color: '#999999',
       tab: 'General',
-      size: 'medium'
+      size: 'medium',
+      vSize: 'medium'
     };
   }
 
@@ -86,6 +93,14 @@ class MetricsService {
       return [];
     }
 
+    // Generate a cache key
+    const cacheKey = `${metricId}-${JSON.stringify(data).length}`;
+    
+    // Check if we have a cached result
+    if (this.dataCache.has(cacheKey)) {
+      return this.dataCache.get(cacheKey);
+    }
+
     const firstRow = data[0];
     const metricConfig = this.getMetricConfig(metricId);
     
@@ -98,40 +113,52 @@ class MetricsService {
       return data; // Return as is if no date field found
     }
     
+    let result;
+    
     // Handle labelField if specified in the metric config
     if (metricConfig.labelField && firstRow[metricConfig.labelField] !== undefined) {
-      return this.transformLabeledData(data, dateField, metricConfig);
-    }
-    
-    // Check if this is a multi-series dataset (has columns other than date and value)
-    const seriesKeys = Object.keys(firstRow).filter(key => 
-      key !== dateField && key !== 'value' && !dateFields.includes(key)
-    );
-    
-    if (seriesKeys.length > 0 && !firstRow.hasOwnProperty('value')) {
-      // Multi-series data (like client distribution)
-      return this.transformMultiSeriesData(data, dateField, metricConfig, seriesKeys);
-    }
-    
-    // Standard date/value format
-    if (firstRow.hasOwnProperty('value') || typeof firstRow.value === 'number' || typeof firstRow.value === 'string') {
-      return data.map(item => {
-        let dateValue = item[dateField];
-        
-        // If the date has a time component, handle it appropriately
-        if (typeof dateValue === 'string' && dateValue.includes(' ')) {
-          dateValue = dateValue.split(' ')[0]; // Get just the date part
+      result = this.transformLabeledData(data, dateField, metricConfig);
+    } else {
+      // Check if this is a multi-series dataset (has columns other than date and value)
+      const seriesKeys = Object.keys(firstRow).filter(key => 
+        key !== dateField && key !== 'value' && !dateFields.includes(key)
+      );
+      
+      if (seriesKeys.length > 0 && !firstRow.hasOwnProperty('value')) {
+        // Multi-series data (like client distribution)
+        result = this.transformMultiSeriesData(data, dateField, metricConfig, seriesKeys);
+      } else {
+        // Standard date/value format
+        if (firstRow.hasOwnProperty('value') || typeof firstRow.value === 'number' || typeof firstRow.value === 'string') {
+          result = data.map(item => {
+            let dateValue = item[dateField];
+            
+            // If the date has a time component, handle it appropriately
+            if (typeof dateValue === 'string' && dateValue.includes(' ')) {
+              dateValue = dateValue.split(' ')[0]; // Get just the date part
+            }
+            
+            return {
+              date: dateValue,
+              value: item.value !== undefined ? parseFloat(item.value) : 0
+            };
+          });
+        } else {
+          // If we can't determine a format, return as-is
+          result = data;
         }
-        
-        return {
-          date: dateValue,
-          value: item.value !== undefined ? parseFloat(item.value) : 0
-        };
-      });
+      }
     }
     
-    // If we can't determine a format, return as-is
-    return data;
+    // Cache the result (limit the cache size)
+    if (this.dataCache.size > 100) {
+      // Remove old entries if cache gets too large
+      const oldestKey = this.dataCache.keys().next().value;
+      this.dataCache.delete(oldestKey);
+    }
+    this.dataCache.set(cacheKey, result);
+    
+    return result;
   }
 
   /**
@@ -229,14 +256,26 @@ class MetricsService {
       : generateColorPalette(seriesKeys.length);
     
     // Create datasets for each series
-    const datasets = seriesKeys.map((series, index) => ({
-      label: series,
-      data: data.map(item => item[series] !== undefined ? parseFloat(item[series]) : 0),
-      backgroundColor: colors[index % colors.length],
-      borderColor: colors[index % colors.length]
-    }));
+    const datasets = seriesKeys.map((series, index) => {
+      const color = colors[index % colors.length];
+      return {
+        label: series,
+        data: data.map(item => item[series] !== undefined ? parseFloat(item[series]) : 0),
+        backgroundColor: color + '80', // Add 50% opacity
+        borderColor: color,
+        hoverBackgroundColor: color, // Full opacity on hover
+        hoverBorderColor: color,
+      };
+    });
     
     return { labels, datasets };
+  }
+
+  /**
+   * Clear data cache
+   */
+  clearCache() {
+    this.dataCache.clear();
   }
 
   /**

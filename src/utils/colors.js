@@ -3,25 +3,24 @@
  */
 
 /**
- * Default chart color palette
+ * Default chart color palette based on the new theme
  */
 export const DEFAULT_COLORS = [
-    '#4285F4', // Blue
-    '#34A853', // Green
-    '#FBBC05', // Yellow
-    '#EA4335', // Red
-    '#5F6368', // Grey
-    '#8AB4F8', // Light Blue
-    '#B8D6F8', // Very Light Blue
-    '#81C995', // Light Green
-    '#CEEAD6', // Very Light Green
-    '#FDE293', // Light Yellow
-    '#FCF4C6', // Very Light Yellow
-    '#F28B82', // Light Red
-    '#FADCDA', // Very Light Red
-    '#DADCE0', // Light Grey
+    '#133629', // moss
+    '#dd7143', // orange
+    '#3e6957', // forest
+    '#9b8957', // gold
+    '#769689', // light-green
+    '#6f592c', // saddle-brown
+    '#9c7e3f', // white-2
+    '#d4aa91', // orange-light
+    '#cbc3ad', // cream-dark
+    '#e4ddcb', // cream-medium
+    '#231e10', // black
+    '#f0ebde', // cream
+    '#faf9f4', // white
   ];
-  
+    
   /**
    * Generate a color palette with specified number of colors
    * Uses a preset palette for common sizes and generates additional colors if needed
@@ -38,19 +37,25 @@ export const DEFAULT_COLORS = [
     // For larger counts, generate additional colors
     const palette = [...DEFAULT_COLORS];
     
-    // Add more colors using HSL color space
+    // Add more colors using HSL color space with an earth-tone bias
     while (palette.length < count) {
       // Use golden ratio to create visually pleasing color distribution
-      const hue = (palette.length * 137.5) % 360; // Golden angle approximation
-      const saturation = 65 + (palette.length % 3) * 10; // Vary saturation
-      const lightness = 55 + (palette.length % 2) * 10; // Vary lightness
+      // But with a bias towards earth tones (greens, browns, oranges)
+      
+      // Hues: 20-40 (oranges/browns), 80-150 (greens), 35-55 (golds)
+      const hueRanges = [[20, 40], [80, 150], [35, 55]];
+      const selectedRange = hueRanges[palette.length % hueRanges.length];
+      
+      const hue = selectedRange[0] + (Math.random() * (selectedRange[1] - selectedRange[0]));
+      const saturation = 30 + (Math.random() * 40); // More muted saturation for earth tones
+      const lightness = 35 + (Math.random() * 30); // Balanced lightness that works well on white
       
       palette.push(hslToHex(hue, saturation, lightness));
     }
     
     return palette;
   }
-  
+    
   /**
    * Convert HSL color values to hex color string
    * 

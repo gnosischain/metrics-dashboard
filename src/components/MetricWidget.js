@@ -1,18 +1,30 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from './Card';
 import Chart from './Chart';
 import metricsService from '../services/metrics';
 
 /**
  * MetricWidget component for displaying a single metric
+ * @param {Object} props - Component props
+ * @param {string} props.metricId - ID of the metric to display
+ * @returns {JSX.Element} - Rendered component
  */
 const MetricWidget = ({ metricId }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const isMounted = useRef(true);
   
   // Get metric configuration
   const metricConfig = metricsService.getMetricConfig(metricId);
+  
+  // Cleanup function for component unmount
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   // Fetch metric data
   const fetchData = useCallback(async () => {
@@ -21,6 +33,9 @@ const MetricWidget = ({ metricId }) => {
       console.log(`Fetching data for ${metricId}`);
       
       const metricData = await metricsService.fetchMetricData(metricId);
+      
+      // Make sure component is still mounted before updating state
+      if (!isMounted.current) return;
       
       // Check if we have valid data
       const isValidData = 
@@ -36,22 +51,58 @@ const MetricWidget = ({ metricId }) => {
         setError(`No valid data available for ${metricConfig.name}`);
       }
     } catch (err) {
+      if (!isMounted.current) return;
       console.error(`Error fetching ${metricId} data:`, err);
       setError(`Failed to load ${metricConfig.name} data`);
       setData([]);
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   }, [metricId, metricConfig.name]);
   
-  // Fetch data on mount
+  // Fetch data on mount and when metricId changes
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    
+    // Setup refresh interval if specified in the metric config
+    const refreshInterval = metricConfig.refreshInterval || 0;
+    let intervalId = null;
+    
+    if (refreshInterval > 0) {
+      intervalId = setInterval(fetchData, refreshInterval * 1000);
+    }
+    
+    // Cleanup interval on unmount
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [fetchData, metricId, metricConfig.refreshInterval]);
   
   // Check if we have multi-series data
   const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && data.labels && data.datasets;
   
+  // Determine chart height based on the metric's vertical size
+  const getChartHeight = () => {
+    // Set fixed heights based on vSize (these need to be explicit pixel values)
+    switch(metricConfig.vSize) {
+      case 'small':
+        return '250px';
+      case 'medium':
+        return '350px';
+      case 'large':
+        return '450px';
+      case 'xl':
+        return '550px';
+      default:
+        // If vSize is missing, default to medium
+        return '350px';
+    }
+  };
+
   return (
     <Card 
       title={metricConfig.name}
@@ -66,10 +117,12 @@ const MetricWidget = ({ metricId }) => {
           {(Array.isArray(data) && data.length > 0) || 
            (isMultiSeries && data.labels && data.labels.length > 0) ? (
             <Chart 
+              key={`chart-${metricId}`}
               data={data}
               title={metricConfig.name}
               type={metricConfig.chartType}
               color={metricConfig.color}
+              height={getChartHeight()} // Explicit height based on vSize
             />
           ) : (
             <div className="no-data-message">No data available</div>

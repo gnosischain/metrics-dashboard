@@ -11,7 +11,7 @@ const queryDuration = {
   format: 'formatDuration',
   chartType: 'line',
   color: '#FBBC05',
-  tab: 'Performance',
+  tab: '03 - Consensus',
   size: 'medium',
   query: `
     SELECT 

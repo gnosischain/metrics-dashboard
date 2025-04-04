@@ -9,7 +9,7 @@ const metric_003 = {
   labelField: 'fork',
   valueField: 'cnt',
   chartType: 'stackedBar',
-  tab: 'Network',
+  tab: '01 - Network',
   size: 'medium',
   query: `SELECT * FROM dbt.p2p_gnosis_peers_cl_fork_daily`
 };

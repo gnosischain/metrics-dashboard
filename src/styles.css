@@ -26,14 +26,31 @@ body {
   height: 100vh;
 }
 
+/* Header styles with logo */
 .dashboard-header {
   background-color: #fff;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10;
+}
+
+.header-logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-logo {
+  height: 40px;
+  margin-right: 1rem;
+  object-fit: contain;
+}
+
+.header-title {
+  display: flex;
+  flex-direction: column;
 }
 
 .header-title h1 {
@@ -45,6 +62,11 @@ body {
 .last-updated {
   font-size: 0.85rem;
   color: #666;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
 }
 
 /* Dashboard main layout with sidebar */
@@ -114,7 +136,7 @@ body {
   flex-direction: column;
 }
 
-/* Grid size classes */
+/* Grid horizontal size classes */
 .grid-item-small {
   grid-column: span 3;
 }
@@ -131,6 +153,27 @@ body {
   grid-column: span 12;
 }
 
+/* Grid vertical size classes - WITH EXPLICIT HEIGHT */
+.grid-item-v-small {
+  min-height: 300px;
+  height: 300px; /* Explicit height */
+}
+
+.grid-item-v-medium {
+  min-height: 400px;
+  height: 400px; /* Explicit height */
+}
+
+.grid-item-v-large {
+  min-height: 500px;
+  height: 500px; /* Explicit height */
+}
+
+.grid-item-v-xl {
+  min-height: 600px;
+  height: 600px; /* Explicit height */
+}
+
 /* Metric Card styles */
 .metric-card {
   background-color: #fff;
@@ -140,12 +183,13 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100%; /* Make card fill entire grid cell */
 }
 
 .card-header {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .card-title {
@@ -160,17 +204,269 @@ body {
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 300px;
+  overflow: hidden;
+  position: relative; /* Ensure proper positioning context */
+  min-height: 0; /* Allow container to shrink */
 }
 
-/* Chart container */
+/* FIXED CHART CONTAINER STYLES */
 .chart-container {
-  flex: 1;
   position: relative;
+  width: 100%;
+  height: 100% !important; /* Force container to take full height */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow container to shrink if needed */
+}
+
+/* Chart container with legend adjustments */
+.chart-container.has-legend {
+  padding-top: 70px; /* Space for legend */
+}
+
+.chart-container.no-legend {
+  padding-top: 0;
+}
+
+/* Ensure canvas maintains proper dimensions */
+.chart-container canvas {
+  flex: 1;
+  width: 100% !important;
+  height: 100% !important; /* Force canvas to take full container height */
+}
+
+/* IMPROVED LEGEND CONTAINER */
+.chart-legend-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* Fixed height for legend container */
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  overflow: visible; /* Important: Allow scroll controls to be visible outside container */
+  z-index: 25; /* Higher z-index to ensure visibility */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chart-legend-items {
+  display: flex;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 12px 15px;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  justify-content: flex-start; /* Start from left */
+  min-height: 45px;
+}
+
+.chart-legend-items::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in Chrome, Safari, Opera */
+}
+
+/* Legend items styling */
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  margin-right: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
+  background-color: #f5f5f7;
+  border: 1px solid #eaeaea;
+}
+
+.legend-item:hover {
+  background-color: #e5e5e7;
+}
+
+.legend-item-color {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.legend-item-label {
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.legend-item.hidden .legend-item-color,
+.legend-item.hidden .legend-item-label {
+  opacity: 0.4;
+}
+
+.legend-item.hidden .legend-item-label {
+  text-decoration: line-through;
+}
+
+/* FIXED LEGEND CONTROLS - only show when needed */
+.legend-controls {
+  display: none; /* Hide by default, JS will set to flex when needed */
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  position: absolute;
+  bottom: -34px;
+  left: 0;
+  right: 0;
+  height: 34px;
+  z-index: 26; /* Higher than legend container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eaeaea;
+  border-radius: 0 0 6px 6px;
+}
+
+/* More visible scroll buttons */
+.legend-btn {
+  border: none;
+  background-color: #4285F4;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin: 0 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.legend-btn:hover {
+  background-color: #2b6bc3;
+  transform: scale(1.05);
+}
+
+.legend-btn:active {
+  background-color: #1a4a8c;
+  transform: scale(0.95);
+}
+
+/* TOOLTIP - FIXED for better visibility and reliable display */
+#chartjs-tooltip {
+  background-color: #fff !important;
+  border: 2px solid #333 !important; /* Darker border for better visibility */
+  border-radius: 6px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important; /* Stronger shadow */
+  padding: 12px !important;
+  color: #333 !important;
+  z-index: 10000 !important;
+  min-width: 180px !important;
+  max-width: 320px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  opacity: 0 !important; /* Start hidden by default */
+  pointer-events: none;
+  font-size: 14px !important;
+  transition: opacity 0.1s ease !important; /* Quick fade */
+}
+
+/* Header styling */
+.tooltip-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 6px;
+  font-size: 14px !important;
+}
+
+/* Body styling */
+.tooltip-body {
+  padding: 2px 0;
+}
+
+
+/* Row items with clear styling */
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  padding: 3px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Color box for legend */
+.tooltip-color-square {
+  display: inline-block !important;
+  min-width: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 8px !important;
+  border-radius: 3px !important;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Row text */
+.tooltip-row span:last-child {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Improved multi-column tooltip layout */
+.multi-column-tooltip {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  overflow-y: visible;
+  margin: 0 -5px; /* Negative margin to offset column padding */
+}
+
+/* Column in multi-column tooltip */
+.tooltip-column {
+  flex: 1;
+  min-width: 150px;
+  max-width: 180px;
+  padding: 0 5px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+}
+
+/* For tooltips with many items */
+@media (min-width: 480px) {
+  #chartjs-tooltip {
+    max-width: 600px !important; /* Wider tooltip to accommodate multiple columns */
+  }
+  
+  .multi-column-tooltip {
+    max-height: none;
+    justify-content: space-between;
+  }
+}
+
+
+/* Footer for totals */
+.tooltip-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eaeaea;
+  font-weight: bold;
+  color: #333;
+  width: 100%;
+  font-size: 14px !important;
 }
 
 /* Loading and error states */
@@ -195,11 +491,9 @@ body {
   .grid-item-small {
     grid-column: span 4;
   }
-  
   .grid-item-medium {
     grid-column: span 6;
   }
-  
   .grid-item-large {
     grid-column: span 12;
   }
@@ -209,12 +503,10 @@ body {
   .grid-item-small {
     grid-column: span 6;
   }
-  
   .grid-item-medium {
     grid-column: span 6;
   }
-  
-  .grid-item-large, 
+  .grid-item-large,
   .grid-item-full {
     grid-column: span 12;
   }
@@ -224,38 +516,69 @@ body {
   .dashboard-main {
     flex-direction: column;
   }
-  
+
   .dashboard-sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #eaeaea;
   }
-  
+
   .tab-list {
     display: flex;
     overflow-x: auto;
   }
-  
+
   .tab-item {
     border-left: none;
     border-bottom: 3px solid transparent;
     white-space: nowrap;
   }
-  
+
   .tab-item.active {
     border-left: none;
     border-bottom: 3px solid #4285F4;
   }
-  
+
   .grid-item-small,
   .grid-item-medium,
   .grid-item-large,
   .grid-item-full {
     grid-column: span 12;
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* Responsive header with logo */
+  .header-logo-section {
+    margin-bottom: 0.75rem;
+  }
+  
+  .dashboard-logo {
+    height: 32px; /* Slightly smaller on mobile */
+  }
+  
+  .header-title h1 {
+    font-size: 1.25rem;
+  }
+  
+  /* Adjust chart heights on mobile */
+  .grid-item-v-small {
+    min-height: 250px;
+    height: 250px;
+  }
+  .grid-item-v-medium {
+    min-height: 350px;
+    height: 350px;
+  }
+  .grid-item-v-large {
+    min-height: 450px;
+    height: 450px;
+  }
+  .grid-item-v-xl {
+    min-height: 550px;
+    height: 550px;
   }
 }
