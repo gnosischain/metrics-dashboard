@@ -19,7 +19,7 @@ const config = {
   
   // Dashboard configuration
   dashboard: {
-    title: process.env.REACT_APP_DASHBOARD_TITLE || 'ClickHouse Metrics Dashboard'
+    title: process.env.REACT_APP_DASHBOARD_TITLE || 'Cerebro Dashboard'
   }
 };
   
