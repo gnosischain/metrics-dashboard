@@ -3,12 +3,15 @@
  */
 const metric_002 = {
   id: 'metric_002',
-  name: 'Forks Distribution',
-  description: 'Distribution for forks across the network',
+  name: 'EL Forks Distribution',
+  description: 'Distribution for forks across the network (Execution Layer)',
   format: 'formatNumber',
   labelField: 'fork',
+  valueField: 'cnt',
   chartType: 'stackedBar',
-  query: `SELECT * FROM dbt.p2p_gnosis_peers_fork_daily`
+  tab: 'Network',
+  size: 'medium',
+  query: `SELECT * FROM dbt.p2p_gnosis_peers_el_fork_daily`
 };
 
 export default metric_002;

@@ -1,24 +1,23 @@
 /**
- * Label-based Metric Definition Template
+ * Metric Definition Template
  * 
- * This template is for metrics that return data with a time, value, and label structure.
- * Each label will become a separate line in a multi-line chart.
+ * This template provides a structure for defining metrics.
  * 
- * To create a new labeled metric:
- * 1. Copy this file and rename it to something meaningful (e.g., clientQueryTimes.js)
+ * To create a new metric:
+ * 1. Copy this file and rename it to something meaningful (e.g., queryCount.js)
  * 2. Update the metric configuration below
  * 3. Run `npm run export-queries` to update the API
  */
 
-const labeledMetricTemplate = {
+const metricTemplate = {
   // Unique identifier for this metric - use lowercase with no spaces
-  id: 'labeledMetricId',
+  id: 'metricId',
   
   // Display name shown on the dashboard
-  name: 'Labeled Metric Name',
+  name: 'Metric Name',
   
   // Description shown as a subtitle
-  description: 'Description of the metric with multiple labels',
+  description: 'Description of what this metric shows',
   
   // Formatter function to use: formatNumber, formatBytes, formatPercentage, formatDuration
   format: 'formatNumber',
@@ -26,28 +25,26 @@ const labeledMetricTemplate = {
   // Chart type: 'line', 'bar', 'stackedBar'
   chartType: 'line',
   
-  // Specify which column contains the label information
-  labelField: 'client',
+  // Color for the chart (hex code or name)
+  color: '#4285F4',
   
-  // Optionally specify which column contains the value (defaults to 'value')
-  valueField: 'value',
+  // Dashboard tab where this metric should appear (if not specified, appears in 'General')
+  tab: 'Performance',
   
-  // Optional: Array of colors for different labels
-  // If not specified, colors will be generated automatically
-  // color: ['#4285F4', '#34A853', '#FBBC05', '#EA4335'],
+  // Size of the metric widget in the grid: 'small', 'medium', 'large', 'full'
+  // small: 1/4 width, medium: 1/2 width, large: 3/4 width, full: full width
+  size: 'medium',
   
   // ClickHouse SQL query with {from} and {to} placeholders for date filtering
   query: `
     SELECT 
-      toDate(event_time) AS date,
-      client_name AS client, 
-      avg(query_duration_ms) / 1000 AS value
-    FROM system.query_log
+      toDate(event_time) AS date, 
+      count() AS value
+    FROM your_table
     WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
-      AND type = 'QueryFinish'
-    GROUP BY date, client
-    ORDER BY date, client
+    GROUP BY date
+    ORDER BY date
   `
 };
 
-export default labeledMetricTemplate;
+export default metricTemplate;

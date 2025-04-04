@@ -7,6 +7,8 @@ const metric_001 = {
   description: 'Distribution of client implementations across the network',
   format: 'formatNumber',
   chartType: 'stackedBar', // Options: 'line', 'bar', 'stackedBar'
+  tab: 'Network',
+  size: 'full',
   color: [
     '#4285F4', // Lighthouse - Blue
     '#34A853', // Teku - Green

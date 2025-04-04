@@ -13,6 +13,36 @@ class MetricsService {
 
   constructor() {
     console.log('Metrics Service initialized with', this.metrics.length, 'metrics');
+    // Apply default values to metrics that don't have them
+    this.applyDefaultValues();
+  }
+
+  /**
+   * Apply default values to metrics that don't have tab or size
+   */
+  applyDefaultValues() {
+    this.metrics = this.metrics.map(metric => ({
+      ...metric,
+      tab: metric.tab || 'General',
+      size: metric.size || 'medium'
+    }));
+  }
+
+  /**
+   * Get all unique tabs from metrics
+   * @returns {Array} Array of tab names
+   */
+  getAllTabs() {
+    return [...new Set(this.metrics.map(metric => metric.tab || 'General'))].sort();
+  }
+
+  /**
+   * Get metrics for a specific tab
+   * @param {string} tabName - Name of the tab
+   * @returns {Array} Array of metrics for the tab
+   */
+  getMetricsForTab(tabName) {
+    return this.metrics.filter(metric => (metric.tab || 'General') === tabName);
   }
 
   /**
@@ -31,7 +61,9 @@ class MetricsService {
       description: 'Unknown metric',
       format: 'formatNumber',
       chartType: 'line',
-      color: '#999999'
+      color: '#999999',
+      tab: 'General',
+      size: 'medium'
     };
   }
 
