@@ -11,7 +11,7 @@ const metric_002 = {
   chartType: 'stackedBar',
   tab: '01 - Network',
   size: 'medium',
-  query: `SELECT * FROM dbt.p2p_gnosis_peers_el_fork_daily`
+  query: `SELECT * FROM dbt.p2p_gnosis_peers_el_fork_daily ORDER BY date ASC, fork ASC`,
 };
 
 export default metric_002;

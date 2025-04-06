@@ -242,16 +242,12 @@ body {
 /* IMPROVED LEGEND CONTAINER */
 .chart-legend-container {
   position: absolute;
-  top: 0;
+  top: -20px;
   left: 0;
   right: 0;
   height: 60px; /* Fixed height for legend container */
   background-color: #fff;
-  border: 1px solid #eaeaea;
-  border-radius: 6px;
   overflow: visible; /* Important: Allow scroll controls to be visible outside container */
-  z-index: 25; /* Higher z-index to ensure visibility */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .chart-legend-items {
@@ -323,21 +319,17 @@ body {
   padding: 0;
   background-color: rgba(255, 255, 255, 0.95);
   position: absolute;
-  bottom: -34px;
+  bottom: -14px;
   left: 0;
   right: 0;
-  height: 34px;
-  z-index: 26; /* Higher than legend container */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid #eaeaea;
-  border-radius: 0 0 6px 6px;
+  height: 14px;
 }
 
 /* More visible scroll buttons */
 .legend-btn {
   border: none;
-  background-color: #4285F4;
-  color: white;
+  background-color: #ffffff;
+  color: black;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -348,16 +340,15 @@ body {
   align-items: center;
   font-size: 16px;
   font-weight: bold;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .legend-btn:hover {
-  background-color: #2b6bc3;
+  background-color: #c9c9c9;
   transform: scale(1.05);
 }
 
 .legend-btn:active {
-  background-color: #1a4a8c;
+  background-color: #c9c9c9;
   transform: scale(0.95);
 }
 
