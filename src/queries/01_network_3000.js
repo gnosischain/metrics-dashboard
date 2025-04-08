@@ -1,8 +1,8 @@
 /**
  * Client Distribution Metric Definition
  */
-const metric_001 = {
-  id: 'metric_001',
+const metric = {
+  id: '01_network_3000',
   name: 'Client Distribution',
   description: 'Distribution of client implementations across the network',
   format: 'formatNumber',
@@ -13,4 +13,4 @@ const metric_001 = {
   query: `SELECT * FROM dbt.p2p_gnosis_peers_clients_daily ORDER BY date ASC`
 };
 
-export default metric_001;
+export default metric;

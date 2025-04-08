@@ -1,4 +1,0 @@
-{
-  "id": "queryDuration",
-  "query": "\n    SELECT \n      toDate(event_time) AS date, \n      avg(query_duration_ms) / 1000 AS value\n    FROM system.query_log\n    WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'\n      AND type = 'QueryFinish'\n    GROUP BY date\n    ORDER BY date\n  "
-}

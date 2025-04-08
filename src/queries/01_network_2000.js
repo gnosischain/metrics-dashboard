@@ -1,8 +1,8 @@
 /**
  * Client Distribution Metric Definition
  */
-const metric_002 = {
-  id: 'metric_002',
+const metric = {
+  id: '01_network_2000',
   name: 'EL Forks Distribution',
   description: 'Distribution for forks across the network (Execution Layer)',
   format: 'formatNumber',
@@ -14,4 +14,4 @@ const metric_002 = {
   query: `SELECT * FROM dbt.p2p_gnosis_peers_el_fork_daily ORDER BY date ASC, fork ASC`,
 };
 
-export default metric_002;
+export default metric;

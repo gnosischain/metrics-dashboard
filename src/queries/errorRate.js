@@ -11,7 +11,7 @@ const errorRate = {
     format: 'formatPercentage',
     chartType: 'line',
     color: '#EA4335',
-    tab: '02 - Execution',
+    tab: '99 - Tests',
     size: 'full',
     query: `
       SELECT 

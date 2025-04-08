@@ -1,0 +1,4 @@
+{
+  "id": "01_network_1100",
+  "query": "SELECT * FROM dbt.p2p_peers_geo_latest"
+}

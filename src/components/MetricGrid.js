@@ -50,11 +50,11 @@ const vSizeToClass = (vSize) => {
  */
 const MetricGrid = ({ metrics }) => {
   // Optimize the layout of metrics for better grid organization
-  const optimizedMetrics = optimizeGridLayout(metrics);
-  
+ // const optimizedMetrics = optimizeGridLayout(metrics);
+  const sortedMetrics = [...metrics].sort((a, b) => a.id.localeCompare(b.id));
   return (
     <div className="metrics-grid">
-      {optimizedMetrics.map(metric => (
+      {sortedMetrics.map(metric => (
         <div 
           key={metric.id} 
           className={`grid-item ${sizeToClass(metric.size)} ${vSizeToClass(metric.vSize)}`}

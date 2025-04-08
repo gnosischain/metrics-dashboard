@@ -1,8 +1,8 @@
 /**
  * Client Distribution Metric Definition
  */
-const metric_004 = {
-  id: 'metric_004',
+const metric = {
+  id: '01_network_4000',
   name: 'Geo Distribution',
   description: 'Distribution of peers per country across the network',
   format: 'formatNumber',
@@ -10,9 +10,9 @@ const metric_004 = {
   valueField: 'cnt',
   chartType: 'stackedBar',
   tab: '01 - Network',
-  size: 'medium',
+  size: 'full',
   vSize: 'large',
   query: `SELECT * FROM dbt.p2p_gnosis_peers_geo_daily ORDER BY date ASC, country ASC`,
 };
 
-export default metric_004;
+export default metric;

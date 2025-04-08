@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import WorldMapChart from './WorldMapChart';
 
 // Register ChartJS components
 ChartJS.register(
@@ -414,6 +415,19 @@ const Chart = ({
     },
   };
 
+  // If this is a map, render WorldMapChart instead
+  if (chartType === 'map') {
+    return (
+      <div 
+        className="chart-container no-legend"
+        ref={containerRef} 
+        style={containerStyle}
+      >
+        <WorldMapChart data={data} />
+      </div>
+    );
+  }
+
   return (
     <div 
       className={`chart-container ${isMultiSeries ? 'has-legend' : 'no-legend'}`} 
@@ -422,74 +436,11 @@ const Chart = ({
     >
       {chartType === 'line' ? (
         <Line ref={getChartRef} data={chartData} options={options} />
-      ) : chartType === 'map' ? (
-        <GeoChart data={data} />
       ) : (
         <Bar ref={getChartRef} data={chartData} options={options} />
       )}
     </div>
   );
-};
-
-// Minimal GeoChart component (if "type='map'" is used)
-const GeoChart = ({ data }) => {
-  const mapRef = useRef(null);
-
-  useEffect(() => {
-    if (!data || !Array.isArray(data) || data.length === 0) return;
-    const container = mapRef.current;
-    if (!container) return;
-    
-    container.innerHTML = ''; // Clear previous
-
-    // Create basic SVG for illustration
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 800 400');
-    svg.style.width = '100%';
-    svg.style.height = '100%';
-
-    // Very simplified "map" background
-    const mapPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    mapPath.setAttribute('d', 'M0,0 L800,0 L800,400 L0,400 Z');
-    mapPath.setAttribute('fill', '#f5f5f7');
-    mapPath.setAttribute('stroke', '#666');
-    svg.appendChild(mapPath);
-
-    // Find max count for radius scale
-    const maxCount = Math.max(...data.map(item => item.cnt || 1));
-
-    // Plot points
-    data.forEach(point => {
-      if (point.lat && point.long) {
-        // Convert lat/long to basic x,y
-        const x = ((parseFloat(point.long) + 180) / 360) * 800;
-        const y = ((90 - parseFloat(point.lat)) / 180) * 400;
-
-        // Scale circle radius
-        const radius = Math.max(3, Math.min(20, ((point.cnt || 1) / maxCount) * 20));
-        
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', x);
-        circle.setAttribute('cy', y);
-        circle.setAttribute('r', radius);
-        circle.setAttribute('fill', 'rgba(66, 133, 244, 0.6)'); // Add transparency
-        circle.setAttribute('stroke', 'rgba(51, 51, 51, 0.8)');
-        circle.setAttribute('stroke-width', '0.5');
-
-        // Simple tooltip via <title>
-        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = `${point.name || 'Location'}: ${point.cnt || 0}`;
-        circle.appendChild(title);
-
-        svg.appendChild(circle);
-      }
-    });
-
-    container.appendChild(svg);
-    return () => { container.innerHTML = ''; };
-  }, [data]);
-
-  return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />;
 };
 
 export default Chart;

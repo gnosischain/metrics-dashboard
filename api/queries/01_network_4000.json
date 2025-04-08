@@ -1,4 +1,4 @@
 {
-  "id": "metric_004",
+  "id": "01_network_4000",
   "query": "SELECT * FROM dbt.p2p_gnosis_peers_geo_daily ORDER BY date ASC, country ASC"
 }
