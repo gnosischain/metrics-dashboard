@@ -51,3 +51,13 @@ export const formatDuration = (seconds) => {
     return (seconds / 3600).toFixed(2) + ' hr';
   }
 };
+
+// Export all formatters as default object for easier imports
+const formatters = {
+  formatNumber,
+  formatBytes,
+  formatPercentage,
+  formatDuration
+};
+
+export default formatters;

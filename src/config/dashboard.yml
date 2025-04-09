@@ -6,35 +6,47 @@ tabs:
     order: 1
     metrics:
       - id: 01_network_1000
-        size: small
-        vSize: large
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 200px
+      - id: 01_network_1001
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 200px
       - id: 01_network_1100
-        size: large
-        vSize: large
+        gridRow: 1 / span 2
+        gridColumn: 4 / span 9
+        minHeight: 425px
       - id: 01_network_3000
-        size: full
-        vSize: large
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 400px
   - name: Clients
     order: 2
     metrics:
       - id: 01_network_3000
-        size: full
-        vSize: large
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 400px
       - id: 01_network_2000
-        size: medium
-        vSize: medium
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 400px
       - id: 01_network_2100
-        size: medium
-        vSize: medium 
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 400px
   - name: Geography
     order: 3
     metrics:
       - id: 01_network_1100
-        size: full
-        vSize: large
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 400px
       - id: 01_network_4000
-        size: full
-        vSize: large
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 500px
 
 ## Execution Dashboard
 name: Execution
@@ -44,8 +56,9 @@ tabs:
     order: 1
     metrics:
       - id: 02_execution_1000
-        size: full
-        vSize: large
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 400px
 
 ## Consensus Dashboard
 name: Consensus
@@ -55,8 +68,9 @@ tabs:
     order: 1
     metrics:
       - id: queryCount
-        size: medium
-        vSize: medium
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 400px
 
 ## Tests Dashboard
 name: Tests
@@ -66,8 +80,10 @@ tabs:
     order: 1
     metrics:
       - id: errorRate
-        size: full
-        vSize: medium
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 400px
       - id: customMetricExample
-        size: small
-        vSize: medium
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 400px

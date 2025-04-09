@@ -1,4 +1,4 @@
 {
   "id": "01_network_1000",
-  "query": "\n      SELECT \n        toDate(event_time) AS date, \n        count() AS value\n      FROM system.query_log\n      WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'\n      GROUP BY date\n      ORDER BY date\n    "
+  "query": "SELECT SUM(cnt) AS value FROM dbt.p2p_peers_geo_latest"
 }

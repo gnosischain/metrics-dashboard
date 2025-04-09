@@ -9,8 +9,6 @@ const metric = {
   labelField: 'fork',
   valueField: 'cnt',
   chartType: 'stackedBar',
-  tab: '01 - Network',
-  size: 'medium',
   query: `SELECT * FROM dbt.p2p_peers_cl_fork_daily ORDER BY date ASC, fork ASC`,
 };
 

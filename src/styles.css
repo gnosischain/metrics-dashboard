@@ -200,6 +200,11 @@ body {
 }
 
 /* Grid vertical size classes - WITH EXPLICIT HEIGHT */
+.grid-item-v-tiny {
+  min-height: 200px;
+  height: 200px; /* Explicit height */
+}
+
 .grid-item-v-small {
   min-height: 300px;
   height: 300px; /* Explicit height */
@@ -606,6 +611,11 @@ body {
   }
   
   /* Adjust chart heights on mobile */
+  .grid-item-v-tiny {
+    min-height: 100px;
+    height: 100px; /* Explicit height */
+  }
+
   .grid-item-v-small {
     min-height: 250px;
     height: 250px;
@@ -621,5 +631,103 @@ body {
   .grid-item-v-xl {
     min-height: 550px;
     height: 550px;
+  }
+}
+
+/* Number Widget Styles */
+.number-widget {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.number-value {
+  font-size: 4rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.number-label {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* For smaller widgets, adjust font size */
+.grid-item-small .number-value {
+  font-size: 3rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .number-value {
+    font-size: 3rem;
+  }
+}
+
+/* Enhanced grid positioning styles */
+.metrics-grid-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.metrics-grid-positioned {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.metrics-grid-positioned .grid-item {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Fill the entire cell height */
+  min-width: 0; /* Prevent overflow in narrow containers */
+}
+
+/* Ensure all metric cards fill their grid cells */
+.metrics-grid-positioned .grid-item .metric-card {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make card content expand to fill available space */
+.metrics-grid-positioned .grid-item .metric-card .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow shrinking if needed */
+}
+
+/* Make chart container fill the available space */
+.metrics-grid-positioned .grid-item .chart-container {
+  flex: 1;
+  height: auto !important; /* Override any fixed height */
+  position: relative;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .metrics-grid-positioned {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem;
+  }
+  
+  .metrics-grid-positioned .grid-item {
+    width: 100% !important;
+    grid-column: 1 / -1 !important;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Preserve explicit heights for mobile */
+  .metrics-grid-positioned .grid-item[style*="height"] {
+    height: var(--mobile-height, 300px) !important;
   }
 }

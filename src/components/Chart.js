@@ -12,6 +12,7 @@ import {
   Legend
 } from 'chart.js';
 import WorldMapChart from './WorldMapChart';
+import NumberWidget from './NumberWidget';
 
 // Register ChartJS components
 ChartJS.register(
@@ -33,7 +34,8 @@ const Chart = ({
   title, 
   type = 'line', 
   color = '#4285F4',
-  height = 'auto'
+  height = 'auto',
+  format
 }) => {
   const chartRef = useRef(null);
   const containerRef = useRef(null);
@@ -43,6 +45,29 @@ const Chart = ({
 
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
+  
+  // If this is a numberDisplay, render NumberWidget instead
+  if (type === 'numberDisplay') {
+    let value = 0;
+    
+    // Extract the value from the data based on format
+    if (Array.isArray(data) && data.length > 0) {
+      // For single value metrics, use the most recent data point
+      value = data[data.length - 1].value;
+    } else if (data && typeof data === 'object' && data.value !== undefined) {
+      // If data is just a single object with a value
+      value = data.value;
+    }
+    
+    return (
+      <NumberWidget 
+        value={value} 
+        format={format} 
+        label={title} 
+        color={color} 
+      />
+    );
+  }
   
   /**
    * Convert hex color to rgba with alpha

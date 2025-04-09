@@ -327,6 +327,32 @@ class MetricsService {
       return {}; // Return empty object instead of throwing
     }
   }
+
+  /**
+   * Handle single value metrics
+   * Ensures that even metrics that return a single value have the proper format
+   * @param {Array|Object} data - Raw data from API
+   * @returns {Array} - Data in a format compatible with Chart component
+   */
+  transformSingleValueData(data) {
+    // If data is already an array with at least one item, return it
+    if (Array.isArray(data) && data.length > 0) {
+      return data;
+    }
+    
+    // If data is a single object with a value property
+    if (data && typeof data === 'object' && data.value !== undefined) {
+      return [data];
+    }
+    
+    // If data is just a number, wrap it in an object
+    if (typeof data === 'number') {
+      return [{ value: data }];
+    }
+    
+    // Default case - empty array
+    return [];
+  }
 }
 
 export default new MetricsService();

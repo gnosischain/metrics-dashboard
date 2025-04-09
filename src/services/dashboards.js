@@ -47,12 +47,16 @@ class DashboardService {
                 name: tab.name,
                 order: tab.order || 999,
                 metrics: (tab.metrics || []).map(metric => {
-                  // Merge metric configuration with size info
+                  // Get base metric config
                   const metricConfig = metricsService.getMetricConfig(metric.id);
+                  
+                  // Return metric with grid positioning properties
                   return {
                     ...metricConfig,
-                    size: metric.size || metricConfig.size || 'medium',
-                    vSize: metric.vSize || metricConfig.vSize || 'medium'
+                    // Grid positioning properties
+                    gridRow: metric.gridRow,
+                    gridColumn: metric.gridColumn,
+                    minHeight: metric.minHeight
                   };
                 })
               }))

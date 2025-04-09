@@ -122,6 +122,7 @@ const MetricWidget = ({ metricId }) => {
               title={metricConfig.name}
               type={metricConfig.chartType}
               color={metricConfig.color}
+              format={metricConfig.format}
               height={getChartHeight()} // Explicit height based on vSize
             />
           ) : (

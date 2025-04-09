@@ -10,8 +10,6 @@ const metric = {
   valueField: 'value',
   chartType: 'stackedBar',
   tab: '02 - Execution',
-  size: 'full',
-  vSize: 'large',
   query: `SELECT * FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
 };
 

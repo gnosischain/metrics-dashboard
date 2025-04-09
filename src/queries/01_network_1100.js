@@ -9,9 +9,6 @@ const metric = {
   labelField: 'country',
   valueField: 'cnt',
   chartType: 'map',
-  tab: '01 - Network',
-  size: 'large',
-  vSize: 'large',
   query: `SELECT * FROM dbt.p2p_peers_geo_latest`,
 };
 

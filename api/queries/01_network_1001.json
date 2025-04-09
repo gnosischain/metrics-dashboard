@@ -1,0 +1,4 @@
+{
+  "id": "01_network_1001",
+  "query": "SELECT COUNT(DISTINCT country) AS value FROM dbt.p2p_peers_geo_latest"
+}

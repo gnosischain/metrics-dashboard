@@ -1,74 +1,98 @@
 import React from 'react';
 import MetricWidget from './MetricWidget';
-import { optimizeGridLayout } from '../utils/gridLayoutManager';
 
 /**
- * Convert metric size to CSS class
- * @param {string} size - Size value (small, medium, large, full)
- * @returns {string} CSS class
- */
-const sizeToClass = (size) => {
-  switch (size?.toLowerCase()) {
-    case 'small':
-      return 'grid-item-small';
-    case 'medium':
-      return 'grid-item-medium';
-    case 'large':
-      return 'grid-item-large';
-    case 'full':
-      return 'grid-item-full';
-    default:
-      return 'grid-item-medium'; // Default size
-  }
-};
-
-/**
- * Convert vertical size to CSS class
- * @param {string} vSize - Vertical size value (small, medium, large, xl)
- * @returns {string} CSS class
- */
-const vSizeToClass = (vSize) => {
-  switch (vSize?.toLowerCase()) {
-    case 'small':
-      return 'grid-item-v-small';
-    case 'medium':
-      return 'grid-item-v-medium';
-    case 'large':
-      return 'grid-item-v-large';
-    case 'xl':
-      return 'grid-item-v-xl';
-    default:
-      return 'grid-item-v-medium'; // Default vertical size
-  }
-};
-
-/**
- * MetricGrid component for displaying metrics in a responsive grid layout
+ * Enhanced MetricGrid component with proper fixed row heights
  * @param {Object} props - Component props
  * @param {Array} props.metrics - Array of metric configurations
  * @returns {JSX.Element} Grid component
  */
 const MetricGrid = ({ metrics }) => {
-  // Optimize the layout of metrics for better grid organization
- // const optimizedMetrics = optimizeGridLayout(metrics);
-  const sortedMetrics = [...metrics].sort((a, b) => a.id.localeCompare(b.id));
+  // Process metrics to determine grid structure and row heights
+  const processGridStructure = (metrics) => {
+    let maxRow = 1;
+    let rowHeights = {};
+
+    // First pass: determine max row and collect height information
+    metrics.forEach(metric => {
+      if (metric.gridRow) {
+        const rowInfo = metric.gridRow.toString();
+        let rowStart, rowSpan;
+        
+        if (rowInfo.includes('span')) {
+          const parts = rowInfo.split('/');
+          rowStart = parseInt(parts[0].trim());
+          rowSpan = parseInt(parts[1].trim().split('span')[1].trim());
+        } else {
+          rowStart = parseInt(rowInfo.trim());
+          rowSpan = 1;
+        }
+        
+        const rowEnd = rowStart + rowSpan - 1;
+        maxRow = Math.max(maxRow, rowEnd);
+        
+        // If this is a single row item, record its height
+        if (rowSpan === 1 && metric.minHeight) {
+          rowHeights[rowStart] = metric.minHeight;
+        }
+      }
+    });
+
+    // Generate template rows with explicit heights where available
+    const templateRows = [];
+    for (let i = 1; i <= maxRow; i++) {
+      templateRows.push(rowHeights[i] || 'auto');
+    }
+
+    return {
+      maxRow,
+      templateRows
+    };
+  };
+
+  const { templateRows } = processGridStructure(metrics);
+
+  // Create grid template with explicit row heights
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(12, 1fr)',
+    gridTemplateRows: templateRows.join(' '),
+    gap: '1.5rem',
+    width: '100%'
+  };
+
   return (
-    <div className="metrics-grid">
-      {sortedMetrics.map(metric => (
-        <div 
-          key={metric.id} 
-          className={`grid-item ${sizeToClass(metric.size)} ${vSizeToClass(metric.vSize)}`}
-          style={{ 
-            // Enforce grid item height explicitly via inline style also
-            height: metric.vSize === 'small' ? '300px' : 
-                   metric.vSize === 'medium' ? '400px' : 
-                   metric.vSize === 'large' ? '500px' : 
-                   metric.vSize === 'xl' ? '600px' : '400px'
-          }}
-        >
-          <MetricWidget metricId={metric.id} />
-        </div>
-      ))}
+    <div className="metrics-grid-container">
+      <div className="metrics-grid-positioned" style={gridStyle}>
+        {metrics.map(metric => {
+          // Create inline style for grid positioning
+          const metricStyle = {};
+          
+          // Apply explicit grid positioning if available
+          if (metric.gridRow) {
+            metricStyle.gridRow = metric.gridRow;
+          }
+          
+          if (metric.gridColumn) {
+            metricStyle.gridColumn = metric.gridColumn;
+          }
+          
+          // For multi-row spans, apply height directly to the element
+          if (metric.gridRow && metric.gridRow.toString().includes('span') && metric.minHeight) {
+            metricStyle.height = metric.minHeight;
+          }
+          
+          return (
+            <div 
+              key={metric.id} 
+              className="grid-item"
+              style={metricStyle}
+            >
+              <MetricWidget metricId={metric.id} />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

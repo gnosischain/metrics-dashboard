@@ -5,13 +5,13 @@
  */
 
 const metric = {
-    id: '01_network_1000',
-    name: 'Peers Count',
-    description: 'Last day distinct peers',
+    id: '01_network_1001',
+    name: 'Peers Geo Count',
+    description: 'Last day distinct countries',
     format: 'formatNumber',
     chartType: 'numberDisplay',
     color: '#34A853',
-    query: `SELECT SUM(cnt) AS value FROM dbt.p2p_peers_geo_latest`
+    query: `SELECT COUNT(DISTINCT country) AS value FROM dbt.p2p_peers_geo_latest`
   };
   
   export default metric;
