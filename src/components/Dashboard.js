@@ -2,51 +2,124 @@ import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
-import metricsService from '../services/metrics';
+import DashboardSelector from './DashboardSelector';
+import dashboardsService from '../services/dashboards';
+import dashboardConfig from '../utils/dashboardConfig';
 
 /**
- * Main Dashboard component with tabbed interface
+ * Main Dashboard component with dashboard and tabbed interface
  * @returns {JSX.Element} Dashboard component
  */
 const Dashboard = () => {
+  const [activeDashboard, setActiveDashboard] = useState('');
   const [activeTab, setActiveTab] = useState('');
+  const [dashboards, setDashboards] = useState([]);
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Get all metrics configurations and organize tabs
+  // Load dashboard configuration
   useEffect(() => {
-    // Get all unique tabs from metrics service
-    const allTabs = metricsService.getAllTabs();
-    setTabs(allTabs);
+    const loadDashboards = async () => {
+      setIsLoading(true);
+      
+      try {
+        // Load dashboard configuration
+        await dashboardConfig.loadConfig();
+        
+        // Get all dashboards
+        const allDashboards = dashboardsService.getAllDashboards();
+        setDashboards(allDashboards);
+        
+        // Set first dashboard as active if no active dashboard
+        if (!activeDashboard && allDashboards.length > 0) {
+          setActiveDashboard(allDashboards[0].id);
+        }
+      } catch (error) {
+        console.error('Error loading dashboards:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Set first tab as active if no active tab
-    if (!activeTab && allTabs.length > 0) {
-      setActiveTab(allTabs[0]);
-    }
+    loadDashboards();
   }, []);
+  
+  // Update tabs when active dashboard changes
+  useEffect(() => {
+    if (activeDashboard) {
+      const dashboardTabs = dashboardsService.getDashboardTabs(activeDashboard);
+      setTabs(dashboardTabs);
+      
+      // Set first tab as active if no active tab
+      if (!activeTab && dashboardTabs.length > 0) {
+        setActiveTab(dashboardTabs[0].id);
+      } else {
+        // Reset active tab if it doesn't exist in the new dashboard
+        const tabExists = dashboardTabs.some(tab => tab.id === activeTab);
+        if (!tabExists && dashboardTabs.length > 0) {
+          setActiveTab(dashboardTabs[0].id);
+        }
+      }
+    } else {
+      setTabs([]);
+      setActiveTab('');
+    }
+  }, [activeDashboard]);
   
   // Update metrics when active tab changes
   useEffect(() => {
-    if (activeTab) {
-      const metricsForTab = metricsService.getMetricsForTab(activeTab);
+    if (activeDashboard && activeTab) {
+      const metricsForTab = dashboardsService.getTabMetrics(activeDashboard, activeTab);
       setTabMetrics(metricsForTab);
     } else {
       setTabMetrics([]);
     }
-  }, [activeTab]);
+  }, [activeDashboard, activeTab]);
+  
+  // Change the active dashboard
+  const handleDashboardChange = (dashboardId) => {
+    if (dashboardId !== activeDashboard) {
+      // Clear existing tabs and metrics first to ensure clean unmounting
+      setTabs([]);
+      setTabMetrics([]);
+      setActiveTab('');
+      setActiveDashboard(dashboardId);
+    }
+  };
   
   // Change the active tab
-  const handleTabChange = (tab) => {
-    if (tab !== activeTab) {
+  const handleTabChange = (tabId) => {
+    if (tabId !== activeTab) {
       // Clear existing metrics first to ensure clean unmounting
       setTabMetrics([]);
-      setActiveTab(tab);
+      setActiveTab(tabId);
     }
+  };
+  
+  // Get active dashboard name
+  const getActiveDashboardName = () => {
+    const dashboard = dashboards.find(d => d.id === activeDashboard);
+    return dashboard ? dashboard.name : '';
+  };
+  
+  // Get active tab name
+  const getActiveTabName = () => {
+    const tab = tabs.find(t => t.id === activeTab);
+    return tab ? tab.name : '';
   };
   
   return (
     <div className="dashboard">
-      <Header />
+      <Header dashboardName={getActiveDashboardName()} />
+      
+      <div className="dashboard-selector-container">
+        <DashboardSelector 
+          dashboards={dashboards} 
+          activeDashboard={activeDashboard} 
+          onDashboardChange={handleDashboardChange} 
+        />
+      </div>
       
       <div className="dashboard-main">
         <aside className="dashboard-sidebar">
@@ -58,12 +131,19 @@ const Dashboard = () => {
         </aside>
         
         <div className="dashboard-content">
-          {activeTab ? (
+          {isLoading ? (
+            <div className="loading-indicator">Loading dashboard...</div>
+          ) : activeDashboard && activeTab ? (
             <div className="tab-content">
-              <MetricGrid key={`grid-${activeTab}`} metrics={tabMetrics} />
+              <MetricGrid 
+                key={`grid-${activeDashboard}-${activeTab}`} 
+                metrics={tabMetrics} 
+              />
             </div>
           ) : (
-            <div className="loading-indicator">Loading dashboard...</div>
+            <div className="empty-dashboard">
+              <p>Select a dashboard and tab to view metrics</p>
+            </div>
           )}
         </div>
       </div>

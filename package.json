@@ -3,19 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "start": "npm run copy-config && react-scripts start",
+    "build": "npm run copy-config && DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "export-queries": "node scripts/export-queries.js",
+    "copy-config": "node scripts/copy-config.js",
     "install-api-deps": "cd api && node install-deps.js",
     "postinstall": "npm run install-api-deps",
-    "vercel-build": "npm run export-queries && npm run install-api-deps && DISABLE_ESLINT_PLUGIN=true npm run build"
+    "vercel-build": "npm run export-queries && npm run copy-config && npm run install-api-deps && DISABLE_ESLINT_PLUGIN=true npm run build"
   },
   "dependencies": {
     "axios": "^1.6.0",
     "chart.js": "^4.4.0",
     "cors": "^2.8.5",
+    "js-yaml": "^4.1.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",

@@ -1,0 +1,73 @@
+## Network Dashboard
+name: Network
+order: 1
+tabs:
+  - name: Overview
+    order: 1
+    metrics:
+      - id: 01_network_1000
+        size: small
+        vSize: large
+      - id: 01_network_1100
+        size: large
+        vSize: large
+      - id: 01_network_3000
+        size: full
+        vSize: large
+  - name: Clients
+    order: 2
+    metrics:
+      - id: 01_network_3000
+        size: full
+        vSize: large
+      - id: 01_network_2000
+        size: medium
+        vSize: medium
+      - id: 01_network_2100
+        size: medium
+        vSize: medium 
+  - name: Geography
+    order: 3
+    metrics:
+      - id: 01_network_1100
+        size: full
+        vSize: large
+      - id: 01_network_4000
+        size: full
+        vSize: large
+
+## Execution Dashboard
+name: Execution
+order: 2
+tabs:
+  - name: Overview
+    order: 1
+    metrics:
+      - id: 02_execution_1000
+        size: full
+        vSize: large
+
+## Consensus Dashboard
+name: Consensus
+order: 3
+tabs:
+  - name: Overview
+    order: 1
+    metrics:
+      - id: queryCount
+        size: medium
+        vSize: medium
+
+## Tests Dashboard
+name: Tests
+order: 99
+tabs:
+  - name: Debug
+    order: 1
+    metrics:
+      - id: errorRate
+        size: full
+        vSize: medium
+      - id: customMetricExample
+        size: small
+        vSize: medium

@@ -4,9 +4,16 @@ import { getLastUpdateTime } from '../utils/dates';
 
 /**
  * Header component for the dashboard with logo
+ * @param {Object} props - Component props
+ * @param {string} props.dashboardName - Name of the active dashboard
  * @returns {JSX.Element} Header component
  */
-const Header = () => {
+const Header = ({ dashboardName }) => {
+  // Create title - combine app name and dashboard name if available
+  const title = dashboardName
+    ? `${config.dashboard.title} - ${dashboardName}`
+    : config.dashboard.title;
+  
   return (
     <header className="dashboard-header">
       <div className="header-logo-section">
@@ -17,7 +24,7 @@ const Header = () => {
           className="dashboard-logo"
         />
         <div className="header-title">
-          <h1>{config.dashboard.title}</h1>
+          <h1>{title}</h1>
           <div className="last-updated">
             Last updated: {getLastUpdateTime()}
           </div>
