@@ -1,4 +1,4 @@
 {
   "id": "01_network_2000",
-  "query": "SELECT * FROM dbt.p2p_gnosis_peers_el_fork_daily ORDER BY date ASC, fork ASC"
+  "query": "SELECT * FROM dbt.p2p_peers_el_fork_daily ORDER BY date ASC, fork ASC"
 }

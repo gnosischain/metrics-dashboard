@@ -10,7 +10,7 @@ const metric = {
   tab: '01 - Network',
   size: 'full',
   vSize: 'large',
-  query: `SELECT * FROM dbt.p2p_gnosis_peers_clients_daily ORDER BY date ASC`
+  query: `SELECT * FROM dbt.p2p_peers_clients_daily ORDER BY date ASC`
 };
 
 export default metric;
