@@ -1,0 +1,4 @@
+{
+  "id": "daily_electricity_demand",
+  "query": "SELECT date, energy AS value FROM dbt.esg_carbon_emissions ORDER BY date"
+}

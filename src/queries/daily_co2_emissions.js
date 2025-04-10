@@ -1,6 +1,6 @@
 const metric = {
     id: 'daily_co2_emissions',
-    name: 'Daily CO2 Network Emmisions',
+    name: 'Network CO2 Emissions',
     description: 'Daily tCO2 emissions from the network',
     format: 'formatNumber',
     chartType: 'line',

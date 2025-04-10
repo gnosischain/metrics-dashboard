@@ -83,7 +83,11 @@ tabs:
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 400px
-      - id: customMetricExample
+      - id: daily_electricity_demand
         gridRow: 2
-        gridColumn: 1 / span 3
-        minHeight: 400px
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: daily_power_demand
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 500px
