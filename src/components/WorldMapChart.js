@@ -1,4 +1,3 @@
-// WorldMapChart.js - Fixed implementation with properly visible country outlines
 import React, { useState, useEffect, memo } from 'react';
 import { 
   ComposableMap, 
@@ -87,8 +86,8 @@ const WorldMapChart = ({ data = [] }) => {
           <ComposableMap
             projection="geoEqualEarth"
             projectionConfig={{
-              scale: 150,    // Adjusted scale to show more of the map
-              center: [0, 0] // Centered on the prime meridian
+              scale: 250,    // Adjusted scale to show more of the map
+              center: [0, 10] // Centered on the prime meridian
             }}
             style={{
               width: "100%",
@@ -155,33 +154,6 @@ const WorldMapChart = ({ data = [] }) => {
             </ZoomableGroup>
           </ComposableMap>
 
-          {/* Legend */}
-          <div
-            style={{
-              position: "absolute",
-              top: "10px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              backgroundColor: "white",
-              padding: "5px 10px",
-              borderRadius: "4px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-              display: "flex",
-              alignItems: "center"
-            }}
-          >
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-                borderRadius: "50%",
-                backgroundColor: "rgba(66, 133, 244, 0.7)",
-                border: "1px solid #1E5DC9",
-                marginRight: "8px"
-              }}
-            ></div>
-            <span>Node Distribution</span>
-          </div>
 
           {/* Tooltip */}
           {showTooltip && (
