@@ -73,13 +73,13 @@ tabs:
         minHeight: 400px
 
 ## Tests Dashboard
-name: Tests
-order: 99
+name: ESG
+order: 4
 tabs:
-  - name: Debug
+  - name: Overview
     order: 1
     metrics:
-      - id: errorRate
+      - id: daily_co2_emissions
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 400px
