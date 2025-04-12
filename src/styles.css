@@ -59,10 +59,18 @@ body {
   margin-bottom: 0.25rem;
 }
 
+
 .last-updated {
   font-size: 0.85rem;
   color: #666;
 }
+
+.analytics-title {
+  font-size: 1.2rem;
+  font-weight: bolder;
+  color: #1a3eff;
+}
+
 
 .header-actions {
   display: flex;

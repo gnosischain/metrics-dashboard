@@ -24,9 +24,9 @@ const Header = ({ dashboardName }) => {
           className="dashboard-logo"
         />
         <div className="header-title">
-          <h1>{title}</h1>
+        {/*  <h1>{title}</h1> */}
           <div className="last-updated">
-            Last updated: {getLastUpdateTime()}
+          <p className="analytics-title">Analytics</p> Last updated: {getLastUpdateTime()}
           </div>
         </div>
       </div>

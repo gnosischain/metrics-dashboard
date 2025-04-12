@@ -1,6 +1,6 @@
 {
-    "short_name": "Metrics",
-    "name": "Metrics Dashboard",
+    "short_name": "Analyitcs",
+    "name": "Gnosis Analytics Dashboard",
     "icons": [
       {
         "src": "favicon.ico",
