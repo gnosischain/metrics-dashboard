@@ -58,7 +58,7 @@ tabs:
       - id: 02_execution_1000
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 600px
 
 ## Consensus Dashboard
 name: Consensus
