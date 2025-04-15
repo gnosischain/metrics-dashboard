@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from './Card';
 import Chart from './Chart';
+import TextWidget from './TextWidget';
 import metricsService from '../services/metrics';
 
 /**
@@ -28,6 +29,14 @@ const MetricWidget = ({ metricId }) => {
   
   // Fetch metric data
   const fetchData = useCallback(async () => {
+    // If this is a text widget, no need to fetch data
+    if (metricConfig.chartType === 'text') {
+      if (isMounted.current) {
+        setLoading(false);
+      }
+      return;
+    }
+    
     try {
       setLoading(true);
       console.log(`Fetching data for ${metricId}`);
@@ -60,7 +69,7 @@ const MetricWidget = ({ metricId }) => {
         setLoading(false);
       }
     }
-  }, [metricId, metricConfig.name]);
+  }, [metricId, metricConfig.name, metricConfig.chartType]);
   
   // Fetch data on mount and when metricId changes
   useEffect(() => {
@@ -70,7 +79,7 @@ const MetricWidget = ({ metricId }) => {
     const refreshInterval = metricConfig.refreshInterval || 0;
     let intervalId = null;
     
-    if (refreshInterval > 0) {
+    if (refreshInterval > 0 && metricConfig.chartType !== 'text') {
       intervalId = setInterval(fetchData, refreshInterval * 1000);
     }
     
@@ -80,7 +89,7 @@ const MetricWidget = ({ metricId }) => {
         clearInterval(intervalId);
       }
     };
-  }, [fetchData, metricId, metricConfig.refreshInterval]);
+  }, [fetchData, metricId, metricConfig.refreshInterval, metricConfig.chartType]);
   
   // Check if we have multi-series data
   const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && data.labels && data.datasets;
@@ -102,6 +111,17 @@ const MetricWidget = ({ metricId }) => {
         return '350px';
     }
   };
+
+  // If this is a text widget, render the TextWidget component
+  if (metricConfig.chartType === 'text') {
+    return (
+      <TextWidget 
+        title={metricConfig.name}
+        subtitle={metricConfig.description}
+        content={metricConfig.content}
+      />
+    );
+  }
 
   return (
     <Card 

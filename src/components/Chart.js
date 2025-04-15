@@ -110,6 +110,9 @@ const Chart = ({
     data.labels &&
     data.datasets;
 
+  // Determine if this is a horizontal bar chart
+  const isHorizontal = type === 'horizontalBar';
+
   // Build chartData depending on format
   let chartData;
   if (isMultiSeries) {
@@ -144,19 +147,40 @@ const Chart = ({
       }),
     };
   } else {
-    // Simple date/value format
+    // Determine labels based on chart type and data structure
+    const getLabels = () => {
+      if (isHorizontal) {
+        // For horizontal bar charts, use category or any string field for labels
+        return (data || []).map(item => {
+          return item.category || item.country || item.label || 
+                 Object.values(item).find(v => typeof v === 'string');
+        });
+      } else {
+        // For other charts, use date or existing label fields
+        return (data || []).map(item => {
+          // If date has time component, remove it
+          if (item.date && item.date.includes(' ')) {
+            return item.date.split(' ')[0];
+          }
+          return item.date;
+        });
+      }
+    };
+
+    // Determine values based on chart type and data structure  
+    const getValues = () => {
+      return (data || []).map(item => {
+        // Support multiple value field names
+        return parseFloat(item.value || item.cnt || item.count || 0);
+      });
+    };
+
     chartData = {
-      labels: (data || []).map(item => {
-        // If date has time component, remove it
-        if (item.date && item.date.includes(' ')) {
-          return item.date.split(' ')[0];
-        }
-        return item.date;
-      }),
+      labels: getLabels(),
       datasets: [
         {
           label: title,
-          data: (data || []).map(item => parseFloat(item.value)),
+          data: getValues(),
           backgroundColor: hexToRgba(color, 0.6),
           borderColor: hexToRgba(color, 0.8),
           borderWidth: 2,
@@ -354,12 +378,17 @@ const Chart = ({
   };
 
   // Determine chart type
-  const chartType = type === 'stackedBar' ? 'bar' : type;
+  let chartType = type;
+  // For horizontal bar, we'll still use the Bar component but with different options
+  if (isHorizontal) {
+    chartType = 'bar';
+  }
 
   // Enhanced chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    indexAxis: isHorizontal ? 'y' : 'x', // This is the key setting for horizontal bars
     plugins: {
       legend: {
         display: false, // We use a custom legend
@@ -391,10 +420,14 @@ const Chart = ({
           },
           // Add footer with total
           footer: (tooltipItems) => {
+            // For horizontal bar charts, we might not want to show a total
+            if (isHorizontal) return '';
+            
             // Calculate total of all values
             let total = 0;
             tooltipItems.forEach((tooltipItem) => {
-              total += tooltipItem.parsed.y;
+              // Support both x and y values depending on chart orientation
+              total += tooltipItem.parsed.y || tooltipItem.parsed.x || 0;
             });
             
             // Format total with commas for thousands
@@ -407,8 +440,8 @@ const Chart = ({
       x: {
         grid: { display: false },
         ticks: {
-          maxRotation: 45,
-          minRotation: 45,
+          maxRotation: isHorizontal ? 0 : 45,
+          minRotation: isHorizontal ? 0 : 45,
         },
         stacked: type === 'stackedBar',
       },

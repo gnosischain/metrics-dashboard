@@ -1,0 +1,4 @@
+{
+  "id": "country_peer_count",
+  "query": "SELECT \n                country\n                ,SUM(cnt) AS cnt \n            FROM dbt.p2p_peers_geo_latest\n            GROUP BY 1\n            QUALIFY ROW_NUMBER() OVER (PARTITION BY country ORDER BY cnt DESC) <10"
+}

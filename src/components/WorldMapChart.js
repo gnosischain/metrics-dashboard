@@ -86,8 +86,8 @@ const WorldMapChart = ({ data = [] }) => {
           <ComposableMap
             projection="geoEqualEarth"
             projectionConfig={{
-              scale: 250,    // Adjusted scale to show more of the map
-              center: [0, 10] // Centered on the prime meridian
+              scale: 240,    // Adjusted scale to show more of the map
+              center: [20, 5] // Centered on the prime meridian
             }}
             style={{
               width: "100%",

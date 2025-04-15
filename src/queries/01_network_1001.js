@@ -6,8 +6,8 @@
 
 const metric = {
     id: '01_network_1001',
-    name: 'Peers Geo Count',
-    description: 'Last day distinct countries',
+    name: 'Countries',
+    description: 'Last day',
     format: 'formatNumber',
     chartType: 'numberDisplay',
     color: '#34A853',

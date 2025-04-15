@@ -6,8 +6,8 @@
 
 const metric = {
     id: '01_network_1000',
-    name: 'Peers Count',
-    description: 'Last day distinct peers',
+    name: 'Peers',
+    description: 'Last day',
     format: 'formatNumber',
     chartType: 'numberDisplay',
     color: '#34A853',

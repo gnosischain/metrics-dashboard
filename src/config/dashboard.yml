@@ -7,27 +7,28 @@ tabs:
     metrics:
       - id: 01_network_1000
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 200px
       - id: 01_network_1001
         gridRow: 2
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 200px
       - id: 01_network_1100
         gridRow: 1 / span 2
-        gridColumn: 4 / span 9
+        gridColumn: 3 / span 6
         minHeight: 425px
-      - id: 01_network_3000
-        gridRow: 3
-        gridColumn: 1 / span 12
-        minHeight: 400px
+      - id: country_peer_count
+        gridRow: 1 / span 2
+        gridColumn: 9 / span 4
+        minHeight: 425px
+
   - name: Clients
     order: 2
     metrics:
       - id: 01_network_3000
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 500px
       - id: 01_network_2000
         gridRow: 2
         gridColumn: 1 / span 6

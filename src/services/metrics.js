@@ -83,6 +83,42 @@ class MetricsService {
   }
 
   /**
+   * Transform data for horizontal bar charts
+   * @param {Array} data - Raw data
+   * @param {Object} metricConfig - Metric configuration
+   * @returns {Array} Transformed data for horizontal bar charts
+   */
+  transformHorizontalBarData(data, metricConfig) {
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
+    // Get field configuration with defaults
+    const labelField = metricConfig.labelField || Object.keys(data[0]).find(key => typeof data[0][key] === 'string');
+    const valueField = metricConfig.valueField || 'value';
+    
+    if (!labelField || !data[0][labelField]) {
+      console.warn('No label field found for horizontal bar chart');
+      return data;
+    }
+    
+    // Sort data by value in descending order (if not already sorted)
+    const sortedData = [...data].sort((a, b) => {
+      const valueA = parseFloat(a[valueField] || 0);
+      const valueB = parseFloat(b[valueField] || 0);
+      return valueB - valueA;
+    });
+    
+    // Transform the data for horizontal bar charts
+    return sortedData.map(item => ({
+      // Use the label field as the category (y-axis)
+      category: item[labelField], 
+      // This will be the value (x-axis)
+      value: parseFloat(item[valueField] || 0)
+    }));
+  }
+
+  /**
    * Transform raw data into a format usable by charts
    * @param {Array} data - Raw data from API
    * @param {string} metricId - ID of the metric
@@ -103,6 +139,11 @@ class MetricsService {
 
     const firstRow = data[0];
     const metricConfig = this.getMetricConfig(metricId);
+    
+    // Handle horizontal bar chart data specifically
+    if (metricConfig.chartType === 'horizontalBar') {
+      return this.transformHorizontalBarData(data, metricConfig);
+    }
     
     // Determine the date field - could be date, hour, timestamp, time, etc.
     const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
