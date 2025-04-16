@@ -1,5 +1,5 @@
 const metric = {
-    id: 'country_peer_count',
+    id: 'last_day_country_counts',
     name: 'Top Countries',
     description: 'Last day peers per country',
     format: 'formatNumber',

@@ -1,4 +1,0 @@
-{
-  "id": "queryCount",
-  "query": "\n    SELECT \n      toDate(event_time) AS date, \n      count() AS value\n    FROM system.query_log\n    WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'\n      AND type = 'QueryStart'\n    GROUP BY date\n    ORDER BY date\n  "
-}

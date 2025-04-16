@@ -5,19 +5,19 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: 01_network_1000
+      - id: last_day_nodes
         gridRow: 1
         gridColumn: 1 / span 2
         minHeight: 200px
-      - id: 01_network_1001
+      - id: last_day_countries
         gridRow: 2
         gridColumn: 1 / span 2
         minHeight: 200px
-      - id: 01_network_1100
+      - id: last_day_geo
         gridRow: 1 / span 2
         gridColumn: 3 / span 6
         minHeight: 425px
-      - id: country_peer_count
+      - id: last_day_country_counts
         gridRow: 1 / span 2
         gridColumn: 9 / span 4
         minHeight: 425px
@@ -25,27 +25,27 @@ tabs:
   - name: Clients
     order: 2
     metrics:
-      - id: 01_network_3000
+      - id: historical_el_client_distribution
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 500px
-      - id: 01_network_2000
+        minHeight: 600px
+      - id: historical_cl_client_distribution
         gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 600px
+      - id: historical_el_forks
+        gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 400px
-      - id: 01_network_2100
-        gridRow: 2
+      - id: historical_cl_forks
+        gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 400px
   - name: Geography
     order: 3
     metrics:
-      - id: 01_network_1100
+      - id: historical_nodes_geo
         gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 400px
-      - id: 01_network_4000
-        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 500px
 
@@ -56,7 +56,7 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: 02_execution_1000
+      - id: historical_el_client_distribution
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 600px
@@ -68,7 +68,7 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: queryCount
+      - id: historical_el_client_distribution
         gridRow: 1
         gridColumn: 1 / span 6
         minHeight: 400px
@@ -80,15 +80,15 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: daily_co2_emissions
+      - id: historical_co2_emissions
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 400px
-      - id: daily_electricity_demand
+      - id: historical_electricity_demand
         gridRow: 2
         gridColumn: 1 / span 6
         minHeight: 500px
-      - id: daily_power_demand
+      - id: historical_power_demand
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 500px

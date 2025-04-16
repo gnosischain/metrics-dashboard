@@ -1,8 +1,5 @@
-/**
- * Client Distribution Metric Definition
- */
 const metric = {
-  id: '01_network_1100',
+  id: 'last_day_geo',
   name: 'Geo Distribution',
   description: 'Last day geografical distribution of peers in the network',
   format: 'formatNumber',

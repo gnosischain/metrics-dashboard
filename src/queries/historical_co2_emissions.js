@@ -1,5 +1,5 @@
 const metric = {
-    id: 'daily_co2_emissions',
+    id: 'historical_co2_emissions',
     name: 'Network CO2 Emissions',
     description: 'Daily tCO2 emissions from the network',
     format: 'formatNumber',

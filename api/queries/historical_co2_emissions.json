@@ -1,4 +1,4 @@
 {
-  "id": "daily_co2_emissions",
+  "id": "historical_co2_emissions",
   "query": "SELECT date, co2_emissions AS value FROM dbt.esg_carbon_emissions ORDER BY date"
 }

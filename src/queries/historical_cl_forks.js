@@ -1,8 +1,5 @@
-/**
- * Client Distribution Metric Definition
- */
 const metric = {
-  id: '01_network_2100',
+  id: 'historical_cl_forks',
   name: 'CL Forks Distribution',
   description: 'Distribution for forks across the network (Consensus Layer)',
   format: 'formatNumber',

@@ -1,4 +1,4 @@
 {
-  "id": "daily_power_demand",
+  "id": "historical_power_demand",
   "query": "SELECT date, power/POWER(10,3) AS value, country FROM dbt.esg_power_consumption_top10 ORDER BY date, country"
 }

@@ -1,5 +1,5 @@
 const metric = {
-  id: 'daily_power_demand',
+  id: 'historical_power_demand',
   name: 'Network Power Demand',
   description: 'Daily power (kW) demand from the network',
   format: 'formatNumber',

@@ -1,8 +1,5 @@
-/**
- * Client Distribution Metric Definition
- */
 const metric = {
-  id: '01_network_2000',
+  id: 'historical_el_forks',
   name: 'EL Forks Distribution',
   description: 'Distribution for forks across the network (Execution Layer)',
   format: 'formatNumber',
