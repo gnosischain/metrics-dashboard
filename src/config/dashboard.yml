@@ -61,7 +61,6 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 600px
 
-
 ## Consensus Dashboard
 name: Consensus
 order: 3
