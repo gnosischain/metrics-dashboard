@@ -1,0 +1,4 @@
+{
+  "id": "historical_state_growth",
+  "query": "SELECT date, bytes/POWER(10,9) AS value FROM dbt.execution_state_size_daily ORDER BY date"
+}

@@ -1,4 +1,4 @@
 {
   "id": "historical_cl_client_distribution",
-  "query": "SELECT * FROM dbt.p2p_peers_clients_daily ORDER BY date ASC"
+  "query": "SELECT * FROM dbt.p2p_peers_clients_daily ORDER BY date ASC, client ASC"
 }

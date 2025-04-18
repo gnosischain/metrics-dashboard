@@ -144,6 +144,10 @@ const MetricWidget = ({ metricId }) => {
               color={metricConfig.color}
               format={metricConfig.format}
               height={getChartHeight()} // Explicit height based on vSize
+              // Add support for the new chart properties
+              pointRadius={metricConfig.pointRadius || 3}
+              showPoints={metricConfig.showPoints !== false} // Default to true if not specified
+              fill={metricConfig.fill || false} // Default to false if not specified
             />
           ) : (
             <div className="no-data-message">No data available</div>

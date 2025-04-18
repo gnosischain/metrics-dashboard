@@ -21,7 +21,15 @@ tabs:
         gridRow: 1 / span 2
         gridColumn: 9 / span 4
         minHeight: 425px
-
+      - id: last_day_cl_client_distribution
+        gridRow: 3 / span 2
+        gridColumn: 1 / span 6
+        minHeight: 425px
+      - id: last_day_el_client_distribution
+        gridRow: 3 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 425px
+      
   - name: Clients
     order: 2
     metrics:
@@ -41,6 +49,7 @@ tabs:
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 400px
+        
   - name: Geography
     order: 3
     metrics:
@@ -56,10 +65,10 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: historical_el_client_distribution
+      - id: historical_state_growth
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 600px
+        minHeight: 500px
 
 ## Consensus Dashboard
 name: Consensus
