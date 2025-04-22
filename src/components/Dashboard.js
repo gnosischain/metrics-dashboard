@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
-import DashboardSelector from './DashboardSelector';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 
@@ -77,21 +76,21 @@ const Dashboard = () => {
     }
   }, [activeDashboard, activeTab]);
   
-  // Change the active dashboard
-  const handleDashboardChange = (dashboardId) => {
+  // Change the active dashboard and tab
+  const handleNavigation = (dashboardId, tabId) => {
     if (dashboardId !== activeDashboard) {
       // Clear existing tabs and metrics first to ensure clean unmounting
       setTabs([]);
       setTabMetrics([]);
       setActiveTab('');
       setActiveDashboard(dashboardId);
-    }
-  };
-  
-  // Change the active tab
-  const handleTabChange = (tabId) => {
-    if (tabId !== activeTab) {
-      // Clear existing metrics first to ensure clean unmounting
+      
+      // Set the tab after dashboard is updated
+      setTimeout(() => {
+        setActiveTab(tabId);
+      }, 0);
+    } else if (tabId !== activeTab) {
+      // Just update the tab if the dashboard is the same
       setTabMetrics([]);
       setActiveTab(tabId);
     }
@@ -113,20 +112,14 @@ const Dashboard = () => {
     <div className="dashboard">
       <Header dashboardName={getActiveDashboardName()} />
       
-      <div className="dashboard-selector-container">
-        <DashboardSelector 
-          dashboards={dashboards} 
-          activeDashboard={activeDashboard} 
-          onDashboardChange={handleDashboardChange} 
-        />
-      </div>
-      
       <div className="dashboard-main">
         <aside className="dashboard-sidebar">
           <TabNavigation 
+            dashboards={dashboards}
+            activeDashboard={activeDashboard}
             tabs={tabs} 
             activeTab={activeTab} 
-            onTabChange={handleTabChange} 
+            onNavigation={handleNavigation} 
           />
         </aside>
         
