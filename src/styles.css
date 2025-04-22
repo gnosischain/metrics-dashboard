@@ -904,13 +904,62 @@ body {
   font-weight: 500;
 }
 
-/* Increase the width of the sidebar slightly for better readability */
+/* Sidebar with collapse/expand functionality */
 .dashboard-sidebar {
   width: 240px;
   background-color: #fff;
   border-right: 1px solid #eaeaea;
   overflow-y: auto;
   flex-shrink: 0;
+  position: relative;
+  transition: width 0.3s ease;
+}
+
+/* Collapsed sidebar state */
+.dashboard-sidebar.collapsed {
+  width: 60px;
+  overflow-x: hidden;
+}
+
+/* Toggle button for sidebar */
+.sidebar-toggle {
+  position: absolute;
+  top: 0px;
+  right: -4px;
+  width: 24px;
+  height: 16px;
+  background-color: #ffffff;
+  border-radius: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 12px;
+  color: #2c2c2c;
+  border: 1px solid #ffffff;
+}
+
+.sidebar-toggle:hover {
+  background-color: #e0e0e5;
+}
+
+/* Collapsed navigation styles */
+.tab-navigation.collapsed .dashboard-header {
+  padding: 0.75rem 0;
+  justify-content: center;
+}
+
+.tab-navigation.collapsed .dashboard-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #4285F4;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
 }
 
 /* Responsive adjustments */
@@ -920,9 +969,17 @@ body {
   }
 
   .dashboard-sidebar {
-    width: 100%;
+    width: 100% !important; /* Override collapsed width on mobile */
     border-right: none;
     border-bottom: 1px solid #eaeaea;
+  }
+
+  .dashboard-sidebar.collapsed {
+    width: 100% !important;
+  }
+
+  .sidebar-toggle {
+    display: none; /* Hide toggle on mobile as it doesn't make sense in stacked layout */
   }
 
   .dashboard-item {
@@ -931,5 +988,23 @@ body {
 
   .tab-list {
     padding-left: 0.5rem;
+  }
+  
+  /* Force expanded view on mobile */
+  .tab-navigation.collapsed {
+    display: block;
+  }
+  
+  .tab-navigation.collapsed .dashboard-header {
+    padding: 0.75rem 1rem;
+    justify-content: space-between;
+  }
+  
+  .tab-navigation.collapsed .dashboard-icon {
+    display: none;
+  }
+  
+  .tab-navigation.collapsed .dashboard-name {
+    display: block;
   }
 }

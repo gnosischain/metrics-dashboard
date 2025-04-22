@@ -8,9 +8,10 @@ import React, { useState } from 'react';
  * @param {Array} props.tabs - Array of tab objects
  * @param {string} props.activeTab - Currently active tab
  * @param {Function} props.onNavigation - Handler for navigation changes
+ * @param {boolean} props.isCollapsed - Whether the sidebar is collapsed
  * @returns {JSX.Element} Tab navigation component
  */
-const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigation }) => {
+const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigation, isCollapsed }) => {
   // Track expanded state for dashboards
   const [expandedDashboards, setExpandedDashboards] = useState({});
   
@@ -32,6 +33,28 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
     return dashboardId === activeDashboard;
   };
   
+  // If collapsed, show only icons or abbreviated view
+  if (isCollapsed) {
+    return (
+      <div className="tab-navigation collapsed">
+        <ul className="dashboard-list">
+          {dashboards.map(dashboard => (
+            <li key={dashboard.id} className="dashboard-item">
+              <div 
+                className={`dashboard-header icon-only ${activeDashboard === dashboard.id ? 'active' : ''}`}
+                onClick={() => onNavigation(dashboard.id, dashboard.tabs[0]?.id || '')}
+                title={dashboard.name}
+              >
+                <span className="dashboard-icon">{dashboard.name.charAt(0)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  // Normal expanded view
   return (
     <div className="tab-navigation">
       <ul className="dashboard-list">

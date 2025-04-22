@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Load dashboard configuration
   useEffect(() => {
@@ -108,18 +109,27 @@ const Dashboard = () => {
     return tab ? tab.name : '';
   };
   
+  // Toggle sidebar collapsed state
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
     <div className="dashboard">
       <Header dashboardName={getActiveDashboardName()} />
       
       <div className="dashboard-main">
-        <aside className="dashboard-sidebar">
+        <aside className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          <div className="sidebar-toggle" onClick={toggleSidebar}>
+            {sidebarCollapsed ? '▶' : '◀'}
+          </div>
           <TabNavigation 
             dashboards={dashboards}
             activeDashboard={activeDashboard}
             tabs={tabs} 
             activeTab={activeTab} 
-            onNavigation={handleNavigation} 
+            onNavigation={handleNavigation}
+            isCollapsed={sidebarCollapsed}
           />
         </aside>
         
