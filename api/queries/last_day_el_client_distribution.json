@@ -1,4 +1,4 @@
 {
   "id": "last_day_el_client_distribution",
-  "query": "\n    SELECT \n      client AS category\n      ,pct * 100 AS value \n    FROM \n        dbt.execution_blocks_clients_pct_daily\n    WHERE \n        date = (SELECT MAX(date) FROM dbt.execution_blocks_clients_pct_daily)\n  "
+  "query": "SELECT \n      client AS category\n      ,pct * 100 AS value \n    FROM \n        dbt.execution_blocks_clients_pct_daily\n    WHERE \n        date = (SELECT MAX(date) FROM dbt.execution_blocks_clients_pct_daily)"
 }

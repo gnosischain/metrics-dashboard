@@ -1,4 +1,4 @@
 {
   "id": "last_day_cl_client_distribution",
-  "query": "\n    SELECT \n      client AS category\n      ,ROUND(value/(SUM(value) OVER ()) * 100,2) AS value \n    FROM \n        dbt.p2p_peers_clients_daily \n    WHERE date = (SELECT MAX(date) FROM dbt.p2p_peers_clients_daily)\n  "
+  "query": "SELECT \n      client AS category\n      ,ROUND(value/(SUM(value) OVER ()) * 100,2) AS value \n    FROM \n        dbt.p2p_peers_clients_daily \n    WHERE date = (SELECT MAX(date) FROM dbt.p2p_peers_clients_daily)"
 }

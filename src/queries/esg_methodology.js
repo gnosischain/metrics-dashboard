@@ -3,7 +3,7 @@ const metric = {
     name: 'ESG Methodology',
     description: 'Methodology for Gnosis Chain Carbon Footprint Estimation',
     chartType: 'text',
-    query: `
+    content: `
   # Methodology Report: Gnosis Chain Operational Carbon Footprint Estimation
   
 <a id="toc"></a>

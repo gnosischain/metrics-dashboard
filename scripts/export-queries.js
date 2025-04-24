@@ -1,7 +1,6 @@
 /**
  * Script to export query definitions from frontend to API proxy
- * 
- * A simplified version that directly requires the JS modules and extracts the id and query.
+ * Only exports metrics with actual queries, skipping text widgets
  * 
  * Usage: node scripts/export-queries.js
  */
@@ -19,52 +18,49 @@ if (!fs.existsSync(apiQueriesDir)) {
   fs.mkdirSync(apiQueriesDir, { recursive: true });
 }
 
-// Find all JavaScript files in the src/queries directory (excluding index.js and template files)
+// Find all JavaScript files in the queries directory
 const queryFiles = fs.readdirSync(srcQueriesDir)
-  .filter(file => file.endsWith('.js') && file !== 'index.js' && !file.includes('template'));
+  .filter(file => file.endsWith('.js') && file !== 'index.js');
 
-console.log(`Found ${queryFiles.length} query definitions to export`);
+console.log(`Found ${queryFiles.length} metric files to process`);
 
-// Process each query file by directly requiring it
+// Process each query file
+let exportedCount = 0;
 queryFiles.forEach(file => {
-  const filePath = path.join(srcQueriesDir, file);
-  const fileName = path.basename(file, '.js');
-  
   try {
-    // Use a cleaner approach - directly require the module
-    // This assumes all metric files use module.exports or export default
-    const relativePath = '../src/queries/' + fileName;
+    const filePath = path.join(srcQueriesDir, file);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
     
-    // Delete the module from cache if it exists
-    delete require.cache[require.resolve(relativePath)];
-    
-    // Directly require the metric module
-    const metricModule = require(relativePath);
-    const metricConfig = metricModule.default || metricModule;
-    
-    // Extract the id and query from the loaded module
-    if (!metricConfig || !metricConfig.id || !metricConfig.query) {
-      console.error(`Missing id or query in ${file}`);
-      console.log('Metric structure:', JSON.stringify(metricConfig, null, 2));
+    // Skip any file that contains chartType: 'text'
+    if (fileContent.includes("chartType: 'text'") || fileContent.includes('chartType: "text"')) {
+      console.log(`Skipping text widget in file: ${file}`);
       return;
     }
     
-    const { id, query } = metricConfig;
+    // Parse metric configuration using simple regex
+    const idMatch = fileContent.match(/id:\s*['"]([^'"]+)['"]/);
+    const queryMatch = fileContent.match(/query:\s*[`'"]([^`]+)[`'"]/s);
     
-    // Create a simplified JSON object with just id and query
+    if (!idMatch || !queryMatch) {
+      console.warn(`Could not find ID or query in ${file}, skipping`);
+      return;
+    }
+    
+    const id = idMatch[1];
+    const query = queryMatch[1].trim();
+    
+    // Create a JSON object with just id and query
     const jsonObj = { id, query };
     
     // Write to the api/queries directory
     const outputPath = path.join(apiQueriesDir, `${id}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(jsonObj, null, 2));
     
+    exportedCount++;
     console.log(`Exported ${id} to ${outputPath}`);
   } catch (error) {
     console.error(`Error processing ${file}:`, error);
-    if (error.stack) {
-      console.error(error.stack);
-    }
   }
 });
 
-console.log('Query export complete!');
+console.log(`Query export complete! Exported ${exportedCount} queries`);
