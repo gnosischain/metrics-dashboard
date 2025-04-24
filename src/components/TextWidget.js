@@ -1,7 +1,11 @@
 import React from 'react';
 import Card from './Card';
 import ReactMarkdown from 'react-markdown';
-
+import remarkGfm from 'remark-gfm';      // GFM features (keep for non-table GFM)
+import rehypeRaw from 'rehype-raw';      // Raw HTML (for tables and ToC anchor)
+import rehypeSlug from 'rehype-slug';    // Heading IDs for links
+import remarkMath from 'remark-math';    // Recognize $...$ math syntax
+import rehypeKatex from 'rehype-katex';  // Render math using KaTeX
 /**
  * TextWidget component for displaying formatted text
  * @param {Object} props - Component props
@@ -11,18 +15,22 @@ import ReactMarkdown from 'react-markdown';
  * @returns {JSX.Element} Text widget component
  */
 const TextWidget = ({ title, subtitle, content }) => {
-  return (
-    <Card 
-    //  title={title}
-    //  subtitle={subtitle}
-    >
-      <div className="text-widget">
-        <ReactMarkdown>
-          {content}
-        </ReactMarkdown>
-      </div>
-    </Card>
-  );
-};
-
-export default TextWidget;
+    return (
+      <Card>
+        <div className="text-widget">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]} // Add remarkMath
+            rehypePlugins={[
+              rehypeRaw,
+              rehypeSlug,
+              rehypeKatex             // Add rehypeKatex
+            ]}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
+      </Card>
+    );
+  };
+  
+  export default TextWidget;

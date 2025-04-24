@@ -49,7 +49,7 @@ tabs:
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 400px
-        
+
   - name: Geography
     order: 3
     metrics:
@@ -101,3 +101,12 @@ tabs:
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 500px
+  - name: Methodology
+    order: 2
+    metrics:
+      - id: esg_methodology
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 16000px
+
+        
