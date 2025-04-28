@@ -69,6 +69,14 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 500px
+      - id: historical_probelab_cl_client_cloud_distribution
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: historical_probelab_cl_client_country_distribution
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 500px
 
 ## Execution Dashboard
 name: Execution
