@@ -6,20 +6,31 @@
  * Default chart color palette based on the new theme
  */
 export const DEFAULT_COLORS = [
-    '#133629', // moss
+    '#133629', // moss (deep green)
     '#dd7143', // orange
     '#3e6957', // forest
-    '#9b8957', // gold
-    '#769689', // light-green
-    '#6f592c', // saddle-brown
-    '#9c7e3f', // white-2
-    '#d4aa91', // orange-light
-    '#cbc3ad', // cream-dark
-    '#e4ddcb', // cream-medium
-    '#231e10', // black
     '#f0ebde', // cream
-    '#faf9f4', // white
-  ];
+    '#b64b1b', // burnt orange
+    '#91b7a1', // minty green
+    '#6f592c', // saddle-brown
+    '#ffb190', // light coral orange
+    '#0f3d28', // deep moss
+    '#d2c29d', // pale sand
+    '#2e5943', // muted forest
+    '#f08a5d', // soft orange
+    '#769689', // light-green
+    '#d4aa91', // orange-light
+    '#231e10', // black
+    '#bfa76f', // soft gold
+    '#3e6957', // forest again for layering
+    '#faf8f2', // extra light cream
+    '#9c7e3f', // muted gold
+    '#7c7160', // stone gray
+    '#e4ddcb', // cream-medium
+    '#473d2c', // dark olive
+    '#cbc3ad', // cream-dark
+    '#a29788', // warm gray
+];
     
   /**
    * Generate a color palette with specified number of colors
