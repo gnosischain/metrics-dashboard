@@ -58,6 +58,18 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 500px
 
+  - name: Probelab
+    order: 4
+    metrics:
+      - id: historical_probelab_cl_client_distribution
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: historical_probelab_cl_client_version_distribution
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 500px
+
 ## Execution Dashboard
 name: Execution
 order: 2

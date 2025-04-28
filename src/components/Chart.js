@@ -1,5 +1,6 @@
 // Import color palette from '../utils/colors'
-import { DEFAULT_COLORS } from '../utils/colors';import React, { useRef, useEffect, useState } from 'react';
+import { DEFAULT_COLORS } from '../utils/colors';
+import React, { useRef, useEffect, useState } from 'react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,7 +13,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler // Keep Filler import
 } from 'chart.js';
 import WorldMapChart from './WorldMapChart';
 import NumberWidget from './NumberWidget';
@@ -34,10 +35,10 @@ ChartJS.register(
 /**
  * Universal chart component that handles both simple and multi-series data
  */
-const Chart = ({ 
-  data, 
-  title, 
-  type = 'line', 
+const Chart = ({
+  data,
+  title,
+  type = 'line',
   color = '#4285F4',
   height = 'auto',
   format,
@@ -53,11 +54,11 @@ const Chart = ({
 
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
-  
+
   // If this is a numberDisplay, render NumberWidget instead
   if (type === 'numberDisplay') {
     let value = 0;
-    
+
     // Extract the value from the data based on format
     if (Array.isArray(data) && data.length > 0) {
       // For single value metrics, use the most recent data point
@@ -66,50 +67,50 @@ const Chart = ({
       // If data is just a single object with a value
       value = data.value;
     }
-    
+
     return (
-      <NumberWidget 
-        value={value} 
-        format={format} 
-        label={title} 
-        color={color} 
+      <NumberWidget
+        value={value}
+        format={format}
+        label={title}
+        color={color}
       />
     );
   }
-  
+
   /**
    * Convert hex color to rgba with alpha
-   * @param {string} hex - Hex color code 
+   * @param {string} hex - Hex color code
    * @param {number} alpha - Alpha value (0-1)
    * @returns {string} RGBA color string
    */
   const hexToRgba = (hex, alpha = 1) => {
     if (!hex) return `rgba(128, 128, 128, ${alpha})`; // Default gray if no color provided
-    
+
     // Check if already rgba
     if (hex.startsWith('rgba')) return hex;
-    
+
     // Check if rgb format
     if (hex.startsWith('rgb(')) {
       return hex.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
     }
-    
+
     // Remove # if present
     hex = hex.replace('#', '');
-    
+
     // Expand 3-character hex
     if (hex.length === 3) {
       hex = hex.split('').map(char => char + char).join('');
     }
-    
+
     // Convert to rgb values
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
+
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
-  
+
   // Check if data is in multi-series format
   const isMultiSeries =
     data &&
@@ -120,13 +121,13 @@ const Chart = ({
 
   // Determine if this is a horizontal bar chart
   const isHorizontal = type === 'horizontalBar';
-  
+
   // Determine if this is an area chart (line with fill)
   const isAreaChart = type === 'area';
-  
+
   // Determine if this is a stacked bar chart
   const isStackedBar = type === 'stackedBar';
-  
+
   // Determine actual chart type
   let actualChartType;
   if (isAreaChart) {
@@ -139,7 +140,7 @@ const Chart = ({
 
   // For pie charts, prepare the data differently
   const isPieChart = type === 'pie';
-  
+
   // Import color palette from the existing utils
   const defaultColors = DEFAULT_COLORS;
 
@@ -150,14 +151,14 @@ const Chart = ({
     if (Array.isArray(data)) {
       const labels = data.map(item => item.category || item.label || item.date);
       const values = data.map(item => parseFloat(item.value || item.count || item.cnt || 0));
-      
+
       // Generate colors for each slice
       const colors = [];
       for (let i = 0; i < data.length; i++) {
         // Use the default colors palette
         colors.push(defaultColors[i % defaultColors.length]);
       }
-      
+
       chartData = {
         labels: labels,
         datasets: [{
@@ -171,15 +172,15 @@ const Chart = ({
     } else if (isMultiSeries) {
       // Convert multi-series data to pie format
       const labels = data.datasets.map(ds => ds.label);
-      const values = data.datasets.map(ds => 
+      const values = data.datasets.map(ds =>
         ds.data.reduce((sum, val) => sum + (val || 0), 0)
       );
-      
+
       // Use dataset colors if available or default colors
-      const colors = data.datasets.map((ds, i) => 
+      const colors = data.datasets.map((ds, i) =>
         ds.backgroundColor || defaultColors[i % defaultColors.length]
       );
-      
+
       chartData = {
         labels: labels,
         datasets: [{
@@ -205,7 +206,7 @@ const Chart = ({
           // If hex with alpha, remove alpha
           baseColor = baseColor.substring(0, 7);
         }
-        
+
         return {
           ...dataset,
           borderWidth: 2,
@@ -223,14 +224,14 @@ const Chart = ({
     // Determine labels based on chart type and data structure
     const getLabels = () => {
       if (isPieChart) {
-        return (data || []).map(item => 
-          item.category || item.country || item.label || 
+        return (data || []).map(item =>
+          item.category || item.country || item.label ||
           Object.values(item).find(v => typeof v === 'string')
         );
       } else if (isHorizontal) {
         // For horizontal bar charts, use category or any string field for labels
         return (data || []).map(item => {
-          return item.category || item.country || item.label || 
+          return item.category || item.country || item.label ||
                  Object.values(item).find(v => typeof v === 'string');
         });
       } else {
@@ -245,7 +246,7 @@ const Chart = ({
       }
     };
 
-    // Determine values based on chart type and data structure  
+    // Determine values based on chart type and data structure
     const getValues = () => {
       return (data || []).map(item => {
         // Support multiple value field names
@@ -275,14 +276,14 @@ const Chart = ({
   // Check if scroll buttons are needed for legend
   const checkScrollButtonsNeeded = () => {
     if (!legendItemsRef.current || !legendControlsRef.current) return;
-    
+
     const container = legendItemsRef.current;
     const controls = legendControlsRef.current;
-    
+
     // Calculate if the legend items actually overflow the container
     // Need a buffer to avoid false positives, check if scroll width is significantly larger
     const hasOverflow = container.scrollWidth > container.clientWidth + 20;
-    
+
     // Show/hide scroll buttons based on overflow
     if (hasOverflow) {
       controls.style.display = 'flex';
@@ -309,53 +310,53 @@ const Chart = ({
   const createCustomLegend = () => {
     // If not multi-series or no datasets, don't create a legend
     if ((!isMultiSeries && !isPieChart) || !chartData.datasets || chartData.datasets.length === 0) return;
-    
+
     cleanupExistingLegend();
-    
+
     const legendContainer = document.createElement('div');
     legendContainer.className = 'chart-legend-container';
-    
+
     // Scrollable items container
     const legendItemsContainer = document.createElement('div');
     legendItemsContainer.className = 'chart-legend-items';
     legendItemsRef.current = legendItemsContainer;
-    
+
     // For pie charts, use the labels array for legend
-    const legendItems = isPieChart 
-      ? chartData.labels.map((label, i) => ({ 
-          label, 
-          backgroundColor: chartData.datasets[0].backgroundColor[i] 
+    const legendItems = isPieChart
+      ? chartData.labels.map((label, i) => ({
+          label,
+          backgroundColor: chartData.datasets[0].backgroundColor[i]
         }))
       : chartData.datasets;
-    
+
     // Build each legend item
     legendItems.forEach((item, index) => {
       const itemDiv = document.createElement('div');
       itemDiv.className = 'legend-item';
-      
+
       const colorBox = document.createElement('span');
       colorBox.className = 'legend-item-color';
-      
+
       // Extract solid color for legend dot
-      let solidColor = isPieChart 
-        ? item.backgroundColor 
+      let solidColor = isPieChart
+        ? item.backgroundColor
         : (item.backgroundColor || item.borderColor);
-      
+
       if (solidColor && typeof solidColor === 'string' && solidColor.includes('rgba')) {
         solidColor = solidColor.replace(/rgba\((\d+,\s*\d+,\s*\d+),[^)]+\)/, 'rgb($1)');
       }
-      
+
       colorBox.style.backgroundColor = solidColor;
-      
+
       const label = document.createElement('span');
       label.className = 'legend-item-label';
       label.textContent = item.label || `Dataset ${index + 1}`;
-      
+
       // Click to toggle dataset visibility
       itemDiv.addEventListener('click', () => {
         if (chartRef.current) {
           const chart = chartRef.current;
-          
+
           if (isPieChart) {
             // For pie charts, we hide/show the specific data point
             const meta = chart.getDatasetMeta(0);
@@ -366,11 +367,11 @@ const Chart = ({
             const datasetMeta = chart.getDatasetMeta(index);
             datasetMeta.hidden = !datasetMeta.hidden;
           }
-          
+
           chart.update();
-          
+
           // Apply "hidden" CSS if toggled off
-          if ((isPieChart && chart.getDatasetMeta(0).data[index].hidden) || 
+          if ((isPieChart && chart.getDatasetMeta(0).data[index].hidden) ||
               (!isPieChart && chart.getDatasetMeta(index).hidden)) {
             itemDiv.classList.add('hidden');
           } else {
@@ -378,18 +379,18 @@ const Chart = ({
           }
         }
       });
-      
+
       itemDiv.appendChild(colorBox);
       itemDiv.appendChild(label);
       legendItemsContainer.appendChild(itemDiv);
     });
-    
+
     // Create scroll button wrapper - HIDE BY DEFAULT
     const buttonWrapper = document.createElement('div');
     buttonWrapper.className = 'legend-controls';
     buttonWrapper.style.display = 'none'; // Start hidden until we check if needed
     legendControlsRef.current = buttonWrapper;
-    
+
     // Left scroll button
     const leftButton = document.createElement('button');
     leftButton.className = 'legend-btn legend-btn-left';
@@ -397,7 +398,7 @@ const Chart = ({
     leftButton.addEventListener('click', () => {
       legendItemsContainer.scrollBy({ left: -100, behavior: 'smooth' });
     });
-    
+
     // Right scroll button
     const rightButton = document.createElement('button');
     rightButton.className = 'legend-btn legend-btn-right';
@@ -405,19 +406,19 @@ const Chart = ({
     rightButton.addEventListener('click', () => {
       legendItemsContainer.scrollBy({ left: 100, behavior: 'smooth' });
     });
-    
+
     buttonWrapper.appendChild(leftButton);
     buttonWrapper.appendChild(rightButton);
-    
+
     // Add items + controls to legend container
     legendContainer.appendChild(legendItemsContainer);
     legendContainer.appendChild(buttonWrapper);
-    
+
     // Insert legend at the top of the chart container
     if (containerRef.current) {
       containerRef.current.insertBefore(legendContainer, containerRef.current.firstChild);
       legendContainerRef.current = legendContainer;
-      
+
       // Check scroll after a short delay to ensure the DOM is fully rendered
       setTimeout(() => {
         checkScrollButtonsNeeded();
@@ -433,7 +434,7 @@ const Chart = ({
       const timer = setTimeout(() => {
         createCustomLegend();
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [chartInstance, isMultiSeries, legendCreated, isPieChart]);
@@ -445,7 +446,7 @@ const Chart = ({
         checkScrollButtonsNeeded();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -490,6 +491,7 @@ const Chart = ({
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: isHorizontal ? 'y' : 'x', // This is the key setting for horizontal bars
+    // No layout padding or afterFit here
     plugins: {
       legend: {
         display: false, // We use a custom legend
@@ -523,14 +525,14 @@ const Chart = ({
           footer: (tooltipItems) => {
             // For horizontal bar and pie charts, we might not want to show a total
             if (isHorizontal || isPieChart) return '';
-            
+
             // Calculate total of all values
             let total = 0;
             tooltipItems.forEach((tooltipItem) => {
               // Support both x and y values depending on chart orientation
               total += tooltipItem.parsed.y || tooltipItem.parsed.x || 0;
             });
-            
+
             // Format total with commas for thousands
             return `Total: ${total.toLocaleString()}`;
           }
@@ -542,10 +544,12 @@ const Chart = ({
         display: !isPieChart, // Hide scales for pie charts
         grid: { display: false },
         ticks: {
-          maxRotation: isHorizontal ? 0 : 45,
-          minRotation: isHorizontal ? 0 : 45,
+          maxRotation: isHorizontal ? 0 : 45, // Keep 45 degree rotation
+          minRotation: isHorizontal ? 0 : 45, // Keep 45 degree rotation
+          autoSkip: true, // Use default autoSkip
         },
         stacked: isStackedBar,
+         // No afterFit callback
       },
       y: {
         display: !isPieChart, // Hide scales for pie charts
@@ -579,9 +583,9 @@ const Chart = ({
   // If this is a map, render WorldMapChart instead
   if (chartType === 'map') {
     return (
-      <div 
+      <div
         className="chart-container no-legend"
-        ref={containerRef} 
+        ref={containerRef}
         style={containerStyle}
       >
         <WorldMapChart data={data} />
@@ -603,9 +607,9 @@ const Chart = ({
   }
 
   return (
-    <div 
-      className={`chart-container ${(isMultiSeries || isPieChart) ? 'has-legend' : 'no-legend'}`} 
-      ref={containerRef} 
+    <div
+      className={`chart-container ${(isMultiSeries || isPieChart) ? 'has-legend' : 'no-legend'}`}
+      ref={containerRef}
       style={containerStyle}
     >
       <ChartComponent ref={getChartRef} data={chartData} options={options} />
@@ -613,7 +617,7 @@ const Chart = ({
   );
 };
 
-// Helper function to convert RGB to HSL
+// Helper function to convert RGB to HSL (Keep existing helper functions)
 function rgbToHsl(r, g, b) {
   r /= 255;
   g /= 255;
@@ -642,7 +646,7 @@ function rgbToHsl(r, g, b) {
   return [h * 360, s, l];
 }
 
-// Helper function to convert HSL to RGB
+// Helper function to convert HSL to RGB (Keep existing helper functions)
 function hslToRgb(h, s, l) {
   h /= 360;
   let r, g, b;
