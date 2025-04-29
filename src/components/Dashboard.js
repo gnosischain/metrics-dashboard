@@ -18,6 +18,55 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
+  // Dark mode state
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme === 'dark';
+    }
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  
+  // Toggle dark mode function
+  const toggleTheme = () => {
+    setIsDarkMode(prevMode => {
+      const newMode = !prevMode;
+      // Save to localStorage
+      localStorage.setItem('theme', newMode ? 'dark' : 'light');
+      return newMode;
+    });
+  };
+  
+  // Apply theme class to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
+  
+  // Listen for system preference changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      // Only update if no user preference is saved
+      if (!localStorage.getItem('theme')) {
+        setIsDarkMode(mediaQuery.matches);
+      }
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
+  
   // Load dashboard configuration
   useEffect(() => {
     const loadDashboards = async () => {
@@ -116,7 +165,11 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <Header dashboardName={getActiveDashboardName()} />
+      <Header 
+        dashboardName={getActiveDashboardName()} 
+        isDarkMode={isDarkMode} 
+        toggleTheme={toggleTheme} 
+      />
       
       <div className="dashboard-main">
         <aside className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
@@ -140,7 +193,8 @@ const Dashboard = () => {
             <div className="tab-content">
               <MetricGrid 
                 key={`grid-${activeDashboard}-${activeTab}`} 
-                metrics={tabMetrics} 
+                metrics={tabMetrics}
+                isDarkMode={isDarkMode}
               />
             </div>
           ) : (

@@ -11,13 +11,24 @@ import {
 // This is the URL for a well-tested and widely used world map data source
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const WorldMapChart = ({ data = [] }) => {
+const WorldMapChart = ({ data = [], isDarkMode = false }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
   const [formattedData, setFormattedData] = useState([]);
   const [maxValue, setMaxValue] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Theme-based colors
+  const backgroundColor = isDarkMode ? "#1a1a1a" : "#f8f9fa";
+  const geographyFill = isDarkMode ? "#333333" : "#E6E6E9";
+  const geographyStroke = isDarkMode ? "#555555" : "#9E9E9E";
+  const geographyHoverFill = isDarkMode ? "#444444" : "#F0F0F3";
+  const markerFill = isDarkMode ? "rgba(77, 144, 254, 0.7)" : "rgba(66, 133, 244, 0.7)";
+  const markerStroke = isDarkMode ? "#4d90fe" : "#1E5DC9";
+  const tooltipBackground = isDarkMode ? "#333333" : "white";
+  const tooltipColor = isDarkMode ? "#e0e0e0" : "black";
+  const tooltipBorder = isDarkMode ? "#555555" : "#ccc";
 
   // Process data when it changes
   useEffect(() => {
@@ -76,7 +87,7 @@ const WorldMapChart = ({ data = [] }) => {
         width: "100%", 
         height: "100%", 
         position: "relative",
-        backgroundColor: "#f8f9fa" 
+        backgroundColor: backgroundColor 
       }}
     >
       {isLoading ? (
@@ -102,13 +113,13 @@ const WorldMapChart = ({ data = [] }) => {
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill="#E6E6E9"           // Lighter fill for better contrast
-                      stroke="#9E9E9E"         // Darker border for visibility
-                      strokeWidth={0.5}        // Slightly thicker border
+                      fill={geographyFill}
+                      stroke={geographyStroke}
+                      strokeWidth={0.5}
                       style={{
                         default: { outline: "none" },
                         hover: { 
-                          fill: "#F0F0F3",     // Lighter on hover
+                          fill: geographyHoverFill,
                           outline: "none" 
                         },
                         pressed: { outline: "none" }
@@ -144,8 +155,8 @@ const WorldMapChart = ({ data = [] }) => {
                   >
                     <circle
                       r={radius}
-                      fill="rgba(66, 133, 244, 0.7)"  // Slightly more opaque
-                      stroke="#1E5DC9"               // Darker border
+                      fill={markerFill}
+                      stroke={markerStroke}
                       strokeWidth={1}
                     />
                   </Marker>
@@ -153,7 +164,6 @@ const WorldMapChart = ({ data = [] }) => {
               })}
             </ZoomableGroup>
           </ComposableMap>
-
 
           {/* Tooltip */}
           {showTooltip && (
@@ -163,10 +173,13 @@ const WorldMapChart = ({ data = [] }) => {
                 top: tooltipPosition.y + 10,
                 left: tooltipPosition.x + 10,
                 padding: "8px 12px",
-                background: "white",
-                border: "1px solid #ccc",
+                background: tooltipBackground,
+                color: tooltipColor,
+                border: `1px solid ${tooltipBorder}`,
                 borderRadius: "4px",
-                boxShadow: "2px 2px 5px rgba(0,0,0,0.1)",
+                boxShadow: isDarkMode 
+                  ? "2px 2px 5px rgba(0,0,0,0.3)" 
+                  : "2px 2px 5px rgba(0,0,0,0.1)",
                 pointerEvents: "none",
                 zIndex: 1000
               }}

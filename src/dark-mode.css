@@ -1,0 +1,366 @@
+/* Dark Mode Theme Styles */
+
+/* Theme transition for smooth color changes */
+body, .app, .dashboard-header, .dashboard-sidebar, .metric-card, .tab-item, 
+.dashboard-header, .dashboard-tab, .legend-item, .chart-container, 
+.text-widget, button, .loading-indicator, .error-message, .no-data-message,
+canvas {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Global Dark Mode Styles */
+.dark-mode {
+  /* Base */
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --border-color: #333333;
+  
+  /* Components */
+  --card-background: #1e1e1e;
+  --card-header-background: #252525;
+  --sidebar-background: #1a1a1a;
+  --active-item-background: #333333;
+  --hover-background: #2a2a2a;
+  --error-color: #ff6b6b;
+  
+  /* Earth tones variants for dark mode */
+  --moss: #1a472a;
+  --forest: #2a543c;
+  --cream: #44403c;
+  --minty: #3e6957;
+  --stone: #57534e;
+  
+  color-scheme: dark;
+}
+
+/* Body */
+.dark-mode body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* App Container */
+.dark-mode .app {
+  background-color: var(--background-color);
+}
+
+/* Dashboard Header */
+.dark-mode .dashboard-header {
+  background-color: var(--card-header-background);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .header-title h1 {
+  color: var(--text-color);
+}
+
+.dark-mode .last-updated {
+  color: var(--text-secondary);
+}
+
+.dark-mode .analytics-title {
+  color: #5a9bd5;
+}
+
+/* Sidebar */
+.dark-mode .dashboard-sidebar {
+  background-color: var(--sidebar-background);
+  border-right: 1px solid var(--border-color);
+}
+
+.dark-mode .dashboard-header {
+  color: var(--text-color);
+}
+
+.dark-mode .dashboard-header:hover {
+  background-color: var(--hover-background);
+}
+
+.dark-mode .dashboard-header.active {
+  background-color: var(--active-item-background);
+  border-left-color: #5a9bd5;
+}
+
+.dark-mode .expand-icon {
+  color: var(--text-secondary);
+}
+
+.dark-mode .tab-item {
+  color: var(--text-color);
+}
+
+.dark-mode .tab-item:hover {
+  background-color: var(--hover-background);
+}
+
+.dark-mode .tab-item.active {
+  background-color: var(--active-item-background);
+  border-left-color: #5a9bd5;
+}
+
+.dark-mode .sidebar-toggle {
+  background-color: var(--card-header-background);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .sidebar-toggle:hover {
+  background-color: var(--hover-background);
+}
+
+/* Dashboard Main Content */
+.dark-mode .dashboard-content {
+  background-color: var(--background-color);
+}
+
+/* Metric Cards */
+.dark-mode .metric-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .card-header {
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-header-background);
+}
+
+.dark-mode .card-title {
+  color: var(--text-color);
+}
+
+.dark-mode .card-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Enhanced Chart Styles for Dark Mode */
+.dark-mode .chart-container {
+  color: var(--text-color); /* Ensure chart text is light colored */
+}
+
+/* Direct styling for Chart.js canvas text */
+.dark-mode canvas.chartjs-render-monitor {
+  filter: brightness(1.05); /* Subtle brightness boost for better visibility */
+}
+
+/* Try to force pie chart labels to be visible */
+.dark-mode .chart-container canvas text,
+.dark-mode .chart-container svg text {
+  fill: var(--text-color) !important;
+  color: var(--text-color) !important;
+  stroke: none !important;
+}
+
+/* Additional fix for pie chart text visibility */
+.dark-mode canvas[data-type="pie"] {
+  --pie-label-color: #ffffff;
+}
+
+/* Special handling for pie charts */
+.dark-mode .chart-container[class*="pie"] text,
+.dark-mode .chart-container[class*="pie"] tspan {
+  fill: #ffffff !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  text-shadow: 0px 0px 3px rgba(0,0,0,0.5) !important;
+}
+
+/* Ensure axis labels are visible */
+.dark-mode .chart-container .chartjs-axis-title {
+  fill: var(--text-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Custom scrollbar for dark mode */
+.dark-mode ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark-mode ::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Legend Items */
+.dark-mode .legend-item {
+  background-color: #2a2a2a;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.dark-mode .legend-item:hover {
+  background-color: #333333;
+}
+
+.dark-mode .legend-item.hidden .legend-item-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .legend-btn {
+  background-color: #333333;
+  color: var(--text-color);
+}
+
+.dark-mode .legend-btn:hover {
+  background-color: #444444;
+}
+
+/* Chart Container */
+.dark-mode .chart-container {
+  background-color: var(--card-background);
+}
+
+/* Form Elements */
+.dark-mode .label-selector-dropdown {
+  background-color: #2a2a2a;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.dark-mode .label-selector-dropdown:hover,
+.dark-mode .label-selector-dropdown:focus {
+  border-color: #5a9bd5;
+}
+
+.dark-mode .label-selector-label {
+  color: var(--text-secondary);
+}
+
+/* Status Messages */
+.dark-mode .loading-indicator,
+.dark-mode .no-data-message {
+  color: var(--text-secondary);
+}
+
+.dark-mode .error-message {
+  color: var(--error-color);
+}
+
+/* Text Widget */
+.dark-mode .text-widget {
+  color: var(--text-color);
+}
+
+.dark-mode .text-widget h1,
+.dark-mode .text-widget h2,
+.dark-mode .text-widget h3 {
+  color: var(--text-color);
+}
+
+.dark-mode .text-widget blockquote {
+  border-left-color: #444;
+  color: var(--text-secondary);
+}
+
+.dark-mode .text-widget code,
+.dark-mode .text-widget pre {
+  background-color: #2a2a2a;
+}
+
+.dark-mode .text-widget table th {
+  background-color: #333333;
+}
+
+.dark-mode .text-widget table td,
+.dark-mode .text-widget table th {
+  border-color: #444;
+}
+
+.dark-mode .text-widget hr {
+  border-top-color: #444;
+}
+
+.dark-mode .text-widget a {
+  color: #77aaff;
+}
+
+/* Number Widget */
+.dark-mode .number-widget .number-value {
+  color: #77aaff;
+}
+
+.dark-mode .number-widget .number-label {
+  color: var(--text-secondary);
+}
+
+/* Tooltip */
+.dark-mode #chartjs-tooltip {
+  background-color: #2a2a2a !important;
+  border-color: #444 !important;
+  color: var(--text-color) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-mode .tooltip-header, 
+.dark-mode .tooltip-footer {
+  border-color: #444 !important;
+}
+
+/* Make sure label text in charts is visible */
+.dark-mode .chart-container text {
+  fill: var(--text-color) !important;
+}
+
+/* This is specific to ensure pie chart labels are visible */
+.dark-mode .chart-container .chart-area {
+  color: var(--text-color) !important;
+}
+
+/* Additional selector to catch chart labels that might be missed by the above rules */
+.dark-mode .chartjs-render-monitor [class^="chart"] text {
+  fill: var(--text-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Canvas text rendering - force white text on canvas elements */
+.dark-mode .chartjs-render-monitor {
+  color-scheme: dark; /* Tell the browser to use dark mode color scheme */
+}
+
+.dark-mode .legend-item-label {
+  color: #ffffff !important; /* Force white text for legend labels in dark mode */
+}
+
+/* Force re-render of charts when theme changes */
+.chart-container[data-theme="dark"] {
+  --chart-color-scheme: dark;
+  --chart-text-color: #ffffff;
+}
+
+.chart-container[data-theme="light"] {
+  --chart-color-scheme: light;
+  --chart-text-color: #333333;
+}

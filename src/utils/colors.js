@@ -3,7 +3,7 @@
  */
 
 /**
- * Default chart color palette based on the new theme
+ * Default chart color palette for light mode based on the earth tone theme
  */
 export const DEFAULT_COLORS = [
     '#133629', // moss (deep green)
@@ -31,79 +31,120 @@ export const DEFAULT_COLORS = [
     '#cbc3ad', // cream-dark
     '#a29788', // warm gray
 ];
+
+/**
+ * Bright chart color palette for dark mode with better visibility
+ */
+export const DARK_MODE_COLORS = [
+    '#4ecca3', // bright mint
+    '#ff6b6b', // coral red
+    '#73c2fb', // maya blue
+    '#ffda77', // mellow yellow
+    '#a685e2', // lavender
+    '#ffbfa3', // peach
+    '#64dfdf', // turquoise
+    '#ffb6c1', // light pink
+    '#9cf196', // light green
+    '#f8b195', // light orange
+    '#a5dee5', // powder blue
+    '#fdfd96', // pastel yellow
+    '#b5ead7', // sea foam
+    '#ff9aa2', // light salmon
+    '#c7ceea', // periwinkle
+    '#edc9af', // desert sand
+    '#80deea', // light cyan
+    '#fff6dd', // cream
+    '#aeea00', // lime
+    '#dce775', // light lime
+    '#ffcdd2', // light red
+    '#e1bee7', // light purple
+    '#c8e6c9', // mint cream
+    '#b2dfdb', // aqua marine
+];
     
-  /**
-   * Generate a color palette with specified number of colors
-   * Uses a preset palette for common sizes and generates additional colors if needed
-   * 
-   * @param {number} count - Number of colors needed
-   * @returns {Array} Array of hex color values
-   */
-  export function generateColorPalette(count) {
-    // For small counts, use the predefined palette
-    if (count <= DEFAULT_COLORS.length) {
-      return DEFAULT_COLORS.slice(0, count);
-    }
-    
-    // For larger counts, generate additional colors
-    const palette = [...DEFAULT_COLORS];
-    
-    // Add more colors using HSL color space with an earth-tone bias
-    while (palette.length < count) {
-      // Use golden ratio to create visually pleasing color distribution
-      // But with a bias towards earth tones (greens, browns, oranges)
+/**
+ * Generate a color palette with specified number of colors
+ * Uses a preset palette for common sizes and generates additional colors if needed
+ * 
+ * @param {number} count - Number of colors needed
+ * @param {boolean} isDarkMode - Whether dark mode is active
+ * @returns {Array} Array of hex color values
+ */
+export function generateColorPalette(count, isDarkMode = false) {
+  // Select the appropriate color palette based on theme
+  const baseColors = isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS;
+  
+  // For small counts, use the predefined palette
+  if (count <= baseColors.length) {
+    return baseColors.slice(0, count);
+  }
+  
+  // For larger counts, generate additional colors
+  const palette = [...baseColors];
+  
+  // Add more colors using HSL color space
+  while (palette.length < count) {
+    // Use golden ratio to create visually pleasing color distribution
+    // For dark mode, use brighter, more saturated colors
+    if (isDarkMode) {
+      const hue = (palette.length * 137.508) % 360; // Golden angle in degrees
+      const saturation = 65 + (Math.random() * 25); // Higher saturation for dark mode
+      const lightness = 65 + (Math.random() * 15); // Higher lightness for dark mode
       
-      // Hues: 20-40 (oranges/browns), 80-150 (greens), 35-55 (golds)
-      const hueRanges = [[20, 40], [80, 150], [35, 55]];
+      palette.push(hslToHex(hue, saturation, lightness));
+    } else {
+      // For light mode, use more muted, earth tone colors
+      const hueRanges = [[20, 40], [80, 150], [35, 55]]; // earth tones
       const selectedRange = hueRanges[palette.length % hueRanges.length];
       
       const hue = selectedRange[0] + (Math.random() * (selectedRange[1] - selectedRange[0]));
       const saturation = 30 + (Math.random() * 40); // More muted saturation for earth tones
-      const lightness = 35 + (Math.random() * 30); // Balanced lightness that works well on white
+      const lightness = 35 + (Math.random() * 30); // Balanced lightness for light mode
       
       palette.push(hslToHex(hue, saturation, lightness));
     }
-    
-    return palette;
   }
-    
-  /**
-   * Convert HSL color values to hex color string
-   * 
-   * @param {number} h - Hue (0-360)
-   * @param {number} s - Saturation (0-100)
-   * @param {number} l - Lightness (0-100)
-   * @returns {string} Hex color value
-   */
-  function hslToHex(h, s, l) {
-    s /= 100;
-    l /= 100;
-    
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-    const m = l - c / 2;
-    
-    let r, g, b;
-    
-    if (h >= 0 && h < 60) {
-      [r, g, b] = [c, x, 0];
-    } else if (h >= 60 && h < 120) {
-      [r, g, b] = [x, c, 0];
-    } else if (h >= 120 && h < 180) {
-      [r, g, b] = [0, c, x];
-    } else if (h >= 180 && h < 240) {
-      [r, g, b] = [0, x, c];
-    } else if (h >= 240 && h < 300) {
-      [r, g, b] = [x, 0, c];
-    } else {
-      [r, g, b] = [c, 0, x];
-    }
-    
-    // Convert to hex
-    const toHex = (value) => {
-      const hex = Math.round((value + m) * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    };
-    
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  
+  return palette;
+}
+
+/**
+ * Convert HSL color values to hex color string
+ * 
+ * @param {number} h - Hue (0-360)
+ * @param {number} s - Saturation (0-100)
+ * @param {number} l - Lightness (0-100)
+ * @returns {string} Hex color value
+ */
+function hslToHex(h, s, l) {
+  s /= 100;
+  l /= 100;
+  
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  
+  let r, g, b;
+  
+  if (h >= 0 && h < 60) {
+    [r, g, b] = [c, x, 0];
+  } else if (h >= 60 && h < 120) {
+    [r, g, b] = [x, c, 0];
+  } else if (h >= 120 && h < 180) {
+    [r, g, b] = [0, c, x];
+  } else if (h >= 180 && h < 240) {
+    [r, g, b] = [0, x, c];
+  } else if (h >= 240 && h < 300) {
+    [r, g, b] = [x, 0, c];
+  } else {
+    [r, g, b] = [c, 0, x];
   }
+  
+  // Convert to hex
+  const toHex = (value) => {
+    const hex = Math.round((value + m) * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}

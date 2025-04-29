@@ -5,9 +5,10 @@ import MetricWidget from './MetricWidget';
  * Enhanced MetricGrid component with proper fixed row heights
  * @param {Object} props - Component props
  * @param {Array} props.metrics - Array of metric configurations
+ * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @returns {JSX.Element} Grid component
  */
-const MetricGrid = ({ metrics }) => {
+const MetricGrid = ({ metrics, isDarkMode = false }) => {
   // Process metrics to determine grid structure and row heights
   const processGridStructure = (metrics) => {
     let maxRow = 1;
@@ -88,7 +89,10 @@ const MetricGrid = ({ metrics }) => {
               className="grid-item"
               style={metricStyle}
             >
-              <MetricWidget metricId={metric.id} />
+              <MetricWidget 
+                metricId={metric.id} 
+                isDarkMode={isDarkMode}
+              />
             </div>
           );
         })}

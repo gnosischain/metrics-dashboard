@@ -11,9 +11,10 @@ import metricsService from '../services/metrics';
  * Manages filter state if the metric is configured for EnhancedChart filtering.
  * @param {Object} props - Component props
  * @param {string} props.metricId - ID of the metric to display
+ * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @returns {JSX.Element} - Rendered component
  */
-const MetricWidget = ({ metricId }) => {
+const MetricWidget = ({ metricId, isDarkMode = false }) => {
   const [rawData, setRawData] = useState(null); // Store raw API response
   const [chartDisplayData, setChartDisplayData] = useState(null); // Data formatted for Chart/EnhancedChart
   const [loading, setLoading] = useState(true);
@@ -196,7 +197,7 @@ const MetricWidget = ({ metricId }) => {
           {(chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
             requiresEnhancedFiltering ? (
               <EnhancedChart
-                key={`enhanced-${metricId}-${selectedLabel}`} // Key includes selectedLabel
+                key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`} // Key includes theme state
                 data={rawData} // Pass RAW data
                 selectedLabel={selectedLabel} // Pass selected label state
                 title={title} // Base title
@@ -211,10 +212,11 @@ const MetricWidget = ({ metricId }) => {
                 pointRadius={metricConfig.pointRadius}
                 showPoints={metricConfig.showPoints}
                 fill={metricConfig.fill}
+                isDarkMode={isDarkMode}
               />
             ) : (
               <Chart
-                key={`chart-${metricId}`}
+                key={`chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`} // Key includes theme state
                 data={chartDisplayData} // Pass potentially pre-transformed data
                 title={title}
                 type={chartType}
@@ -225,6 +227,7 @@ const MetricWidget = ({ metricId }) => {
                 pointRadius={metricConfig.pointRadius}
                 showPoints={metricConfig.showPoints}
                 fill={metricConfig.fill}
+                isDarkMode={isDarkMode}
               />
             )
           ) : (

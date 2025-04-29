@@ -16,6 +16,7 @@ const EnhancedChart = ({
   subLabelField,
   valueField = 'value',
   enableFiltering = true, // Keep prop for consistency, though logic relies on parent state now
+  isDarkMode = false,
   ...otherProps // Includes height, format, etc.
 }) => {
   // State only for the transformed data ready for Chart.js
@@ -95,8 +96,8 @@ const EnhancedChart = ({
         const sortedSubLabels = Array.from(allSubLabels).sort();
         console.log(`EnhancedChart[${title}]: Unique SubLabels (versions) for '${selectedLabel}':`, sortedSubLabels);
 
-        // 5. Generate Colors for SubLabels
-        const colors = generateColorPalette(sortedSubLabels.length);
+        // 5. Generate Colors for SubLabels with isDarkMode parameter
+        const colors = generateColorPalette(sortedSubLabels.length, isDarkMode);
 
         // 6. Create Chart.js Datasets
         const datasets = sortedSubLabels.map((subLabel, index) => {
@@ -123,14 +124,14 @@ const EnhancedChart = ({
     } finally {
         setIsLoading(false);
     }
-  }, [data, selectedLabel, labelField, subLabelField, valueField, title]); // Dependencies
+  }, [data, selectedLabel, labelField, subLabelField, valueField, title, isDarkMode]); // Added isDarkMode to dependencies
 
 
   // --- Effects ---
   useEffect(() => {
     // Re-run transformation when raw data or the selected label prop changes
     transformData();
-  }, [transformData]); // transformData has dependencies including selectedLabel
+  }, [transformData]); // transformData has dependencies including selectedLabel and isDarkMode
 
 
   // --- Render Logic ---
@@ -147,11 +148,12 @@ const EnhancedChart = ({
        ) : (
            <Chart
                // Key ensures Chart.js re-initializes fully when the filter changes
-               key={selectedLabel}
+               key={`enhanced-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`} // Include theme in key for re-render on theme change
                data={chartData}
                // Title is now managed by MetricWidget potentially, or keep simple here
                title="" // Title is handled by Card header
                type={type}
+               isDarkMode={isDarkMode} // Pass isDarkMode to Chart
                {...otherProps} // Pass height, format etc.
            />
        )}
