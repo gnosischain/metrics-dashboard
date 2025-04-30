@@ -90,8 +90,16 @@ tabs:
   - name: Overview
     order: 1
     metrics:
-      - id: historical_state_growth
+      - id: historical_n_txs
         gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: historical_gas_used
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: historical_state_growth
+        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 500px
 

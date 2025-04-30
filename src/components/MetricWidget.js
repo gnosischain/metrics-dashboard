@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from './Card';
 import Chart from './Chart';
 import EnhancedChart from './EnhancedChart';
+import StackedAreaChart from './StackedAreaChart';
 import TextWidget from './TextWidget';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
@@ -35,11 +36,29 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       name: title,
       description: subtitle,
       content, // For text widgets
-      valueField = 'value' // Default value field
+      valueField = 'value', // Default value field
+      stackedArea = false, // Explicit stacked area property
+      stacked = false, // General stacking property
+      fill = false // Fill property
   } = metricConfig;
+
+  // Determine if this should be a stacked area chart
+  const isStackedArea = chartType === 'area' && (stackedArea === true || stacked === true);
 
   // Determine if EnhancedChart filtering logic applies
   const requiresEnhancedFiltering = enableFiltering && labelField && subLabelField;
+
+  // Log the configuration for debugging
+  useEffect(() => {
+    console.log(`MetricWidget[${metricId}]: Configuration:`, { 
+      chartType, 
+      isStackedArea, 
+      requiresEnhancedFiltering,
+      labelField,
+      stackedArea,
+      stacked 
+    });
+  }, [metricId, chartType, isStackedArea, requiresEnhancedFiltering, labelField, stackedArea, stacked]);
 
   // Cleanup function for component unmount
   useEffect(() => {
@@ -63,10 +82,18 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       setChartDisplayData(null); // Reset display data
       console.log(`MetricWidget[${metricId}]: Fetching data...`);
 
-      // Fetch raw data - metricsService now returns raw data if requiresEnhancedFiltering is true
+      // Fetch raw data
       const fetchedData = await metricsService.fetchMetricData(metricId);
 
       if (!isMounted.current) return;
+
+      // Log the fetched data structure for debugging
+      if (fetchedData) {
+        console.log(`MetricWidget[${metricId}]: Data structure:`, 
+          Array.isArray(fetchedData) 
+            ? `Array with ${fetchedData.length} items` 
+            : (fetchedData.datasets ? `Chart.js format with ${fetchedData.datasets.length} datasets` : 'Other format'));
+      }
 
       // --- Process fetched data ---
       if (fetchedData && Array.isArray(fetchedData)) {
@@ -131,14 +158,13 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
         console.log(`MetricWidget[${metricId}]: Fetching complete. Loading: false.`);
       }
     }
-  }, [metricId, title, chartType, requiresEnhancedFiltering, labelField, selectedLabel]); // Include selectedLabel dependency? Maybe not for fetch, but for processing.
+  }, [metricId, title, chartType, requiresEnhancedFiltering, labelField, selectedLabel]); // Dependencies for useCallback
 
   // Fetch data on mount and when metricId changes
   useEffect(() => {
     fetchData();
     // Add logic for refresh interval if needed
-  }, [fetchData, metricId]); // Removed metricConfig from deps as its values are destructured
-
+  }, [fetchData, metricId]);
 
   // --- Render Logic ---
 
@@ -180,7 +206,6 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       />
   ) : null;
 
-
   return (
     <Card
       title={title}
@@ -193,20 +218,20 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {/* Render Chart or EnhancedChart based on data and config */}
+          {/* Render appropriate chart based on type and data */}
           {(chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
             requiresEnhancedFiltering ? (
+              // EnhancedChart for filtered data
               <EnhancedChart
-                key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`} // Key includes theme state
-                data={rawData} // Pass RAW data
-                selectedLabel={selectedLabel} // Pass selected label state
-                title={title} // Base title
+                key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`}
+                data={rawData}
+                selectedLabel={selectedLabel}
+                title={title}
                 type={chartType}
                 labelField={labelField}
                 subLabelField={subLabelField}
                 valueField={valueField}
                 enableFiltering={true}
-                // Pass other relevant props from metricConfig
                 height={getChartHeight()}
                 format={metricConfig.format}
                 pointRadius={metricConfig.pointRadius}
@@ -214,19 +239,31 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 fill={metricConfig.fill}
                 isDarkMode={isDarkMode}
               />
+            ) : isStackedArea && chartDisplayData.labels && chartDisplayData.datasets ? (
+              // Use the specialized StackedAreaChart for stacked area charts
+              <StackedAreaChart
+                key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
+                data={chartDisplayData}
+                title={title}
+                height={getChartHeight()}
+                format={metricConfig.format}
+                isDarkMode={isDarkMode}
+              />
             ) : (
+              // Use standard Chart for all other chart types
               <Chart
-                key={`chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`} // Key includes theme state
-                data={chartDisplayData} // Pass potentially pre-transformed data
+                key={`chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
+                data={chartDisplayData}
                 title={title}
                 type={chartType}
-                // Pass other relevant props
                 height={getChartHeight()}
                 color={metricConfig.color}
                 format={metricConfig.format}
                 pointRadius={metricConfig.pointRadius}
                 showPoints={metricConfig.showPoints}
                 fill={metricConfig.fill}
+                stacked={metricConfig.stacked}
+                stackedArea={metricConfig.stackedArea}
                 isDarkMode={isDarkMode}
               />
             )

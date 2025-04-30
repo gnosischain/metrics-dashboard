@@ -61,6 +61,51 @@ export const DARK_MODE_COLORS = [
     '#c8e6c9', // mint cream
     '#b2dfdb', // aqua marine
 ];
+
+/**
+ * High contrast color palette for stacked area charts in dark mode
+ * Specifically designed to provide better differentiation between areas
+ */
+export const HIGH_CONTRAST_DARK_COLORS = [
+    '#00FFFF', // Cyan
+    '#FF00FF', // Magenta
+    '#FFFF00', // Yellow
+    '#FF3333', // Bright Red
+    '#33FF33', // Bright Green
+    '#3333FF', // Bright Blue
+    '#FF9900', // Orange
+    '#9900FF', // Purple
+    '#FF0099', // Pink
+    '#00FF99', // Mint
+    '#99FF00', // Lime
+    '#0099FF', // Sky Blue
+];
+
+/**
+ * Convert hex color to rgba with alpha
+ * @param {string} hex - Hex color code or rgb/rgba string
+ * @param {number} alpha - Alpha transparency value (0-1)
+ * @returns {string} RGBA color string
+ */
+export const hexToRgba = (hex, alpha = 1) => {
+  if (!hex) return `rgba(128, 128, 128, ${alpha})`;
+
+  if (hex.startsWith('rgba')) return hex;
+  if (hex.startsWith('rgb(')) {
+    return hex.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+  }
+
+  hex = hex.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
     
 /**
  * Generate a color palette with specified number of colors
@@ -68,11 +113,14 @@ export const DARK_MODE_COLORS = [
  * 
  * @param {number} count - Number of colors needed
  * @param {boolean} isDarkMode - Whether dark mode is active
+ * @param {boolean} highContrast - Whether to use high contrast colors for dark mode
  * @returns {Array} Array of hex color values
  */
-export function generateColorPalette(count, isDarkMode = false) {
-  // Select the appropriate color palette based on theme
-  const baseColors = isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS;
+export function generateColorPalette(count, isDarkMode = false, highContrast = false) {
+  // Select the appropriate color palette based on theme and contrast setting
+  const baseColors = isDarkMode 
+    ? (highContrast ? HIGH_CONTRAST_DARK_COLORS : DARK_MODE_COLORS)
+    : DEFAULT_COLORS;
   
   // For small counts, use the predefined palette
   if (count <= baseColors.length) {
@@ -88,8 +136,8 @@ export function generateColorPalette(count, isDarkMode = false) {
     // For dark mode, use brighter, more saturated colors
     if (isDarkMode) {
       const hue = (palette.length * 137.508) % 360; // Golden angle in degrees
-      const saturation = 65 + (Math.random() * 25); // Higher saturation for dark mode
-      const lightness = 65 + (Math.random() * 15); // Higher lightness for dark mode
+      const saturation = highContrast ? 90 : 65; // Higher saturation for high contrast
+      const lightness = highContrast ? 70 : 65; // Higher lightness for high contrast
       
       palette.push(hslToHex(hue, saturation, lightness));
     } else {

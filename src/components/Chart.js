@@ -1,5 +1,4 @@
-// Import color palette from '../utils/colors'
-import { DEFAULT_COLORS, DARK_MODE_COLORS, generateColorPalette } from '../utils/colors';
+import { DEFAULT_COLORS, DARK_MODE_COLORS, hexToRgba } from '../utils/colors';
 import React, { useRef, useEffect, useState } from 'react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
@@ -13,37 +12,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler // Keep Filler import
+  Filler // Important for area charts
 } from 'chart.js';
 import WorldMapChart from './WorldMapChart';
 import NumberWidget from './NumberWidget';
-
-// Create a custom plugin for dark mode label rendering
-const darkModePlugin = {
-  id: 'darkModePlugin',
-  beforeDraw: function(chart) {
-    const ctx = chart.ctx;
-    if (chart.options._isDarkMode && chart.config.type === 'pie') {
-      // Store original text styling
-      const originalFill = ctx.fillStyle;
-      const originalStroke = ctx.strokeStyle;
-      const originalFont = ctx.font;
-      
-      // Apply custom label styling for dark mode
-      chart.data.datasets[0]._meta = chart.data.datasets[0]._meta || {};
-      
-      // Force the chart to redraw labels with light color for dark mode
-      chart.options.plugins.legend.labels.color = '#ffffff';
-      
-      // Restore original styling after draw
-      setTimeout(() => {
-        ctx.fillStyle = originalFill;
-        ctx.strokeStyle = originalStroke;
-        ctx.font = originalFont;
-      }, 0);
-    }
-  }
-};
+import StackedAreaChart from './StackedAreaChart'; // Import our new component
 
 // Register ChartJS components
 ChartJS.register(
@@ -56,12 +29,11 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler,  // Important for area charts
-  darkModePlugin // Custom plugin for dark mode fixes
+  Filler // Must register Filler plugin for area charts
 );
 
 /**
- * Universal chart component that handles both simple and multi-series data
+ * Universal chart component that handles various chart types
  */
 const Chart = ({
   data,
@@ -73,6 +45,8 @@ const Chart = ({
   pointRadius = 3,
   showPoints = true,
   fill = false,
+  stacked = false,  // Standard stacking (for bar charts)
+  stackedArea = false, // Specific for stacked area charts
   isDarkMode = false
 }) => {
   const chartRef = useRef(null);
@@ -84,92 +58,35 @@ const Chart = ({
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
 
-  // If this is a numberDisplay, render NumberWidget instead
+  // Handle numberDisplay type
   if (type === 'numberDisplay') {
     let value = 0;
-
-    // Extract the value from the data based on format
     if (Array.isArray(data) && data.length > 0) {
-      // For single value metrics, use the most recent data point
       value = data[data.length - 1].value;
     } else if (data && typeof data === 'object' && data.value !== undefined) {
-      // If data is just a single object with a value
       value = data.value;
     }
-
-    return (
-      <NumberWidget
-        value={value}
-        format={format}
-        label={title}
-        color={color}
-        isDarkMode={isDarkMode}
-      />
-    );
+    return <NumberWidget value={value} format={format} label={title} color={color} isDarkMode={isDarkMode} />;
   }
 
-  /**
-   * Convert hex color to rgba with alpha
-   * @param {string} hex - Hex color code
-   * @param {number} alpha - Alpha value (0-1)
-   * @returns {string} RGBA color string
-   */
-  const hexToRgba = (hex, alpha = 1) => {
-    if (!hex) return `rgba(128, 128, 128, ${alpha})`; // Default gray if no color provided
-
-    // Check if already rgba
-    if (hex.startsWith('rgba')) return hex;
-
-    // Check if rgb format
-    if (hex.startsWith('rgb(')) {
-      return hex.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
-    }
-
-    // Remove # if present
-    hex = hex.replace('#', '');
-
-    // Expand 3-character hex
-    if (hex.length === 3) {
-      hex = hex.split('').map(char => char + char).join('');
-    }
-
-    // Convert to rgb values
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  // Check if data is in multi-series format
-  const isMultiSeries =
-    data &&
-    typeof data === 'object' &&
-    !Array.isArray(data) &&
-    data.labels &&
-    data.datasets;
-
-  // Determine if this is a horizontal bar chart
-  const isHorizontal = type === 'horizontalBar';
-
-  // Determine if this is an area chart (line with fill)
+  // Handle special chart types
   const isAreaChart = type === 'area';
-
-  // Determine if this is a stacked bar chart
-  const isStackedBar = type === 'stackedBar';
+  const isStackedArea = isAreaChart && (stackedArea || stacked);
+  const isStackedBar = type === 'stackedBar' || (type === 'bar' && stacked);
+  const isHorizontal = type === 'horizontalBar';
+  const isPieChart = type === 'pie';
+  const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && 
+                        data.labels && data.datasets;
 
   // Determine actual chart type
   let actualChartType;
-  if (isAreaChart) {
-    actualChartType = 'line';
+  if (isAreaChart || isStackedArea) {
+    actualChartType = 'line'; // Area charts are Line charts with fill
   } else if (isStackedBar) {
     actualChartType = 'bar';
   } else {
     actualChartType = type;
   }
-
-  // For pie charts, prepare the data differently
-  const isPieChart = type === 'pie';
 
   // Use theme-specific color palette
   const defaultColors = isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS;
@@ -177,18 +94,28 @@ const Chart = ({
   // Adjust the default color based on theme
   const themeAdjustedColor = isDarkMode && color === '#4285F4' ? '#77aaff' : color;
 
+  // For stackedArea, delegate to StackedAreaChart component
+  if (isStackedArea && isMultiSeries) {
+    return (
+      <StackedAreaChart
+        data={data}
+        title={title}
+        height={height}
+        format={format ? format : null}
+        isDarkMode={isDarkMode}
+      />
+    );
+  }
+
   // Build chartData depending on format
   let chartData;
   if (isPieChart) {
-    // For pie charts
+    // Pie chart data preparation
     if (Array.isArray(data)) {
       const labels = data.map(item => item.category || item.label || item.date);
       const values = data.map(item => parseFloat(item.value || item.count || item.cnt || 0));
-
-      // Generate colors for each slice
       const colors = [];
       for (let i = 0; i < data.length; i++) {
-        // Use the default colors palette
         colors.push(defaultColors[i % defaultColors.length]);
       }
 
@@ -197,22 +124,10 @@ const Chart = ({
         datasets: [{
           data: values,
           backgroundColor: colors,
-          borderColor: colors.map(c => c.replace(/[^,]+(?=\))/, '1')), // Solid border
+          borderColor: colors.map(c => c.replace(/[^,]+(?=\))/, '1')),
           borderWidth: 1,
           hoverOffset: 15,
-          // Custom config for pie charts in dark mode
-          rotation: 0,
-          // For dark mode label visibility
-          datalabels: {
-            color: isDarkMode ? '#ffffff' : '#333333',
-            font: {
-              weight: 'bold',
-              size: 12
-            },
-            formatter: function(value, context) {
-              return context.chart.data.labels[context.dataIndex];
-            }
-          }
+          rotation: 0
         }]
       };
     } else if (isMultiSeries) {
@@ -221,8 +136,6 @@ const Chart = ({
       const values = data.datasets.map(ds =>
         ds.data.reduce((sum, val) => sum + (val || 0), 0)
       );
-
-      // Use dataset colors if available or default colors
       const colors = data.datasets.map((ds, i) =>
         ds.backgroundColor || defaultColors[i % defaultColors.length]
       );
@@ -235,19 +148,7 @@ const Chart = ({
           borderColor: colors.map(c => c.replace(/[^,]+(?=\))/, '1')),
           borderWidth: 1,
           hoverOffset: 15,
-          // Custom config for pie charts in dark mode
-          rotation: 0,
-          // For dark mode label visibility
-          datalabels: {
-            color: isDarkMode ? '#ffffff' : '#333333',
-            font: {
-              weight: 'bold',
-              size: 12
-            },
-            formatter: function(value, context) {
-              return context.chart.data.labels[context.dataIndex];
-            }
-          }
+          rotation: 0
         }]
       };
     }
@@ -260,10 +161,8 @@ const Chart = ({
         let baseColor = dataset.backgroundColor || dataset.borderColor || defaultColors[index % defaultColors.length];
         
         if (baseColor && baseColor.includes('rgba')) {
-          // If already RGBA, extract the RGB part
           baseColor = baseColor.replace(/rgba\((\d+,\s*\d+,\s*\d+),[^)]+\)/, 'rgb($1)');
         } else if (baseColor && baseColor.includes('#') && baseColor.length === 9) {
-          // If hex with alpha, remove alpha
           baseColor = baseColor.substring(0, 7);
         }
         
@@ -275,37 +174,38 @@ const Chart = ({
           }
         }
 
+        // Set fill property
+        let fillValue = dataset.fill || fill;
+        if (isAreaChart && !isStackedArea) {
+          fillValue = 'origin';
+        }
+
         return {
           ...dataset,
           borderWidth: 2,
-          pointRadius: showPoints ? pointRadius : 0, // Control point visibility
+          pointRadius: showPoints ? pointRadius : 0,
           pointHoverRadius: showPoints ? pointRadius + 2 : 0,
-          fill: isAreaChart || dataset.fill || fill, // Enable fill for area charts
-          backgroundColor: hexToRgba(baseColor, isAreaChart ? 0.3 : 0.6), // More transparent for area
+          fill: fillValue,
+          backgroundColor: hexToRgba(baseColor, 0.3),
           borderColor: hexToRgba(baseColor, 0.8),
-          hoverBackgroundColor: hexToRgba(baseColor, 0.8),
-          hoverBorderColor: baseColor,
+          hoverBackgroundColor: hexToRgba(baseColor, 0.5),
+          hoverBorderColor: baseColor
         };
       }),
     };
   } else {
-    // Determine labels based on chart type and data structure
+    // Standard date/value format
     const getLabels = () => {
       if (isPieChart) {
-        return (data || []).map(item =>
-          item.category || item.country || item.label ||
-          Object.values(item).find(v => typeof v === 'string')
-        );
+        return (data || []).map(item => item.category || item.country || item.label ||
+          Object.values(item).find(v => typeof v === 'string'));
       } else if (isHorizontal) {
-        // For horizontal bar charts, use category or any string field for labels
         return (data || []).map(item => {
           return item.category || item.country || item.label ||
                  Object.values(item).find(v => typeof v === 'string');
         });
       } else {
-        // For other charts, use date or existing label fields
         return (data || []).map(item => {
-          // If date has time component, remove it
           if (item.date && item.date.includes(' ')) {
             return item.date.split(' ')[0];
           }
@@ -314,10 +214,8 @@ const Chart = ({
       }
     };
 
-    // Determine values based on chart type and data structure
     const getValues = () => {
       return (data || []).map(item => {
-        // Support multiple value field names
         return parseFloat(item.value || item.cnt || item.count || 0);
       });
     };
@@ -328,14 +226,14 @@ const Chart = ({
         {
           label: title,
           data: getValues(),
-          backgroundColor: hexToRgba(themeAdjustedColor, isAreaChart ? 0.3 : 0.6),
+          backgroundColor: hexToRgba(themeAdjustedColor, 0.3),
           borderColor: hexToRgba(themeAdjustedColor, 0.8),
           borderWidth: 2,
-          pointRadius: showPoints ? pointRadius : 0, // Control point visibility
+          pointRadius: showPoints ? pointRadius : 0,
           pointHoverRadius: showPoints ? pointRadius + 2 : 0,
-          fill: isAreaChart || fill, // Enable fill for area charts
-          hoverBackgroundColor: hexToRgba(themeAdjustedColor, 0.8),
-          hoverBorderColor: themeAdjustedColor,
+          fill: isAreaChart ? 'origin' : fill,
+          hoverBackgroundColor: hexToRgba(themeAdjustedColor, 0.5),
+          hoverBorderColor: themeAdjustedColor
         },
       ],
     };
@@ -349,7 +247,6 @@ const Chart = ({
     const controls = legendControlsRef.current;
 
     // Calculate if the legend items actually overflow the container
-    // Need a buffer to avoid false positives, check if scroll width is significantly larger
     const hasOverflow = container.scrollWidth > container.clientWidth + 20;
 
     // Show/hide scroll buttons based on overflow
@@ -374,7 +271,7 @@ const Chart = ({
     }
   };
 
-  // Create the custom scrollable legend with enhanced visibility for scroll buttons
+  // Create the custom scrollable legend
   const createCustomLegend = () => {
     // If not multi-series or no datasets, don't create a legend
     if ((!isMultiSeries && !isPieChart) || !chartData.datasets || chartData.datasets.length === 0) return;
@@ -390,12 +287,15 @@ const Chart = ({
     legendItemsRef.current = legendItemsContainer;
 
     // For pie charts, use the labels array for legend
-    const legendItems = isPieChart
-      ? chartData.labels.map((label, i) => ({
-          label,
-          backgroundColor: chartData.datasets[0].backgroundColor[i]
-        }))
-      : chartData.datasets;
+    let legendItems;
+    if (isPieChart) {
+      legendItems = chartData.labels.map((label, i) => ({
+        label,
+        backgroundColor: chartData.datasets[0].backgroundColor[i]
+      }));
+    } else {
+      legendItems = chartData.datasets;
+    }
 
     // Build each legend item
     legendItems.forEach((item, index) => {
@@ -540,7 +440,7 @@ const Chart = ({
     }
   };
 
-  // Container height logic - IMPORTANT: Use explicit height
+  // Container height logic
   const containerStyle = {
     height: height === 'auto' ? '100%' : height,
     position: 'relative',
@@ -566,16 +466,15 @@ const Chart = ({
     return {
       responsive: true,
       maintainAspectRatio: false,
-      indexAxis: isHorizontal ? 'y' : 'x', // This is the key setting for horizontal bars
+      indexAxis: isHorizontal ? 'y' : 'x',
       plugins: {
         legend: {
           display: false, // We use a custom legend
           labels: {
-            color: textColor // This is for built-in legend if we ever use it
+            color: textColor
           }
         },
         tooltip: {
-          // Using built-in tooltip with styling improvements
           enabled: true,
           mode: isPieChart ? 'nearest' : 'index',
           intersect: isPieChart,
@@ -589,51 +488,38 @@ const Chart = ({
           boxPadding: 8,
           usePointStyle: true,
           callbacks: {
-            // Custom title formatting
             title: (tooltipItems) => {
               return tooltipItems[0].label;
             },
-            // Custom label formatting
             label: (tooltipItem) => {
               const dataset = tooltipItem.dataset;
               const value = tooltipItem.formattedValue;
               return ` ${dataset.label || tooltipItem.label}: ${value}`;
             },
-            // Add footer with total
             footer: (tooltipItems) => {
-              // For horizontal bar and pie charts, we might not want to show a total
               if (isHorizontal || isPieChart) return '';
 
-              // Calculate total of all values
               let total = 0;
               tooltipItems.forEach((tooltipItem) => {
-                // Support both x and y values depending on chart orientation
                 total += tooltipItem.parsed.y || tooltipItem.parsed.x || 0;
               });
 
-              // Format total with commas for thousands
               return `Total: ${total.toLocaleString()}`;
             }
           }
         },
         title: {
-          color: textColor, // Text color for any title
-          display: false // We don't use the built-in title
-        },
-        // Fix for doughnut/pie chart labels
-        datalabels: {
           color: textColor,
-          font: {
-            weight: 'bold'
-          },
-          display: function(context) {
-            return context.chart.width > 100; // Only show labels if chart is large enough
-          }
+          display: false
+        },
+        // Configure the Filler plugin specifically for area charts
+        filler: {
+          propagate: true // This helps with stacked areas
         }
       },
       scales: {
         x: {
-          display: !isPieChart, // Hide scales for pie charts
+          display: !isPieChart,
           grid: { 
             display: false,
             borderColor: gridColor 
@@ -642,15 +528,16 @@ const Chart = ({
             color: gridColor
           },
           ticks: {
-            maxRotation: isHorizontal ? 0 : 45, // Keep 45 degree rotation
-            minRotation: isHorizontal ? 0 : 45, // Keep 45 degree rotation
-            autoSkip: true, // Use default autoSkip
-            color: textColor // Set tick color based on theme
+            maxRotation: isHorizontal ? 0 : 45,
+            minRotation: isHorizontal ? 0 : 45,
+            autoSkip: true,
+            color: textColor
           },
+          // Only stack bar charts, not area charts (area charts use fill instead)
           stacked: isStackedBar,
         },
         y: {
-          display: !isPieChart, // Hide scales for pie charts
+          display: !isPieChart,
           beginAtZero: true,
           grid: {
             color: gridColor,
@@ -660,8 +547,9 @@ const Chart = ({
             color: gridColor
           },
           ticks: {
-            color: textColor // Set tick color based on theme
+            color: textColor
           },
+          // Only stack bar charts, not area charts (area charts use fill instead)
           stacked: isStackedBar,
         },
       },
@@ -671,16 +559,16 @@ const Chart = ({
         },
         point: {
           radius: showPoints ? pointRadius : 0,
-          hitRadius: 30, // Larger hit area for better tooltip triggering
+          hitRadius: 30,
           hoverRadius: showPoints ? pointRadius + 2 : 0,
         },
         arc: {
-          borderWidth: 0 // For pie charts
+          borderWidth: 0
         }
       },
       interaction: {
-        mode: isPieChart ? 'nearest' : 'index', // Show all values at same X position
-        intersect: isPieChart, // Don't require cursor to be on point except for pie
+        mode: isPieChart ? 'nearest' : 'index',
+        intersect: isPieChart,
       },
       hover: {
         mode: isPieChart ? 'nearest' : 'index',
@@ -726,7 +614,7 @@ const Chart = ({
         data={chartData} 
         options={{
           ...getChartOptions(),
-          _isDarkMode: isDarkMode // Pass dark mode state to plugin
+          _isDarkMode: isDarkMode
         }} 
       />
     </div>

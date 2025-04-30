@@ -1,0 +1,4 @@
+{
+  "id": "historical_n_txs",
+  "query": "SELECT date, transaction_type, n_txs AS value FROM dbt.execution_txs_info_daily WHERE success = 1 ORDER BY date, transaction_type"
+}
