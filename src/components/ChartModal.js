@@ -1,17 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ExpandButton from './ExpandButton';
 
 /**
- * Modal component for displaying charts in fullscreen
+ * Modal component for displaying charts in fullscreen with preserved filter controls
  * @param {Object} props - Component props
  * @param {boolean} props.isOpen - Whether the modal is open
  * @param {Function} props.onClose - Handler for closing the modal
  * @param {string} props.title - Chart title
  * @param {string} props.subtitle - Chart subtitle
+ * @param {React.ReactNode} props.headerControls - Controls from the original chart (dropdowns, etc.)
  * @param {React.ReactNode} props.children - Chart content
  * @returns {JSX.Element|null} Modal component or null if not open
  */
-const ChartModal = ({ isOpen, onClose, title, subtitle, children }) => {
+const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children }) => {
+  const modalContentRef = useRef(null);
+  const watermarkRef = useRef(null);
+
   // Add keyboard handler for ESC key
   useEffect(() => {
     const handleEscKey = (event) => {
@@ -43,9 +47,13 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, children }) => {
             <h2>{title}</h2>
             {subtitle && <div className="chart-modal-subtitle">{subtitle}</div>}
           </div>
-          <ExpandButton isExpanded={true} onClick={onClose} />
+          <div className="chart-modal-controls">
+            {/* Add the headerControls here to preserve dropdowns */}
+            {headerControls && <div className="chart-modal-header-controls">{headerControls}</div>}
+            <ExpandButton isExpanded={true} onClick={onClose} />
+          </div>
         </div>
-        <div className="chart-modal-content">
+        <div className="chart-modal-content" ref={modalContentRef}>
           {children}
         </div>
       </div>

@@ -48,6 +48,9 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
   // Determine if EnhancedChart filtering logic applies
   const requiresEnhancedFiltering = enableFiltering && labelField && subLabelField;
 
+  // Determine if chart is expandable
+  const isExpandable = chartType !== 'numberDisplay' && chartType !== 'text';
+
   // Log the configuration for debugging
   useEffect(() => {
     console.log(`MetricWidget[${metricId}]: Configuration:`, { 
@@ -56,9 +59,10 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       requiresEnhancedFiltering,
       labelField,
       stackedArea,
-      stacked 
+      stacked,
+      isExpandable
     });
-  }, [metricId, chartType, isStackedArea, requiresEnhancedFiltering, labelField, stackedArea, stacked]);
+  }, [metricId, chartType, isStackedArea, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable]);
 
   // Cleanup function for component unmount
   useEffect(() => {
@@ -195,22 +199,31 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
     );
   }
 
-  // Prepare Header Controls (Dropdown)
-  const headerControls = requiresEnhancedFiltering && uniquePrimaryLabels.length > 0 ? (
-      <LabelSelector
+  // Create dropdown component for filtering if needed
+  const createHeaderControls = () => {
+    if (requiresEnhancedFiltering && uniquePrimaryLabels.length > 0) {
+      return (
+        <LabelSelector
           idPrefix={metricId} // Pass metricId for unique IDs
           labels={uniquePrimaryLabels}
           selectedLabel={selectedLabel}
           onSelectLabel={setSelectedLabel}
           labelField={labelField}
-      />
-  ) : null;
+        />
+      );
+    }
+    return null;
+  };
+
+  // Get header controls to pass to Card
+  const headerControls = createHeaderControls();
 
   return (
     <Card
       title={title}
       subtitle={subtitle}
-      headerControls={headerControls} // Pass controls to Card
+      headerControls={headerControls} // Pass header controls to Card
+      expandable={isExpandable} // Control whether expand button is shown
     >
       {loading ? (
         <div className="loading-indicator">Loading...</div>

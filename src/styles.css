@@ -596,12 +596,28 @@ body {
 .text-widget a:hover { text-decoration: underline; }
 
 /* Number Widget Styles (Keep as is) */
-.number-widget { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; width: 100%; padding: 0.5rem; text-align: center; }
-.number-value { font-size: 2.5rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.5rem; }
+/* Number Widget Container */
+.number-widget {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+/* Number Value - Reduced size */
+.number-value {
+  font-size: 2rem; /* Reduced from 2.5rem */
+  font-weight: 600;
+  line-height: 1.2;
+}
 .number-label { font-size: 1.1rem; color: #666; }
+/* Responsive adjustments for small containers */
 .grid-item[style*="grid-column: span 3"] .number-value, /* Target small explicitly */
 .grid-item[style*="grid-column: span 4"] .number-value { /* Target small on medium screen */
-  font-size: 2rem; /* Slightly smaller for small widgets */
+  font-size: 1.7rem; /* Slightly smaller for small widgets */
 }
 
 
@@ -768,26 +784,54 @@ body {
   margin-top: 4px;
 }
 
-.chart-modal-content {
-  flex-grow: 1;
-  overflow: hidden;
-  padding: 20px;
+.chart-modal-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eaeaea;
 }
 
-/* Make sure the chart fills the available space */
-.chart-modal-content .chart-container,
-.chart-modal-content .enhanced-chart-container {
-  width: 100%;
-  height: 100%;
+.chart-modal-title {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
-/* Dark mode styles */
-.dark-mode .chart-modal {
-  background-color: #1e1e1e;
-  border: 1px solid #333;
+.chart-modal-title h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
 }
 
+.chart-modal-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* New styles for control area */
+.chart-modal-controls {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.chart-modal-header-controls {
+  margin-right: 12px;
+}
+
+/* Ensure dropdown in modal has appropriate space */
+.chart-modal-header-controls .label-selector.title-level {
+  margin-right: 12px;
+}
+
+/* Ensure dropdown is clickable and visible in modal */
+.chart-modal-header-controls .label-selector-dropdown {
+  z-index: 1100; /* Higher z-index than other modal elements */
+}
+
+/* Dark mode styling */
 .dark-mode .chart-modal-header {
   border-bottom: 1px solid #333;
 }
@@ -798,4 +842,68 @@ body {
 
 .dark-mode .chart-modal-subtitle {
   color: #aaa;
+}
+
+/* Ensure proper spacing between controls in header */
+.card-header-controls {
+  display: flex;
+  align-items: center;
+}
+
+.card-header-controls > * {
+  margin-left: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chart-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .chart-modal-controls {
+    margin-top: 12px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .chart-modal-header-controls {
+    flex-grow: 1;
+  }
+}
+
+
+/* Watermark Styling */
+.chart-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;  /* Larger size */
+  height: 80px; /* Larger size */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Ensure proper positioning in modal */
+.chart-modal-content {
+  position: relative;
+}
+
+/* Adjust watermark size for smaller charts */
+.grid-item[style*="grid-column: span 3"] .chart-watermark {
+  width: 60px;  /* Still larger but adjusted for small charts */
+  height: 60px; /* Still larger but adjusted for small charts */
+}
+
+/* Make sure all chart containers have position: relative for proper watermark placement */
+.chart-container,
+.enhanced-chart-container,
+.number-widget,
+.text-widget {
+  position: relative;
 }

@@ -45,6 +45,7 @@ const Card = ({ title, subtitle, headerControls, children, expandable = true }) 
           onClose={toggleExpand}
           title={title}
           subtitle={subtitle}
+          headerControls={headerControls}
         >
           {children}
         </ChartModal>

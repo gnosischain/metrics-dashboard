@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useRef } from 'react';
 import { 
   ComposableMap, 
   Geographies, 
@@ -18,6 +18,8 @@ const WorldMapChart = ({ data = [], isDarkMode = false }) => {
   const [formattedData, setFormattedData] = useState([]);
   const [maxValue, setMaxValue] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const containerRef = useRef(null);
+  const watermarkRef = useRef(null); // Add watermark ref
 
   // Theme-based colors
   const backgroundColor = isDarkMode ? "#1a1a1a" : "#f8f9fa";
@@ -81,6 +83,10 @@ const WorldMapChart = ({ data = [], isDarkMode = false }) => {
     };
   }, [showTooltip]);
 
+  // WE'RE NOT ADDING THE WATERMARK HERE
+  // Because the Chart.js component that renders the WorldMapChart already adds a watermark
+  // Having watermark code in both places creates duplicates
+
   return (
     <div 
       style={{ 
@@ -89,6 +95,7 @@ const WorldMapChart = ({ data = [], isDarkMode = false }) => {
         position: "relative",
         backgroundColor: backgroundColor 
       }}
+      ref={containerRef}
     >
       {isLoading ? (
         <div className="loading-indicator">Loading map data...</div>

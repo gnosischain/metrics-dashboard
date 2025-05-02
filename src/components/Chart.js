@@ -54,6 +54,7 @@ const Chart = ({
   const legendContainerRef = useRef(null);
   const legendItemsRef = useRef(null);
   const legendControlsRef = useRef(null);
+  const watermarkRef = useRef(null); // Add watermark ref
 
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
@@ -407,6 +408,44 @@ const Chart = ({
     }
   }, [chartInstance, isMultiSeries, legendCreated, isPieChart]);
 
+  // Add watermark to the chart
+  useEffect(() => {
+    if (containerRef.current) {
+      // Remove any existing watermark
+      const existingWatermark = containerRef.current.querySelector('.chart-watermark');
+      if (existingWatermark) {
+        existingWatermark.remove();
+      }
+      
+      // Create new watermark element
+      const watermark = document.createElement('div');
+      watermark.className = 'chart-watermark';
+      watermarkRef.current = watermark;
+      
+      // Set the background image based on the theme
+      const logoUrl = isDarkMode 
+        ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+        : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png';
+      
+      // Only set the background image - the positioning and size come from CSS
+      watermark.style.backgroundImage = `url(${logoUrl})`;
+          
+      // Add the watermark to the container
+      containerRef.current.appendChild(watermark);
+    }
+    
+    // Cleanup function to remove watermark when component unmounts
+    return () => {
+      if (watermarkRef.current) {
+        try {
+          watermarkRef.current.remove();
+        } catch (e) {
+          // Ignore errors if element was already removed
+        }
+      }
+    };
+  }, [containerRef.current, isDarkMode]); // Re-run when the container or theme changes
+
   // Setup a resize listener to recalc legend scroll if multi-series
   useEffect(() => {
     const handleResize = () => {
@@ -528,10 +567,12 @@ const Chart = ({
             color: gridColor
           },
           ticks: {
-            maxRotation: isHorizontal ? 0 : 45,
-            minRotation: isHorizontal ? 0 : 45,
+            maxRotation: 0,//isHorizontal ? 0 : 45,
+            minRotation: 0,//isHorizontal ? 0 : 45,
             autoSkip: true,
-            color: textColor
+            maxTicksLimit: 10,
+            color: textColor,
+          
           },
           // Only stack bar charts, not area charts (area charts use fill instead)
           stacked: isStackedBar,
@@ -558,9 +599,9 @@ const Chart = ({
           tension: 0.2,
         },
         point: {
-          radius: showPoints ? pointRadius : 0,
+          radius: 0,
           hitRadius: 30,
-          hoverRadius: showPoints ? pointRadius + 2 : 0,
+          hoverRadius: 0,
         },
         arc: {
           borderWidth: 0
@@ -585,6 +626,16 @@ const Chart = ({
         ref={containerRef}
         style={containerStyle}
       >
+        {/* Add the watermark directly to the container before rendering WorldMapChart */}
+        <div 
+          className="chart-watermark"
+          style={{
+            backgroundImage: `url(${isDarkMode 
+              ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+              : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png'})`
+          }}
+        />
+        
         <WorldMapChart data={data} isDarkMode={isDarkMode} />
       </div>
     );

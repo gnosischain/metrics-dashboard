@@ -1,6 +1,6 @@
 const metric = {
   id: 'historical_probelab_cl_client_version_distribution',
-  name: 'Probelab: CL Client Version Distribution',
+  name: 'Client Version Distribution',
   description: 'Distribution of consensus client per version',
   format: 'formatNumber',
   chartType: 'stackedBar',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Chart from './Chart';
 import { generateColorPalette, hexToRgba } from '../utils/colors';
 
@@ -23,6 +23,8 @@ const EnhancedChart = ({
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const containerRef = useRef(null);
+  const watermarkRef = useRef(null); // Add watermark ref
 
   // --- Data Transformation Logic ---
   const transformData = useCallback(() => {
@@ -127,13 +129,49 @@ const EnhancedChart = ({
     }
   }, [data, selectedLabel, labelField, subLabelField, valueField, title, isDarkMode]); // Added isDarkMode to dependencies
 
-
   // --- Effects ---
   useEffect(() => {
     // Re-run transformation when raw data or the selected label prop changes
     transformData();
   }, [transformData]); // transformData has dependencies including selectedLabel and isDarkMode
 
+  // Add watermark to the chart
+  useEffect(() => {
+    if (containerRef.current) {
+      // Remove any existing watermark
+      const existingWatermark = containerRef.current.querySelector('.chart-watermark');
+      if (existingWatermark) {
+        existingWatermark.remove();
+      }
+      
+      // Create new watermark element
+      const watermark = document.createElement('div');
+      watermark.className = 'chart-watermark';
+      watermarkRef.current = watermark;
+      
+      // Set the background image based on the theme
+      const logoUrl = isDarkMode 
+        ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+        : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png';
+      
+      // Only set the background image - the positioning and size come from CSS
+      watermark.style.backgroundImage = `url(${logoUrl})`;
+    
+      // Add the watermark to the container
+      containerRef.current.appendChild(watermark);
+    }
+    
+    // Cleanup function to remove watermark when component unmounts
+    return () => {
+      if (watermarkRef.current) {
+        try {
+          watermarkRef.current.remove();
+        } catch (e) {
+          // Ignore errors if element was already removed
+        }
+      }
+    };
+  }, [containerRef.current, isDarkMode]); // Re-run when the container or theme changes
 
   // --- Render Logic ---
   if (error) {
@@ -143,7 +181,7 @@ const EnhancedChart = ({
   // Render the Chart component
   // No LabelSelector rendered here anymore
   return (
-    <div className="enhanced-chart-container no-controls-padding"> {/* Remove class if needed */}
+    <div className="enhanced-chart-container no-controls-padding" ref={containerRef}> {/* Added ref here */}
        {isLoading ? (
            <div className="loading-indicator">Loading chart data...</div>
        ) : (

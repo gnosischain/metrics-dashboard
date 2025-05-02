@@ -6,12 +6,11 @@ import formatters from '../utils/formatter';
  * @param {Object} props - Component props
  * @param {number|string} props.value - The value to display
  * @param {string} props.format - The format to apply (e.g., formatNumber, formatBytes)
- * @param {string} props.label - Optional label for the value
  * @param {string} props.color - Color for the value
  * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @returns {JSX.Element} Number widget component
  */
-const NumberWidget = ({ value, format = 'formatNumber', label = '', color = '#4285F4', isDarkMode = false }) => {
+const NumberWidget = ({ value, format = 'formatNumber', color = '#4285F4', isDarkMode = false }) => {
   // Apply formatting if specified
   const formattedValue = format && formatters[format] 
     ? formatters[format](value)
@@ -24,11 +23,13 @@ const NumberWidget = ({ value, format = 'formatNumber', label = '', color = '#42
     <div className="number-widget">
       <div 
         className="number-value" 
-        style={{ color: adjustedColor }}
+        style={{ 
+          color: adjustedColor,
+          fontSize: '1.5rem' 
+        }}
       >
         {formattedValue}
       </div>
-      {label && <div className="number-label">{label}</div>}
     </div>
   );
 };

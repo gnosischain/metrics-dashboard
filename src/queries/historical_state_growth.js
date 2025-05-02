@@ -3,7 +3,7 @@ const metric = {
   name: 'EL State Growth',
   description: 'Daily growth of the execution state size (GB)',
   format: 'formatNumber',
-  chartType: 'area',
+  chartType: 'line',
   fill: true,
   showPoints: false, 
   color: '#769689',

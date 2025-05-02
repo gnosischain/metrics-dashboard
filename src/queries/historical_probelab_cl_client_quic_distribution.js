@@ -1,6 +1,6 @@
 const metric = {
   id: 'historical_probelab_cl_client_quic_distribution',
-  name: 'Probelab: CL Client QUIC Support Distribution',
+  name: 'QUIC Support Distribution',
   description: 'Distribution of consensus client QUIC Support (7DMA)',
   format: 'formatNumber',
   chartType: 'stackedBar',

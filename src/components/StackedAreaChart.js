@@ -47,6 +47,7 @@ const StackedAreaChart = ({
   const legendContainerRef = useRef(null);
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
+  const watermarkRef = useRef(null); // Add watermark ref
 
   // Container for storing legend item refs
   const legendItemsRef = useRef(null);
@@ -260,6 +261,44 @@ const StackedAreaChart = ({
     };
   }, [legendCreated]);
 
+  // Add watermark to the chart
+  useEffect(() => {
+    if (containerRef.current) {
+      // Remove any existing watermark
+      const existingWatermark = containerRef.current.querySelector('.chart-watermark');
+      if (existingWatermark) {
+        existingWatermark.remove();
+      }
+      
+      // Create new watermark element
+      const watermark = document.createElement('div');
+      watermark.className = 'chart-watermark';
+      watermarkRef.current = watermark;
+      
+      // Set the background image based on the theme
+      const logoUrl = isDarkMode 
+        ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+        : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png';
+      
+      // Only set the background image - the positioning and size come from CSS
+      watermark.style.backgroundImage = `url(${logoUrl})`;
+    
+      // Add the watermark to the container
+      containerRef.current.appendChild(watermark);
+    }
+    
+    // Cleanup function to remove watermark when component unmounts
+    return () => {
+      if (watermarkRef.current) {
+        try {
+          watermarkRef.current.remove();
+        } catch (e) {
+          // Ignore errors if element was already removed
+        }
+      }
+    };
+  }, [containerRef.current, isDarkMode]); // Re-run when the container or theme changes
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -287,7 +326,7 @@ const StackedAreaChart = ({
     const tooltipBackground = isDarkMode ? 'rgba(33, 33, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
     const tooltipTextColor = isDarkMode ? '#e0e0e0' : '#333333';
     const tooltipBorderColor = isDarkMode ? '#444444' : '#d9d9d9';
-
+  
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -361,15 +400,17 @@ const StackedAreaChart = ({
             color: gridColor
           },
           ticks: {
-            maxRotation: 45,
-            minRotation: 45,
-            autoSkip: true,
-            color: textColor
+            maxRotation: 0, // Keep labels horizontal
+            minRotation: 0, // Keep labels horizontal
+            autoSkip: true, // Don't let Chart.js decide which labels to skip
+            autoSkipPadding: 15,
+            color: textColor,
+            
           }
         },
         y: {
           beginAtZero: true,
-          stacked: true, // CRITICAL for proper stacking
+          stacked: true, 
           grid: {
             color: gridColor,
             borderColor: gridColor
@@ -398,6 +439,24 @@ const StackedAreaChart = ({
       }
     };
   };
+
+  // Setup label count detection and adjustment
+  useEffect(() => {
+    const updateChartOptions = () => {
+      if (chartRef.current && containerRef.current) {
+        // Force chart update to apply new options
+        chartRef.current.update();
+      }
+    };
+
+    // Update on mount and resize
+    updateChartOptions();
+    window.addEventListener('resize', updateChartOptions);
+    
+    return () => {
+      window.removeEventListener('resize', updateChartOptions);
+    };
+  }, [chartInstance, data]);
 
   // Process chart data with theme-aware colors
   const chartData = processChartData();

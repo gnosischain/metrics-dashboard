@@ -2,7 +2,10 @@ Overview:
   name: Overview
   order: 1
   metrics:
-
+    - id: under_construction
+      gridRow: 2
+      gridColumn: 1 / span 12
+      minHeight: 500px
 
 OnChainActivity:
   name: OnChain Activity
@@ -42,11 +45,15 @@ Network:
         - id: last_day_nodes
           gridRow: 1
           gridColumn: 1 / span 2
-          minHeight: 200px
+          minHeight: 125px
         - id: last_day_countries
           gridRow: 2
           gridColumn: 1 / span 2
-          minHeight: 200px
+          minHeight: 125px
+        - id: last_day_countries
+          gridRow: 3
+          gridColumn: 1 / span 2
+          minHeight: 125px
         - id: last_day_geo
           gridRow: 1 / span 2
           gridColumn: 3 / span 6
@@ -56,11 +63,11 @@ Network:
           gridColumn: 9 / span 4
           minHeight: 425px
         - id: last_day_cl_client_distribution
-          gridRow: 3 / span 2
+          gridRow: 4 / span 2
           gridColumn: 1 / span 6
           minHeight: 425px
         - id: last_day_el_client_distribution
-          gridRow: 3 / span 2
+          gridRow: 4 / span 2
           gridColumn: 7 / span 6
           minHeight: 425px
         

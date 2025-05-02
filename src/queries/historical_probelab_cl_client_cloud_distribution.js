@@ -1,6 +1,6 @@
 const metric = {
   id: 'historical_probelab_cl_client_cloud_distribution',
-  name: 'Probelab: CL Client Cloud Distribution',
+  name: 'Cloud Distribution',
   description: 'Distribution of consensus client per cloud provider',
   format: 'formatNumber',
   chartType: 'stackedBar',
