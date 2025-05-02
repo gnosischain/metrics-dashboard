@@ -3,9 +3,12 @@ const metric = {
   name: 'EL Client Distribution',
   description: 'Distribution of block production per client',
   format: 'formatNumber',
-  labelField: 'client',
+  chartType: 'area', 
+  labelField: 'client', 
   valueField: 'value',
-  chartType: 'stackedBar',
+  fill: true, 
+  showPoints: false, 
+  stackedArea: true,
   query: `SELECT * FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
 };
 

@@ -97,24 +97,33 @@ const Dashboard = () => {
   // Update tabs when active dashboard changes
   useEffect(() => {
     if (activeDashboard) {
-      const dashboardTabs = dashboardsService.getDashboardTabs(activeDashboard);
-      setTabs(dashboardTabs);
+      const dashboard = dashboards.find(d => d.id === activeDashboard);
       
-      // Set first tab as active if no active tab
-      if (!activeTab && dashboardTabs.length > 0) {
-        setActiveTab(dashboardTabs[0].id);
-      } else {
-        // Reset active tab if it doesn't exist in the new dashboard
-        const tabExists = dashboardTabs.some(tab => tab.id === activeTab);
-        if (!tabExists && dashboardTabs.length > 0) {
+      if (dashboard) {
+        const dashboardTabs = dashboardsService.getDashboardTabs(activeDashboard);
+        setTabs(dashboardTabs);
+        
+        // For dashboards with direct metrics (no tabs)
+        if (dashboard.hasDefaultTab && dashboardTabs.length > 0) {
+          // Always select the default tab
           setActiveTab(dashboardTabs[0].id);
+        } 
+        // Regular dashboards with tabs
+        else if (dashboardTabs.length > 0) {
+          // Set first tab as active if no active tab or if current active tab doesn't exist
+          const tabExists = dashboardTabs.some(tab => tab.id === activeTab);
+          if (!tabExists || !activeTab) {
+            setActiveTab(dashboardTabs[0].id);
+          }
+        } else {
+          setActiveTab('');
         }
       }
     } else {
       setTabs([]);
       setActiveTab('');
     }
-  }, [activeDashboard]);
+  }, [activeDashboard, dashboards, activeTab]);
   
   // Update metrics when active tab changes
   useEffect(() => {
@@ -135,10 +144,7 @@ const Dashboard = () => {
       setActiveTab('');
       setActiveDashboard(dashboardId);
       
-      // Set the tab after dashboard is updated
-      setTimeout(() => {
-        setActiveTab(tabId);
-      }, 0);
+      // For dashboards with direct metrics, the tab will be set by the useEffect
     } else if (tabId !== activeTab) {
       // Just update the tab if the dashboard is the same
       setTabMetrics([]);
@@ -150,12 +156,6 @@ const Dashboard = () => {
   const getActiveDashboardName = () => {
     const dashboard = dashboards.find(d => d.id === activeDashboard);
     return dashboard ? dashboard.name : '';
-  };
-  
-  // Get active tab name
-  const getActiveTabName = () => {
-    const tab = tabs.find(t => t.id === activeTab);
-    return tab ? tab.name : '';
   };
   
   // Toggle sidebar collapsed state
@@ -191,6 +191,7 @@ const Dashboard = () => {
             <div className="loading-indicator">Loading dashboard...</div>
           ) : activeDashboard && activeTab ? (
             <div className="tab-content">
+              {/* COMPLETELY REMOVED THE TAB DISPLAY SECTION */}
               <MetricGrid 
                 key={`grid-${activeDashboard}-${activeTab}`} 
                 metrics={tabMetrics}

@@ -33,6 +33,14 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
     return dashboardId === activeDashboard;
   };
   
+  // Get the first tab ID for a dashboard
+  const getFirstTabId = (dashboard) => {
+    if (dashboard.tabs && dashboard.tabs.length > 0) {
+      return dashboard.tabs[0].id;
+    }
+    return '';
+  };
+  
   // If collapsed, show only icons or abbreviated view
   if (isCollapsed) {
     return (
@@ -42,7 +50,13 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
             <li key={dashboard.id} className="dashboard-item">
               <div 
                 className={`dashboard-header icon-only ${activeDashboard === dashboard.id ? 'active' : ''}`}
-                onClick={() => onNavigation(dashboard.id, dashboard.tabs[0]?.id || '')}
+                onClick={() => {
+                  // For all dashboards, navigate to first tab
+                  const firstTabId = getFirstTabId(dashboard);
+                  if (firstTabId) {
+                    onNavigation(dashboard.id, firstTabId);
+                  }
+                }}
                 title={dashboard.name}
               >
                 <span className="dashboard-icon">{dashboard.name.charAt(0)}</span>
@@ -58,31 +72,54 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
   return (
     <div className="tab-navigation">
       <ul className="dashboard-list">
-        {dashboards.map(dashboard => (
-          <li key={dashboard.id} className="dashboard-item">
-            <div 
-              className={`dashboard-header ${activeDashboard === dashboard.id ? 'active' : ''}`}
-              onClick={() => toggleDashboard(dashboard.id)}
-            >
-              <span className="dashboard-name">{dashboard.name}</span>
-              <span className="expand-icon">{isDashboardExpanded(dashboard.id) ? '▼' : '▶'}</span>
-            </div>
-            
-            {isDashboardExpanded(dashboard.id) && (
-              <ul className="tab-list">
-                {dashboard.tabs.map(tab => (
-                  <li 
-                    key={tab.id} 
-                    className={`tab-item ${activeDashboard === dashboard.id && activeTab === tab.id ? 'active' : ''}`}
-                    onClick={() => onNavigation(dashboard.id, tab.id)}
-                  >
-                    {tab.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
+        {dashboards.map(dashboard => {
+          // Get the first tab for this dashboard
+          const firstTabId = getFirstTabId(dashboard);
+          
+          // Check if this is a dashboard with no tabs UI
+          const isTablessDashboard = dashboard.hasDefaultTab === true;
+          
+          return (
+            <li key={dashboard.id} className="dashboard-item">
+              <div 
+                className={`dashboard-header ${activeDashboard === dashboard.id ? 'active' : ''}`}
+                onClick={() => {
+                  // Handle dashboard click
+                  if (isTablessDashboard) {
+                    // For tabless dashboards, navigate directly to first tab
+                    if (firstTabId) {
+                      onNavigation(dashboard.id, firstTabId);
+                    }
+                  } else {
+                    // For regular dashboards, toggle expansion
+                    toggleDashboard(dashboard.id);
+                  }
+                }}
+              >
+                <span className="dashboard-name">{dashboard.name}</span>
+                {/* Only show expand icon for dashboards with tabs */}
+                {!isTablessDashboard && (
+                  <span className="expand-icon">{isDashboardExpanded(dashboard.id) ? '▼' : '▶'}</span>
+                )}
+              </div>
+              
+              {/* Only show tab list for dashboards with tabs and when expanded */}
+              {!isTablessDashboard && isDashboardExpanded(dashboard.id) && (
+                <ul className="tab-list">
+                  {dashboard.tabs && dashboard.tabs.map(tab => (
+                    <li 
+                      key={tab.id} 
+                      className={`tab-item ${activeDashboard === dashboard.id && activeTab === tab.id ? 'active' : ''}`}
+                      onClick={() => onNavigation(dashboard.id, tab.id)}
+                    >
+                      {tab.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

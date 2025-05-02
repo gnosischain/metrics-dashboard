@@ -1,145 +1,146 @@
-## Network Dashboard
-name: Network
-order: 1
-tabs:
-  - name: Overview
-    order: 1
-    metrics:
-      - id: last_day_nodes
-        gridRow: 1
-        gridColumn: 1 / span 2
-        minHeight: 200px
-      - id: last_day_countries
-        gridRow: 2
-        gridColumn: 1 / span 2
-        minHeight: 200px
-      - id: last_day_geo
-        gridRow: 1 / span 2
-        gridColumn: 3 / span 6
-        minHeight: 425px
-      - id: last_day_country_counts
-        gridRow: 1 / span 2
-        gridColumn: 9 / span 4
-        minHeight: 425px
-      - id: last_day_cl_client_distribution
-        gridRow: 3 / span 2
-        gridColumn: 1 / span 6
-        minHeight: 425px
-      - id: last_day_el_client_distribution
-        gridRow: 3 / span 2
-        gridColumn: 7 / span 6
-        minHeight: 425px
-      
-  - name: Clients
-    order: 2
-    metrics:
-      - id: historical_el_client_distribution
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 600px
-      - id: historical_cl_client_distribution
-        gridRow: 2
-        gridColumn: 1 / span 12
-        minHeight: 600px
-      - id: historical_el_forks
-        gridRow: 3
-        gridColumn: 1 / span 6
-        minHeight: 400px
-      - id: historical_cl_forks
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 400px
+Overview:
+  name: Overview
+  order: 1
+  metrics:
 
-  - name: Geography
-    order: 3
-    metrics:
-      - id: historical_nodes_geo
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 500px
 
-  - name: Probelab
-    order: 4
-    metrics:
-      - id: historical_probelab_cl_client_distribution
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 500px
-      - id: historical_probelab_cl_client_version_distribution
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: historical_probelab_cl_client_quic_distribution
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 500px
-      - id: historical_probelab_cl_client_cloud_distribution
-        gridRow: 3
-        gridColumn: 1 / span 12
-        minHeight: 500px
-      - id: historical_probelab_cl_client_country_distribution
-        gridRow: 4
-        gridColumn: 1 / span 12
-        minHeight: 500px
-      
+OnChainActivity:
+  name: OnChain Activity
+  order: 2
+  tabs:
+    - name: Execution
+      order: 1
+      metrics:
+        - id: historical_n_txs
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_gas_used
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 500px
+        - id: historical_state_growth
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 500px
 
-## Execution Dashboard
-name: Execution
-order: 2
-tabs:
-  - name: Overview
-    order: 1
-    metrics:
-      - id: historical_n_txs
-        gridRow: 1
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: historical_gas_used
-        gridRow: 1
-        gridColumn: 7 / span 6
-        minHeight: 500px
-      - id: historical_state_growth
-        gridRow: 2
-        gridColumn: 1 / span 12
-        minHeight: 500px
+    - name: Consensus
+      order: 2
+      metrics:
+        - id: historical_el_client_distribution
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 400px
 
-## Consensus Dashboard
-name: Consensus
-order: 3
-tabs:
-  - name: Overview
-    order: 1
-    metrics:
-      - id: historical_el_client_distribution
-        gridRow: 1
-        gridColumn: 1 / span 6
-        minHeight: 400px
-
-## Tests Dashboard
-name: ESG
-order: 4
-tabs:
-  - name: Overview
-    order: 1
-    metrics:
-      - id: historical_co2_emissions
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 400px
-      - id: historical_electricity_demand
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: historical_power_demand
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 500px
-  - name: Methodology
-    order: 2
-    metrics:
-      - id: esg_methodology
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 16000px
-
+Network:
+  name: Network
+  order: 3
+  tabs:
+    - name: Overview
+      order: 1
+      metrics:
+        - id: last_day_nodes
+          gridRow: 1
+          gridColumn: 1 / span 2
+          minHeight: 200px
+        - id: last_day_countries
+          gridRow: 2
+          gridColumn: 1 / span 2
+          minHeight: 200px
+        - id: last_day_geo
+          gridRow: 1 / span 2
+          gridColumn: 3 / span 6
+          minHeight: 425px
+        - id: last_day_country_counts
+          gridRow: 1 / span 2
+          gridColumn: 9 / span 4
+          minHeight: 425px
+        - id: last_day_cl_client_distribution
+          gridRow: 3 / span 2
+          gridColumn: 1 / span 6
+          minHeight: 425px
+        - id: last_day_el_client_distribution
+          gridRow: 3 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 425px
         
+    - name: Clients
+      order: 2
+      metrics:
+        - id: historical_el_client_distribution
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 600px
+        - id: historical_cl_client_distribution
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 600px
+        - id: historical_el_forks
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 400px
+        - id: historical_cl_forks
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 400px
+
+    - name: Geography
+      order: 3
+      metrics:
+        - id: historical_nodes_geo
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+
+    - name: Probelab
+      order: 4
+      metrics:
+        - id: historical_probelab_cl_client_distribution
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: historical_probelab_cl_client_version_distribution
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_probelab_cl_client_quic_distribution
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 500px
+        - id: historical_probelab_cl_client_cloud_distribution
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: historical_probelab_cl_client_country_distribution
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: 500px
+
+ESG:
+  name: ESG
+  order: 4
+  tabs:
+    - name: Overview
+      order: 1
+      metrics:
+        - id: historical_co2_emissions
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 400px
+        - id: historical_electricity_demand
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_power_demand
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 500px
+    - name: Methodology
+      order: 2
+      metrics:
+        - id: esg_methodology
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 16000px
+
+          
