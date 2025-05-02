@@ -9,7 +9,7 @@ export const DEFAULT_COLORS = [
     '#133629', // moss (deep green)
     '#dd7143', // orange
     '#3e6957', // forest
-    '#f0ebde', // cream
+    '#89857c', // gray
     '#b64b1b', // burnt orange
     '#91b7a1', // minty green
     '#6f592c', // saddle-brown

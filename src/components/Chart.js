@@ -186,9 +186,9 @@ const Chart = ({
           pointRadius: showPoints ? pointRadius : 0,
           pointHoverRadius: showPoints ? pointRadius + 2 : 0,
           fill: fillValue,
-          backgroundColor: hexToRgba(baseColor, 0.3),
-          borderColor: hexToRgba(baseColor, 0.8),
-          hoverBackgroundColor: hexToRgba(baseColor, 0.5),
+          backgroundColor: hexToRgba(baseColor, 0.6),
+          borderColor: hexToRgba(baseColor, 0.9),
+          hoverBackgroundColor: hexToRgba(baseColor, 0.8),
           hoverBorderColor: baseColor
         };
       }),
@@ -226,13 +226,13 @@ const Chart = ({
         {
           label: title,
           data: getValues(),
-          backgroundColor: hexToRgba(themeAdjustedColor, 0.3),
-          borderColor: hexToRgba(themeAdjustedColor, 0.8),
+          backgroundColor: hexToRgba(themeAdjustedColor, 0.6),
+          borderColor: hexToRgba(themeAdjustedColor, 0.9),
           borderWidth: 2,
           pointRadius: showPoints ? pointRadius : 0,
           pointHoverRadius: showPoints ? pointRadius + 2 : 0,
           fill: isAreaChart ? 'origin' : fill,
-          hoverBackgroundColor: hexToRgba(themeAdjustedColor, 0.5),
+          hoverBackgroundColor: hexToRgba(themeAdjustedColor, 0.8),
           hoverBorderColor: themeAdjustedColor
         },
       ],

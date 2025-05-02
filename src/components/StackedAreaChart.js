@@ -77,8 +77,8 @@ const StackedAreaChart = ({
       const baseColor = colors[index % colors.length];
       
       // Adjust opacity based on theme - use higher opacity in dark mode for better visibility
-      const backgroundOpacity = isDarkMode ? 0.7 : 0.5;
-      const borderOpacity = isDarkMode ? 0.9 : 0.8;
+      const backgroundOpacity = 0.6 //= isDarkMode ? 0.7 : 0.5;
+      const borderOpacity = 0.9//= isDarkMode ? 0.9 : 0.8;
 
       return {
         ...dataset,
@@ -87,6 +87,7 @@ const StackedAreaChart = ({
         pointHoverRadius: 3, // Show points on hover
         borderColor: hexToRgba(baseColor, borderOpacity),
         backgroundColor: hexToRgba(baseColor, backgroundOpacity),
+        hoverBackgroundColor: hexToRgba(baseColor, 0.8),
         // The fill property is critical for stacking
         fill: true, // This must be true for stacking to work
       };

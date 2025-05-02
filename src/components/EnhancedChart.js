@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Chart from './Chart';
-import { generateColorPalette } from '../utils/colors';
+import { generateColorPalette, hexToRgba } from '../utils/colors';
 
 /**
  * Enhanced Chart component for filtered, stacked charts.
@@ -105,13 +105,14 @@ const EnhancedChart = ({
             return {
                 label: subLabel,
                 data: sortedDates.map(date => groupedByDate[date][subLabel] || 0),
-                backgroundColor: color,
-                borderColor: color,
+                backgroundColor: hexToRgba(color, 0.6),
+                borderColor: hexToRgba(color, 0.9),
+                hoverBackgroundColor: hexToRgba(color, 0.8),
                 borderWidth: 1,
                 // stack: 'stack1' // Assign stack group if needed
             };
         });
-
+       
         // 7. Set final Chart.js data structure
         const finalChartData = { labels: sortedDates, datasets: datasets };
         console.log(`EnhancedChart[${title}]: Final chartData structure updated for '${selectedLabel}'.`);
