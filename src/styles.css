@@ -1109,3 +1109,93 @@ body {
   border: 1px solid #333333 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* Fix for legend spacing and alignment */
+@media (max-width: 768px) {
+  /* Add more space below x-axis for stacked charts */
+  .chart-container {
+    padding-bottom: 3.5rem !important; /* Further increase bottom padding */
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Make chart canvases taller to prevent cutting off */
+  .chart-container canvas,
+  .enhanced-chart-container canvas {
+    margin-bottom: 2rem !important;
+    height: calc(100% - 2rem) !important; /* Adjust height to account for margin */
+  }
+  
+  /* Reduce top spacing for legends in mobile */
+  .chart-legend-container {
+    top: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Force canvas scaling for better axis display */
+  [class*="stacked"] canvas,
+  .bar-type canvas {
+    max-height: calc(100% - 30px) !important; /* Reserve space for x-axis */
+  }
+  
+  /* Specific fix for stacked charts which need more height */
+  .metrics-grid-positioned .grid-item {
+    min-height: 450px !important; /* Further increase from 400px */
+  }
+}
+
+/* Fix for dark mode modal cards */
+.dark-mode .chart-modal,
+.dark-mode .chart-modal-content,
+.dark-mode .chart-modal .metric-card,
+.dark-mode .chart-modal .card-content {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+}
+
+/* Fix for dark mode tab backgrounds */
+.dark-mode .tab-list {
+  background-color: #2a2a2a !important;
+}
+
+.dark-mode .tab-item {
+  color: #e0e0e0 !important;
+  background-color: transparent !important;
+}
+
+.dark-mode .tab-item:hover {
+  background-color: #333333 !important;
+}
+
+.dark-mode .tab-item.active {
+  background-color: #3a3a3a !important;
+  border-left-color: #5a9bd5 !important;
+}
+
+/* Ensure proper axis display in dark mode */
+.dark-mode .chart-container canvas,
+.dark-mode .enhanced-chart-container canvas {
+  filter: brightness(1.05) !important;
+}
+
+/* Ensure legends in dark mode have proper coloring */
+.dark-mode .chart-legend-container {
+  background-color: transparent !important;
+}
+
+.dark-mode .legend-item {
+  background-color: #2a2a2a !important;
+  border-color: #444444 !important;
+}
+
+.dark-mode .legend-item-label {
+  color: #e0e0e0 !important;
+}
+
+/* Fix for embedded chart content in modals */
+.chart-modal-content .chart-container,
+.chart-modal-content .enhanced-chart-container {
+  position: relative !important;
+  height: 100% !important;
+  min-height: 500px !important;
+}
