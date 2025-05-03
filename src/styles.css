@@ -631,75 +631,186 @@ body {
 }
 
 @media (max-width: 768px) {
-  .dashboard-main { flex-direction: column; }
-  .dashboard-sidebar { width: 100% !important; border-right: none; border-bottom: 1px solid #eaeaea; }
-  .dashboard-sidebar.collapsed { width: 100% !important; }
-  .sidebar-toggle { display: none; }
-
-  /* Adjust sidebar dashboard/tab list for horizontal scroll */
-  .tab-navigation { padding: 0; }
-  .dashboard-list { display: flex; overflow-x: auto; padding: 0.5rem; border-bottom: 1px solid #eee; }
-  .dashboard-item { margin-bottom: 0; margin-right: 0.5rem; flex-shrink: 0; }
-  .dashboard-header { border-left: none; border-bottom: 3px solid transparent; padding: 0.5rem 1rem; }
-  .dashboard-header.active { border-left: none; border-bottom-color: #4285F4; }
-  .expand-icon { display: none; }
-  .tab-list { display: none; } /* Hide tabs in this mobile view, rely on dashboard selection */
-
-  /* Stack card header on mobile */
-   .card-header { flex-direction: column; align-items: flex-start; }
-   .card-header-text { margin-right: 0; margin-bottom: 0.5rem; }
-   .card-header-controls { width: 100%; }
-   .label-selector.title-level { width: 100%; }
-   .label-selector.title-level .label-selector-dropdown { flex-grow: 1; }
-
-  /* Make grid items full width */
-  .metrics-grid-positioned { display: flex; flex-direction: column; gap: 1.5rem; }
-  .metrics-grid-positioned .grid-item { width: 100% !important; grid-column: auto !important; grid-row: auto !important; margin-bottom: 0; }
-  /* Adjust explicit heights for mobile if needed, e.g., make them smaller */
-  .metrics-grid-positioned .grid-item[style*="min-height"] {
-     /* Example: Use a CSS variable or smaller fixed height */
-     min-height: 300px !important; /* Override large heights */
-     height: auto !important; /* Let content determine height */
+  /* Basic layout adjustments */
+  .dashboard-main { 
+    flex-direction: column; 
+  }
+  
+  /* Sidebar adjustments */
+  .dashboard-sidebar { 
+    width: 100% !important; 
+    border-right: none; 
+    border-bottom: 1px solid #eaeaea; 
+    height: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  
+  .dashboard-sidebar.collapsed { 
+    width: 100% !important; 
+  }
+  
+  .sidebar-toggle { 
+    display: none; 
   }
 
-  .number-value { font-size: 2rem; } /* Adjust number widget size */
+  /* Tab navigation improvements */
+  .tab-navigation { 
+    padding: 0; 
+  }
+  
+  /* Make dashboard list scrollable vertically instead of horizontally */
+  .dashboard-list { 
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem; 
+    border-bottom: 1px solid #eee;
+    overflow-y: auto;
+    max-height: 45vh;
+  }
+  
+  .dashboard-item { 
+    margin-bottom: 0.5rem; 
+    margin-right: 0; 
+    width: 100%;
+  }
+  
+  /* Dashboard header styling */
+  .dashboard-header { 
+    border-left: none; 
+    border-bottom: 3px solid transparent; 
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dashboard-header.active { 
+    border-left: none; 
+    border-bottom-color: #4285F4; 
+    background-color: #f0f0f5;
+  }
+  
+  /* Show expand icon for proper dashboard navigation */
+  .expand-icon { 
+    display: inline-block; 
+  }
+  
+  /* Make tab lists visible when expanded */
+  .tab-list { 
+    display: block; /* Show tab lists when expanded */
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #f8f8fa;
+    border-radius: 4px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Improve tab item styling */
+  .tab-item {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid transparent;
+  }
+  
+  .tab-item.active {
+    border-left: 3px solid #4285F4;
+    background-color: #f0f0f5;
+  }
 
-   /* --- Mobile CSS Adjustments for Absolute Legend --- */
-   .chart-legend-container {
-      position: relative; /* Change back to relative for stacked mobile layout */
-      top: auto;
-      left: auto;
-      right: auto;
-      height: auto; /* Auto height */
-      padding: 5px 1rem; /* Add some padding back */
-      order: -1; /* Place legend above chart */
-      margin-bottom: 5px;
-      /* No overflow needed here */
-      z-index: auto; /* Reset z-index */
-   }
-   .chart-legend-items {
-       padding: 5px 0;
-       height: auto; /* Auto height */
-       min-height: 30px;
-   }
-   .legend-controls {
-      position: static; /* Normal positioning */
-      height: auto;
-      padding-top: 5px;
-      /* Ensure buttons are visible if needed */
-      display: flex; /* Or none, depending on JS logic */
-   }
+  /* Card adjustments */
+  .card-header { 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  .card-header-text { 
+    margin-right: 0; 
+    margin-bottom: 0.5rem; 
+  }
+  
+  .card-header-controls { 
+    width: 100%; 
+  }
+  
+  .label-selector.title-level { 
+    width: 100%; 
+  }
+  
+  .label-selector.title-level .label-selector-dropdown { 
+    flex-grow: 1; 
+  }
 
-  /* Adjust chart container padding for mobile */
+  /* Grid layout adjustments */
+  .metrics-grid-positioned { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 1.5rem; 
+  }
+  
+  .metrics-grid-positioned .grid-item { 
+    width: 100% !important; 
+    grid-column: 1 / -1 !important; /* Span all columns */
+    grid-row: auto !important; 
+    margin-bottom: 0; 
+  }
+  
+  /* Adjust explicit heights for mobile */
+  .metrics-grid-positioned .grid-item[style*="min-height"] {
+    min-height: 300px !important; /* Override large heights */
+    height: auto !important; /* Let content determine height */
+  }
+
+  /* Widget styling */
+  .number-value { 
+    font-size: 2rem; 
+  }
+
+  /* Chart legend adjustments */
+  .chart-legend-container {
+    position: relative; /* Change back to relative for stacked mobile layout */
+    top: auto;
+    left: auto;
+    right: auto;
+    height: auto; /* Auto height */
+    padding: 5px 1rem; /* Add some padding back */
+    order: -1; /* Place legend above chart */
+    margin-bottom: 5px;
+    z-index: auto; /* Reset z-index */
+  }
+  
+  .chart-legend-items {
+    padding: 5px 0;
+    height: auto; /* Auto height */
+    min-height: 30px;
+  }
+  
+  .legend-controls {
+    position: static; /* Normal positioning */
+    height: auto;
+    padding-top: 5px;
+    display: flex; /* Make controls visible */
+  }
+
+  /* Chart container adjustments */
   .chart-container {
     /* Override conditional padding and apply base padding */
-    /* Use !important ONLY if necessary to override .has-legend */
     padding-top: 10px !important;
     padding-left: 1rem;
     padding-right: 1rem;
     padding-bottom: 1rem;
   }
-   /* --- End Mobile CSS Adjustments --- */
+  
+  /* Card and chart sizing */
+  .metric-card {
+    height: auto;
+    min-height: 300px;
+  }
+  
+  .chart-container {
+    min-height: 250px;
+  }
 }
 
 

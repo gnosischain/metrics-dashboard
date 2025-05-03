@@ -93,6 +93,12 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
                   } else {
                     // For regular dashboards, toggle expansion
                     toggleDashboard(dashboard.id);
+                    
+                    // On mobile, also navigate to the first tab if clicking on an inactive dashboard
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile && dashboard.id !== activeDashboard && firstTabId) {
+                      onNavigation(dashboard.id, firstTabId);
+                    }
                   }
                 }}
               >

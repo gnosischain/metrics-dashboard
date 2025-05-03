@@ -137,16 +137,31 @@ const Dashboard = () => {
   
   // Change the active dashboard and tab
   const handleNavigation = (dashboardId, tabId) => {
+    // If changing to a different dashboard
     if (dashboardId !== activeDashboard) {
-      // Clear existing tabs and metrics first to ensure clean unmounting
-      setTabs([]);
+      // First, check if tabId is valid
+      const newDashboard = dashboards.find(d => d.id === dashboardId);
+      const newTabs = newDashboard ? dashboardsService.getDashboardTabs(dashboardId) : [];
+      
+      // Clear metrics first to ensure clean unmounting
       setTabMetrics([]);
-      setActiveTab('');
+      
+      // Set the new dashboard
       setActiveDashboard(dashboardId);
       
-      // For dashboards with direct metrics, the tab will be set by the useEffect
-    } else if (tabId !== activeTab) {
-      // Just update the tab if the dashboard is the same
+      // Then set the new tab
+      // If the provided tabId exists, use it; otherwise, use the first tab
+      if (tabId && newTabs.some(tab => tab.id === tabId)) {
+        setActiveTab(tabId);
+      } else if (newTabs.length > 0) {
+        setActiveTab(newTabs[0].id);
+      } else {
+        setActiveTab('');
+      }
+    } 
+    // Just changing tabs within the same dashboard
+    else if (tabId !== activeTab) {
+      // Just update the tab
       setTabMetrics([]);
       setActiveTab(tabId);
     }
@@ -191,7 +206,6 @@ const Dashboard = () => {
             <div className="loading-indicator">Loading dashboard...</div>
           ) : activeDashboard && activeTab ? (
             <div className="tab-content">
-              {/* COMPLETELY REMOVED THE TAB DISPLAY SECTION */}
               <MetricGrid 
                 key={`grid-${activeDashboard}-${activeTab}`} 
                 metrics={tabMetrics}
