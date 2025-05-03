@@ -18,7 +18,10 @@ body {
   flex-direction: column;
 }
 
-/* Dashboard layout */
+/* ==================
+   Dashboard Layout
+   ================== */
+
 .dashboard {
   display: flex;
   flex-direction: column;
@@ -26,7 +29,7 @@ body {
   height: 100vh;
 }
 
-/* Header styles with logo */
+/* Header styles */
 .dashboard-header {
   background-color: #fff;
   padding: 1rem 1.5rem;
@@ -35,10 +38,6 @@ body {
   justify-content: space-between;
   align-items: center;
   z-index: 10;
-  /* Re-add original dashboard header flex properties if needed */
-  /* display: flex; was part of original dashboard-header */
-  /* justify-content: space-between; */
-  /* align-items: center; */
 }
 
 .header-logo-section {
@@ -63,7 +62,6 @@ body {
   margin-bottom: 0.25rem;
 }
 
-
 .last-updated {
   font-size: 0.85rem;
   color: #666;
@@ -74,7 +72,6 @@ body {
   font-weight: bolder;
   color: #1a3eff;
 }
-
 
 .header-actions {
   display: flex;
@@ -124,13 +121,13 @@ body {
 }
 
 .dashboard-sidebar {
-  width: 240px; /* Adjusted width */
+  width: 240px;
   background-color: #fff;
   border-right: 1px solid #eaeaea;
   overflow-y: auto;
   flex-shrink: 0;
-  position: relative; /* Added for toggle positioning */
-  transition: width 0.3s ease; /* Added transition */
+  position: relative;
+  transition: width 0.3s ease;
 }
 
 /* Collapsed sidebar state */
@@ -143,7 +140,7 @@ body {
 .sidebar-toggle {
   position: absolute;
   top: 0px;
-  right: -4px; /* Keep positioning */
+  right: -4px;
   width: 24px;
   height: 16px;
   background-color: #ffffff;
@@ -162,13 +159,16 @@ body {
   background-color: #e0e0e5;
 }
 
-
 .dashboard-content {
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
-  background-color: #f5f5f7; /* Match body background */
+  background-color: #f5f5f7;
 }
+
+/* ==================
+   Navigation Styles
+   ================== */
 
 /* Tab navigation */
 .tab-navigation {
@@ -186,11 +186,11 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.dashboard-header { /* This targets dashboard items in the sidebar now */
+.dashboard-header { /* This targets dashboard items in the sidebar */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem; /* Restore padding */
+  padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
   font-weight: 500;
@@ -209,35 +209,33 @@ body {
 
 .dashboard-name {
   flex: 1;
-  white-space: nowrap; /* Prevent wrap */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Add ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .expand-icon {
   font-size: 0.8rem;
   color: #666;
-  margin-left: 0.5rem; /* Add space */
+  margin-left: 0.5rem;
 }
 
 /* Collapsed navigation styles */
 .tab-navigation.collapsed .dashboard-header {
   padding: 0.75rem 0;
-  justify-content: center; /* Center icon */
+  justify-content: center;
 }
 
 .tab-navigation.collapsed .dashboard-name,
 .tab-navigation.collapsed .expand-icon {
-   display: none; /* Hide text and expand icon */
+   display: none;
 }
 
-
 .tab-navigation.collapsed .dashboard-icon {
-  /* Styles for icon view when collapsed */
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #4285F4; /* Example color */
+  background-color: #4285F4;
   color: white;
   display: flex;
   align-items: center;
@@ -245,10 +243,10 @@ body {
   font-weight: 600;
   font-size: 0.9rem;
 }
-.tab-navigation.collapsed .dashboard-header.active .dashboard-icon {
-    background-color: #1E5DC9; /* Darker when active */
-}
 
+.tab-navigation.collapsed .dashboard-header.active .dashboard-icon {
+    background-color: #1E5DC9;
+}
 
 /* Tab list styles */
 .tab-list {
@@ -258,7 +256,7 @@ body {
 }
 
 .tab-item {
-  padding: 0.5rem 1rem 0.5rem 1.5rem; /* Adjust padding */
+  padding: 0.5rem 1rem 0.5rem 1.5rem;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
   border-left: 3px solid transparent;
@@ -278,14 +276,6 @@ body {
   font-weight: 500;
 }
 
-
-.tab-title { /* This class wasn't used, maybe remove or repurpose */
-  margin-bottom: 1.5rem;
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: #333;
-}
-
 /* Empty dashboard message */
 .empty-dashboard {
   display: flex;
@@ -296,6 +286,10 @@ body {
   text-align: center;
   font-size: 1.1rem;
 }
+
+/* ==================
+   Grid Layout
+   ================== */
 
 /* Metrics grid layout */
 .metrics-grid-container {
@@ -310,12 +304,16 @@ body {
 }
 
 .metrics-grid-positioned .grid-item {
-  overflow: hidden; /* Prevent content spill */
-  display: flex; /* Use flex */
-  flex-direction: column; /* Stack card vertically */
-  height: 100%; /* Ensure grid item itself tries to respect row height */
-  min-width: 0; /* Prevent overflow in narrow containers */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
 }
+
+/* ==================
+   Cards & Widgets
+   ================== */
 
 /* Metric Card styles */
 .metric-card {
@@ -323,35 +321,35 @@ body {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  display: flex; /* Use flexbox */
-  flex-direction: column; /* Stack header and content vertically */
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%; /* Make card fill its grid cell */
+  height: 100%;
 }
 
 .card-header {
-  padding: 0.75rem 1rem; /* Adjusted padding */
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0; /* Prevent header from shrinking */
-  display: flex; /* Enable flex for text and controls */
-  justify-content: space-between; /* Space out text and controls */
-  align-items: center; /* Vertically align items */
-  min-height: 50px; /* Ensure minimum header height */
-  flex-wrap: wrap; /* Allow controls to wrap on small screens if needed */
-  position: relative; /* Needed for z-index */
-  z-index: 10;      /* Ensure header above absolute legend */
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 50px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
 }
 
 .card-header-text {
-   flex-grow: 1; /* Allow text to take available space */
-   margin-right: 1rem; /* Space between text and controls */
-   min-width: 150px; /* Prevent text being squashed too much */
+   flex-grow: 1;
+   margin-right: 1rem;
+   min-width: 150px;
 }
 
 .card-title {
   font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 0.1rem; /* Reduced margin */
+  margin-bottom: 0.1rem;
 }
 
 .card-subtitle {
@@ -360,10 +358,16 @@ body {
 }
 
 .card-header-controls {
-   flex-shrink: 0; /* Prevent controls from shrinking */
+   flex-shrink: 0;
+   display: flex;
+   align-items: center;
 }
 
-/* Label Selector Styles (Now in Header) */
+.card-header-controls > * {
+  margin-left: 8px;
+}
+
+/* Label Selector Styles */
 .label-selector.title-level {
   display: flex;
   align-items: center;
@@ -383,8 +387,8 @@ body {
   background-color: white;
   font-size: 0.85rem;
   color: #333;
-  min-width: 140px; /* Adjust as needed */
-  max-width: 200px; /* Prevent excessive width */
+  min-width: 140px;
+  max-width: 200px;
   cursor: pointer;
   box-shadow: none;
   transition: border-color 0.2s;
@@ -396,46 +400,50 @@ body {
   outline: none;
 }
 
-
-/* Card Content and Chart Container Layout (MODIFIED) */
+/* Card Content and Chart Container Layout */
 .card-content {
-  /* Remove original padding */
   padding: 0;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  position: relative; /* Important for absolute positioning of children */
+  position: relative;
   min-height: 0;
 }
 
-/* Legend Container - Absolute Positioning (MODIFIED) */
+/* ==================
+   Charts & Legends
+   ================== */
+
+/* Legend Container - Absolute Positioning */
 .chart-legend-container {
-  position: absolute; /* Position absolutely */
-  top: 10px;          /* Space from top of card-content */
-  left: 1rem;         /* Horizontal padding */
-  right: 1rem;        /* Horizontal padding */
-  height: 45px;       /* Fixed height for legend area */
-  z-index: 5;         /* Above chart canvas */
-  /* Removed overflow: hidden */
+  position: absolute;
+  top: 10px;
+  left: 1rem;
+  right: 1rem;
+  height: 45px;
+  z-index: 5;
 }
 
 .chart-legend-items {
-   padding: 5px 0px; /* Internal padding */
+   padding: 5px 0px;
    display: flex;
    flex-wrap: nowrap;
-   overflow-x: auto;  /* Allow horizontal scroll */
+   overflow-x: auto;
    overflow-y: hidden;
    white-space: nowrap;
    -ms-overflow-style: none;
    scrollbar-width: none;
    scroll-behavior: smooth;
    justify-content: flex-start;
-   height: 100%;     /* Use container height */
+   height: 100%;
 }
-.chart-legend-items::-webkit-scrollbar { display: none; }
 
-/* Legend Item Styles (Keep as is) */
+.chart-legend-items::-webkit-scrollbar {
+  display: none;
+}
+
+/* Legend Item Styles */
 .legend-item {
   display: inline-flex;
   align-items: center;
@@ -448,7 +456,11 @@ body {
   background-color: #f5f5f7;
   border: 1px solid #eaeaea;
 }
-.legend-item:hover { background-color: #e5e5e7; }
+
+.legend-item:hover {
+  background-color: #e5e5e7;
+}
+
 .legend-item-color {
   display: inline-block;
   width: 14px;
@@ -458,34 +470,40 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
+
 .legend-item-label {
   font-size: 13px;
   color: #333;
   white-space: nowrap;
   font-weight: 500;
 }
+
 .legend-item.hidden .legend-item-color,
-.legend-item.hidden .legend-item-label { opacity: 0.4; }
-.legend-item.hidden .legend-item-label { text-decoration: line-through; }
+.legend-item.hidden .legend-item-label {
+  opacity: 0.4;
+}
 
+.legend-item.hidden .legend-item-label {
+  text-decoration: line-through;
+}
 
-/* Legend Controls (Position relative to absolute legend container) (MODIFIED) */
+/* Legend Controls */
 .legend-controls {
   position: absolute;
-  bottom: -10px; /* Position below items, adjust if needed */
+  bottom: -10px;
   left: 0;
   right: 0;
-  height: 25px;   /* Fixed height for buttons */
-  display: none;  /* Hidden by default, JS shows if needed */
+  height: 25px;
+  display: none;
   justify-content: center;
   align-items: center;
-  /* background: rgba(255, 255, 255, 0.9); */ /* Optional background */
 }
+
 .legend-btn {
   border: none;
   background-color: #e9e9ed;
   color: #333;
-  width: 25px; /* Smaller buttons */
+  width: 25px;
   height: 25px;
   border-radius: 50%;
   cursor: pointer;
@@ -493,48 +511,57 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px; /* Smaller arrow */
+  font-size: 14px;
   font-weight: bold;
   transition: background-color 0.2s, transform 0.1s;
 }
-.legend-btn:hover { background-color: #d1d1d6; transform: scale(1.05); }
-.legend-btn:active { background-color: #c1c1c6; transform: scale(0.95); }
 
+.legend-btn:hover {
+  background-color: #d1d1d6;
+  transform: scale(1.05);
+}
 
-/* Container for chart components (MODIFIED) */
+.legend-btn:active {
+  background-color: #c1c1c6;
+  transform: scale(0.95);
+}
+
+/* Chart Container */
 .enhanced-chart-container,
 .chart-container {
-  position: relative; /* Keep relative */
+  position: relative;
   width: 100%;
-  flex-grow: 1;        /* Allow it to take remaining space */
-  display: flex;         /* Use flex */
-  flex-direction: column; /* Stack */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
-  /* Base padding (with small top padding) */
-  padding-top: 10px;     /* <<< ADDED BASE PADDING */
+  padding-top: 10px;
   padding-left: 1rem;
   padding-right: 1rem;
   padding-bottom: 1rem;
+  min-height: 350px !important;
 }
 
-/* Conditional padding for legends (MODIFIED) */
+/* Charts with legends need more padding */
 .chart-container.has-legend {
-  /* Adjust top padding: Base (10px) + Legend Space (50px) = 60px total */
-  padding-top: 50px;    /* <<< ADJUSTED PADDING */
+  padding-top: 50px;
 }
 
+/* Stacked charts need more height */
+[class*="stacked"] {
+  min-height: 400px !important;
+}
 
-/* Chart.js Canvas (MODIFIED) */
+/* Chart.js Canvas */
 .chart-container canvas {
-  display: block;        /* Remove extra space */
-  width: 100% !important;  /* Fill padded container width */
-  height: 100% !important; /* Fill padded container height */
-  max-width: 100%;     /* Ensure it doesn't overflow container */
-  max-height: 100%;    /* Ensure it doesn't overflow container */
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
 }
 
-
-/* TOOLTIP Styles (Keep as before) */
+/* Tooltip Styles */
 #chartjs-tooltip {
   background-color: #fff !important;
   border: 1px solid #ccc !important;
@@ -547,21 +574,80 @@ body {
   max-width: 300px !important;
   opacity: 0 !important;
   pointer-events: none;
-  font-size: 13px !important; /* Adjusted size */
+  font-size: 13px !important;
   transition: opacity 0.1s ease !important;
 }
-.tooltip-header { font-weight: bold; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #eee; font-size: 13px !important;}
-.tooltip-body { padding: 2px 0; }
-.tooltip-row { display: flex; align-items: center; margin: 4px 0; font-size: 12px; }
-.tooltip-color-square { display: inline-block !important; width: 12px !important; height: 12px !important; margin-right: 6px !important; border-radius: 2px !important; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1) !important; }
-.tooltip-row span:last-child { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tooltip-footer { margin-top: 6px; padding-top: 6px; border-top: 1px solid #eee; font-weight: bold; font-size: 13px !important; }
-.multi-column-tooltip { display: flex; flex-wrap: wrap; width: 100%; margin: 0 -4px; }
-.tooltip-column { flex: 1; min-width: 120px; padding: 0 4px; margin-bottom: 4px; box-sizing: border-box; }
-@media (min-width: 480px) { #chartjs-tooltip { max-width: 500px !important; } }
 
+.tooltip-header {
+  font-weight: bold;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px !important;
+}
 
-/* Loading, Error, No Data Messages (Keep as is) */
+.tooltip-body {
+  padding: 2px 0;
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.tooltip-color-square {
+  display: inline-block !important;
+  width: 12px !important;
+  height: 12px !important;
+  margin-right: 6px !important;
+  border-radius: 2px !important;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.tooltip-row span:last-child {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tooltip-footer {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #eee;
+  font-weight: bold;
+  font-size: 13px !important;
+}
+
+.multi-column-tooltip {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 -4px;
+}
+
+.tooltip-column {
+  flex: 1;
+  min-width: 120px;
+  padding: 0 4px;
+  margin-bottom: 4px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 480px) {
+  #chartjs-tooltip {
+    max-width: 500px !important;
+  }
+}
+
+/* ==================
+   Status Messages
+   ================== */
+
+/* Loading, Error, No Data Messages */
 .loading-indicator,
 .error-message,
 .no-data-message {
@@ -571,32 +657,120 @@ body {
   padding: 2rem;
   color: #666;
   text-align: center;
-  flex-grow: 1; /* Ensure it takes space in flex container */
+  flex-grow: 1;
   min-height: 150px;
 }
-.error-message { color: #d32f2f; }
 
+.error-message {
+  color: #d32f2f;
+}
 
-/* Text Widget Styles (Keep as is) */
-.text-widget { padding: 0.5rem; height: 100%; overflow-y: auto; font-size: 1rem; line-height: 1.6; color: #333; }
-.text-widget h1 { font-size: 1.8rem; margin-bottom: 1rem; font-weight: 600; }
-.text-widget h2 { font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 600; }
-.text-widget h3 { font-size: 1.3rem; margin-top: 1.2rem; margin-bottom: 0.8rem; font-weight: 600; }
-.text-widget p { margin-bottom: 1rem; }
-.text-widget ul, .text-widget ol { margin-left: 1.5rem; margin-bottom: 1rem; }
-.text-widget li { margin-bottom: 0.5rem; }
-.text-widget blockquote { border-left: 3px solid #ccc; padding-left: 1rem; margin: 1rem 0; font-style: italic; color: #555; }
-.text-widget code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; }
-.text-widget pre { background-color: #f5f5f5; padding: 1rem; border-radius: 3px; overflow-x: auto; margin-bottom: 1rem; }
-.text-widget table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; } /* Smaller table font */
-.text-widget th, .text-widget td { padding: 0.5rem; border: 1px solid #ddd; text-align: left; }
-.text-widget th { background-color: #f5f5f5; font-weight: 600; }
-.text-widget hr { border: 0; border-top: 1px solid #eee; margin: 1.5rem 0; }
-.text-widget a { color: #4285F4; text-decoration: none; }
-.text-widget a:hover { text-decoration: underline; }
+/* ==================
+   Widget Types
+   ================== */
 
-/* Number Widget Styles (Keep as is) */
-/* Number Widget Container */
+/* Text Widget Styles */
+.text-widget {
+  padding: 0.5rem;
+  height: 100%;
+  overflow-y: auto;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.text-widget h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.text-widget h2 {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.text-widget h3 {
+  font-size: 1.3rem;
+  margin-top: 1.2rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.text-widget p {
+  margin-bottom: 1rem;
+}
+
+.text-widget ul,
+.text-widget ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.text-widget li {
+  margin-bottom: 0.5rem;
+}
+
+.text-widget blockquote {
+  border-left: 3px solid #ccc;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #555;
+}
+
+.text-widget code {
+  background-color: #f5f5f5;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.text-widget pre {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 3px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.text-widget table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.text-widget th,
+.text-widget td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.text-widget th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.text-widget hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 1.5rem 0;
+}
+
+.text-widget a {
+  color: #4285F4;
+  text-decoration: none;
+}
+
+.text-widget a:hover {
+  text-decoration: underline;
+}
+
+/* Number Widget Styles */
 .number-widget {
   display: flex;
   justify-content: center;
@@ -607,212 +781,26 @@ body {
   text-align: center;
 }
 
-/* Number Value - Reduced size */
 .number-value {
-  font-size: 2rem; /* Reduced from 2.5rem */
+  font-size: 2rem;
   font-weight: 600;
   line-height: 1.2;
 }
-.number-label { font-size: 1.1rem; color: #666; }
-/* Responsive adjustments for small containers */
-.grid-item[style*="grid-column: span 3"] .number-value, /* Target small explicitly */
-.grid-item[style*="grid-column: span 4"] .number-value { /* Target small on medium screen */
-  font-size: 1.7rem; /* Slightly smaller for small widgets */
+
+.number-label {
+  font-size: 1.1rem;
+  color: #666;
 }
 
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  /* Adjust grid spans if needed */
+/* Small widget adjustments */
+.grid-item[style*="grid-column: span 3"] .number-value,
+.grid-item[style*="grid-column: span 4"] .number-value {
+  font-size: 1.7rem;
 }
 
-@media (max-width: 992px) {
-  .dashboard-tabs { flex-wrap: wrap; }
-}
-
-@media (max-width: 768px) {
-  /* Basic layout adjustments */
-  .dashboard-main { 
-    flex-direction: column; 
-  }
-  
-  /* Sidebar adjustments */
-  .dashboard-sidebar { 
-    width: 100% !important; 
-    border-right: none; 
-    border-bottom: 1px solid #eaeaea; 
-    height: auto;
-    max-height: 50vh;
-    overflow-y: auto;
-  }
-  
-  .dashboard-sidebar.collapsed { 
-    width: 100% !important; 
-  }
-  
-  .sidebar-toggle { 
-    display: none; 
-  }
-
-  /* Tab navigation improvements */
-  .tab-navigation { 
-    padding: 0; 
-  }
-  
-  /* Make dashboard list scrollable vertically instead of horizontally */
-  .dashboard-list { 
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem; 
-    border-bottom: 1px solid #eee;
-    overflow-y: auto;
-    max-height: 45vh;
-  }
-  
-  .dashboard-item { 
-    margin-bottom: 0.5rem; 
-    margin-right: 0; 
-    width: 100%;
-  }
-  
-  /* Dashboard header styling */
-  .dashboard-header { 
-    border-left: none; 
-    border-bottom: 3px solid transparent; 
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .dashboard-header.active { 
-    border-left: none; 
-    border-bottom-color: #4285F4; 
-    background-color: #f0f0f5;
-  }
-  
-  /* Show expand icon for proper dashboard navigation */
-  .expand-icon { 
-    display: inline-block; 
-  }
-  
-  /* Make tab lists visible when expanded */
-  .tab-list { 
-    display: block; /* Show tab lists when expanded */
-    max-height: 200px;
-    overflow-y: auto;
-    background-color: #f8f8fa;
-    border-radius: 4px;
-    margin-left: 1rem;
-    margin-right: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Improve tab item styling */
-  .tab-item {
-    padding: 0.75rem 1rem;
-    border-left: 3px solid transparent;
-  }
-  
-  .tab-item.active {
-    border-left: 3px solid #4285F4;
-    background-color: #f0f0f5;
-  }
-
-  /* Card adjustments */
-  .card-header { 
-    flex-direction: column; 
-    align-items: flex-start; 
-  }
-  
-  .card-header-text { 
-    margin-right: 0; 
-    margin-bottom: 0.5rem; 
-  }
-  
-  .card-header-controls { 
-    width: 100%; 
-  }
-  
-  .label-selector.title-level { 
-    width: 100%; 
-  }
-  
-  .label-selector.title-level .label-selector-dropdown { 
-    flex-grow: 1; 
-  }
-
-  /* Grid layout adjustments */
-  .metrics-grid-positioned { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 1.5rem; 
-  }
-  
-  .metrics-grid-positioned .grid-item { 
-    width: 100% !important; 
-    grid-column: 1 / -1 !important; /* Span all columns */
-    grid-row: auto !important; 
-    margin-bottom: 0; 
-  }
-  
-  /* Adjust explicit heights for mobile */
-  .metrics-grid-positioned .grid-item[style*="min-height"] {
-    min-height: 300px !important; /* Override large heights */
-    height: auto !important; /* Let content determine height */
-  }
-
-  /* Widget styling */
-  .number-value { 
-    font-size: 2rem; 
-  }
-
-  /* Chart legend adjustments */
-  .chart-legend-container {
-    position: relative; /* Change back to relative for stacked mobile layout */
-    top: auto;
-    left: auto;
-    right: auto;
-    height: auto; /* Auto height */
-    padding: 5px 1rem; /* Add some padding back */
-    order: -1; /* Place legend above chart */
-    margin-bottom: 5px;
-    z-index: auto; /* Reset z-index */
-  }
-  
-  .chart-legend-items {
-    padding: 5px 0;
-    height: auto; /* Auto height */
-    min-height: 30px;
-  }
-  
-  .legend-controls {
-    position: static; /* Normal positioning */
-    height: auto;
-    padding-top: 5px;
-    display: flex; /* Make controls visible */
-  }
-
-  /* Chart container adjustments */
-  .chart-container {
-    /* Override conditional padding and apply base padding */
-    padding-top: 10px !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 1rem;
-  }
-  
-  /* Card and chart sizing */
-  .metric-card {
-    height: auto;
-    min-height: 300px;
-  }
-  
-  .chart-container {
-    min-height: 250px;
-  }
-}
-
+/* ==================
+   Modal & Expand
+   ================== */
 
 /* Expand button styles */
 .expand-chart-button {
@@ -834,14 +822,6 @@ body {
   color: #333;
 }
 
-.dark-mode .expand-chart-button {
-  color: #aaa;
-}
-
-.dark-mode .expand-chart-button:hover {
-  background-color: #333;
-  color: #fff;
-}
 
 /* Modal styles */
 .chart-modal-overlay {
@@ -876,31 +856,8 @@ body {
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid #eaeaea;
-}
-
-.chart-modal-title {
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-modal-title h2 {
-  font-size: 1.5rem;
-  margin: 0;
-  font-weight: 600;
-}
-
-.chart-modal-subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 4px;
-}
-
-.chart-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eaeaea;
+  min-height: 70px; /* Ensure consistent header height */
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .chart-modal-title {
@@ -921,7 +878,6 @@ body {
   margin-top: 4px;
 }
 
-/* New styles for control area */
 .chart-modal-controls {
   display: flex;
   align-items: center;
@@ -932,41 +888,287 @@ body {
   margin-right: 12px;
 }
 
-/* Ensure dropdown in modal has appropriate space */
 .chart-modal-header-controls .label-selector.title-level {
   margin-right: 12px;
 }
 
-/* Ensure dropdown is clickable and visible in modal */
 .chart-modal-header-controls .label-selector-dropdown {
-  z-index: 1100; /* Higher z-index than other modal elements */
+  z-index: 1100;
 }
 
-/* Dark mode styling */
-.dark-mode .chart-modal-header {
-  border-bottom: 1px solid #333;
+/* Critical fix for modal content to take available space */
+.chart-modal-content {
+  position: relative;
+  flex: 1; /* Take all available space */
+  display: flex; /* Use flexbox */
+  flex-direction: column; /* Stack children vertically */
+  overflow: hidden; /* Contain children */
+  min-height: 0; /* Allow content to shrink if needed */
 }
 
-.dark-mode .chart-modal-title h2 {
-  color: #e0e0e0;
+/* Fix chart container inside modal */
+.chart-modal-content .chart-container,
+.chart-modal-content .enhanced-chart-container {
+  position: relative !important;
+  flex: 1; /* Take all available space */
+  height: auto !important; /* Let flex control the height */
+  min-height: 0 !important; /* Allow shrinking */
+  padding-bottom: 60px !important; /* Extra space for x-axis */
+  margin-bottom: 0 !important; /* Remove any margin */
 }
 
-.dark-mode .chart-modal-subtitle {
-  color: #aaa;
+/* Also update this section to ensure proper chart rendering */
+.chart-container canvas,
+.enhanced-chart-container canvas {
+  display: block;
+  width: 100% !important; 
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
 }
 
-/* Ensure proper spacing between controls in header */
-.card-header-controls {
-  display: flex;
-  align-items: center;
+/* ==================
+   Watermark
+   ================== */
+
+/* Watermark Styling */
+.chart-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 10;
 }
 
-.card-header-controls > * {
-  margin-left: 8px;
+/* Adjust watermark size for smaller charts */
+.grid-item[style*="grid-column: span 3"] .chart-watermark {
+  width: 60px;
+  height: 60px;
 }
 
-/* Responsive adjustments */
+/* Prevent duplicate watermarks in enhanced charts */
+.enhanced-chart-container .chart-container .chart-watermark {
+  display: none !important; /* Hide nested watermark */
+}
+
+/* Also hide watermarks in containers inside other containers to prevent duplication */
+.chart-container .chart-container .chart-watermark,
+.chart-modal-content .chart-container .chart-watermark:not(:first-child) {
+  display: none !important;
+}
+
+/* ==================
+   Responsive Styles
+   ================== */
+
+@media (max-width: 1200px) {
+  /* Adjust for large screens */
+}
+
+@media (max-width: 992px) {
+  .dashboard-tabs {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 768px) {
+  /* Basic layout adjustments */
+  .dashboard-main {
+    flex-direction: column;
+  }
+  
+  /* Sidebar adjustments */
+  .dashboard-sidebar {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid #eaeaea;
+    height: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  
+  .dashboard-sidebar.collapsed {
+    width: 100% !important;
+  }
+  
+  .sidebar-toggle {
+    display: none;
+  }
+
+  /* Tab navigation improvements */
+  .tab-navigation {
+    padding: 0;
+  }
+  
+  /* Make dashboard list scrollable vertically */
+  .dashboard-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+    overflow-y: auto;
+    max-height: 45vh;
+  }
+  
+  .dashboard-item {
+    margin-bottom: 0.5rem;
+    margin-right: 0;
+    width: 100%;
+  }
+  
+  /* Dashboard header styling */
+  .dashboard-header {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dashboard-header.active {
+    border-left: none;
+    border-bottom-color: #4285F4;
+    background-color: #f0f0f5;
+  }
+  
+  /* Show expand icon for proper dashboard navigation */
+  .expand-icon {
+    display: inline-block;
+  }
+  
+  /* Make tab lists visible when expanded */
+  .tab-list {
+    display: block;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #f8f8fa;
+    border-radius: 4px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Improve tab item styling */
+  .tab-item {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid transparent;
+  }
+  
+  .tab-item.active {
+    border-left: 3px solid #4285F4;
+    background-color: #f0f0f5;
+  }
+
+  /* Card adjustments */
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .card-header-text {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-header-controls {
+    width: 100%;
+  }
+  
+  .label-selector.title-level {
+    width: 100%;
+  }
+  
+  .label-selector.title-level .label-selector-dropdown {
+    flex-grow: 1;
+  }
+
+  /* Grid layout adjustments */
+  .metrics-grid-positioned {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem !important;
+  }
+  
+  .metrics-grid-positioned .grid-item {
+    width: 100% !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    margin-bottom: 0;
+    position: relative !important;
+    margin-top: 0.5rem !important;
+    min-height: 450px !important;
+  }
+  
+  /* Widget styling */
+  .number-value {
+    font-size: 2rem;
+  }
+
+  /* Chart legend adjustments */
+  .chart-legend-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    height: auto;
+    padding: 5px 1rem;
+    order: -1;
+    margin-bottom: 5px;
+    z-index: auto;
+  }
+  
+  .chart-legend-items {
+    padding: 5px 0;
+    height: auto;
+    min-height: 30px;
+  }
+  
+  .legend-controls {
+    position: static;
+    height: auto;
+    padding-top: 5px;
+    display: flex;
+  }
+
+  /* Chart container adjustments */
+  .chart-container {
+    padding-top: 10px !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 4rem !important;
+    height: 400px !important;
+    margin-bottom: 1.5rem !important;
+    min-height: 350px !important;
+  }
+  
+  /* Card and chart sizing */
+  .metric-card {
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 0.5rem !important;
+    height: auto !important;
+    min-height: 450px !important;
+    position: relative !important;
+  }
+  
+  /* Force chart container positioning */
+  .chart-container {
+    position: relative !important;
+  }
+  
+  /* Force proper vertical spacing between consecutive charts */
+  .chart-container + .chart-container {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Modal adjustments */
   .chart-modal-header {
     flex-direction: column;
     align-items: flex-start;
@@ -981,221 +1183,4 @@ body {
   .chart-modal-header-controls {
     flex-grow: 1;
   }
-}
-
-
-/* Watermark Styling */
-.chart-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80px;  /* Larger size */
-  height: 80px; /* Larger size */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0.15;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Ensure proper positioning in modal */
-.chart-modal-content {
-  position: relative;
-}
-
-/* Adjust watermark size for smaller charts */
-.grid-item[style*="grid-column: span 3"] .chart-watermark {
-  width: 60px;  /* Still larger but adjusted for small charts */
-  height: 60px; /* Still larger but adjusted for small charts */
-}
-
-/* Make sure all chart containers have position: relative for proper watermark placement */
-.chart-container,
-.enhanced-chart-container,
-.number-widget,
-.text-widget {
-  position: relative;
-}
-
-/* =========================
-   FIXES FOR MOBILE CHART DISPLAY & DARK MODE ISSUES
-   ========================= */
-
-/* 1. MOBILE CHART DISPLAY FIXES */
-@media (max-width: 768px) {
-  /* Increase chart container bottom padding to prevent axis labels from getting cut off */
-  .chart-container {
-    padding-bottom: 2.5rem !important; /* Increase bottom padding for axis labels */
-    min-height: 350px !important; /* Ensure enough height for mobile charts */
-  }
-  
-  /* Add margin to canvas element for stacked charts */
-  .chart-container canvas {
-    margin-bottom: 1.5rem; /* Create space below the canvas */
-  }
-  
-  /* Increase padding for chart containers with legends */
-  .chart-container.has-legend {
-    padding-top: 60px !important; /* More space for legends */
-  }
-  
-  /* Larger minimum heights for grid items containing charts */
-  .metrics-grid-positioned .grid-item {
-    min-height: 400px !important; /* Increase from 300px to 400px */
-  }
-  
-  /* Specific adjustments for stacked area charts which need more space */
-  .enhanced-chart-container,
-  [class*="stacked"] {
-    min-height: 400px !important;
-  }
-}
-
-/* 2. DARK MODE TAB FIXES FOR MOBILE */
-.dark-mode .tab-list {
-  background-color: #2a2a2a !important; /* Dark background for tab lists */
-}
-
-.dark-mode .tab-item {
-  color: #e0e0e0 !important; /* Light text for tab items */
-}
-
-.dark-mode .tab-item:hover {
-  background-color: #333333 !important; /* Darker hover state */
-}
-
-.dark-mode .tab-item.active {
-  background-color: #3a3a3a !important; /* Highlight for active tab */
-  border-left-color: #5a9bd5 !important; /* Blue accent for active tab */
-}
-
-/* 3. MODAL DARK MODE FIXES (EXPANDED CHARTS) */
-.dark-mode .chart-modal {
-  background-color: #1e1e1e !important; /* Dark background for modal */
-  color: #e0e0e0 !important; /* Light text for modal */
-}
-
-.dark-mode .chart-modal-header {
-  background-color: #252525 !important; /* Slightly lighter header */
-  border-bottom: 1px solid #333333 !important; /* Dark border */
-}
-
-.dark-mode .chart-modal-title h2 {
-  color: #e0e0e0 !important; /* Light text for title */
-}
-
-.dark-mode .chart-modal-subtitle {
-  color: #aaaaaa !important; /* Lighter text for subtitle */
-}
-
-.dark-mode .chart-modal-content {
-  background-color: #1e1e1e !important; /* Dark background for content area */
-}
-
-/* Ensure chart container in modal gets dark mode styling */
-.dark-mode .chart-modal-content .chart-container {
-  background-color: #1e1e1e !important; /* Match modal background */
-}
-
-.dark-mode .chart-modal-content canvas {
-  filter: brightness(1.05) !important; /* Subtle brightness boost */
-}
-
-/* Global fix for chart cards in both modes */
-.dark-mode .metric-card {
-  background-color: #1e1e1e !important;
-  border: 1px solid #333333 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Fix for legend spacing and alignment */
-@media (max-width: 768px) {
-  /* Add more space below x-axis for stacked charts */
-  .chart-container {
-    padding-bottom: 3.5rem !important; /* Further increase bottom padding */
-    margin-bottom: 1rem !important;
-  }
-  
-  /* Make chart canvases taller to prevent cutting off */
-  .chart-container canvas,
-  .enhanced-chart-container canvas {
-    margin-bottom: 2rem !important;
-    height: calc(100% - 2rem) !important; /* Adjust height to account for margin */
-  }
-  
-  /* Reduce top spacing for legends in mobile */
-  .chart-legend-container {
-    top: 0 !important;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-  }
-  
-  /* Force canvas scaling for better axis display */
-  [class*="stacked"] canvas,
-  .bar-type canvas {
-    max-height: calc(100% - 30px) !important; /* Reserve space for x-axis */
-  }
-  
-  /* Specific fix for stacked charts which need more height */
-  .metrics-grid-positioned .grid-item {
-    min-height: 450px !important; /* Further increase from 400px */
-  }
-}
-
-/* Fix for dark mode modal cards */
-.dark-mode .chart-modal,
-.dark-mode .chart-modal-content,
-.dark-mode .chart-modal .metric-card,
-.dark-mode .chart-modal .card-content {
-  background-color: #1e1e1e !important;
-  color: #e0e0e0 !important;
-}
-
-/* Fix for dark mode tab backgrounds */
-.dark-mode .tab-list {
-  background-color: #2a2a2a !important;
-}
-
-.dark-mode .tab-item {
-  color: #e0e0e0 !important;
-  background-color: transparent !important;
-}
-
-.dark-mode .tab-item:hover {
-  background-color: #333333 !important;
-}
-
-.dark-mode .tab-item.active {
-  background-color: #3a3a3a !important;
-  border-left-color: #5a9bd5 !important;
-}
-
-/* Ensure proper axis display in dark mode */
-.dark-mode .chart-container canvas,
-.dark-mode .enhanced-chart-container canvas {
-  filter: brightness(1.05) !important;
-}
-
-/* Ensure legends in dark mode have proper coloring */
-.dark-mode .chart-legend-container {
-  background-color: transparent !important;
-}
-
-.dark-mode .legend-item {
-  background-color: #2a2a2a !important;
-  border-color: #444444 !important;
-}
-
-.dark-mode .legend-item-label {
-  color: #e0e0e0 !important;
-}
-
-/* Fix for embedded chart content in modals */
-.chart-modal-content .chart-container,
-.chart-modal-content .enhanced-chart-container {
-  position: relative !important;
-  height: 100% !important;
-  min-height: 500px !important;
 }

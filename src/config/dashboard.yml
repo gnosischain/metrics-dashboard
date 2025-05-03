@@ -33,7 +33,7 @@ OnChainActivity:
         - id: historical_el_client_distribution
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 400px
+          minHeight: 425px
 
 Network:
   name: Network
@@ -85,11 +85,11 @@ Network:
         - id: historical_el_forks
           gridRow: 2
           gridColumn: 1 / span 6
-          minHeight: 400px
+          minHeight: 500px
         - id: historical_cl_forks
           gridRow: 2
           gridColumn: 7 / span 6
-          minHeight: 400px
+          minHeight: 500px
 
     - name: Geography
       order: 3

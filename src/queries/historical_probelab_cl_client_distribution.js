@@ -1,7 +1,7 @@
 const metric = {
   id: 'historical_probelab_cl_client_distribution',
   name: 'Client Distribution',
-  description: 'Distribution of consensus client',
+  description: 'Daily consensus clients',
   format: 'formatNumber',
   labelField: 'client',
   valueField: 'value',

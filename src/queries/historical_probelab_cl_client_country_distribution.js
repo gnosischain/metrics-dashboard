@@ -1,7 +1,7 @@
 const metric = {
   id: 'historical_probelab_cl_client_country_distribution',
   name: 'Country Distribution',
-  description: 'Distribution of consensus client per country',
+  description: 'Client per country',
   format: 'formatNumber',
   chartType: 'stackedBar',
   labelField: 'client', 
