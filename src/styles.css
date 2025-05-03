@@ -1018,3 +1018,94 @@ body {
 .text-widget {
   position: relative;
 }
+
+/* =========================
+   FIXES FOR MOBILE CHART DISPLAY & DARK MODE ISSUES
+   ========================= */
+
+/* 1. MOBILE CHART DISPLAY FIXES */
+@media (max-width: 768px) {
+  /* Increase chart container bottom padding to prevent axis labels from getting cut off */
+  .chart-container {
+    padding-bottom: 2.5rem !important; /* Increase bottom padding for axis labels */
+    min-height: 350px !important; /* Ensure enough height for mobile charts */
+  }
+  
+  /* Add margin to canvas element for stacked charts */
+  .chart-container canvas {
+    margin-bottom: 1.5rem; /* Create space below the canvas */
+  }
+  
+  /* Increase padding for chart containers with legends */
+  .chart-container.has-legend {
+    padding-top: 60px !important; /* More space for legends */
+  }
+  
+  /* Larger minimum heights for grid items containing charts */
+  .metrics-grid-positioned .grid-item {
+    min-height: 400px !important; /* Increase from 300px to 400px */
+  }
+  
+  /* Specific adjustments for stacked area charts which need more space */
+  .enhanced-chart-container,
+  [class*="stacked"] {
+    min-height: 400px !important;
+  }
+}
+
+/* 2. DARK MODE TAB FIXES FOR MOBILE */
+.dark-mode .tab-list {
+  background-color: #2a2a2a !important; /* Dark background for tab lists */
+}
+
+.dark-mode .tab-item {
+  color: #e0e0e0 !important; /* Light text for tab items */
+}
+
+.dark-mode .tab-item:hover {
+  background-color: #333333 !important; /* Darker hover state */
+}
+
+.dark-mode .tab-item.active {
+  background-color: #3a3a3a !important; /* Highlight for active tab */
+  border-left-color: #5a9bd5 !important; /* Blue accent for active tab */
+}
+
+/* 3. MODAL DARK MODE FIXES (EXPANDED CHARTS) */
+.dark-mode .chart-modal {
+  background-color: #1e1e1e !important; /* Dark background for modal */
+  color: #e0e0e0 !important; /* Light text for modal */
+}
+
+.dark-mode .chart-modal-header {
+  background-color: #252525 !important; /* Slightly lighter header */
+  border-bottom: 1px solid #333333 !important; /* Dark border */
+}
+
+.dark-mode .chart-modal-title h2 {
+  color: #e0e0e0 !important; /* Light text for title */
+}
+
+.dark-mode .chart-modal-subtitle {
+  color: #aaaaaa !important; /* Lighter text for subtitle */
+}
+
+.dark-mode .chart-modal-content {
+  background-color: #1e1e1e !important; /* Dark background for content area */
+}
+
+/* Ensure chart container in modal gets dark mode styling */
+.dark-mode .chart-modal-content .chart-container {
+  background-color: #1e1e1e !important; /* Match modal background */
+}
+
+.dark-mode .chart-modal-content canvas {
+  filter: brightness(1.05) !important; /* Subtle brightness boost */
+}
+
+/* Global fix for chart cards in both modes */
+.dark-mode .metric-card {
+  background-color: #1e1e1e !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
