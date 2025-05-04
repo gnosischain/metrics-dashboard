@@ -10,9 +10,10 @@ import ChartModal from './ChartModal';
  * @param {React.ReactNode} props.headerControls - Optional controls to render in the header
  * @param {React.ReactNode} props.children - Card content
  * @param {boolean} props.expandable - Whether the card can be expanded
+ * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @returns {JSX.Element} Card component
  */
-const Card = ({ title, subtitle, headerControls, children, expandable = true }) => {
+const Card = ({ title, subtitle, headerControls, children, expandable = true, isDarkMode = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -46,6 +47,7 @@ const Card = ({ title, subtitle, headerControls, children, expandable = true }) 
           title={title}
           subtitle={subtitle}
           headerControls={headerControls}
+          isDarkMode={isDarkMode}
         >
           {children}
         </ChartModal>

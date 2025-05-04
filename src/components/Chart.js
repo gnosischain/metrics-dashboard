@@ -659,6 +659,8 @@ const Chart = ({
       className={`chart-container ${(isMultiSeries || isPieChart) ? 'has-legend' : 'no-legend'}`}
       ref={containerRef}
       style={containerStyle}
+      data-theme={isDarkMode ? 'dark' : 'light'}
+      data-type={chartType} // Add this line
     >
       <ChartComponent 
         ref={getChartRef} 

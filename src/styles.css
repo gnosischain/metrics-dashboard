@@ -535,30 +535,80 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding-top: 10px;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-bottom: 1rem;
+  padding: 40px 1rem 40px; /* Standardized padding with equal top and bottom */
   min-height: 350px !important;
 }
 
-/* Charts with legends need more padding */
+/* Ensure charts with legends have consistent padding */
 .chart-container.has-legend {
-  padding-top: 50px;
-}
-
-/* Stacked charts need more height */
-[class*="stacked"] {
-  min-height: 400px !important;
+  padding-top: 40px; /* Same as standard for consistency */
 }
 
 /* Chart.js Canvas */
-.chart-container canvas {
+.chart-container canvas,
+.enhanced-chart-container canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
   max-width: 100%;
   max-height: 100%;
+}
+
+/* Fix for modal chart containers */
+.chart-modal-content .chart-container,
+.chart-modal-content .enhanced-chart-container {
+  position: relative !important;
+  flex: 1;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 40px 1rem 40px !important; /* Match the standard padding */
+  margin-bottom: 0 !important;
+}
+
+/* Legend positioning - adjust to fit with padding */
+.chart-legend-container {
+  position: absolute;
+  top: 5px;
+  left: 1rem;
+  right: 1rem;
+  height: 35px;
+  z-index: 5;
+}
+
+/* Chart.js Canvas */
+.chart-container canvas,
+.enhanced-chart-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Fix for modal chart containers to ensure exact same spacing */
+.chart-modal-content .chart-container,
+.chart-modal-content .enhanced-chart-container {
+  position: relative !important;
+  flex: 1;
+  height: auto !important;
+  min-height: 350px !important;
+  padding: 0 !important; /* Reset padding */
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  /* Chart container adjustments */
+  .chart-container,
+  .enhanced-chart-container {
+    min-height: 350px !important;
+  }
+  
+  /* Adjust the chart wrapper for mobile */
+  .chart-container .chart-wrapper,
+  .enhanced-chart-container .chart-wrapper {
+    top: 40px;    /* Keep consistent with desktop */
+    bottom: 40px; /* Keep consistent with desktop */
+  }
 }
 
 /* Tooltip Styles */
@@ -947,6 +997,21 @@ body {
   z-index: 10;
 }
 
+/* Light theme watermark */
+.chart-container .chart-watermark,
+.enhanced-chart-container .chart-watermark,
+.chart-modal-content .chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png');
+}
+
+/* Dark theme watermark */
+.dark-mode .chart-container .chart-watermark,
+.dark-mode .enhanced-chart-container .chart-watermark,
+.dark-mode .chart-modal-content .chart-watermark,
+[data-theme="dark"] .chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png');
+}
+
 /* Adjust watermark size for smaller charts */
 .grid-item[style*="grid-column: span 3"] .chart-watermark {
   width: 60px;
@@ -962,6 +1027,21 @@ body {
 .chart-container .chart-container .chart-watermark,
 .chart-modal-content .chart-container .chart-watermark:not(:first-child) {
   display: none !important;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  /* Chart container adjustments */
+  .chart-container,
+  .enhanced-chart-container {
+    padding-top: 50px !important; /* Consistent top padding */
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 60px !important; /* Consistent bottom padding */
+    height: 400px !important;
+    margin-bottom: 1.5rem !important;
+    min-height: 350px !important;
+  }
 }
 
 /* ==================
