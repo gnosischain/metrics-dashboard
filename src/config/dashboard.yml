@@ -82,13 +82,9 @@ Network:
           gridRow: 1
           gridColumn: 7 / span 6
           minHeight: 600px
-        - id: historical_el_forks
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 500px
         - id: historical_cl_forks
           gridRow: 2
-          gridColumn: 7 / span 6
+          gridColumn: 1 / span 12
           minHeight: 500px
 
     - name: Geography
