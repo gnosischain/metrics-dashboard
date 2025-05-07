@@ -4,7 +4,7 @@ const metric = {
   description: 'Last day',
   format: 'formatNumber',
   chartType: 'numberDisplay',
-  color: '#34A853',
+  color: '#0969DA',
   query: `SELECT SUM(cnt) AS value FROM dbt.p2p_peers_geo_latest`
 };
 

@@ -7,9 +7,11 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f5f5f7;
-  color: #333;
-  line-height: 1.6;
+  background-color: #F6F8FA; /* Modern light background */
+  color: #24292F; /* Modern base text */
+  line-height: 1.6; /* Original line-height */
+  font-size: 14px; /* Modern base font-size */
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .app {
@@ -30,14 +32,15 @@ body {
 }
 
 /* Header styles */
-.dashboard-header {
+.dashboard-header { /* Main page header */
   background-color: #fff;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.5rem; /* Original padding */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04); /* Softer shadow */
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10;
+  border-bottom: 1px solid #D8DEE4; /* Modern border */
 }
 
 .header-logo-section {
@@ -46,7 +49,7 @@ body {
 }
 
 .dashboard-logo {
-  height: 40px;
+  height: 35px; 
   margin-right: 1rem;
   object-fit: contain;
 }
@@ -57,20 +60,21 @@ body {
 }
 
 .header-title h1 {
-  font-size: 1.5rem;
+  font-size: 1.5rem; /* Original size */
   font-weight: 600;
   margin-bottom: 0.25rem;
+  color: #1F2328; /* Darker heading */
 }
 
 .last-updated {
-  font-size: 0.85rem;
-  color: #666;
+  font-size: 0.85rem; /* Original size */
+  color: #57606A; /* Modern secondary text */
 }
 
 .analytics-title {
-  font-size: 1.2rem;
-  font-weight: bolder;
-  color: #1a3eff;
+  font-size: 1.0rem; /* Original size */
+  font-weight: 400; /* Standardized bold */
+  color: #0969DA; /* Modern blue accent */
 }
 
 .header-actions {
@@ -80,8 +84,8 @@ body {
 
 /* Dashboard Selector */
 .dashboard-selector-container {
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #ddd;
+  background-color: #F6F8FA; /* Consistent light theme background */
+  border-bottom: 1px solid #D8DEE4; /* Modern border */
 }
 
 .dashboard-selector {
@@ -98,19 +102,23 @@ body {
 .dashboard-tab {
   padding: 0.75rem 1.5rem;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   border-bottom: 3px solid transparent;
   font-weight: 500;
+  color: #57606A; /* Modern secondary for inactive */
   white-space: nowrap;
 }
 
 .dashboard-tab:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(9, 105, 218, 0.05); /* Subtle blue hover */
+  color: #0969DA;
 }
 
 .dashboard-tab.active {
-  border-bottom: 3px solid #4285F4;
-  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 3px solid #0969DA; /* Use new accent */
+  color: #0969DA; /* Use new accent */
+  font-weight: 600; /* Slightly bolder for active */
+  background-color: transparent; /* Keep original, no extra bg */
 }
 
 /* Dashboard main layout with sidebar */
@@ -121,61 +129,61 @@ body {
 }
 
 .dashboard-sidebar {
-  width: 240px;
-  background-color: #fff;
-  border-right: 1px solid #eaeaea;
+  width: 220px;
+  background-color: #FFFFFF; 
+  border-right: 1px solid #E1E4E8;
   overflow-y: auto;
   flex-shrink: 0;
   position: relative;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, background-color 0.2s ease, border-color 0.2s ease;
+  color: #24292F;
 }
 
-/* Collapsed sidebar state */
 .dashboard-sidebar.collapsed {
   width: 60px;
   overflow-x: hidden;
 }
 
-/* Toggle button for sidebar */
 .sidebar-toggle {
   position: absolute;
-  top: 0px;
-  right: -4px;
+  top: 5px;
+  right: 5px;
   width: 24px;
-  height: 16px;
-  background-color: #ffffff;
-  border-radius: 0%;
+  height: 24px;
+  background-color: #bcbcbc;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
   font-size: 12px;
-  color: #2c2c2c;
-  border: 1px solid #ffffff;
+  color: #ffffff;
+  border: 1px solid #30363D;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-toggle:hover {
-  background-color: #e0e0e5;
+  background-color: #1F2428;
+  border-color: #58A6FF;
 }
 
 .dashboard-content {
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
-  background-color: #f5f5f7;
+  background-color: #F6F8FA; /* Match body */
 }
 
 /* ==================
    Navigation Styles
    ================== */
 
-/* Tab navigation */
 .tab-navigation {
-  padding: 1rem 0;
+  padding: 30px 0 1rem 0; 
 }
 
-/* Dashboard list styles */
 .dashboard-list {
   list-style: none;
   padding: 0;
@@ -183,28 +191,56 @@ body {
 }
 
 .dashboard-item {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem; /* Original margin */
 }
 
-.dashboard-header { /* This targets dashboard items in the sidebar */
+/* This targets dashboard items in the sidebar */
+.dashboard-item > .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
   font-weight: 500;
   border-left: 3px solid transparent;
+  color: #24292F;
+  font-size: 0.95rem;
 }
 
-.dashboard-header:hover {
-  background-color: #f0f0f5;
+.dashboard-item > .dashboard-header:hover {
+  background-color: rgba(9, 105, 218, 0.05);
+  color: #0969DA;
 }
 
-.dashboard-header.active {
-  background-color: #f0f0f5;
-  border-left: 3px solid #4285F4;
+.dashboard-item > .dashboard-header.active {
+  background-color: rgba(9, 105, 218, 0.08);
+  border-left: 3px solid #0969DA;
   font-weight: 600;
+  color: #0969DA;
+}
+
+.chart-nav-controls {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 20; /* Above watermark */
+}
+
+.chart-nav-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #D0D7DE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-name {
@@ -216,26 +252,29 @@ body {
 
 .expand-icon {
   font-size: 0.8rem;
-  color: #666;
+  color: #57606A; /* Modern secondary */
   margin-left: 0.5rem;
+  transition: transform 0.2s ease; /* Add transition if not present */
+}
+.dashboard-item > .dashboard-header.active .expand-icon {
+  transform: rotate(90deg); /* Ensure this is present if active class rotates */
+  color: #0969DA; /* Match active text */
 }
 
 /* Collapsed navigation styles */
-.tab-navigation.collapsed .dashboard-header {
+.tab-navigation.collapsed .dashboard-header { /* This is icon when collapsed */
   padding: 0.75rem 0;
   justify-content: center;
 }
-
 .tab-navigation.collapsed .dashboard-name,
 .tab-navigation.collapsed .expand-icon {
    display: none;
 }
-
 .tab-navigation.collapsed .dashboard-icon {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  background-color: #4285F4;
+  border-radius: 6px; /* Slightly rounded square */
+  background-color: #0969DA; /* Use new accent */
   color: white;
   display: flex;
   align-items: center;
@@ -243,290 +282,203 @@ body {
   font-weight: 600;
   font-size: 0.9rem;
 }
-
 .tab-navigation.collapsed .dashboard-header.active .dashboard-icon {
-    background-color: #1E5DC9;
+    background-color: #0550AE; /* Darker accent */
 }
 
 /* Tab list styles */
 .tab-list {
   list-style: none;
-  padding-left: 1rem;
-  margin: 0.25rem 0 0.5rem 0;
+  padding-left: 1rem; /* Original padding */
+  margin: 0.25rem 0 0.5rem 0; /* Original margin */
+  /* Visibility (display: block/none) is handled by your JS */
 }
 
 .tab-item {
-  padding: 0.5rem 1rem 0.5rem 1.5rem;
+  padding: 10px 16px 10px 24px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
   border-left: 3px solid transparent;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  color: #57606A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tab-item:hover {
-  background-color: #f5f5f7;
+  background-color: rgba(9, 105, 218, 0.05);
+  color: #0969DA;
 }
 
 .tab-item.active {
-  background-color: #f0f0f5;
-  border-left: 3px solid #4285F4;
+  background-color: rgba(9, 105, 218, 0.08);
+  border-left: 3px solid #0969DA;
   font-weight: 500;
+  color: #0969DA;
 }
 
-/* Empty dashboard message */
 .empty-dashboard {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
-  color: #666;
+  color: #57606A; /* Modern secondary */
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1.1rem; /* Original size */
 }
 
 /* ==================
-   Grid Layout
+   Grid Layout (Original structure preserved)
    ================== */
-
-/* Metrics grid layout */
-.metrics-grid-container {
-  width: 100%;
-}
-
-.metrics-grid-positioned {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.5rem;
-  width: 100%;
-}
-
-.metrics-grid-positioned .grid-item {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-width: 0;
-}
+.metrics-grid-container { width: 100%; }
+.metrics-grid-positioned { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; width: 100%; }
+.metrics-grid-positioned .grid-item { overflow: hidden; display: flex; flex-direction: column; height: 100%; min-width: 0; }
 
 /* ==================
-   Cards & Widgets
-   ================== */
-
-/* Metric Card styles */
-.metric-card {
+  Cards & Widgets
+  ================== */
+  .metric-card {
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
+
+
+
 
 .card-header {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  flex-shrink: 0; 
+  display: flex; 
+  justify-content: space-between; 
   align-items: center;
-  min-height: 50px;
-  flex-wrap: wrap;
-  position: relative;
+  min-height: 50px; 
+  flex-wrap: wrap; 
+  position: relative; 
   z-index: 10;
+  background-color: rgba(255,255,255,0.5);
 }
 
-.card-header-text {
-   flex-grow: 1;
-   margin-right: 1rem;
-   min-width: 150px;
-}
-
+.card-header-text { flex-grow: 1; margin-right: 1rem; min-width: 150px; }
 .card-title {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.1rem;
+  color: #24292F;
 }
-
 .card-subtitle {
   font-size: 0.85rem;
-  color: #666;
+  color: #57606A;
 }
+.card-header-controls { flex-shrink: 0; display: flex; align-items: center; }
+.card-header-controls > * { margin-left: 8px; }
 
-.card-header-controls {
-   flex-shrink: 0;
-   display: flex;
-   align-items: center;
-}
-
-.card-header-controls > * {
-  margin-left: 8px;
-}
-
-/* Label Selector Styles */
-.label-selector.title-level {
-  display: flex;
-  align-items: center;
-}
-
-.label-selector.title-level .label-selector-label {
-  margin-right: 8px;
-  font-size: 0.85rem;
-  color: #555;
-  white-space: nowrap;
-}
-
+.label-selector.title-level { display: flex; align-items: center; }
+.label-selector.title-level .label-selector-label { margin-right: 8px; font-size: 0.85rem; color: #57606A; white-space: nowrap; }
 .label-selector.title-level .label-selector-dropdown {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  font-size: 0.85rem;
-  color: #333;
-  min-width: 140px;
-  max-width: 200px;
-  cursor: pointer;
-  box-shadow: none;
-  transition: border-color 0.2s;
+  padding: 6px 10px; border: 1px solid #D0D7DE; /* Modern border */
+  border-radius: 6px; /* Slightly more rounded */ background-color: white; font-size: 0.85rem; color: #24292F;
+  min-width: 140px; max-width: 200px; cursor: pointer; box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-.label-selector.title-level .label-selector-dropdown:hover,
-.label-selector.title-level .label-selector-dropdown:focus {
-  border-color: #4285F4;
+.label-selector.title-level .label-selector-dropdown:hover { border-color: #ADBAC7; }
+.label-selector.title-level .label-selector-dropdown:focus,
+.label-selector.title-level .label-selector-dropdown:focus-visible { /* Combined for modern browsers */
+  border-color: #0969DA; /* Use new accent */
   outline: none;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3); /* Focus ring */
 }
 
-/* Card Content and Chart Container Layout */
-.card-content {
+.card-content { /* Padding here dictates chart area padding */
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
-  position: relative;
-  min-height: 0;
+  display: flex; flex-direction: column; flex-grow: 1;
+  overflow: hidden; position: relative; min-height: 0;
 }
 
 /* ==================
    Charts & Legends
    ================== */
-
-/* Legend Container - Absolute Positioning */
 .chart-legend-container {
-  position: absolute;
-  top: 10px;
-  left: 1rem;
-  right: 1rem;
-  height: 45px;
-  z-index: 5;
-}
-
+    position: absolute; /* This is for desktop view */
+    top: 10px;
+    left: 1rem;
+    right: 1rem;
+    height: 45px;
+    z-index: 5;
+  }
 .chart-legend-items {
-   padding: 5px 0px;
-   display: flex;
-   flex-wrap: nowrap;
-   overflow-x: auto;
-   overflow-y: hidden;
-   white-space: nowrap;
-   -ms-overflow-style: none;
-   scrollbar-width: none;
-   scroll-behavior: smooth;
-   justify-content: flex-start;
-   height: 100%;
+  padding: 5px 0px;
+  display: flex;
+  flex-wrap: nowrap; /* THIS IS CRUCIAL - it's already there, ensure it's not overridden */
+  overflow-x: auto;  /* THIS IS CRUCIAL - it's already there */
+  overflow-y: hidden;
+  white-space: nowrap; /* Ensures that the content of .chart-legend-items itself doesn't wrap. */
+  -ms-overflow-style: none;  /* Hides scrollbar for IE/Edge */
+  scrollbar-width: none;     /* Hides scrollbar for Firefox */
+  scroll-behavior: smooth;
+  justify-content: flex-start; /* Keep this to align items to the start */
+  height: 100%;
+  margin-bottom: 5px; /* Add margin to separate from chart */
 }
-
 .chart-legend-items::-webkit-scrollbar {
-  display: none;
+  display: none; /* Hides scrollbar for WebKit browsers */
 }
 
-/* Legend Item Styles */
 .legend-item {
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
-  margin-right: 12px;
-  border-radius: 4px;
+  margin-right: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
   user-select: none;
-  background-color: #f5f5f7;
-  border: 1px solid #eaeaea;
+  background-color: #F6F8FA;
+  border: 1px solid #D8DEE4;
+  white-space: nowrap;     /* PREVENTS TEXT INSIDE THE ITEM FROM WRAPPING */
+  flex-shrink: 0;          /* PREVENTS THE ITEM ITSELF FROM SHRINKING */
+  /* max-width: 150px; */  /* REMOVE OR INCREASE max-width if it's causing truncation.
+                                 You had this, but for full label visibility,
+                                 you might want to let them take their natural width,
+                                 and rely on the parent's scroll.
+                                 If you keep it, ensure it's large enough for typical labels. */
+  overflow: hidden;        /* Keep if you want ellipsis on individual items, but it might be better
+                                 to let the parent container handle scrolling of full text */
+  text-overflow: ellipsis; /* Works with overflow: hidden and white-space: nowrap */
 }
-
-.legend-item:hover {
-  background-color: #e5e5e7;
-}
-
-.legend-item-color {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-  border-radius: 2px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
+.legend-item:hover { background-color: #EFF3F7; border-color: #ADBAC7; }
+.legend-item-color { width: 14px; height: 14px; margin-right: 6px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
 .legend-item-label {
   font-size: 13px;
-  color: #333;
-  white-space: nowrap;
+  color: #24292F;
+  white-space: nowrap;   /* Ensures the label text itself doesn't wrap */
   font-weight: 500;
+  overflow: hidden;        /* ADD if you want ellipsis specifically on the label if .legend-item has no max-width */
+  text-overflow: ellipsis; /* ADD if you want ellipsis specifically on the label */
+  /* max-width: 130px; */ /* Optional: if you re-add max-width to .legend-item, this could be slightly less */
 }
+.legend-item.hidden { opacity: 0.5; } /* Adjusted opacity */
+.legend-item.hidden .legend-item-label { text-decoration: line-through; color: #57606A; }
 
-.legend-item.hidden .legend-item-color,
-.legend-item.hidden .legend-item-label {
-  opacity: 0.4;
-}
-
-.legend-item.hidden .legend-item-label {
-  text-decoration: line-through;
-}
-
-/* Legend Controls */
-.legend-controls {
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  right: 0;
-  height: 25px;
-  display: none;
-  justify-content: center;
-  align-items: center;
-}
-
+.legend-controls { position: absolute; bottom: -10px; left: 0; right: 0; height: 25px; display: none; justify-content: center; align-items: center; }
 .legend-btn {
-  border: none;
-  background-color: #e9e9ed;
-  color: #333;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  cursor: pointer;
-  margin: 0 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-  font-weight: bold;
-  transition: background-color 0.2s, transform 0.1s;
+  border: 1px solid #D8DEE4; /* Defined border */ background-color: #F6F8FA; color: #24292F;
+  width: 25px; height: 25px; border-radius: 50%; cursor: pointer; margin: 0 5px;
+  display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold;
+  transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
 }
+.legend-btn:hover { background-color: #EFF3F7; border-color: #ADBAC7; transform: scale(1.05); }
+.legend-btn:active { background-color: #EBF3FC; transform: scale(0.95); }
 
-.legend-btn:hover {
-  background-color: #d1d1d6;
-  transform: scale(1.05);
-}
-
-.legend-btn:active {
-  background-color: #c1c1c6;
-  transform: scale(0.95);
-}
-
-/* Chart Container */
 .enhanced-chart-container,
 .chart-container {
   position: relative;
@@ -535,453 +487,198 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 40px 1rem 40px; /* Standardized padding with equal top and bottom */
-  min-height: 350px !important;
+  min-height: 350px !important; /* Your desired minimum chart drawing area height */
+  /* Default padding for charts WITHOUT a legend (or when legend is relative on mobile) */
+  /* A smaller, more standard padding */
+  padding: 1rem; /* e.g., 16px top, 16px L/R, 16px bottom */
 }
-
-/* Ensure charts with legends have consistent padding */
+/* Charts WITH an absolutely positioned legend (typically desktop) */
 .chart-container.has-legend {
-  padding-top: 40px; /* Same as standard for consistency */
+  /* Override padding to make space for the absolute legend at the top */
+  padding: 60px 1rem 30px; /* 60px top, 1rem L/R, 30px bottom */
 }
 
-/* Chart.js Canvas */
+/* Charts explicitly WITHOUT a legend (can use more minimal padding if desired) */
+.chart-container.no-legend {
+  /* You can define a more minimal padding if 1rem is still too much,
+     or just let it use the base .chart-container padding.
+     Example: if you want even less padding for no-legend charts:
+  */
+  padding: 20px 1rem 20px; /* Example: 20px top/bottom, 1rem L/R */
+  /* Or, if the default 1rem (from base .chart-container) is fine,
+     you don't strictly need this .no-legend block for padding,
+     but it's good for clarity or future adjustments. */
+}
+
+
 .chart-container canvas,
 .enhanced-chart-container canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100%;
-  max-height: 100%;
+    max-width: none; /* <<< Allow canvas to be wider than container for scroll */
+    display: block; /* Ensure block display */
+     height: 100% !important; 
+    /* width: 100% !important; <<< Let the chart library manage width */
 }
 
-/* Fix for modal chart containers */
 .chart-modal-content .chart-container,
 .chart-modal-content .enhanced-chart-container {
-  position: relative !important;
-  flex: 1;
-  height: auto !important;
-  min-height: 0 !important;
-  padding: 40px 1rem 40px !important; /* Match the standard padding */
-  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative; /* For watermark */
 }
-
-/* Legend positioning - adjust to fit with padding */
-.chart-legend-container {
-  position: absolute;
-  top: 5px;
-  left: 1rem;
-  right: 1rem;
-  height: 35px;
-  z-index: 5;
-}
-
-/* Chart.js Canvas */
-.chart-container canvas,
-.enhanced-chart-container canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-/* Fix for modal chart containers to ensure exact same spacing */
-.chart-modal-content .chart-container,
-.chart-modal-content .enhanced-chart-container {
-  position: relative !important;
-  flex: 1;
-  height: auto !important;
-  min-height: 350px !important;
-  padding: 0 !important; /* Reset padding */
-}
-
-/* Mobile Responsive Adjustments */
-@media (max-width: 768px) {
-  /* Chart container adjustments */
-  .chart-container,
-  .enhanced-chart-container {
-    min-height: 350px !important;
-  }
-  
-  /* Adjust the chart wrapper for mobile */
-  .chart-container .chart-wrapper,
-  .enhanced-chart-container .chart-wrapper {
-    top: 40px;    /* Keep consistent with desktop */
-    bottom: 40px; /* Keep consistent with desktop */
-  }
+.enhanced-chart-container.no-controls-padding {
+  padding: 0;
 }
 
 /* Tooltip Styles */
 #chartjs-tooltip {
-  background-color: #fff !important;
-  border: 1px solid #ccc !important;
-  border-radius: 6px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  padding: 10px !important;
-  color: #333 !important;
-  z-index: 10000 !important;
-  min-width: 150px !important;
-  max-width: 300px !important;
-  opacity: 0 !important;
-  pointer-events: none;
-  font-size: 13px !important;
-  transition: opacity 0.1s ease !important;
+  background-color: #fff !important; border: 1px solid #D8DEE4 !important; /* Modern border */
+  border-radius: 6px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; /* Softer shadow */
+  padding: 10px !important; /* Original padding */ color: #24292F !important; z-index: 10000 !important;
+  min-width: 150px !important; max-width: 300px !important; opacity: 0 !important; pointer-events: none;
+  font-size: 13px !important; /* Original size */ transition: opacity 0.15s ease !important; /* Smoother */
 }
-
-.tooltip-header {
-  font-weight: bold;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #eee;
-  font-size: 13px !important;
-}
-
-.tooltip-body {
-  padding: 2px 0;
-}
-
-.tooltip-row {
-  display: flex;
-  align-items: center;
-  margin: 4px 0;
-  font-size: 12px;
-}
-
-.tooltip-color-square {
-  display: inline-block !important;
-  width: 12px !important;
-  height: 12px !important;
-  margin-right: 6px !important;
-  border-radius: 2px !important;
-  flex-shrink: 0;
-  border: 1px solid rgba(0,0,0,0.1) !important;
-}
-
-.tooltip-row span:last-child {
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tooltip-footer {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid #eee;
-  font-weight: bold;
-  font-size: 13px !important;
-}
-
-.multi-column-tooltip {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  margin: 0 -4px;
-}
-
-.tooltip-column {
-  flex: 1;
-  min-width: 120px;
-  padding: 0 4px;
-  margin-bottom: 4px;
-  box-sizing: border-box;
-}
-
-@media (min-width: 480px) {
-  #chartjs-tooltip {
-    max-width: 500px !important;
-  }
-}
+.tooltip-header { font-weight: bold; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #EAEFF3; font-size: 13px !important; }
+.tooltip-body { padding: 2px 0; }
+.tooltip-row { display: flex; align-items: center; margin: 4px 0; font-size: 12px; }
+.tooltip-color-square { /* Original good */ }
+.tooltip-row span:last-child { /* Original good */ }
+.tooltip-footer { margin-top: 6px; padding-top: 6px; border-top: 1px solid #EAEFF3; font-weight: bold; font-size: 13px !important; }
+.multi-column-tooltip { /* Original structure fine */ }
+.tooltip-column { /* Original structure fine */ }
+@media (min-width: 480px) { #chartjs-tooltip { max-width: 500px !important; } }
 
 /* ==================
    Status Messages
    ================== */
-
-/* Loading, Error, No Data Messages */
-.loading-indicator,
-.error-message,
-.no-data-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: #666;
-  text-align: center;
-  flex-grow: 1;
-  min-height: 150px;
+.loading-indicator, .error-message, .no-data-message {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 2rem; color: #57606A; /* Modern secondary */ text-align: center; flex-grow: 1; min-height: 150px;
 }
-
-.error-message {
-  color: #d32f2f;
-}
+.error-message { color: #CF222E; /* Modern error red */ }
 
 /* ==================
    Widget Types
    ================== */
-
-/* Text Widget Styles */
 .text-widget {
-  padding: 0.5rem;
-  height: 100%;
-  overflow-y: auto;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #333;
+  padding: 0.5rem; height: 100%; overflow-y: auto; font-size: 1rem; line-height: 1.6; color: #24292F;
 }
+.text-widget h1 { font-size: 1.8rem; margin-bottom: 1rem; font-weight: 600; color: #1F2328; }
+.text-widget h2 { font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 600; color: #1F2328; }
+.text-widget h3 { font-size: 1.3rem; margin-top: 1.2rem; margin-bottom: 0.8rem; font-weight: 600; color: #1F2328; }
+.text-widget p { margin-bottom: 1rem; }
+.text-widget ul, .text-widget ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+.text-widget li { margin-bottom: 0.5rem; }
+.text-widget blockquote { border-left: 3px solid #D0D7DE; padding-left: 1rem; margin: 1rem 0; font-style: italic; color: #57606A; }
+.text-widget code { background-color: #F0F0F5; padding: 0.2rem 0.4rem; border-radius: 6px; font-family: monospace; border: 1px solid #D8DEE4;}
+.text-widget pre { background-color: #F6F8FA; border: 1px solid #D8DEE4; padding: 1rem; border-radius: 6px; overflow-x: auto; margin-bottom: 1rem; }
+.text-widget pre code { background-color: transparent; border: none; }
+.text-widget table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; }
+.text-widget th, .text-widget td { padding: 0.5rem; border: 1px solid #D8DEE4; text-align: left; }
+.text-widget th { background-color: #F6F8FA; font-weight: 600; }
+.text-widget hr { border: 0; border-top: 1px solid #D8DEE4; margin: 1.5rem 0; }
+.text-widget a { color: #0969DA; text-decoration: none; }
+.text-widget a:hover { text-decoration: underline; }
 
-.text-widget h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.text-widget h2 {
-  font-size: 1.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.text-widget h3 {
-  font-size: 1.3rem;
-  margin-top: 1.2rem;
-  margin-bottom: 0.8rem;
-  font-weight: 600;
-}
-
-.text-widget p {
-  margin-bottom: 1rem;
-}
-
-.text-widget ul,
-.text-widget ol {
-  margin-left: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.text-widget li {
-  margin-bottom: 0.5rem;
-}
-
-.text-widget blockquote {
-  border-left: 3px solid #ccc;
-  padding-left: 1rem;
-  margin: 1rem 0;
-  font-style: italic;
-  color: #555;
-}
-
-.text-widget code {
-  background-color: #f5f5f5;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-.text-widget pre {
-  background-color: #f5f5f5;
-  padding: 1rem;
-  border-radius: 3px;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-}
-
-.text-widget table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.text-widget th,
-.text-widget td {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-.text-widget th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-}
-
-.text-widget hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 1.5rem 0;
-}
-
-.text-widget a {
-  color: #4285F4;
-  text-decoration: none;
-}
-
-.text-widget a:hover {
-  text-decoration: underline;
-}
-
-/* Number Widget Styles */
 .number-widget {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  justify-content: left;
+  align-items: left;
   height: 100%;
   width: 100%;
-  padding: 0.5rem;
-  text-align: center;
+  padding-left: 1.5rem;
+  text-align: left;
+  background: transparent;
 }
-
 .number-value {
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #0969DA;
+  margin-bottom: 8px;
+}
+.number-label { 
+  font-size: 0.9rem;
+  color: #57606A;
+  font-weight: 500;
 }
 
-.number-label {
-  font-size: 1.1rem;
-  color: #666;
-}
-
-/* Small widget adjustments */
 .grid-item[style*="grid-column: span 3"] .number-value,
-.grid-item[style*="grid-column: span 4"] .number-value {
-  font-size: 1.7rem;
-}
+.grid-item[style*="grid-column: span 4"] .number-value { font-size: 1.7rem; }
 
 /* ==================
    Modal & Expand
    ================== */
-
-/* Expand button styles */
 .expand-chart-button {
-  background-color: transparent;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  margin-left: 8px;
-  transition: background-color 0.2s, color 0.2s;
+  background-color: transparent; border: none; color: #57606A; /* Modern secondary */ cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 6px; /* Rounded */
+  margin-left: 8px; transition: background-color 0.2s ease, color 0.2s ease;
 }
+.expand-chart-button:hover { background-color: #EFF3F7; /* Light hover */ color: #24292F; }
+.expand-chart-button svg { width: 16px; height: 16px; }
 
-.expand-chart-button:hover {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-
-/* Modal styles */
 .chart-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(27, 31, 35, 0.45); /* Modern overlay */
+  display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
 }
-
 .chart-modal {
-  background-color: #fff;
-  border-radius: 8px;
-  width: calc(100% - 40px);
-  max-width: 90vw;
-  height: calc(100% - 40px);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #fff; border-radius: 8px; width: calc(100% - 40px); max-width: 90vw;
+  height: calc(100% - 40px); max-height: 90vh; display: flex; flex-direction: column;
+  box-shadow: 0 8px 24px rgba(27,31,35,0.15); /* Modern shadow */
+  border: 1px solid #D0D7DE; /* Optional border */
 }
-
 .chart-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eaeaea;
-  min-height: 70px; /* Ensure consistent header height */
-  flex-shrink: 0; /* Prevent header from shrinking */
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid #D8DEE4; min-height: 70px; flex-shrink: 0;
 }
+.chart-modal-title { display: flex; flex-direction: column; flex-grow: 1; }
+.chart-modal-title h2 { font-size: 1.5rem; margin: 0; font-weight: 600; color: #1F2328; }
+.chart-modal-subtitle { font-size: 0.9rem; color: #57606A; margin-top: 4px; }
+/* .chart-modal-controls, .chart-modal-header-controls original structure */
+.chart-modal-content { /* This is the area that needs padding for chart containers inside */
+  position: relative; flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-height: 0;
+  padding: 1.5rem; /* Added consistent padding here */
+}
+/* .chart-modal-content .chart-container rules already ensure padding is 0 inside modal, relying on above */
 
-.chart-modal-title {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+/* General Button Styling (if you add buttons) */
+button, .button {
+    font-family: inherit; font-size: 0.875rem; padding: 0.5em 1em; border-radius: 6px;
+    border: 0px solid transparent; color: #24292F; cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    line-height: 1.4; text-align: center; vertical-align: middle; user-select: none;
 }
+button:hover, .button:hover { background-color: #F0F0F5; border-color: #ADBAC7; }
+button:active, .button:active { background-color: #EAEFF3; box-shadow: inset 0 1px 1px rgba(0,0,0,0.05); }
+button:disabled, .button:disabled { opacity: 0.6; cursor: not-allowed; background-color: #F6F8FA; border-color: #D0D7DE; }
 
-.chart-modal-title h2 {
-  font-size: 1.5rem;
-  margin: 0;
-  font-weight: 600;
-}
+button.primary, .button.primary { background-color: #0969DA; color: #FFFFFF; border-color: #0969DA; }
+button.primary:hover, .button.primary:hover { background-color: #0550AE; border-color: #0550AE; }
+button.primary:active, .button.primary:active { background-color: #033A7D; }
 
-.chart-modal-subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 4px;
+/* Focus Visible for Accessibility */
+button:focus-visible, .button:focus-visible,
+.label-selector-dropdown:focus-visible,
+.tab-item:focus-visible,
+.dashboard-tab:focus-visible,
+.dashboard-item > .dashboard-header:focus-visible, /* Covers sidebar main items */
+.expand-chart-button:focus-visible,
+.legend-btn:focus-visible,
+.sidebar-toggle:focus-visible {
+    outline: 2px solid #0969DA;
+    outline-offset: 2px;
+    /* box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3); /* Optional softer focus */
 }
+*:focus:not(:focus-visible) { outline: none; }
 
-.chart-modal-controls {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.chart-modal-header-controls {
-  margin-right: 12px;
-}
-
-.chart-modal-header-controls .label-selector.title-level {
-  margin-right: 12px;
-}
-
-.chart-modal-header-controls .label-selector-dropdown {
-  z-index: 1100;
-}
-
-/* Critical fix for modal content to take available space */
-.chart-modal-content {
-  position: relative;
-  flex: 1; /* Take all available space */
-  display: flex; /* Use flexbox */
-  flex-direction: column; /* Stack children vertically */
-  overflow: hidden; /* Contain children */
-  min-height: 0; /* Allow content to shrink if needed */
-}
-
-/* Fix chart container inside modal */
-.chart-modal-content .chart-container,
-.chart-modal-content .enhanced-chart-container {
-  position: relative !important;
-  flex: 1; /* Take all available space */
-  height: auto !important; /* Let flex control the height */
-  min-height: 0 !important; /* Allow shrinking */
-  padding-bottom: 60px !important; /* Extra space for x-axis */
-  margin-bottom: 0 !important; /* Remove any margin */
-}
-
-/* Also update this section to ensure proper chart rendering */
-.chart-container canvas,
-.enhanced-chart-container canvas {
-  display: block;
-  width: 100% !important; 
-  height: 100% !important;
-  max-width: 100%;
-  max-height: 100%;
-}
 
 /* ==================
-   Watermark
-   ================== */
-
-/* Watermark Styling */
+  Watermark (Restored from original for functionality)
+  ================== */
 .chart-watermark {
   position: absolute;
   top: 50%;
@@ -992,275 +689,152 @@ body {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 0.15;
+  opacity: 0.1; /* Reduced from 0.15 for lighter watermark */
   pointer-events: none;
-  z-index: 10;
+  z-index: 5; /* Lower z-index so navigation controls appear above */
 }
-
-/* Light theme watermark */
+/* Light theme watermark image (original location) */
 .chart-container .chart-watermark,
 .enhanced-chart-container .chart-watermark,
 .chart-modal-content .chart-watermark {
   background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png');
 }
-
-/* Dark theme watermark */
+/* Dark theme watermark image (original location in styles.css - unusual but kept) */
 .dark-mode .chart-container .chart-watermark,
 .dark-mode .enhanced-chart-container .chart-watermark,
 .dark-mode .chart-modal-content .chart-watermark,
-[data-theme="dark"] .chart-watermark {
+[data-theme="dark"] .chart-watermark { /* Keeping this selector if it was used */
   background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png');
+  /* Opacity adjusted slightly in dark-mode.css */
 }
-
-/* Adjust watermark size for smaller charts */
-.grid-item[style*="grid-column: span 3"] .chart-watermark {
-  width: 60px;
-  height: 60px;
-}
-
-/* Prevent duplicate watermarks in enhanced charts */
-.enhanced-chart-container .chart-container .chart-watermark {
-  display: none !important; /* Hide nested watermark */
-}
-
-/* Also hide watermarks in containers inside other containers to prevent duplication */
+/* Adjust watermark size for smaller charts (original rule) */
+.grid-item[style*="grid-column: span 3"] .chart-watermark { width: 60px; height: 60px; }
+/* Prevent duplicate watermarks (original rules) */
+.enhanced-chart-container .chart-container .chart-watermark { display: none !important; }
 .chart-container .chart-container .chart-watermark,
-.chart-modal-content .chart-container .chart-watermark:not(:first-child) {
-  display: none !important;
-}
-
-/* Mobile Responsive Adjustments */
-@media (max-width: 768px) {
-  /* Chart container adjustments */
-  .chart-container,
-  .enhanced-chart-container {
-    padding-top: 50px !important; /* Consistent top padding */
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 60px !important; /* Consistent bottom padding */
-    height: 400px !important;
-    margin-bottom: 1.5rem !important;
-    min-height: 350px !important;
-  }
-}
+.chart-modal-content .chart-container .chart-watermark:not(:first-child) { display: none !important; }
 
 /* ==================
-   Responsive Styles
+   Responsive Styles (Original Structure Preserved)
    ================== */
-
-@media (max-width: 1200px) {
-  /* Adjust for large screens */
-}
-
-@media (max-width: 992px) {
-  .dashboard-tabs {
-    flex-wrap: wrap;
-  }
-}
+@media (max-width: 1200px) { /* Adjust for large screens */ }
+@media (max-width: 992px) { .dashboard-tabs { flex-wrap: wrap; } }
 
 @media (max-width: 768px) {
-  /* Basic layout adjustments */
-  .dashboard-main {
-    flex-direction: column;
-  }
-  
-  /* Sidebar adjustments */
+  /* Basic layout adjustments (original) */
+  .dashboard-main { flex-direction: column; }
   .dashboard-sidebar {
-    width: 100% !important;
-    border-right: none;
-    border-bottom: 1px solid #eaeaea;
-    height: auto;
-    max-height: 50vh;
-    overflow-y: auto;
+    width: 100% !important; border-right: none; border-bottom: 1px solid #D8DEE4; /* Modern border */
+    height: auto; max-height: 50vh; overflow-y: auto;
   }
-  
-  .dashboard-sidebar.collapsed {
-    width: 100% !important;
-  }
-  
-  .sidebar-toggle {
-    display: none;
-  }
-
-  /* Tab navigation improvements */
-  .tab-navigation {
-    padding: 0;
-  }
-  
-  /* Make dashboard list scrollable vertically */
+  .dashboard-sidebar.collapsed { width: 100% !important; }
+  .sidebar-toggle { display: none; }
+  .tab-navigation { padding: 0; }
   .dashboard-list {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
-    overflow-y: auto;
-    max-height: 45vh;
+    display: flex; flex-direction: column; padding: 0.5rem;
+    border-bottom: 1px solid #D8DEE4; /* Modern border */ overflow-y: auto; max-height: 45vh;
   }
-  
-  .dashboard-item {
-    margin-bottom: 0.5rem;
-    margin-right: 0;
-    width: 100%;
+  .dashboard-item { margin-bottom: 0.5rem; margin-right: 0; width: 100%; }
+  /* Sidebar item headers on mobile */
+  .dashboard-item > .dashboard-header {
+    border-left: none; border-bottom: 3px solid transparent; /* Original border style */
+    padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;
   }
-  
-  /* Dashboard header styling */
-  .dashboard-header {
-    border-left: none;
-    border-bottom: 3px solid transparent;
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .dashboard-item > .dashboard-header.active {
+    border-left: none; border-bottom-color: #0969DA; /* Use new accent */
+    background-color: #EBF3FC; /* Consistent active */
   }
-  
-  .dashboard-header.active {
-    border-left: none;
-    border-bottom-color: #4285F4;
-    background-color: #f0f0f5;
-  }
-  
-  /* Show expand icon for proper dashboard navigation */
-  .expand-icon {
-    display: inline-block;
-  }
-  
-  /* Make tab lists visible when expanded */
+  .expand-icon { display: inline-block; }
+  /* Tab lists (sub-menus) on mobile */
   .tab-list {
-    display: block;
-    max-height: 200px;
-    overflow-y: auto;
-    background-color: #f8f8fa;
-    border-radius: 4px;
-    margin-left: 1rem;
-    margin-right: 1rem;
-    margin-bottom: 0.5rem;
+    display: block; max-height: 200px; overflow-y: auto;
+    background-color: #FDFDFE; /* Slightly distinct background if needed */ border-radius: 4px;
+    margin-left: 1rem; margin-right: 1rem; margin-bottom: 0.5rem;
   }
-  
-  /* Improve tab item styling */
-  .tab-item {
-    padding: 0.75rem 1rem;
-    border-left: 3px solid transparent;
-  }
-  
-  .tab-item.active {
-    border-left: 3px solid #4285F4;
-    background-color: #f0f0f5;
-  }
+  .tab-item { padding: 0.75rem 1rem; border-left: 3px solid transparent; }
+  .tab-item.active { border-left: 3px solid #0969DA; background-color: #EBF3FC; }
 
-  /* Card adjustments */
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .card-header-text {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-  }
-  
-  .card-header-controls {
-    width: 100%;
-  }
-  
-  .label-selector.title-level {
-    width: 100%;
-  }
-  
-  .label-selector.title-level .label-selector-dropdown {
-    flex-grow: 1;
-  }
+  /* Card adjustments (original) */
+  .card-header { flex-direction: column; align-items: flex-start; }
+  .card-header-text { margin-right: 0; margin-bottom: 0.5rem; }
+  .card-header-controls { width: 100%; }
+  .label-selector.title-level { width: 100%; }
+  .label-selector.title-level .label-selector-dropdown { flex-grow: 1; }
 
-  /* Grid layout adjustments */
-  .metrics-grid-positioned {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem !important;
-  }
-  
+  /* Grid layout adjustments (original, gap slightly reduced for aesthetics if it was large) */
+  .metrics-grid-positioned { display: flex; flex-direction: column; gap: 1.5rem !important; /* Maintained gap */ }
   .metrics-grid-positioned .grid-item {
-    width: 100% !important;
-    grid-column: 1 / -1 !important;
-    grid-row: auto !important;
-    margin-bottom: 0;
-    position: relative !important;
-    margin-top: 0.5rem !important;
-    min-height: 450px !important;
+    width: 100% !important; grid-column: 1 / -1 !important; grid-row: auto !important;
+    margin-bottom: 0; position: relative !important; margin-top: 0.5rem !important;
+    min-height: 450px !important; /* Original mobile min-height for items */
   }
-  
-  /* Widget styling */
-  .number-value {
-    font-size: 2rem;
-  }
+  .number-value { font-size: 2rem; /* Original mobile size */ }
 
-  /* Chart legend adjustments */
+  /* Chart legend adjustments (original) */
   .chart-legend-container {
     position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
+    top: auto; left: auto; right: auto;
     height: auto;
-    padding: 5px 1rem;
-    order: -1;
+    padding: 5px 1rem; /* Padding for the legend area itself */
+    order: -1; /* Puts legend before the chart canvas */
     margin-bottom: 5px;
     z-index: auto;
   }
-  
   .chart-legend-items {
-    padding: 5px 0;
-    height: auto;
-    min-height: 30px;
+    padding: 5px 0; 
+    height: auto; 
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap !important; /* Override the wrap setting */
+    justify-content: flex-start !important; /* Override center alignment */
+    -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
   }
-  
-  .legend-controls {
-    position: static;
-    height: auto;
-    padding-top: 5px;
-    display: flex;
+  .legend-item {
+    margin-bottom: 0 !important; /* Override any bottom margin */
+    margin-right: 6px; /* Reduced margin */
+    flex-shrink: 0; /* Prevent shrinking */
+   /* max-width: 120px;  Smaller max width on mobile */
+  }
+  .legend-controls { position: static; height: auto; padding-top: 5px; display: flex; justify-content: center; }
+
+  /* Chart container adjustments (PRESERVED FROM ORIGINAL FOR FUNCTIONALITY) */
+  .chart-container,
+  .enhanced-chart-container {
+    position: relative; /* <<< Ensure position relative is set */
+    padding-top: 50px !important; /* Original */
+    padding-left: 1rem; /* Original */
+    padding-right: 1rem; /* Original */
+    padding-bottom: 20px !important; /* <<< REDUCED from 60px - Allow more space for chart drawing */
+    height: 400px !important; /* Original */
+    margin-bottom: 1.5rem !important; /* Original */
+    min-height: 350px !important; /* Original */
+    overflow-x: auto; /* <<< ENSURE THIS IS PRESENT */
+    overflow-y: hidden; /* <<< PREVENT vertical scroll cutting */
+    -webkit-overflow-scrolling: touch; /* Optional: for smoother scrolling on iOS */
+  }
+   /* Original rule for .chart-wrapper if it exists and is relevant to scrolling */
+  .chart-container .chart-wrapper,
+  .enhanced-chart-container .chart-wrapper {
+    /* Assuming this wrapper would be inside the .chart-container and might need its own overflow or min-width settings if the canvas is inside it */
+    /* For example, if chart labels cause overflow, this wrapper might need: */
+    /* min-width: 100%; display: block; /* or inline-block to allow shrinking/growing */
+    /* overflow-x: visible; /* to let parent .chart-container handle scroll */
+    /* The top/bottom from original might be for positioning something else, like a fixed header/footer *inside* the chart drawing area */
+    top: 40px;
+    bottom: 40px;
   }
 
-  /* Chart container adjustments */
-  .chart-container {
-    padding-top: 10px !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 4rem !important;
-    height: 400px !important;
-    margin-bottom: 1.5rem !important;
-    min-height: 350px !important;
-  }
-  
-  /* Card and chart sizing */
+  /* Card and chart sizing (original) */
   .metric-card {
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    margin-bottom: 0.5rem !important;
-    height: auto !important;
-    min-height: 450px !important;
+    border: 1px solid #D0D7DE !important; /* Modern border, kept important if original was */
+    margin-bottom: 0.5rem !important; height: auto !important;
+    min-height: 450px !important; /* Original mobile card min-height */
     position: relative !important;
   }
+  .chart-container + .chart-container { margin-top: 1.5rem !important; } /* Original spacing */
   
-  /* Force chart container positioning */
-  .chart-container {
-    position: relative !important;
-  }
-  
-  /* Force proper vertical spacing between consecutive charts */
-  .chart-container + .chart-container {
-    margin-top: 1.5rem !important;
-  }
-  
-  /* Modal adjustments */
-  .chart-modal-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .chart-modal-controls {
-    margin-top: 12px;
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .chart-modal-header-controls {
-    flex-grow: 1;
-  }
+  /* Modal adjustments (original) */
+  .chart-modal-header { flex-direction: column; align-items: flex-start; }
+  .chart-modal-controls { margin-top: 12px; width: 100%; justify-content: space-between; }
+  .chart-modal-header-controls { flex-grow: 1; }
 }

@@ -1,4 +1,3 @@
-import { DEFAULT_COLORS, DARK_MODE_COLORS, hexToRgba } from '../utils/colors';
 import React, { useRef, useEffect, useState } from 'react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
@@ -12,11 +11,12 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler // Important for area charts
+  Filler
 } from 'chart.js';
+import { DEFAULT_COLORS, DARK_MODE_COLORS, hexToRgba } from '../utils/colors';
 import WorldMapChart from './WorldMapChart';
 import NumberWidget from './NumberWidget';
-import StackedAreaChart from './StackedAreaChart'; // Import our new component
+import StackedAreaChart from './StackedAreaChart';
 
 // Register ChartJS components
 ChartJS.register(
@@ -29,7 +29,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler // Must register Filler plugin for area charts
+  Filler
 );
 
 /**
@@ -45,8 +45,8 @@ const Chart = ({
   pointRadius = 3,
   showPoints = true,
   fill = false,
-  stacked = false,  // Standard stacking (for bar charts)
-  stackedArea = false, // Specific for stacked area charts
+  stacked = false,
+  stackedArea = false,
   isDarkMode = false
 }) => {
   const chartRef = useRef(null);
@@ -54,20 +54,49 @@ const Chart = ({
   const legendContainerRef = useRef(null);
   const legendItemsRef = useRef(null);
   const legendControlsRef = useRef(null);
-  const watermarkRef = useRef(null); // Add watermark ref
+  const watermarkRef = useRef(null);
 
   const [chartInstance, setChartInstance] = useState(null);
   const [legendCreated, setLegendCreated] = useState(false);
+
+  // Safety check for data validity
+  if (!data) {
+    // If data is null or undefined, show a message in the chart area
+    return (
+      <div 
+        className="chart-container" 
+        style={{
+          height: height === 'auto' ? '100%' : height,
+          position: 'relative',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <div className="no-data-message">No data available</div>
+      </div>
+    );
+  }
 
   // Handle numberDisplay type
   if (type === 'numberDisplay') {
     let value = 0;
     if (Array.isArray(data) && data.length > 0) {
-      value = data[data.length - 1].value;
+      value = parseFloat(data[data.length - 1]?.value || 0);
     } else if (data && typeof data === 'object' && data.value !== undefined) {
-      value = data.value;
+      value = parseFloat(data.value || 0);
     }
-    return <NumberWidget value={value} format={format} label={title} color={color} isDarkMode={isDarkMode} />;
+    
+    return (
+      <NumberWidget 
+        value={value} 
+        format={format} 
+        label={title} 
+        color={color} 
+        isDarkMode={isDarkMode} 
+      />
+    );
   }
 
   // Handle special chart types
@@ -76,8 +105,15 @@ const Chart = ({
   const isStackedBar = type === 'stackedBar' || (type === 'bar' && stacked);
   const isHorizontal = type === 'horizontalBar';
   const isPieChart = type === 'pie';
-  const isMultiSeries = data && typeof data === 'object' && !Array.isArray(data) && 
-                        data.labels && data.datasets;
+  
+  // Safely check for multi-series data structure
+  const isMultiSeries = data && 
+                       typeof data === 'object' && 
+                       !Array.isArray(data) && 
+                       data.labels && 
+                       Array.isArray(data.labels) &&
+                       data.datasets && 
+                       Array.isArray(data.datasets);
 
   // Determine actual chart type
   let actualChartType;
@@ -110,46 +146,48 @@ const Chart = ({
 
   // Build chartData depending on format
   let chartData;
+  
   if (isPieChart) {
-    // Pie chart data preparation
+    // For pie charts, process the data into the required format if necessary
     if (Array.isArray(data)) {
-      const labels = data.map(item => item.category || item.label || item.date);
-      const values = data.map(item => parseFloat(item.value || item.count || item.cnt || 0));
-      const colors = [];
-      for (let i = 0; i < data.length; i++) {
-        colors.push(defaultColors[i % defaultColors.length]);
-      }
-
+      // Get labels
+      const labels = data.map(item => 
+        item.category || item.country || item.label || 
+        Object.values(item).find(v => typeof v === 'string') || 'Unknown'
+      );
+      
+      // Get values
+      const values = data.map(item => 
+        parseFloat(item.value || item.cnt || item.count || 0)
+      );
+      
+      // Generate colors
+      const backgroundColors = values.map((_, i) => 
+        hexToRgba(defaultColors[i % defaultColors.length], 0.7)
+      );
+      
+      // Set up chart data
       chartData = {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: colors,
-          borderColor: colors.map(c => c.replace(/[^,]+(?=\))/, '1')),
-          borderWidth: 1,
-          hoverOffset: 15,
-          rotation: 0
+          backgroundColor: backgroundColors,
+          borderColor: backgroundColors.map(color => color.replace('rgba', 'rgb').replace(/,\s*[\d.]+\)/, ')')),
+          borderWidth: 1
         }]
       };
     } else if (isMultiSeries) {
-      // Convert multi-series data to pie format
-      const labels = data.datasets.map(ds => ds.label);
-      const values = data.datasets.map(ds =>
-        ds.data.reduce((sum, val) => sum + (val || 0), 0)
-      );
-      const colors = data.datasets.map((ds, i) =>
-        ds.backgroundColor || defaultColors[i % defaultColors.length]
-      );
-
+      // If already in multi-series format, use it directly
+      chartData = data;
+    } else {
+      // If data is somehow invalid for a pie chart, create a fallback
       chartData = {
-        labels: labels,
+        labels: ['No Data'],
         datasets: [{
-          data: values,
-          backgroundColor: colors,
-          borderColor: colors.map(c => c.replace(/[^,]+(?=\))/, '1')),
-          borderWidth: 1,
-          hoverOffset: 15,
-          rotation: 0
+          data: [1],
+          backgroundColor: [hexToRgba(themeAdjustedColor, 0.7)],
+          borderColor: [hexToRgba(themeAdjustedColor, 0.9)],
+          borderWidth: 1
         }]
       };
     }
@@ -197,26 +235,38 @@ const Chart = ({
   } else {
     // Standard date/value format
     const getLabels = () => {
+      // Handle potential empty data array
+      if (!Array.isArray(data) || data.length === 0) {
+        return [];
+      }
+
       if (isPieChart) {
-        return (data || []).map(item => item.category || item.country || item.label ||
-          Object.values(item).find(v => typeof v === 'string'));
+        return data.map(item => item.category || item.country || item.label ||
+          Object.values(item).find(v => typeof v === 'string') || 'Unknown');
       } else if (isHorizontal) {
-        return (data || []).map(item => {
+        return data.map(item => {
           return item.category || item.country || item.label ||
-                 Object.values(item).find(v => typeof v === 'string');
+                 Object.values(item).find(v => typeof v === 'string') || 'Unknown';
         });
       } else {
-        return (data || []).map(item => {
-          if (item.date && item.date.includes(' ')) {
+        return data.map(item => {
+          if (!item) return 'Unknown';
+          if (item.date && typeof item.date === 'string' && item.date.includes(' ')) {
             return item.date.split(' ')[0];
           }
-          return item.date;
+          return item.date || 'Unknown';
         });
       }
     };
 
     const getValues = () => {
-      return (data || []).map(item => {
+      // Handle potential empty data array
+      if (!Array.isArray(data) || data.length === 0) {
+        return [];
+      }
+
+      return data.map(item => {
+        if (!item) return 0;
         return parseFloat(item.value || item.cnt || item.count || 0);
       });
     };
@@ -225,7 +275,7 @@ const Chart = ({
       labels: getLabels(),
       datasets: [
         {
-          label: title,
+          label: title || 'Data',
           data: getValues(),
           backgroundColor: hexToRgba(themeAdjustedColor, 0.6),
           borderColor: hexToRgba(themeAdjustedColor, 0.9),
@@ -239,6 +289,144 @@ const Chart = ({
       ],
     };
   }
+
+  // Define chart options - consistently for all chart types
+  const getChartOptions = () => {
+    // Set colors based on theme
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    const textColor = isDarkMode ? '#ffffff' : '#333333';
+    const tooltipBackground = isDarkMode ? 'rgba(33, 33, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    const tooltipTextColor = isDarkMode ? '#e0e0e0' : '#333333';
+    const tooltipBorderColor = isDarkMode ? '#444444' : '#333333';
+
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: isHorizontal ? 'y' : 'x',
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+          top: isPieChart ? 0 : 10,
+          bottom: 15  
+        }
+      },
+      plugins: {
+        legend: {
+          display: false, // We use custom legend
+          labels: {
+            color: textColor
+          }
+        },
+        tooltip: {
+          enabled: true,
+          mode: isPieChart ? 'nearest' : 'index',
+          intersect: isPieChart,
+          backgroundColor: tooltipBackground,
+          titleColor: tooltipTextColor,
+          footerColor: tooltipTextColor,
+          bodyColor: tooltipTextColor,
+          borderColor: tooltipBorderColor,
+          borderWidth: 1,
+          cornerRadius: 6,
+          boxPadding: 8,
+          usePointStyle: true,
+          callbacks: {
+            title: (tooltipItems) => {
+              if (!tooltipItems || tooltipItems.length === 0) return '';
+              return tooltipItems[0].label || '';
+            },
+            label: (tooltipItem) => {
+              if (!tooltipItem) return '';
+              const dataset = tooltipItem.dataset || {};
+              const value = tooltipItem.formattedValue || '0';
+              return ` ${dataset.label || tooltipItem.label || 'Value'}: ${value}`;
+            },
+            footer: (tooltipItems) => {
+              if (isHorizontal || isPieChart || !tooltipItems || tooltipItems.length === 0) return '';
+
+              let total = 0;
+              tooltipItems.forEach((tooltipItem) => {
+                if (!tooltipItem) return;
+                const parsed = tooltipItem.parsed || {};
+                total += parsed.y || parsed.x || 0;
+              });
+
+              return `Total: ${total.toLocaleString()}`;
+            }
+          }
+        },
+        title: {
+          color: textColor,
+          display: false
+        },
+        // Configure the Filler plugin specifically for area charts
+        filler: {
+          propagate: true // This helps with stacked areas
+        }
+      },
+      scales: isPieChart ? undefined : {
+        x: {
+          display: !isPieChart,
+          grid: { 
+            display: false,
+            borderColor: gridColor 
+          },
+          border: {
+            color: gridColor
+          },
+          ticks: {
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 10,
+            color: textColor,
+            padding: 8
+          },
+          // Only stack bar charts, not area charts (area charts use fill instead)
+          stacked: isStackedBar,
+        },
+        y: {
+          display: !isPieChart,
+          beginAtZero: true,
+          grid: {
+            color: gridColor,
+            borderColor: gridColor
+          },
+          border: {
+            color: gridColor
+          },
+          ticks: {
+            color: textColor,
+            padding: 8
+          },
+          // Only stack bar charts, not area charts (area charts use fill instead)
+          stacked: isStackedBar,
+        },
+      },
+      elements: {
+        line: {
+          tension: 0.2,
+        },
+        point: {
+          radius: 0,
+          hitRadius: 30,
+          hoverRadius: 0,
+        },
+        arc: {
+          borderWidth: 0
+        }
+      },
+      interaction: {
+        mode: isPieChart ? 'nearest' : 'index',
+        intersect: isPieChart,
+      },
+      hover: {
+        mode: isPieChart ? 'nearest' : 'index',
+        intersect: isPieChart,
+      },
+    };
+  };
 
   // Check if scroll buttons are needed for legend
   const checkScrollButtonsNeeded = () => {
@@ -258,6 +446,32 @@ const Chart = ({
     }
   };
 
+  // Handle responsive behavior for legend items
+  const handleResponsiveLegend = () => {
+    if (!legendItemsRef.current) return;
+    
+    const container = legendItemsRef.current;
+    
+    // Get all legend items
+    const items = container.querySelectorAll('.legend-item');
+    
+    // If small screen, set flex-wrap to wrap
+    if (window.innerWidth <= 768) {
+      container.style.flexWrap = 'wrap';
+      container.style.justifyContent = 'center';
+      items.forEach(item => {
+        item.style.marginBottom = '8px';
+      });
+    } else {
+      container.style.flexWrap = 'nowrap';
+      container.style.justifyContent = 'flex-start';
+      items.forEach(item => {
+        item.style.marginBottom = '0';
+      });
+      checkScrollButtonsNeeded();
+    }
+  };
+
   // Remove any existing legend containers
   const cleanupExistingLegend = () => {
     if (containerRef.current) {
@@ -274,8 +488,11 @@ const Chart = ({
 
   // Create the custom scrollable legend
   const createCustomLegend = () => {
-    // If not multi-series or no datasets, don't create a legend
-    if ((!isMultiSeries && !isPieChart) || !chartData.datasets || chartData.datasets.length === 0) return;
+    // Safety check: if no chart data or datasets, don't create a legend
+    if (!chartData || !chartData.datasets || chartData.datasets.length === 0) return;
+    
+    // If not multi-series or pie chart, don't create a legend
+    if ((!isMultiSeries && !isPieChart)) return;
 
     cleanupExistingLegend();
 
@@ -289,13 +506,16 @@ const Chart = ({
 
     // For pie charts, use the labels array for legend
     let legendItems;
-    if (isPieChart) {
+    if (isPieChart && chartData && chartData.labels) {
       legendItems = chartData.labels.map((label, i) => ({
         label,
-        backgroundColor: chartData.datasets[0].backgroundColor[i]
+        backgroundColor: chartData.datasets[0]?.backgroundColor[i] || defaultColors[i % defaultColors.length]
       }));
-    } else {
+    } else if (chartData && chartData.datasets) {
       legendItems = chartData.datasets;
+    } else {
+      // No valid items for legend
+      return;
     }
 
     // Build each legend item
@@ -315,7 +535,7 @@ const Chart = ({
         solidColor = solidColor.replace(/rgba\((\d+,\s*\d+,\s*\d+),[^)]+\)/, 'rgb($1)');
       }
 
-      colorBox.style.backgroundColor = solidColor;
+      colorBox.style.backgroundColor = solidColor || defaultColors[index % defaultColors.length];
 
       const label = document.createElement('span');
       label.className = 'legend-item-label';
@@ -328,23 +548,39 @@ const Chart = ({
 
           if (isPieChart) {
             // For pie charts, we hide/show the specific data point
-            const meta = chart.getDatasetMeta(0);
-            const arcElement = meta.data[index];
-            arcElement.hidden = !arcElement.hidden;
+            try {
+              const meta = chart.getDatasetMeta(0);
+              if (meta && meta.data && meta.data[index]) {
+                const arcElement = meta.data[index];
+                arcElement.hidden = !arcElement.hidden;
+                chart.update();
+              }
+            } catch (e) {
+              console.error('Error toggling pie chart segment:', e);
+            }
           } else {
             // For other charts, hide/show the entire dataset
-            const datasetMeta = chart.getDatasetMeta(index);
-            datasetMeta.hidden = !datasetMeta.hidden;
+            try {
+              const datasetMeta = chart.getDatasetMeta(index);
+              if (datasetMeta) {
+                datasetMeta.hidden = !datasetMeta.hidden;
+                chart.update();
+              }
+            } catch (e) {
+              console.error('Error toggling dataset visibility:', e);
+            }
           }
 
-          chart.update();
-
-          // Apply "hidden" CSS if toggled off
-          if ((isPieChart && chart.getDatasetMeta(0).data[index].hidden) ||
-              (!isPieChart && chart.getDatasetMeta(index).hidden)) {
-            itemDiv.classList.add('hidden');
-          } else {
-            itemDiv.classList.remove('hidden');
+          // Apply "hidden" CSS class based on visibility
+          try {
+            if ((isPieChart && chart.getDatasetMeta(0).data[index].hidden) ||
+                (!isPieChart && chart.getDatasetMeta(index).hidden)) {
+              itemDiv.classList.add('hidden');
+            } else {
+              itemDiv.classList.remove('hidden');
+            }
+          } catch (e) {
+            console.error('Error updating legend item CSS:', e);
           }
         }
       });
@@ -391,6 +627,7 @@ const Chart = ({
       // Check scroll after a short delay to ensure the DOM is fully rendered
       setTimeout(() => {
         checkScrollButtonsNeeded();
+        handleResponsiveLegend();
         setLegendCreated(true);
       }, 100);
     }
@@ -450,10 +687,10 @@ const Chart = ({
   useEffect(() => {
     const handleResize = () => {
       if ((isMultiSeries || isPieChart) && legendCreated) {
-        checkScrollButtonsNeeded();
+        handleResponsiveLegend();
       }
     };
-
+  
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -493,131 +730,6 @@ const Chart = ({
     chartType = 'bar';
   }
 
-  // Dark mode adaptations for chart options
-  const getChartOptions = () => {
-    // Set colors based on theme
-    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-    const textColor = isDarkMode ? '#ffffff' : '#333333';
-    const tooltipBackground = isDarkMode ? 'rgba(33, 33, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-    const tooltipTextColor = isDarkMode ? '#e0e0e0' : '#333333';
-    const tooltipBorderColor = isDarkMode ? '#444444' : '#333333';
-
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: isHorizontal ? 'y' : 'x',
-      plugins: {
-        legend: {
-          display: false, // We use a custom legend
-          labels: {
-            color: textColor
-          }
-        },
-        tooltip: {
-          enabled: true,
-          mode: isPieChart ? 'nearest' : 'index',
-          intersect: isPieChart,
-          backgroundColor: tooltipBackground,
-          titleColor: tooltipTextColor,
-          footerColor: tooltipTextColor,
-          bodyColor: tooltipTextColor,
-          borderColor: tooltipBorderColor,
-          borderWidth: 1,
-          cornerRadius: 6,
-          boxPadding: 8,
-          usePointStyle: true,
-          callbacks: {
-            title: (tooltipItems) => {
-              return tooltipItems[0].label;
-            },
-            label: (tooltipItem) => {
-              const dataset = tooltipItem.dataset;
-              const value = tooltipItem.formattedValue;
-              return ` ${dataset.label || tooltipItem.label}: ${value}`;
-            },
-            footer: (tooltipItems) => {
-              if (isHorizontal || isPieChart) return '';
-
-              let total = 0;
-              tooltipItems.forEach((tooltipItem) => {
-                total += tooltipItem.parsed.y || tooltipItem.parsed.x || 0;
-              });
-
-              return `Total: ${total.toLocaleString()}`;
-            }
-          }
-        },
-        title: {
-          color: textColor,
-          display: false
-        },
-        // Configure the Filler plugin specifically for area charts
-        filler: {
-          propagate: true // This helps with stacked areas
-        }
-      },
-      scales: {
-        x: {
-          display: !isPieChart,
-          grid: { 
-            display: false,
-            borderColor: gridColor 
-          },
-          border: {
-            color: gridColor
-          },
-          ticks: {
-            maxRotation: 0,//isHorizontal ? 0 : 45,
-            minRotation: 0,//isHorizontal ? 0 : 45,
-            autoSkip: true,
-            maxTicksLimit: 10,
-            color: textColor,
-          
-          },
-          // Only stack bar charts, not area charts (area charts use fill instead)
-          stacked: isStackedBar,
-        },
-        y: {
-          display: !isPieChart,
-          beginAtZero: true,
-          grid: {
-            color: gridColor,
-            borderColor: gridColor
-          },
-          border: {
-            color: gridColor
-          },
-          ticks: {
-            color: textColor
-          },
-          // Only stack bar charts, not area charts (area charts use fill instead)
-          stacked: isStackedBar,
-        },
-      },
-      elements: {
-        line: {
-          tension: 0.2,
-        },
-        point: {
-          radius: 0,
-          hitRadius: 30,
-          hoverRadius: 0,
-        },
-        arc: {
-          borderWidth: 0
-        }
-      },
-      interaction: {
-        mode: isPieChart ? 'nearest' : 'index',
-        intersect: isPieChart,
-      },
-      hover: {
-        mode: isPieChart ? 'nearest' : 'index',
-        intersect: isPieChart,
-      },
-    };
-  };
-
   // If this is a map, render WorldMapChart instead
   if (chartType === 'map') {
     return (
@@ -641,6 +753,19 @@ const Chart = ({
     );
   }
 
+  // Safety check for chart data
+  if (!chartData || !chartData.datasets || chartData.datasets.length === 0) {
+    return (
+      <div 
+        className="chart-container" 
+        ref={containerRef}
+        style={containerStyle}
+      >
+        <div className="no-data-message">No data available for chart</div>
+      </div>
+    );
+  }
+
   // Determine which chart component to render based on chart type
   let ChartComponent;
   if (chartType === 'line') {
@@ -654,21 +779,30 @@ const Chart = ({
     ChartComponent = Line;
   }
 
+  // For debugging
+  // console.log(`Rendering chart: ${title}`, { type: chartType, data: chartData });
+
   return (
     <div
-      className={`chart-container ${(isMultiSeries || isPieChart) ? 'has-legend' : 'no-legend'}`}
+      // Conditionally add 'has-legend' or 'no-legend' based on the same logic
+      // used for legend creation and the className you already have.
+      className={`chart-container ${
+        (isMultiSeries || isPieChart) && chartData && chartData.datasets && chartData.datasets.length > 0
+          ? 'has-legend'
+          : 'no-legend' // Explicitly add 'no-legend'
+      }`}
       ref={containerRef}
       style={containerStyle}
       data-theme={isDarkMode ? 'dark' : 'light'}
-      data-type={chartType} // Add this line
+      data-type={chartType}
     >
-      <ChartComponent 
-        ref={getChartRef} 
-        data={chartData} 
-        options={{
-          ...getChartOptions(),
-          _isDarkMode: isDarkMode
-        }} 
+      {/* ChartComponent (Line, Bar, Pie) will be rendered here by React */}
+      {/* The legend is dynamically inserted here by createCustomLegend if needed */}
+      {/* The watermark is dynamically appended here */}
+      <ChartComponent
+        ref={getChartRef}
+        data={chartData}
+        options={getChartOptions()}
       />
     </div>
   );

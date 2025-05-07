@@ -222,8 +222,10 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
     <Card
       title={title}
       subtitle={subtitle}
-      headerControls={headerControls} // Pass header controls to Card
-      expandable={isExpandable} // Control whether expand button is shown
+      headerControls={headerControls}
+      expandable={isExpandable}
+      isDarkMode={isDarkMode}
+      chartType={chartType}
     >
       {loading ? (
         <div className="loading-indicator">Loading...</div>

@@ -6,7 +6,7 @@ const metric = {
     labelField: 'country',
     valueField: 'cnt',
     chartType: 'horizontalBar',
-    color: '#3e6957',
+    color: '#0969DA',
     query: `SELECT 
                 country
                 ,SUM(cnt) AS cnt 
