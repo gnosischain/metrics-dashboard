@@ -53,11 +53,13 @@ class DashboardService {
       return;
     }
     
-    // Create dashboard object
+    // Create dashboard object with icon support
     const dashboard = {
       id: key.toLowerCase().replace(/\s+/g, '-'),
       name: dashboardConfig.name,
       order: dashboardConfig.order || 999,
+      icon: dashboardConfig.icon || '', // Emoji fallback
+      iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
     };
     
     // Check if this is a dashboard with direct metrics (no tabs)
@@ -92,6 +94,8 @@ class DashboardService {
         id: tab.name.toLowerCase().replace(/\s+/g, '-'),
         name: tab.name,
         order: tab.order || 999,
+        icon: tab.icon || '', // Emoji fallback for tab
+        iconClass: tab.iconClass || '', // Icon class for tab SVG icon
         metrics: (tab.metrics || []).map(metric => {
           // Get base metric config
           const metricConfig = metricsService.getMetricConfig(metric.id);

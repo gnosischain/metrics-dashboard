@@ -29,7 +29,8 @@ const Card = ({ title, subtitle, headerControls, children, expandable = true, is
       <div className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''}`} 
            style={isNumberDisplay ? { 
              boxShadow: 'none', 
-             border: 'none', 
+             border: 'none',
+             "border-left": '1px solid rgba(0,0,0,0.4)', 
              background: 'transparent' 
            } : {}}>
         <div className="card-header" style={isNumberDisplay ? { 

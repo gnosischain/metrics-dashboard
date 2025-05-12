@@ -1,16 +1,16 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
-import config from '../utils/config';
 import { getLastUpdateTime } from '../utils/dates';
 
 /**
- * Header component for the dashboard with logo
+ * Enhanced Header component for the dashboard with logo
  * @param {Object} props - Component props
+ * @param {string} props.dashboardName - Currently active dashboard name
  * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @param {Function} props.toggleTheme - Function to toggle theme
  * @returns {JSX.Element} Header component
  */
-const Header = ({ isDarkMode, toggleTheme }) => {
+const Header = ({ dashboardName, isDarkMode, toggleTheme }) => {
   // Different logo URLs for light and dark mode
   const logoUrl = isDarkMode 
     ? "https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/LogoLockup_White_RGB.png"
@@ -25,8 +25,12 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           className="dashboard-logo"
         />
         <div className="header-title">
+          <div className="analytics-title">Analytics</div>
           <div className="last-updated">
-            <p className="analytics-title">Analytics</p> Last updated: {getLastUpdateTime()}
+            Last updated: {getLastUpdateTime()}
+            {dashboardName && (
+              <span className="active-dashboard-name"> • {dashboardName}</span>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import IconComponent from './IconComponent';
 
 /**
  * Hierarchical TabNavigation component for switching between dashboards and tabs
@@ -41,7 +42,7 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
     return '';
   };
   
-  // If collapsed, show only icons or abbreviated view
+  // If collapsed, show only icons
   if (isCollapsed) {
     return (
       <div className="tab-navigation collapsed">
@@ -59,7 +60,14 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
                 }}
                 title={dashboard.name}
               >
-                <span className="dashboard-icon">{dashboard.name.charAt(0)}</span>
+                <span className="dashboard-icon">
+                  <IconComponent 
+                    name={dashboard.iconClass} 
+                    fallback={dashboard.icon || dashboard.name.charAt(0)} 
+                    size="md"
+                    color="currentColor"
+                  />
+                </span>
               </div>
             </li>
           ))}
@@ -102,10 +110,26 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
                   }
                 }}
               >
-                <span className="dashboard-name">{dashboard.name}</span>
+                <div className="dashboard-header-content">
+                  <span className="dashboard-icon">
+                    <IconComponent 
+                      name={dashboard.iconClass} 
+                      fallback={dashboard.icon || dashboard.name.charAt(0)} 
+                      size="md"
+                      color="currentColor"
+                    />
+                  </span>
+                  <span className="dashboard-name">{dashboard.name}</span>
+                </div>
+                
                 {/* Only show expand icon for dashboards with tabs */}
                 {!isTablessDashboard && (
-                  <span className="expand-icon">{isDashboardExpanded(dashboard.id) ? '▼' : '▶'}</span>
+                  <span className="expand-icon">
+                    <IconComponent 
+                      name={isDashboardExpanded(dashboard.id) ? 'chevron-down' : 'chevron-right'} 
+                      size="sm"
+                    />
+                  </span>
                 )}
               </div>
               
@@ -118,7 +142,17 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
                       className={`tab-item ${activeDashboard === dashboard.id && activeTab === tab.id ? 'active' : ''}`}
                       onClick={() => onNavigation(dashboard.id, tab.id)}
                     >
-                      {tab.name}
+                      <div className="tab-item-content">
+                        <span className="tab-icon">
+                          <IconComponent 
+                            name={tab.iconClass} 
+                            fallback={tab.icon || '•'} 
+                            size="sm"
+                            color="currentColor"
+                          />
+                        </span>
+                        <span className="tab-name">{tab.name}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>

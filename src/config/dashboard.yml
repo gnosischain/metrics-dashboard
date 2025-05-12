@@ -1,6 +1,9 @@
+
 Overview:
   name: Overview
   order: 1
+  icon: "📊"
+  iconClass: "chart-line"
   metrics:
     - id: under_construction
       gridRow: 2
@@ -10,6 +13,8 @@ Overview:
 Financials:
   name: Financials
   order: 1
+  icon: "💰"
+  iconClass: "dollar-sign"
   metrics:
     - id: under_construction
       gridRow: 2
@@ -19,9 +24,13 @@ Financials:
 OnChainActivity:
   name: OnChain Activity
   order: 2
+  icon: "⛓️"
+  iconClass: "link"
   tabs:
     - name: Yields
       order: 1
+      icon: "📈"
+      iconClass: "trending-up"
       metrics:
         - id: under_construction
           gridRow: 2
@@ -30,6 +39,8 @@ OnChainActivity:
         
     - name: Execution
       order: 1
+      icon: "🚀"
+      iconClass: "zap"
       metrics:
         - id: historical_n_txs
           gridRow: 1
@@ -46,6 +57,8 @@ OnChainActivity:
 
     - name: Consensus
       order: 2
+      icon: "🔄"
+      iconClass: "check-circle"
       metrics:
         - id: historical_el_client_distribution
           gridRow: 1
@@ -55,9 +68,13 @@ OnChainActivity:
 Network:
   name: Network
   order: 3
+  icon: "🌐"
+  iconClass: "globe"
   tabs:
     - name: Overview
       order: 1
+      icon: "📊"
+      iconClass: "activity"
       metrics:
         - id: last_day_nodes
           gridRow: 1
@@ -65,7 +82,7 @@ Network:
           minHeight: 100px
         - id: last_day_countries
           gridRow: 1
-          gridColumn: 5 / span 5
+          gridColumn: 5 / span 4
           minHeight: 100px
         - id: last_day_countries
           gridRow: 1
@@ -90,6 +107,8 @@ Network:
         
     - name: Clients
       order: 2
+      icon: "💻"
+      iconClass: "monitor"
       metrics:
         - id: historical_el_client_distribution
           gridRow: 1
@@ -106,6 +125,8 @@ Network:
 
     - name: Geography
       order: 3
+      icon: "🗺️"
+      iconClass: "map"
       metrics:
         - id: historical_nodes_geo
           gridRow: 1
@@ -114,6 +135,8 @@ Network:
 
     - name: Probelab
       order: 4
+      icon: "🔬"
+      iconClass: "search"
       metrics:
         - id: historical_probelab_cl_client_distribution
           gridRow: 1
@@ -139,9 +162,13 @@ Network:
 ESG:
   name: ESG
   order: 4
+  icon: "🌱"
+  iconClass: "leaf"
   tabs:
     - name: Overview
       order: 1
+      icon: "📊"
+      iconClass: "bar-chart-2"
       metrics:
         - id: historical_co2_emissions
           gridRow: 1
@@ -157,10 +184,10 @@ ESG:
           minHeight: 500px
     - name: Methodology
       order: 2
+      icon: "📝"
+      iconClass: "file-text"
       metrics:
         - id: esg_methodology
           gridRow: 1
           gridColumn: 1 / span 12
           minHeight: 16000px
-
-          

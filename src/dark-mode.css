@@ -120,14 +120,13 @@ canvas {
 }
 
 .dark-mode .sidebar-toggle {
-  background-color: var(--card-background); /* Use new var */
-  color: var(--text-color);
-  border-color: var(--border-color);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Slightly more pronounced shadow for toggle */
+  background-color: #161B22 !important;
+  border-color: #30363D !important;
+  color: #C9D1D9 !important;
 }
 .dark-mode .sidebar-toggle:hover {
-  background-color: var(--hover-background);
-  border-color: var(--text-secondary);
+  background-color: var(--hover-background); /* Use variable */
+  color: var(--text-color);
 }
 
 .dark-mode .chart-nav-button {
@@ -246,9 +245,10 @@ canvas {
   background-color: var(--card-background) !important; /* Use variable */
   color: var(--text-color) !important;
 }
-.dark-mode .chart-modal { /* Outer modal container */
-  border: 1px solid var(--border-color); /* Add border */
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35); /* Darker shadow */
+.dark-mode .chart-modal {
+  background-color: #161B22 !important;
+  border-color: #30363D !important;
+  color: #C9D1D9 !important;
 }
 .dark-mode .chart-modal-header {
   background-color: var(--card-header-background) !important; /* Use variable */
@@ -435,6 +435,7 @@ canvas {
   .dark-mode .metric-card {
     border-color: var(--border-color) !important; /* Original had important */
   }
+  
   /* Ensure mobile chart containers inherit dark background properly if they had specific overrides */
   .dark-mode .chart-container,
   .dark-mode .enhanced-chart-container {

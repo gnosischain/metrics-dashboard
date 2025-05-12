@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
+import IconComponent from './IconComponent';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 
@@ -16,7 +17,12 @@ const Dashboard = () => {
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Default to collapsed on mobile, expanded on desktop
+    return window.innerWidth <= 768;
+  });
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const sidebarRef = useRef(null);
   
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -66,6 +72,45 @@ const Dashboard = () => {
       return () => mediaQuery.removeListener(handleChange);
     }
   }, []);
+  
+  // Handler for clicks outside the sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        window.innerWidth <= 768 && 
+        mobileExpanded && 
+        sidebarRef.current && 
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest('.sidebar-toggle') // Don't close when clicking the toggle button
+      ) {
+        setMobileExpanded(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileExpanded]);
+  
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Default to collapsed on mobile, expanded on desktop
+      if (window.innerWidth <= 768) {
+        if (!sidebarCollapsed) {
+          setSidebarCollapsed(true);
+        }
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [sidebarCollapsed]);
   
   // Load dashboard configuration
   useEffect(() => {
@@ -158,12 +203,22 @@ const Dashboard = () => {
       } else {
         setActiveTab('');
       }
+      
+      // On mobile, automatically close the sidebar after navigation
+      if (window.innerWidth <= 768) {
+        setMobileExpanded(false);
+      }
     } 
     // Just changing tabs within the same dashboard
     else if (tabId !== activeTab) {
       // Just update the tab
       setTabMetrics([]);
       setActiveTab(tabId);
+      
+      // On mobile, automatically close the sidebar after navigation
+      if (window.innerWidth <= 768) {
+        setMobileExpanded(false);
+      }
     }
   };
   
@@ -175,7 +230,14 @@ const Dashboard = () => {
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    // On mobile
+    if (window.innerWidth <= 768) {
+      setMobileExpanded(!mobileExpanded);
+    } 
+    // On desktop
+    else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
   };
 
   return (
@@ -187,19 +249,33 @@ const Dashboard = () => {
       />
       
       <div className="dashboard-main">
-        <aside className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className="sidebar-toggle" onClick={toggleSidebar}>
-            {sidebarCollapsed ? '▶' : '◀'}
-          </div>
+        <aside 
+          ref={sidebarRef}
+          className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileExpanded ? 'mobile-expanded' : ''}`}
+        >
           <TabNavigation 
             dashboards={dashboards}
             activeDashboard={activeDashboard}
             tabs={tabs} 
             activeTab={activeTab} 
             onNavigation={handleNavigation}
-            isCollapsed={sidebarCollapsed}
+            isCollapsed={sidebarCollapsed && !mobileExpanded}
           />
         </aside>
+        
+        {/* Move sidebar toggle here - outside the sidebar */}
+        <div className="sidebar-toggle" onClick={toggleSidebar}>
+          <IconComponent 
+            name={
+              // On mobile
+              window.innerWidth <= 768 
+                ? (mobileExpanded ? 'chevron-left' : 'chevron-right')
+                // On desktop
+                : (sidebarCollapsed ? 'chevron-right' : 'chevron-left')
+            } 
+            size="sm"
+          />
+        </div>
         
         <div className="dashboard-content">
           {isLoading ? (
