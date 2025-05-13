@@ -1,0 +1,4 @@
+{
+  "id": "historical_yield_sdai",
+  "query": "SELECT * FROM dbt.yields_sdai_apy_daily WHERE label != 'Daily' ORDER BY date ASC, label ASC"
+}

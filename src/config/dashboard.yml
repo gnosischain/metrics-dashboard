@@ -32,8 +32,8 @@ OnChainActivity:
       icon: "📈"
       iconClass: "trending-up"
       metrics:
-        - id: under_construction
-          gridRow: 2
+        - id: historical_yield_sdai
+          gridRow: 1
           gridColumn: 1 / span 12
           minHeight: 500px
         
