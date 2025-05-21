@@ -7,7 +7,7 @@ const metric = {
   labelField: 'label', 
   valueField: 'apy',
   showPoints: false, 
-  query: `SELECT * FROM dbt.yields_sdai_apy_daily WHERE label != 'Daily' ORDER BY date ASC, label ASC`,
+  query: `SELECT * FROM dbt.yields_sdai_apy_daily WHERE label NOT LIKE '%MA' AND date >= '2023-10-12' ORDER BY date ASC, label ASC`,
 };
 
 export default metric;
