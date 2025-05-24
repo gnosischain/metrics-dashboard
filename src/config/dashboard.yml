@@ -27,8 +27,21 @@ OnChainActivity:
   icon: "⛓️"
   iconClass: "link"
   tabs:
-    - name: Yields
+    - name: RWA
       order: 1
+      icon: "📈"
+      iconClass: "trending-up"
+      metrics:
+        - id: historical_rwa_prices
+          gridRow: 1
+          gridColumn: 1 / span 9
+          minHeight: 500px
+        - id: rwa_text
+          gridRow: 1
+          gridColumn: 10 / span 12
+          minHeight: 500px
+    - name: Yields
+      order: 2
       icon: "📈"
       iconClass: "trending-up"
       metrics:
@@ -45,11 +58,11 @@ OnChainActivity:
         - id: historical_n_txs
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 500px
+          minHeight: 600px
         - id: historical_gas_used
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 500px
+          minHeight: 600px
         - id: historical_state_growth
           gridRow: 2
           gridColumn: 1 / span 12
@@ -60,10 +73,10 @@ OnChainActivity:
       icon: "🔄"
       iconClass: "check-circle"
       metrics:
-        - id: historical_el_client_distribution
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 425px
+        - id: under_construction
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 500px
 
 Network:
   name: Network

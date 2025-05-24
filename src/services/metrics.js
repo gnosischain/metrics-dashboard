@@ -119,6 +119,118 @@ class MetricsService {
     }));
   }
 
+  /**
+   * Transform data specifically for stacked area charts
+   * @param {Array} data - Raw data from API
+   * @param {Object} metricConfig - Metric configuration
+   * @returns {Object} - Transformed data for stacked area charts
+   */
+  transformStackedAreaData(data, metricConfig) {
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn('Empty or invalid data for stacked area chart');
+      return { labels: [], datasets: [] };
+    }
+
+    const labelField = metricConfig.labelField;
+    const valueField = metricConfig.valueField || 'value';
+    const isTimeSeries = metricConfig.isTimeSeries; // Get from config
+
+    // Determine the date field
+    const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
+    const dateField = dateFields.find(field => data[0][field] !== undefined);
+
+    if (!dateField) {
+      console.error('No date field found in data for stacked area chart');
+      return { labels: [], datasets: [] };
+    }
+
+    console.log(`Transforming stacked area data with labelField: ${labelField}, dateField: ${dateField}, valueField: ${valueField}, isTimeSeries: ${isTimeSeries}`);
+    console.log(`Sample raw data:`, data.slice(0, 3));
+
+    // Extract unique dates and labels
+    const uniqueDates = [...new Set(data.map(item => {
+      const date = item[dateField];
+      return typeof date === 'string' && date.includes(' ') ? date.split(' ')[0] : date;
+    }))].sort();
+
+    const uniqueLabels = [...new Set(data.map(item => item[labelField]))].filter(Boolean).sort();
+
+    console.log(`Found ${uniqueDates.length} unique dates and ${uniqueLabels.length} unique labels`);
+    console.log(`Unique dates sample:`, uniqueDates.slice(0, 5));
+    console.log(`Unique labels:`, uniqueLabels);
+
+    // Generate colors for datasets
+    const colors = metricConfig.color 
+      ? Array(uniqueLabels.length).fill(metricConfig.color)
+      : generateColorPalette(uniqueLabels.length);
+
+    // Create a 2D map of [date][label] -> value
+    const dataMap = {};
+    uniqueDates.forEach(date => {
+      dataMap[date] = {};
+      uniqueLabels.forEach(label => {
+        dataMap[date][label] = 0; // Initialize with zeros
+      });
+    });
+
+    // Fill in the actual values
+    data.forEach(item => {
+      const date = typeof item[dateField] === 'string' && item[dateField].includes(' ')
+        ? item[dateField].split(' ')[0]
+        : item[dateField];
+      
+      const label = item[labelField];
+      const value = parseFloat(item[valueField] || 0);
+
+      // Add to existing value (in case of multiple entries for same date/label)
+      if (dataMap[date] && label && !isNaN(value)) {
+        dataMap[date][label] = (dataMap[date][label] || 0) + value;
+      }
+    });
+
+    // Debug: Check if we have data in our map
+    const sampleDate = uniqueDates[0];
+    console.log(`Sample data for date ${sampleDate}:`, dataMap[sampleDate]);
+
+    // Convert to Chart.js datasets format
+    const datasets = uniqueLabels.map((label, index) => {
+      // For time series, we DON'T use {x, y} format for StackedAreaChart
+      // StackedAreaChart expects simple arrays with labels separate
+      const dataPoints = uniqueDates.map(date => dataMap[date][label] || 0);
+
+      const dataset = {
+        label,
+        data: dataPoints,
+        backgroundColor: colors[index],
+        borderColor: colors[index],
+        borderWidth: 1.5,
+        fill: true, // Always true for stacked areas
+      };
+
+      return dataset;
+    });
+
+    // Log output for debugging
+    console.log(`Created ${datasets.length} datasets with ${uniqueDates.length} points each`);
+    console.log(`Sample dataset:`, {
+      label: datasets[0]?.label,
+      dataLength: datasets[0]?.data?.length,
+      sampleData: datasets[0]?.data?.slice(0, 5)
+    });
+
+    const result = {
+      labels: uniqueDates,
+      datasets
+    };
+
+    console.log(`Final stacked area result:`, {
+      labelsCount: result.labels.length,
+      datasetsCount: result.datasets.length,
+      sampleLabels: result.labels.slice(0, 5)
+    });
+
+    return result;
+  }
 
   /**
    * Transform raw data into a format usable by charts
@@ -164,7 +276,7 @@ class MetricsService {
     }
     // --- End Critical Check ---
 
-    // Special case for stacked area charts
+    // Special case for stacked area charts (without EnhancedChart filtering)
     if (isStackedArea && metricConfig.labelField) {
         console.log(`MetricsService[${metricId}]: Applying stacked area chart transformation for ${metricId}.`);
         return this.transformStackedAreaData(data, metricConfig);
@@ -241,92 +353,6 @@ class MetricsService {
   }
 
   /**
-   * Transform data specifically for stacked area charts
-   * @param {Array} data - Raw data from API
-   * @param {Object} metricConfig - Metric configuration
-   * @returns {Object} - Transformed data for stacked area charts
-   */
-  transformStackedAreaData(data, metricConfig) {
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn('Empty or invalid data for stacked area chart');
-      return { labels: [], datasets: [] };
-    }
-
-    const labelField = metricConfig.labelField;
-    const valueField = metricConfig.valueField || 'value';
-
-    // Determine the date field
-    const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
-    const dateField = dateFields.find(field => data[0][field] !== undefined);
-
-    if (!dateField) {
-      console.error('No date field found in data for stacked area chart');
-      return { labels: [], datasets: [] };
-    }
-
-    console.log(`Transforming stacked area data with labelField: ${labelField}, dateField: ${dateField}, valueField: ${valueField}`);
-
-    // Extract unique dates and labels
-    const uniqueDates = [...new Set(data.map(item => {
-      const date = item[dateField];
-      return typeof date === 'string' && date.includes(' ') ? date.split(' ')[0] : date;
-    }))].sort();
-
-    const uniqueLabels = [...new Set(data.map(item => item[labelField]))].sort();
-
-    console.log(`Found ${uniqueDates.length} unique dates and ${uniqueLabels.length} unique labels`);
-
-    // Generate colors for datasets
-    const colors = metricConfig.color 
-      ? Array(uniqueLabels.length).fill(metricConfig.color)
-      : generateColorPalette(uniqueLabels.length);
-
-    // Create a 2D map of [date][label] -> value
-    const dataMap = {};
-    uniqueDates.forEach(date => {
-      dataMap[date] = {};
-      uniqueLabels.forEach(label => {
-        dataMap[date][label] = 0; // Initialize with zeros
-      });
-    });
-
-    // Fill in the actual values
-    data.forEach(item => {
-      const date = typeof item[dateField] === 'string' && item[dateField].includes(' ')
-        ? item[dateField].split(' ')[0]
-        : item[dateField];
-      
-      const label = item[labelField];
-      const value = parseFloat(item[valueField] || 0);
-
-      // Add to existing value (in case of multiple entries for same date/label)
-      if (dataMap[date] && label) {
-        dataMap[date][label] = (dataMap[date][label] || 0) + value;
-      }
-    });
-
-    // Convert to Chart.js datasets format
-    const datasets = uniqueLabels.map((label, index) => {
-      return {
-        label,
-        data: uniqueDates.map(date => dataMap[date][label] || 0),
-        backgroundColor: colors[index],
-        borderColor: colors[index],
-        borderWidth: 1.5,
-        fill: true, // Always true for stacked areas
-      };
-    });
-
-    // Log output for debugging
-    console.log(`Created ${datasets.length} datasets with ${uniqueDates.length} points each`);
-
-    return {
-      labels: uniqueDates,
-      datasets
-    };
-  }
-
-  /**
    * Transform data with a label field into a multi-line chart format
    * (Used for standard multi-line charts, not the EnhancedChart filtering case)
    * @param {Array} data - Raw data
@@ -387,7 +413,6 @@ class MetricsService {
     };
   }
 
-
   /**
    * Transform multi-series data (like client distribution from columns)
    * @param {Array} data - Raw data
@@ -430,7 +455,6 @@ class MetricsService {
 
     return { labels, datasets };
   }
-
 
   /**
    * Clear data cache

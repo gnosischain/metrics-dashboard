@@ -6,6 +6,8 @@ const metric = {
   labelField: 'client',
   valueField: 'value',
   chartType: 'stackedBar',
+  enableZoom: true,
+  isTimeSeries: true, 
   query: `SELECT * FROM dbt.p2p_peers_clients_daily ORDER BY date ASC, client ASC`
 };
 

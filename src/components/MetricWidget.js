@@ -16,17 +16,15 @@ import metricsService from '../services/metrics';
  * @returns {JSX.Element} - Rendered component
  */
 const MetricWidget = ({ metricId, isDarkMode = false }) => {
-  const [rawData, setRawData] = useState(null); // Store raw API response
-  const [chartDisplayData, setChartDisplayData] = useState(null); // Data formatted for Chart/EnhancedChart
+  const [rawData, setRawData] = useState(null);
+  const [chartDisplayData, setChartDisplayData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const isMounted = useRef(true);
 
-  // State for filtering (managed here now)
   const [uniquePrimaryLabels, setUniquePrimaryLabels] = useState([]);
   const [selectedLabel, setSelectedLabel] = useState('');
 
-  // Get metric configuration
   const metricConfig = metricsService.getMetricConfig(metricId);
   const {
       enableFiltering,
@@ -35,36 +33,37 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       chartType,
       name: title,
       description: subtitle,
-      content, // For text widgets
-      valueField = 'value', // Default value field
-      stackedArea = false, // Explicit stacked area property
-      stacked = false, // General stacking property
-      fill = false // Fill property
+      content,
+      valueField = 'value',
+      stackedArea = false,
+      stacked = false,
+      fill = false,
+      isTimeSeries = false,
+      enableZoom = false
   } = metricConfig;
 
-  // Determine if this should be a stacked area chart
-  const isStackedArea = chartType === 'area' && (stackedArea === true || stacked === true);
-
-  // Determine if EnhancedChart filtering logic applies
+  const isStackedAreaChart = chartType === 'area' && (stackedArea === true || stacked === true);
   const requiresEnhancedFiltering = enableFiltering && labelField && subLabelField;
-
-  // Determine if chart is expandable
   const isExpandable = chartType !== 'numberDisplay' && chartType !== 'text';
 
-  // Log the configuration for debugging
+  // NEW: Determine which component should handle zoom for stacked area charts
+  const shouldUseStackedAreaChartWithZoom = isStackedAreaChart && !requiresEnhancedFiltering && (enableZoom || isTimeSeries);
+
   useEffect(() => {
-    console.log(`MetricWidget[${metricId}]: Configuration:`, { 
-      chartType, 
-      isStackedArea, 
+    console.log(`MetricWidget[${metricId}]: Configuration:`, {
+      chartType,
+      isStackedAreaChart,
       requiresEnhancedFiltering,
       labelField,
       stackedArea,
       stacked,
-      isExpandable
+      isExpandable,
+      isTimeSeries,
+      enableZoom,
+      shouldUseStackedAreaChartWithZoom // Log the new decision
     });
-  }, [metricId, chartType, isStackedArea, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable]);
+  }, [metricId, chartType, isStackedAreaChart, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable, isTimeSeries, enableZoom, shouldUseStackedAreaChartWithZoom]);
 
-  // Cleanup function for component unmount
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -72,73 +71,59 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
     };
   }, []);
 
-  // Fetch metric data
   const fetchData = useCallback(async () => {
     if (chartType === 'text') {
       if (isMounted.current) setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       setError(null);
-      setRawData(null); // Reset raw data
-      setChartDisplayData(null); // Reset display data
+      setRawData(null);
+      setChartDisplayData(null);
       console.log(`MetricWidget[${metricId}]: Fetching data...`);
-
-      // Fetch raw data
       const fetchedData = await metricsService.fetchMetricData(metricId);
-
       if (!isMounted.current) return;
 
-      // Log the fetched data structure for debugging
       if (fetchedData) {
-        console.log(`MetricWidget[${metricId}]: Data structure:`, 
-          Array.isArray(fetchedData) 
-            ? `Array with ${fetchedData.length} items` 
+        console.log(`MetricWidget[${metricId}]: Data structure:`,
+          Array.isArray(fetchedData)
+            ? `Array with ${fetchedData.length} items`
             : (fetchedData.datasets ? `Chart.js format with ${fetchedData.datasets.length} datasets` : 'Other format'));
       }
 
-      // --- Process fetched data ---
       if (fetchedData && Array.isArray(fetchedData)) {
           console.log(`MetricWidget[${metricId}]: Received data count: ${fetchedData.length}. Requires Filtering: ${requiresEnhancedFiltering}`);
-          setRawData(fetchedData); // Store the raw/pre-transformed data
+          setRawData(fetchedData);
 
           if (!requiresEnhancedFiltering) {
-              // If standard chart, the fetchedData is already transformed by metricsService
               setChartDisplayData(fetchedData);
               console.log(`MetricWidget[${metricId}]: Setting display data directly (standard chart).`);
           } else {
-              // If enhanced filtering, EnhancedChart will transform rawData,
-              // but we need to extract labels here for the selector.
               if (fetchedData.length > 0) {
                   const labels = [...new Set(fetchedData.map(item => item[labelField]))].filter(Boolean).sort();
                   setUniquePrimaryLabels(labels);
                   console.log(`MetricWidget[${metricId}]: Extracted unique labels:`, labels);
-                  // Set default selected label (first one) if not already set or if previous selection is gone
                   if (labels.length > 0 && !labels.includes(selectedLabel)) {
                       setSelectedLabel(labels[0]);
                       console.log(`MetricWidget[${metricId}]: Setting default selected label to: '${labels[0]}'`);
                   } else if (labels.length === 0) {
-                      setSelectedLabel(''); // Reset if no labels found
+                      setSelectedLabel('');
                   }
-                  // Let EnhancedChart handle the display transformation based on rawData and selectedLabel prop
-                  setChartDisplayData(fetchedData); // Pass raw data to EnhancedChart
+                  setChartDisplayData(fetchedData);
               } else {
-                  // Handle empty raw data for filtering case
                   setUniquePrimaryLabels([]);
                   setSelectedLabel('');
-                  setChartDisplayData([]); // Pass empty array
+                  setChartDisplayData([]);
                   console.log(`MetricWidget[${metricId}]: No raw data found for enhanced filtering.`);
               }
           }
           setError(null);
       } else if (fetchedData && typeof fetchedData === 'object' && fetchedData.labels && fetchedData.datasets) {
-          // Handle cases where metricsService returns Chart.js object directly (e.g., multi-line)
            console.log(`MetricWidget[${metricId}]: Received pre-formatted Chart.js data object.`);
-           setRawData(null); // No raw data equivalent here
+           setRawData(null);
            setChartDisplayData(fetchedData);
-           setUniquePrimaryLabels([]); // No filtering possible
+           setUniquePrimaryLabels([]);
            setSelectedLabel('');
       } else {
           console.warn(`MetricWidget[${metricId}]: Received invalid data:`, fetchedData);
@@ -162,49 +147,33 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
         console.log(`MetricWidget[${metricId}]: Fetching complete. Loading: false.`);
       }
     }
-  }, [metricId, title, chartType, requiresEnhancedFiltering, labelField, selectedLabel]); // Dependencies for useCallback
+  }, [metricId, title, chartType, requiresEnhancedFiltering, labelField, selectedLabel]);
 
-  // Fetch data on mount and when metricId changes
   useEffect(() => {
     fetchData();
-    // Add logic for refresh interval if needed
   }, [fetchData, metricId]);
 
-  // --- Render Logic ---
-
-  // Determine chart height based on config (ensure this calculation is reasonable)
   const getChartHeight = () => {
-      // Check config from dashboard.yml first, then metric default
-      const configuredHeight = metricConfig.minHeight; // From dashboard.yml
+      const configuredHeight = metricConfig.minHeight;
       if (configuredHeight) return configuredHeight;
-
-      // Fallback to vSize mapping - ensure these pixel values are sufficient
       switch (metricConfig.vSize?.toLowerCase()) {
-          case 'small': return '300px'; // Increased default
-          case 'medium': return '400px'; // Increased default
-          case 'large': return '500px'; // Increased default
-          case 'xl': return '600px'; // Increased default
-          default: return '400px'; // Default height
+          case 'small': return '300px';
+          case 'medium': return '400px';
+          case 'large': return '500px';
+          case 'xl': return '600px';
+          default: return '400px';
       }
   };
 
-  // Handle Text Widget
   if (chartType === 'text') {
-    return (
-      <TextWidget
-        title={title}
-        subtitle={subtitle}
-        content={content}
-      />
-    );
+    return <TextWidget title={title} subtitle={subtitle} content={content} />;
   }
 
-  // Create dropdown component for filtering if needed
   const createHeaderControls = () => {
     if (requiresEnhancedFiltering && uniquePrimaryLabels.length > 0) {
       return (
         <LabelSelector
-          idPrefix={metricId} // Pass metricId for unique IDs
+          idPrefix={metricId}
           labels={uniquePrimaryLabels}
           selectedLabel={selectedLabel}
           onSelectLabel={setSelectedLabel}
@@ -215,7 +184,6 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
     return null;
   };
 
-  // Get header controls to pass to Card
   const headerControls = createHeaderControls();
 
   return (
@@ -233,13 +201,11 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {/* Render appropriate chart based on type and data */}
           {(chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
             requiresEnhancedFiltering ? (
-              // EnhancedChart for filtered data
               <EnhancedChart
                 key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`}
-                data={rawData}
+                data={rawData} // EnhancedChart receives rawData
                 selectedLabel={selectedLabel}
                 title={title}
                 type={chartType}
@@ -253,9 +219,12 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 showPoints={metricConfig.showPoints}
                 fill={metricConfig.fill}
                 isDarkMode={isDarkMode}
+                isTimeSeries={isTimeSeries}
+                enableZoom={enableZoom}
+                metricId={metricId}
               />
-            ) : isStackedArea && chartDisplayData.labels && chartDisplayData.datasets ? (
-              // Use the specialized StackedAreaChart for stacked area charts
+            ) : shouldUseStackedAreaChartWithZoom ? (
+              // NEW: Use StackedAreaChart for stacked area charts with zoom support
               <StackedAreaChart
                 key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
                 data={chartDisplayData}
@@ -263,9 +232,22 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 height={getChartHeight()}
                 format={metricConfig.format}
                 isDarkMode={isDarkMode}
+                isTimeSeries={isTimeSeries} // Pass the new props
+                enableZoom={enableZoom}     // Pass the new props
+                metricId={metricId}         // Pass metricId for keying
+              />
+            ) : isStackedAreaChart && chartDisplayData.labels && chartDisplayData.datasets ? (
+              // Legacy StackedAreaChart without zoom
+              <StackedAreaChart
+                key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
+                data={chartDisplayData}
+                title={title}
+                height={getChartHeight()}
+                format={metricConfig.format}
+                isDarkMode={isDarkMode}
+                // Note: isTimeSeries and enableZoom are not passed here for legacy behavior
               />
             ) : (
-              // Use standard Chart for all other chart types
               <Chart
                 key={`chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
                 data={chartDisplayData}
@@ -280,6 +262,9 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 stacked={metricConfig.stacked}
                 stackedArea={metricConfig.stackedArea}
                 isDarkMode={isDarkMode}
+                isTimeSeries={isTimeSeries}
+                enableZoom={enableZoom}
+                metricId={metricId}
               />
             )
           ) : (

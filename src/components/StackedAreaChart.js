@@ -8,16 +8,22 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  TimeScale, // Import TimeScale
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { 
-  hexToRgba, 
-  DEFAULT_COLORS, 
-  DARK_MODE_COLORS, 
-  HIGH_CONTRAST_DARK_COLORS, 
-  generateColorPalette 
+import zoomPlugin from 'chartjs-plugin-zoom'; // Import zoom plugin
+import 'chartjs-adapter-date-fns'; // Date adapter
+
+import {
+  hexToRgba,
+  DEFAULT_COLORS,
+  DARK_MODE_COLORS,
+  HIGH_CONTRAST_DARK_COLORS,
+  generateColorPalette
 } from '../utils/colors';
+import ZoomSlider from './ZoomSlider'; // Import ZoomSlider
+import formatters from '../utils/formatter'; // Import formatters
 
 // Register ChartJS components
 ChartJS.register(
@@ -28,30 +34,36 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  TimeScale, // Register TimeScale
+  zoomPlugin  // Register zoom plugin
 );
 
 /**
  * StackedAreaChart component specifically designed for stacked area charts
- * This version uses direct Chart.js configuration to ensure proper stacking
+ * Now includes zoom functionality.
  */
-const StackedAreaChart = ({ 
-  data, 
-  title, 
-  height = 'auto', 
+const StackedAreaChart = ({
+  data,
+  title, // title is often handled by the parent Card, but kept for flexibility
+  height = 'auto',
   format,
-  isDarkMode = false
+  isDarkMode = false,
+  isTimeSeries = false, // New prop
+  enableZoom = false,   // New prop
+  metricId = 'stacked-area-chart' // New prop with default
 }) => {
   const chartRef = useRef(null);
   const containerRef = useRef(null);
   const legendContainerRef = useRef(null);
-  const [chartInstance, setChartInstance] = useState(null);
-  const [legendCreated, setLegendCreated] = useState(false);
-  const watermarkRef = useRef(null); // Add watermark ref
-
-  // Container for storing legend item refs
   const legendItemsRef = useRef(null);
   const legendControlsRef = useRef(null);
+  const watermarkRef = useRef(null);
+
+  const [chartInstance, setChartInstance] = useState(null);
+  const [legendCreated, setLegendCreated] = useState(false);
+  // Initialize zoomRange to show the last 30% of data (80% to 100%)
+  const [zoomRange, setZoomRange] = useState({ min: 80, max: 100 });
 
   // Process data specifically for stacked area charts
   const processChartData = () => {
@@ -60,57 +72,291 @@ const StackedAreaChart = ({
       return { labels: [], datasets: [] };
     }
 
-    // Select the appropriate color palette based on theme
-    // For dark mode and stacked areas, using the high contrast palette is recommended
-    const colorPalette = isDarkMode 
+    console.log('StackedAreaChart: Processing data', {
+      labelsCount: data.labels.length,
+      datasetsCount: data.datasets.length,
+      isTimeSeries,
+      sampleLabels: data.labels.slice(0, 5)
+    });
+
+    const colorPalette = isDarkMode
       ? HIGH_CONTRAST_DARK_COLORS
       : DEFAULT_COLORS;
-    
-    // Generate appropriate number of colors if not enough in the palette
+
     const colors = data.datasets.length > colorPalette.length
-      ? generateColorPalette(data.datasets.length, isDarkMode, isDarkMode) // Set highContrast=true in dark mode
+      ? generateColorPalette(data.datasets.length, isDarkMode, isDarkMode)
       : colorPalette.slice(0, data.datasets.length);
 
-    // Important: Properly ordering datasets for visual stacking
-    // For stacked area charts, the FIRST dataset will appear at the BOTTOM
     const processedDatasets = [...data.datasets].map((dataset, index) => {
-      // Use the theme-appropriate color
       const baseColor = colors[index % colors.length];
-      
-      // Adjust opacity based on theme - use higher opacity in dark mode for better visibility
-      const backgroundOpacity = 0.6 //= isDarkMode ? 0.7 : 0.5;
-      const borderOpacity = 0.9//= isDarkMode ? 0.9 : 0.8;
+      const backgroundOpacity = 0.6;
+      const borderOpacity = 0.9;
 
-      return {
+      // For time series, we need to convert the data to {x, y} format
+      // but only if the data isn't already in that format
+      let pointsData = dataset.data;
+      
+      if (isTimeSeries && Array.isArray(dataset.data) && data.labels) {
+        // Check if data is already in {x, y} format
+        const firstPoint = dataset.data[0];
+        if (typeof firstPoint === 'number' || firstPoint === null || firstPoint === undefined) {
+          // Convert simple array to {x, y} format using labels
+          pointsData = dataset.data.map((value, idx) => ({
+            x: data.labels[idx], // Use the main labels array for x (dates)
+            y: value || 0 // Handle null/undefined values
+          }));
+        } else {
+          // Data is already in {x, y} format or some other object format
+          pointsData = dataset.data;
+        }
+      }
+
+      const processedDataset = {
         ...dataset,
-        borderWidth: isDarkMode ? 2 : 1.5, // Thicker borders in dark mode for visibility
-        pointRadius: 0, // Hide points for cleaner area visualization
-        pointHoverRadius: 3, // Show points on hover
+        data: pointsData,
+        borderWidth: isDarkMode ? 2 : 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 3,
         borderColor: hexToRgba(baseColor, borderOpacity),
         backgroundColor: hexToRgba(baseColor, backgroundOpacity),
         hoverBackgroundColor: hexToRgba(baseColor, 0.8),
-        // The fill property is critical for stacking
-        fill: true, // This must be true for stacking to work
+        fill: true,
       };
+
+      console.log(`StackedAreaChart: Processed dataset ${index}:`, {
+        label: processedDataset.label,
+        dataLength: processedDataset.data.length,
+        sampleData: processedDataset.data.slice(0, 3)
+      });
+
+      return processedDataset;
     });
 
-    return {
+    const result = {
       labels: data.labels,
       datasets: processedDatasets
     };
+
+    console.log('StackedAreaChart: Final processed data:', {
+      labelsCount: result.labels.length,
+      datasetsCount: result.datasets.length
+    });
+
+    return result;
+  };
+
+  const chartDataProcessed = processChartData();
+
+  const getChartOptions = () => {
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)';
+    const textColor = isDarkMode ? '#ffffff' : '#333333';
+    const tooltipBackground = isDarkMode ? 'rgba(33, 33, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    const tooltipTextColor = isDarkMode ? '#e0e0e0' : '#333333';
+    const tooltipBorderColor = isDarkMode ? '#444444' : '#d9d9d9';
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false, // Custom legend is used
+        },
+        tooltip: {
+          enabled: true,
+          mode: 'index',
+          intersect: false,
+          backgroundColor: tooltipBackground,
+          titleColor: tooltipTextColor,
+          bodyColor: tooltipTextColor,
+          footerColor: tooltipTextColor,
+          borderColor: tooltipBorderColor,
+          borderWidth: 1,
+          cornerRadius: 6,
+          padding: 8,
+          callbacks: {
+            title: (tooltipItems) => {
+                if (!tooltipItems || tooltipItems.length === 0) return '';
+                if (isTimeSeries && tooltipItems[0].chart.scales.x.type === 'time') {
+                    const date = new Date(tooltipItems[0].parsed.x);
+                    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                }
+                return tooltipItems[0].label || '';
+            },
+            label: (tooltipItem) => {
+              const dataset = tooltipItem.dataset;
+              let value = tooltipItem.parsed.y;
+              const currentLabel = dataset.label || `Dataset ${tooltipItem.datasetIndex + 1}`;
+
+              if (format && formatters && typeof formatters[format] === 'function') {
+                value = formatters[format](value);
+              } else if (typeof value === 'number') {
+                value = value.toLocaleString();
+              }
+              return ` ${currentLabel}: ${value}`;
+            },
+            footer: (tooltipItems) => {
+              let total = 0;
+              tooltipItems.forEach((tooltipItem) => {
+                total += tooltipItem.parsed.y || 0;
+              });
+              let formattedTotal = total;
+              if (format && formatters && typeof formatters[format] === 'function') {
+                formattedTotal = formatters[format](total);
+              } else if (typeof total === 'number') {
+                formattedTotal = total.toLocaleString();
+              }
+              return `Total: ${formattedTotal}`;
+            }
+          }
+        },
+        title: {
+          display: false // Title handled by Card
+        },
+        filler: {
+          propagate: true
+        },
+        zoom: { // Zoom plugin configuration
+          pan: {
+            enabled: false, // Disabled: Zoom only via slider
+          },
+          zoom: {
+            wheel: {
+              enabled: false, // Disabled: Zoom only via slider
+            },
+            pinch: {
+              enabled: false, // Disabled: Zoom only via slider
+            },
+            drag: {
+                enabled: false, // Disabled: Zoom only via slider
+            },
+            mode: 'x',
+            onZoomComplete: ({chart}) => {
+                if (!enableZoom) return; // Don't update zoom range if zoom is disabled
+                
+                const {min: scaleMinVal, max: scaleMaxVal} = chart.scales.x;
+                const xData = chart.data.labels; // StackedAreaChart uses chart.data.labels for x-axis
+                const totalDataPoints = xData.length;
+
+                if (totalDataPoints > 1) {
+                    let newMinPercent, newMaxPercent;
+                    if (chart.scales.x.type === 'time') {
+                        const firstTime = new Date(xData[0]).getTime();
+                        const lastTime = new Date(xData[totalDataPoints - 1]).getTime();
+                        const timeRange = lastTime - firstTime;
+                        if (timeRange > 0) {
+                            newMinPercent = Math.max(0, ((scaleMinVal - firstTime) / timeRange) * 100);
+                            newMaxPercent = Math.min(100, ((scaleMaxVal - firstTime) / timeRange) * 100);
+                        } else {
+                            newMinPercent = 0; newMaxPercent = 100;
+                        }
+                    } else { // Category scale
+                        newMinPercent = Math.max(0, (scaleMinVal / (totalDataPoints - 1)) * 100);
+                        newMaxPercent = Math.min(100, (scaleMaxVal / (totalDataPoints - 1)) * 100);
+                    }
+                     if (Math.abs(newMinPercent - zoomRange.min) > 0.1 || Math.abs(newMaxPercent - zoomRange.max) > 0.1) {
+                       setZoomRange({ min: parseFloat(newMinPercent.toFixed(1)), max: parseFloat(newMaxPercent.toFixed(1)) });
+                    }
+                }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: isTimeSeries ? 'time' : 'category', // Use 'time' scale for time series data
+          grid: {
+            display: false,
+            borderColor: gridColor
+          },
+          border: {
+            color: gridColor
+          },
+          ticks: {
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: isTimeSeries ? 7 : 10,
+            color: textColor,
+            padding: 8,
+          },
+          time: isTimeSeries ? {
+            unit: 'day',
+            tooltipFormat: 'MMM dd, yyyy',
+            displayFormats: {
+                day: 'MMM dd',
+                month: 'MMM yyyy',
+            }
+          } : {},
+        },
+        y: {
+          beginAtZero: true,
+          stacked: true, // Crucial for stacked area charts
+          grid: {
+            color: gridColor,
+            borderColor: gridColor
+          },
+          border: {
+            color: gridColor
+          },
+          ticks: {
+            color: textColor,
+            padding: 8,
+            callback: function(value) {
+              if (format && formatters && typeof formatters[format] === 'function') {
+                return formatters[format](value);
+              }
+              return Number.isInteger(value) ? value : value.toFixed(1); // Basic formatting
+            }
+          }
+        }
+      },
+      elements: {
+        line: {
+          tension: 0.2,
+        },
+        point: {
+          radius: 0,
+          hitRadius: 30,
+          hoverRadius: 3,
+        }
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      }
+    };
+
+    // Apply initial zoom based on zoomRange state
+    if (enableZoom && isTimeSeries && chartDataProcessed.labels && chartDataProcessed.labels.length > 1) {
+        const xData = chartDataProcessed.labels;
+        const dataLength = xData.length;
+        const minPercentFromState = zoomRange.min;
+        const maxPercentFromState = zoomRange.max;
+
+        const minIndex = Math.max(0, Math.floor(dataLength * (minPercentFromState / 100)));
+        let maxIndex = Math.min(dataLength - 1, Math.floor(dataLength * (maxPercentFromState / 100)));
+         if (maxPercentFromState === 100) {
+            maxIndex = dataLength - 1;
+        }
+        maxIndex = Math.max(minIndex, maxIndex);
+
+        if (options.scales.x.type === 'time') {
+            if (xData[minIndex] !== undefined) options.scales.x.min = xData[minIndex];
+            if (xData[maxIndex] !== undefined) options.scales.x.max = xData[maxIndex];
+        } else { // Category scale
+            options.scales.x.min = minIndex;
+            options.scales.x.max = maxIndex;
+        }
+    }
+    return options;
   };
 
   // Check if scroll buttons are needed for legend
   const checkScrollButtonsNeeded = () => {
     if (!legendItemsRef.current || !legendControlsRef.current) return;
-
     const container = legendItemsRef.current;
     const controls = legendControlsRef.current;
-
-    // Calculate if the legend items overflow the container
     const hasOverflow = container.scrollWidth > container.clientWidth + 20;
-
-    // Show/hide scroll buttons based on overflow
     controls.style.display = hasOverflow ? 'flex' : 'none';
   };
 
@@ -121,67 +367,44 @@ const StackedAreaChart = ({
       existingLegends.forEach(legend => {
         try {
           legend.parentNode.removeChild(legend);
-        } catch (e) {
-          // Ignore removal errors
-        }
+        } catch (e) { /* Ignore removal errors */ }
       });
     }
   };
 
   // Create a custom scrollable legend
   const createCustomLegend = () => {
-    if (!data || !data.datasets || data.datasets.length === 0) return;
-
+    if (!chartDataProcessed || !chartDataProcessed.datasets || chartDataProcessed.datasets.length === 0) return;
     cleanupExistingLegend();
 
     const legendContainer = document.createElement('div');
     legendContainer.className = 'chart-legend-container';
-
-    // Scrollable items container
     const legendItemsContainer = document.createElement('div');
     legendItemsContainer.className = 'chart-legend-items';
     legendItemsRef.current = legendItemsContainer;
 
-    // Select appropriate color palette based on theme
-    const colorPalette = isDarkMode 
-      ? HIGH_CONTRAST_DARK_COLORS 
-      : DEFAULT_COLORS;
+    const colorPalette = isDarkMode ? HIGH_CONTRAST_DARK_COLORS : DEFAULT_COLORS;
+    const colors = chartDataProcessed.datasets.length > colorPalette.length
+      ? generateColorPalette(chartDataProcessed.datasets.length, isDarkMode, isDarkMode)
+      : colorPalette.slice(0, chartDataProcessed.datasets.length);
 
-    // Generate colors if needed
-    const colors = data.datasets.length > colorPalette.length
-      ? generateColorPalette(data.datasets.length, isDarkMode, isDarkMode)
-      : colorPalette.slice(0, data.datasets.length);
-
-    // Important: For the legend display, we want to show the datasets in their logical order
-    const legendItems = [...data.datasets];
-
-    // Create legend items
+    const legendItems = [...chartDataProcessed.datasets];
     legendItems.forEach((dataset, index) => {
       const itemDiv = document.createElement('div');
       itemDiv.className = 'legend-item';
-
       const colorBox = document.createElement('span');
       colorBox.className = 'legend-item-color';
-
-      // Use theme-appropriate color
       const solidColor = colors[index % colors.length];
       colorBox.style.backgroundColor = solidColor;
-
       const label = document.createElement('span');
       label.className = 'legend-item-label';
       label.textContent = dataset.label || `Dataset ${index + 1}`;
-
-      // Add click handler to toggle visibility
       itemDiv.addEventListener('click', () => {
         if (chartRef.current) {
           const chart = chartRef.current;
-          
-          // Use the correct index for the dataset in the chart
           const datasetMeta = chart.getDatasetMeta(index);
           datasetMeta.hidden = !datasetMeta.hidden;
           chart.update();
-
-          // Apply "hidden" class if toggled off
           if (chart.getDatasetMeta(index).hidden) {
             itemDiv.classList.add('hidden');
           } else {
@@ -189,47 +412,31 @@ const StackedAreaChart = ({
           }
         }
       });
-
       itemDiv.appendChild(colorBox);
       itemDiv.appendChild(label);
       legendItemsContainer.appendChild(itemDiv);
     });
 
-    // Create scroll button wrapper
     const buttonWrapper = document.createElement('div');
     buttonWrapper.className = 'legend-controls';
-    buttonWrapper.style.display = 'none'; // Start hidden until we check if needed
+    buttonWrapper.style.display = 'none';
     legendControlsRef.current = buttonWrapper;
-
-    // Left scroll button
     const leftButton = document.createElement('button');
     leftButton.className = 'legend-btn legend-btn-left';
     leftButton.innerHTML = '&larr;';
-    leftButton.addEventListener('click', () => {
-      legendItemsContainer.scrollBy({ left: -100, behavior: 'smooth' });
-    });
-
-    // Right scroll button
+    leftButton.addEventListener('click', () => { legendItemsContainer.scrollBy({ left: -100, behavior: 'smooth' }); });
     const rightButton = document.createElement('button');
     rightButton.className = 'legend-btn legend-btn-right';
     rightButton.innerHTML = '&rarr;';
-    rightButton.addEventListener('click', () => {
-      legendItemsContainer.scrollBy({ left: 100, behavior: 'smooth' });
-    });
-
+    rightButton.addEventListener('click', () => { legendItemsContainer.scrollBy({ left: 100, behavior: 'smooth' }); });
     buttonWrapper.appendChild(leftButton);
     buttonWrapper.appendChild(rightButton);
-
-    // Add items + controls to legend container
     legendContainer.appendChild(legendItemsContainer);
     legendContainer.appendChild(buttonWrapper);
 
-    // Insert legend at the top of the chart container
     if (containerRef.current) {
       containerRef.current.insertBefore(legendContainer, containerRef.current.firstChild);
       legendContainerRef.current = legendContainer;
-
-      // Check scroll after rendering
       setTimeout(() => {
         checkScrollButtonsNeeded();
         setLegendCreated(true);
@@ -237,80 +444,47 @@ const StackedAreaChart = ({
     }
   };
 
-  // Create the custom legend after chart is mounted
   useEffect(() => {
-    if (chartInstance && !legendCreated) {
-      const timer = setTimeout(() => {
-        createCustomLegend();
-      }, 100);
+    if (chartInstance && !legendCreated && chartDataProcessed && chartDataProcessed.datasets && chartDataProcessed.datasets.length > 0) {
+      const timer = setTimeout(() => createCustomLegend(), 100);
       return () => clearTimeout(timer);
     }
-  }, [chartInstance, legendCreated]);
+  }, [chartInstance, legendCreated, chartDataProcessed]);
 
-  // Setup a resize listener for legend scrolling
-  useEffect(() => {
-    const handleResize = () => {
-      if (legendCreated) {
-        checkScrollButtonsNeeded();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [legendCreated]);
-
-  // Add watermark to the chart
   useEffect(() => {
     if (containerRef.current) {
-      // Remove any existing watermark
       const existingWatermark = containerRef.current.querySelector('.chart-watermark');
-      if (existingWatermark) {
-        existingWatermark.remove();
-      }
-      
-      // Create new watermark element
+      if (existingWatermark) existingWatermark.remove();
       const watermark = document.createElement('div');
       watermark.className = 'chart-watermark';
       watermarkRef.current = watermark;
-      
-      // Set the background image based on the theme
-      const logoUrl = isDarkMode 
+      const logoUrl = isDarkMode
         ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
         : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png';
-      
-      // Only set the background image - the positioning and size come from CSS
       watermark.style.backgroundImage = `url(${logoUrl})`;
-    
-      // Add the watermark to the container
       containerRef.current.appendChild(watermark);
     }
-    
-    // Cleanup function to remove watermark when component unmounts
     return () => {
-      if (watermarkRef.current) {
-        try {
-          watermarkRef.current.remove();
-        } catch (e) {
-          // Ignore errors if element was already removed
-        }
-      }
+      if (watermarkRef.current) { try { watermarkRef.current.remove(); } catch (e) { /* Ignore */ } }
     };
-  }, [containerRef.current, isDarkMode]); // Re-run when the container or theme changes
+  }, [containerRef.current, isDarkMode]);
 
-  // Cleanup on unmount
+  useEffect(() => {
+    const handleResize = () => {
+      if (legendCreated) checkScrollButtonsNeeded();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [legendCreated]);
+
   useEffect(() => {
     return () => {
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
+      if (chartInstance) chartInstance.destroy();
       cleanupExistingLegend();
       setLegendCreated(false);
     };
   }, [chartInstance]);
 
-  // Save chart instance
   const getChartRef = (chart) => {
     if (chart) {
       chartRef.current = chart;
@@ -318,177 +492,118 @@ const StackedAreaChart = ({
     }
   };
 
-  // Get chart options
-  const getChartOptions = () => {
-    // Set colors based on theme
-    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)';
-    const textColor = isDarkMode ? '#ffffff' : '#333333';
-    const tooltipBackground = isDarkMode ? 'rgba(33, 33, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-    const tooltipTextColor = isDarkMode ? '#e0e0e0' : '#333333';
-    const tooltipBorderColor = isDarkMode ? '#444444' : '#d9d9d9';
-  
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false, // We use custom legend
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: tooltipBackground,
-          titleColor: tooltipTextColor,
-          bodyColor: tooltipTextColor,
-          footerColor: tooltipTextColor, // Important for total text color
-          borderColor: tooltipBorderColor,
-          borderWidth: 1,
-          cornerRadius: 6,
-          padding: 8,
-          // Custom tooltip callbacks for formatted values
-          callbacks: {
-            title: (tooltipItems) => {
-              return tooltipItems[0].label;
-            },
-            label: (tooltipItem) => {
-              const dataset = tooltipItem.dataset;
-              let value = tooltipItem.parsed.y;
-              
-              // Apply formatting if provided
-              if (format && typeof format === 'function') {
-                value = format(value);
-              } else if (typeof value === 'number') {
-                value = value.toLocaleString();
-              }
-              
-              return ` ${dataset.label}: ${value}`;
-            },
-            footer: (tooltipItems) => {
-              // Calculate total for all visible datasets at this point
-              let total = 0;
-              tooltipItems.forEach((tooltipItem) => {
-                total += tooltipItem.parsed.y || 0;
-              });
-              
-              // Format total if formatting function provided
-              let formattedTotal = total;
-              if (format && typeof format === 'function') {
-                formattedTotal = format(total);
-              } else if (typeof total === 'number') {
-                formattedTotal = total.toLocaleString();
-              }
-              
-              return `Total: ${formattedTotal}`;
+  // useEffect to apply zoom when zoomRange changes or chart is ready
+  useEffect(() => {
+    if (chartRef.current && isTimeSeries && enableZoom && chartDataProcessed && chartDataProcessed.labels) {
+      const chart = chartRef.current;
+      const xData = chartDataProcessed.labels;
+      const dataLength = xData.length;
+
+      if (dataLength > 1) {
+        const minPercentFromState = zoomRange.min;
+        const maxPercentFromState = zoomRange.max;
+
+        const newMinIndex = Math.max(0, Math.floor(dataLength * (minPercentFromState / 100)));
+        let newMaxIndex = Math.min(dataLength - 1, Math.floor(dataLength * (maxPercentFromState / 100)));
+        if (maxPercentFromState === 100) {
+            newMaxIndex = dataLength - 1;
+        }
+        newMaxIndex = Math.max(newMinIndex, newMaxIndex); 
+
+        let newScaleMin, newScaleMax;
+
+        if (chart.options.scales.x.type === 'time') {
+          if (xData[newMinIndex] !== undefined) newScaleMin = xData[newMinIndex]; else newScaleMin = xData[0];
+          if (xData[newMaxIndex] !== undefined) newScaleMax = xData[newMaxIndex]; else newScaleMax = xData[dataLength-1];
+        } else { 
+          newScaleMin = newMinIndex;
+          newScaleMax = newMaxIndex;
+        }
+        
+        const currentChartMin = chart.scales.x.min;
+        const currentChartMax = chart.scales.x.max;
+
+        let needsUpdate = false;
+        if (chart.options.scales.x.type === 'time') {
+            const newScaleMinTime = newScaleMin !== undefined ? new Date(newScaleMin).getTime() : undefined;
+            const newScaleMaxTime = newScaleMax !== undefined ? new Date(newScaleMax).getTime() : undefined;
+            const currentChartMinTime = currentChartMin; 
+            const currentChartMaxTime = currentChartMax;
+
+            if (newScaleMinTime !== undefined && newScaleMinTime !== currentChartMinTime) {
+              chart.options.scales.x.min = newScaleMin; 
+              needsUpdate = true;
             }
-          }
-        },
-        title: {
-          display: false
-        },
-        // Configure the Filler plugin for proper area stacking
-        filler: {
-          propagate: true
+            if (newScaleMaxTime !== undefined && newScaleMaxTime !== currentChartMaxTime) {
+              chart.options.scales.x.max = newScaleMax; 
+              needsUpdate = true;
+            }
+        } else { 
+            if (newScaleMin !== undefined && newScaleMin !== currentChartMin) {
+              chart.options.scales.x.min = newScaleMin;
+              needsUpdate = true;
+            }
+            if (newScaleMax !== undefined && newScaleMax !== currentChartMax) {
+              chart.options.scales.x.max = newScaleMax;
+              needsUpdate = true;
+            }
         }
-      },
-      scales: {
-        x: {
-          grid: { 
-            display: false,
-            borderColor: gridColor 
-          },
-          border: {
-            color: gridColor
-          },
-          ticks: {
-            maxRotation: 0, // Keep labels horizontal
-            minRotation: 0, // Keep labels horizontal
-            autoSkip: true, // Don't let Chart.js decide which labels to skip
-            autoSkipPadding: 15,
-            color: textColor,
-            
-          }
-        },
-        y: {
-          beginAtZero: true,
-          stacked: true, 
-          grid: {
-            color: gridColor,
-            borderColor: gridColor
-          },
-          border: {
-            color: gridColor
-          },
-          ticks: {
-            color: textColor
-          }
+        
+        if (needsUpdate) {
+          chart.update();
         }
-      },
-      elements: {
-        line: {
-          tension: 0.2, // Adds slight curve to lines
-        },
-        point: {
-          radius: 0, // Hide points for cleaner area look
-          hitRadius: 30, // Large hit area for interaction
-          hoverRadius: 3, // Small point on hover
-        }
-      },
-      interaction: {
-        mode: 'index',
-        intersect: false,
       }
-    };
+    }
+  }, [zoomRange, chartInstance, isTimeSeries, enableZoom, chartDataProcessed]); 
+
+  const handleZoomChange = (newMinPercent, newMaxPercent) => {
+    setZoomRange({ min: newMinPercent, max: newMaxPercent });
   };
 
-  // Setup label count detection and adjustment
-  useEffect(() => {
-    const updateChartOptions = () => {
-      if (chartRef.current && containerRef.current) {
-        // Force chart update to apply new options
-        chartRef.current.update();
-      }
-    };
-
-    // Update on mount and resize
-    updateChartOptions();
-    window.addEventListener('resize', updateChartOptions);
-    
-    return () => {
-      window.removeEventListener('resize', updateChartOptions);
-    };
-  }, [chartInstance, data]);
-
-  // Process chart data with theme-aware colors
-  const chartData = processChartData();
-
-  // Container height style
   const containerStyle = {
     height: height === 'auto' ? '100%' : height,
     position: 'relative',
     width: '100%',
   };
 
-  // If no data or invalid data, show message
-  if (!chartData || !chartData.labels || !chartData.datasets || chartData.labels.length === 0) {
+  if (!chartDataProcessed || !chartDataProcessed.labels || !chartDataProcessed.datasets || chartDataProcessed.labels.length === 0) {
     return (
       <div className="chart-container no-legend" style={containerStyle}>
         <div className="no-data-message">No data available</div>
       </div>
     );
   }
+  
+  const chartOptions = getChartOptions();
 
   return (
     <div
-      className="chart-container has-legend"
-      ref={containerRef}
-      style={containerStyle}
-      data-theme={isDarkMode ? 'dark' : 'light'}
+      className={`chart-wrapper ${enableZoom && isTimeSeries ? 'with-zoom-slider' : ''}`}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
-      <Line
-        ref={getChartRef}
-        data={chartData}
-        options={getChartOptions()}
-      />
+      <div
+        className="chart-container has-legend"
+        ref={containerRef}
+        style={{ ...containerStyle, flexGrow: 1 }}
+        data-theme={isDarkMode ? 'dark' : 'light'}
+      >
+        <Line
+          ref={getChartRef}
+          data={chartDataProcessed}
+          options={chartOptions}
+          key={`${metricId}-${isDarkMode}-${zoomRange.min}-${zoomRange.max}-${isTimeSeries}-${enableZoom}`}
+        />
+      </div>
+      {enableZoom && isTimeSeries && chartInstance && chartDataProcessed.labels && chartDataProcessed.labels.length > 1 && (
+        <ZoomSlider
+          min={0}
+          max={100}
+          currentMin={zoomRange.min}
+          currentMax={zoomRange.max}
+          onChange={handleZoomChange}
+          isDarkMode={isDarkMode}
+        />
+      )}
     </div>
   );
 };

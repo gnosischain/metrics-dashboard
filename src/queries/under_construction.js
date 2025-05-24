@@ -2,7 +2,7 @@ const metric = {
     id: 'under_construction',
     chartType: 'text',
     content: `
-  # Under Construction
+   Under Construction
   `
   };
   

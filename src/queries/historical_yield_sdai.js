@@ -7,6 +7,8 @@ const metric = {
   labelField: 'label', 
   valueField: 'apy',
   showPoints: false, 
+  enableZoom: true,
+  isTimeSeries: true, 
   query: `SELECT * FROM dbt.yields_sdai_apy_daily WHERE label NOT LIKE '%MA' AND date >= '2023-10-12' ORDER BY date ASC, label ASC`,
 };
 

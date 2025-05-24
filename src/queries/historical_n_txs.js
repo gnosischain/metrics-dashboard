@@ -9,8 +9,8 @@ const metric = {
   fill: true, 
   showPoints: false, 
   stackedArea: true,
-  enableZoom: true,     // Control whether zooming is enabled (default: true)
-  isTimeSeries: true,   // Specify if this is a time series (default: true)
+  enableZoom: true,
+  isTimeSeries: true, 
   query: `SELECT date, transaction_type, n_txs AS value FROM dbt.execution_txs_info_daily WHERE success = 1 ORDER BY date, transaction_type`
 };
 

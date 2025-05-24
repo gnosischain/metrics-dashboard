@@ -1,47 +1,44 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import Chart from './Chart';
+import Chart from './Chart'; // EnhancedChart uses the main Chart component
 import { generateColorPalette, hexToRgba } from '../utils/colors';
 
 /**
  * Enhanced Chart component for filtered, stacked charts.
- * Receives raw data and the selected filter label as props.
- * Transforms data based on props for display.
  */
 const EnhancedChart = ({
-  data, // Expecting raw data array
-  selectedLabel, // Receives the selected primary label from parent (MetricWidget)
+  data,
+  selectedLabel,
   title,
   type,
   labelField,
   subLabelField,
   valueField = 'value',
-  enableFiltering = true, // Keep prop for consistency, though logic relies on parent state now
+  enableFiltering = true,
   isDarkMode = false,
-  ...otherProps // Includes height, format, etc.
+  isTimeSeries = false, // Added prop
+  enableZoom = false,   // Added prop
+  metricId, // Added prop
+  ...otherProps
 }) => {
-  // State only for the transformed data ready for Chart.js
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const containerRef = useRef(null);
-  const watermarkRef = useRef(null); // Add watermark ref
+  const containerRef = useRef(null); // Keep for potential direct DOM manipulations if needed
+  const watermarkRef = useRef(null);
 
-  // --- Data Transformation Logic ---
+
   const transformData = useCallback(() => {
-    // selectedLabel is now a prop
     console.log(`EnhancedChart[${title}]: transformData called. Received selectedLabel: '${selectedLabel}'`);
-    setError(null); // Clear previous errors
+    setError(null);
     setIsLoading(true);
 
-    // --- Pre-checks ---
     if (!Array.isArray(data)) {
-        console.error(`EnhancedChart[${title}]: Received non-array data. Cannot transform. Data:`, data);
+        console.error(`EnhancedChart[${title}]: Received non-array data. Data:`, data);
         setError("Invalid data format received.");
         setChartData({ labels: [], datasets: [] });
         setIsLoading(false);
         return;
     }
-
     if (data.length === 0) {
         console.log(`EnhancedChart[${title}]: Received empty raw data array.`);
         setChartData({ labels: [], datasets: [] });
@@ -49,37 +46,32 @@ const EnhancedChart = ({
         return;
     }
 
-    // --- Start Transformation ---
     try {
         console.log(`EnhancedChart[${title}]: Starting transformation. Raw data count: ${data.length}`);
-
-        // 1. Filter Raw Data (selectedLabel comes from props)
-        // If selectedLabel is empty or null (shouldn't happen if parent sets a default), show nothing or error?
-        // Assuming parent (MetricWidget) ensures selectedLabel is valid when data exists.
         const filteredData = selectedLabel
             ? data.filter(item => item[labelField] === selectedLabel)
-            : data; // If no label selected somehow, show all (or handle differently)
-
+            : data;
         console.log(`EnhancedChart[${title}]: Filtered data count for '${selectedLabel}': ${filteredData.length}`);
 
         if (filteredData.length === 0) {
             console.log(`EnhancedChart[${title}]: No data after filtering for '${selectedLabel}'.`);
-            setChartData({ labels: [], datasets: [] }); // Render empty chart
+            setChartData({ labels: [], datasets: [] });
             setIsLoading(false);
             return;
         }
 
-        // --- (Steps 3-7 are identical to previous version's transformData) ---
-
-        // 3. Group data by Date and SubLabel
         const groupedByDate = {};
         const allSubLabels = new Set();
-        let dateField = 'date'; // Default assumption
+        let dateField = 'date';
         const firstItemKeys = Object.keys(filteredData[0]);
         const potentialDateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
         const foundDateField = potentialDateFields.find(field => firstItemKeys.includes(field));
-        if (foundDateField) { dateField = foundDateField; }
-        else { console.warn(`EnhancedChart[${title}]: Date field detection failed. Using '${dateField}'.`); }
+
+        if (foundDateField) {
+            dateField = foundDateField;
+        } else {
+            console.warn(`EnhancedChart[${title}]: Date field detection failed. Using '${dateField}'.`);
+        }
 
         filteredData.forEach(item => {
             const dateValue = item[dateField];
@@ -93,15 +85,11 @@ const EnhancedChart = ({
             allSubLabels.add(subLabelKey);
         });
 
-        // 4. Prepare data for Chart.js
         const sortedDates = Object.keys(groupedByDate).sort();
         const sortedSubLabels = Array.from(allSubLabels).sort();
         console.log(`EnhancedChart[${title}]: Unique SubLabels (versions) for '${selectedLabel}':`, sortedSubLabels);
 
-        // 5. Generate Colors for SubLabels with isDarkMode parameter
         const colors = generateColorPalette(sortedSubLabels.length, isDarkMode);
-
-        // 6. Create Chart.js Datasets
         const datasets = sortedSubLabels.map((subLabel, index) => {
             const color = colors[index % colors.length];
             return {
@@ -111,89 +99,82 @@ const EnhancedChart = ({
                 borderColor: hexToRgba(color, 0.9),
                 hoverBackgroundColor: hexToRgba(color, 0.8),
                 borderWidth: 1,
-                // stack: 'stack1' // Assign stack group if needed
             };
         });
-       
-        // 7. Set final Chart.js data structure
+
+        // For EnhancedChart acting as a time series, data needs to be {x: date, y: value}
+        // The current transformation above creates datasets suitable for stacking by subLabel (e.g., client versions)
+        // If EnhancedChart itself IS the time series (e.g. type='line' and isTimeSeries=true)
+        // then the structure for 'datasets.data' should be [{x: date, y: value}, ...] for each dataset.
+        // The `sortedDates` are already the x-values.
+        if (isTimeSeries && (type === 'line' || type === 'area')) {
+            datasets.forEach(dataset => {
+                dataset.data = sortedDates.map(date => ({
+                    x: date, // Date string/timestamp for TimeScale
+                    y: groupedByDate[date][dataset.label] || 0 // Value
+                }));
+            });
+        }
+
+
         const finalChartData = { labels: sortedDates, datasets: datasets };
-        console.log(`EnhancedChart[${title}]: Final chartData structure updated for '${selectedLabel}'.`);
+        console.log(`EnhancedChart[${title}]: Final chartData structure updated for '${selectedLabel}'. Datasets count: ${datasets.length}`);
         setChartData(finalChartData);
 
     } catch (transformError) {
         console.error(`EnhancedChart[${title}]: Error during transformation for '${selectedLabel}':`, transformError);
         setError("Failed to process chart data.");
-        setChartData({ labels: [], datasets: [] }); // Reset on error
+        setChartData({ labels: [], datasets: [] });
     } finally {
         setIsLoading(false);
     }
-  }, [data, selectedLabel, labelField, subLabelField, valueField, title, isDarkMode]); // Added isDarkMode to dependencies
+  }, [data, selectedLabel, labelField, subLabelField, valueField, title, isDarkMode, isTimeSeries, type]);
 
-  // --- Effects ---
+
   useEffect(() => {
-    // Re-run transformation when raw data or the selected label prop changes
     transformData();
-  }, [transformData]); // transformData has dependencies including selectedLabel and isDarkMode
+  }, [transformData]);
 
-  // Add watermark to the chart
   useEffect(() => {
     if (containerRef.current) {
-      // Remove any existing watermark
       const existingWatermark = containerRef.current.querySelector('.chart-watermark');
-      if (existingWatermark) {
-        existingWatermark.remove();
-      }
-      
-      // Create new watermark element
+      if (existingWatermark) existingWatermark.remove();
       const watermark = document.createElement('div');
       watermark.className = 'chart-watermark';
       watermarkRef.current = watermark;
-      
-      // Set the background image based on the theme
-      const logoUrl = isDarkMode 
+      const logoUrl = isDarkMode
         ? 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
         : 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png';
-      
-      // Only set the background image - the positioning and size come from CSS
       watermark.style.backgroundImage = `url(${logoUrl})`;
-    
-      // Add the watermark to the container
       containerRef.current.appendChild(watermark);
     }
-    
-    // Cleanup function to remove watermark when component unmounts
     return () => {
-      if (watermarkRef.current) {
-        try {
-          watermarkRef.current.remove();
-        } catch (e) {
-          // Ignore errors if element was already removed
-        }
-      }
+      if (watermarkRef.current) { try { watermarkRef.current.remove(); } catch (e) { /* Ignore */ } }
     };
-  }, [containerRef.current, isDarkMode]); // Re-run when the container or theme changes
+  }, [containerRef.current, isDarkMode]);
 
-  // --- Render Logic ---
+
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return <div className="error-message" style={{ padding: '20px', textAlign: 'center' }}>{error}</div>;
   }
 
-  // Render the Chart component
-  // No LabelSelector rendered here anymore
+  // EnhancedChart now also uses the main Chart component internally for rendering.
+  // It passes through the isTimeSeries and enableZoom props.
   return (
-    <div className="enhanced-chart-container no-controls-padding" ref={containerRef}> {/* Added ref here */}
+    <div className="enhanced-chart-container no-controls-padding" ref={containerRef} style={{height: '100%'}}>
        {isLoading ? (
            <div className="loading-indicator">Loading chart data...</div>
        ) : (
            <Chart
-               // Key ensures Chart.js re-initializes fully when the filter changes
-               key={`enhanced-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`} // Include theme in key for re-render on theme change
+               key={`enhanced-chart-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`}
                data={chartData}
-               // Title is now managed by MetricWidget potentially, or keep simple here
-               title="" // Title is handled by Card header
+               title="" // Title handled by Card
                type={type}
-               isDarkMode={isDarkMode} // Pass isDarkMode to Chart
-               {...otherProps} // Pass height, format etc.
+               isDarkMode={isDarkMode}
+               isTimeSeries={isTimeSeries} // Pass down
+               enableZoom={enableZoom}     // Pass down
+               metricId={metricId} // Pass down for unique Chart instance
+               {...otherProps}
            />
        )}
     </div>

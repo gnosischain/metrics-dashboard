@@ -9,6 +9,8 @@ const metric = {
   fill: true, 
   showPoints: false, 
   stackedArea: true,
+  enableZoom: true,
+  isTimeSeries: true, 
   query: `SELECT * FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
 };
 
