@@ -442,3 +442,25 @@ canvas {
       background-color: transparent !important; /* Inherit from parent card */
   }
 }
+
+.dark-mode .zoom-slider-container {
+  border-top: 1px solid var(--border-color);
+}
+
+.dark-mode .zoom-slider-container input[type="range"].zoom-slider {
+   /* Dark mode specific track styling if needed, but background is set dynamically */
+}
+
+/* ==================
+   Dark Mode - In-Frame Zoom Slider
+   ================== */
+
+/* Remove old zoom slider dark mode styles */
+.dark-mode .zoom-slider-container {
+  display: none !important;
+}
+
+/* Ensure proper layering in dark mode */
+.dark-mode .chart-container {
+  position: relative !important;
+}

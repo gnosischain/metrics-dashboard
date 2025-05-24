@@ -26,12 +26,6 @@ const Header = ({ dashboardName, isDarkMode, toggleTheme }) => {
         />
         <div className="header-title">
           <div className="analytics-title">Analytics</div>
-          <div className="last-updated">
-            Last updated: {getLastUpdateTime()}
-            {dashboardName && (
-              <span className="active-dashboard-name"> • {dashboardName}</span>
-            )}
-          </div>
         </div>
       </div>
       

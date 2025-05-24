@@ -21,8 +21,8 @@ import { DEFAULT_COLORS, DARK_MODE_COLORS, hexToRgba } from '../utils/colors';
 import WorldMapChart from './WorldMapChart';
 import NumberWidget from './NumberWidget';
 import StackedAreaChart from './StackedAreaChart';
-import ZoomSlider from './ZoomSlider';
-import formatters from '../utils/formatter'; // Added missing import
+import InFrameZoomSlider from './InFrameZoomSlider';
+import formatters from '../utils/formatter'; 
 
 // Register ChartJS components including the zoom plugin and TimeScale
 ChartJS.register(
@@ -748,31 +748,29 @@ const Chart = ({
 
   return (
     <div
-      className={`chart-wrapper ${enableZoom && isTimeSeries ? 'with-zoom-slider' : ''}`}
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      className={`chart-container ${(isMultiSeries || isPieChart) && chartDataProcessed && chartDataProcessed.datasets && chartDataProcessed.datasets.length > 0 ? 'has-legend' : 'no-legend'}`}
+      ref={containerRef}
+      style={{ ...containerStyle, position: 'relative' }} // Add position: relative
+      data-theme={isDarkMode ? 'dark' : 'light'}
+      data-type={chartComponentType}
     >
-      <div
-        className={`chart-container ${(isMultiSeries || isPieChart) && chartDataProcessed && chartDataProcessed.datasets && chartDataProcessed.datasets.length > 0 ? 'has-legend' : 'no-legend'}`}
-        ref={containerRef}
-        style={{ ...containerStyle, flexGrow: 1 }}
-        data-theme={isDarkMode ? 'dark' : 'light'}
-        data-type={chartComponentType}
-      >
-        <ChartComponentToRender
-          ref={getChartRef}
-          data={chartDataProcessed}
-          options={chartOptions} 
-          key={`${metricId}-${isDarkMode}`} 
-        />
-      </div>
+      <ChartComponentToRender
+        ref={getChartRef}
+        data={chartDataProcessed}
+        options={chartOptions}
+        key={`${metricId}-${isDarkMode}`}
+      />
+      
+      {/* In-frame zoom slider */}
       {enableZoom && isTimeSeries && chartInstance && chartDataProcessed.datasets[0]?.data?.length > 1 && (
-        <ZoomSlider
+        <InFrameZoomSlider
           min={0}
           max={100}
           currentMin={zoomRange.min}
           currentMax={zoomRange.max}
           onChange={handleZoomChange}
           isDarkMode={isDarkMode}
+          chartRef={chartRef}
         />
       )}
     </div>

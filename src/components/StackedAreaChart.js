@@ -22,7 +22,7 @@ import {
   HIGH_CONTRAST_DARK_COLORS,
   generateColorPalette
 } from '../utils/colors';
-import ZoomSlider from './ZoomSlider'; // Import ZoomSlider
+import InFrameZoomSlider from './InFrameZoomSlider';
 import formatters from '../utils/formatter'; // Import formatters
 
 // Register ChartJS components
@@ -578,30 +578,28 @@ const StackedAreaChart = ({
 
   return (
     <div
-      className={`chart-wrapper ${enableZoom && isTimeSeries ? 'with-zoom-slider' : ''}`}
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      className="chart-container has-legend"
+      ref={containerRef}
+      style={{ ...containerStyle, position: 'relative' }} // Add position: relative
+      data-theme={isDarkMode ? 'dark' : 'light'}
     >
-      <div
-        className="chart-container has-legend"
-        ref={containerRef}
-        style={{ ...containerStyle, flexGrow: 1 }}
-        data-theme={isDarkMode ? 'dark' : 'light'}
-      >
-        <Line
-          ref={getChartRef}
-          data={chartDataProcessed}
-          options={chartOptions}
-          key={`${metricId}-${isDarkMode}-${zoomRange.min}-${zoomRange.max}-${isTimeSeries}-${enableZoom}`}
-        />
-      </div>
+      <Line
+        ref={getChartRef}
+        data={chartDataProcessed}
+        options={chartOptions}
+        key={`${metricId}-${isDarkMode}-${zoomRange.min}-${zoomRange.max}-${isTimeSeries}-${enableZoom}`}
+      />
+      
+      {/* In-frame zoom slider */}
       {enableZoom && isTimeSeries && chartInstance && chartDataProcessed.labels && chartDataProcessed.labels.length > 1 && (
-        <ZoomSlider
+        <InFrameZoomSlider
           min={0}
           max={100}
           currentMin={zoomRange.min}
           currentMax={zoomRange.max}
           onChange={handleZoomChange}
           isDarkMode={isDarkMode}
+          chartRef={chartRef}
         />
       )}
     </div>

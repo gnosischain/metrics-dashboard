@@ -73,7 +73,7 @@ body {
 }
 
 .analytics-title {
-  font-size: 1.0rem; /* Original size */
+  font-size: 1.2rem; /* Original size */
   font-weight: 400; /* Standardized bold */
   color: #0969DA; /* Modern blue accent */
 }
@@ -1363,10 +1363,44 @@ button:focus-visible, .button:focus-visible,
   margin: 6px 0;
 }
 
-.dark-mode .zoom-slider-container {
-  border-top: 1px solid var(--border-color);
+
+/* ==================
+   In-Frame Zoom Slider
+   ================== */
+
+/* Ensure chart containers can contain absolute positioned elements */
+.chart-container {
+  position: relative !important; /* Override any existing positioning */
 }
 
-.dark-mode .zoom-slider-container input[type="range"].zoom-slider {
-   /* Dark mode specific track styling if needed, but background is set dynamically */
+/* Remove padding adjustments for zoom slider since it's now inside */
+.chart-container.has-legend {
+  padding: 60px 1rem 1rem !important; /* Remove extra bottom padding */
 }
+
+.chart-container.no-legend {
+  padding: 20px 1rem 20px !important; /* Consistent padding */
+}
+
+/* Enhanced chart container adjustments */
+.enhanced-chart-container {
+  position: relative !important;
+}
+
+/* Remove the external zoom slider container styles */
+.chart-wrapper.with-zoom-slider {
+  display: block !important; /* No longer need flex */
+}
+
+.zoom-slider-container {
+  display: none !important; /* Hide the old external slider */
+}
+
+/* Mobile adjustments for in-frame slider */
+@media (max-width: 768px) {
+  .chart-container {
+    /* Ensure minimum height accommodates slider */
+    min-height: 400px !important;
+  }
+}
+
