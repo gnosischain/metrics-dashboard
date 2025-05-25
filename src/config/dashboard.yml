@@ -32,12 +32,16 @@ OnChainActivity:
       icon: "📈"
       iconClass: "trending-up"
       metrics:
-        - id: historical_rwa_prices
+        - id: node_status_table
           gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 400px
+        - id: historical_rwa_prices
+          gridRow: 2
           gridColumn: 1 / span 9
           minHeight: 500px
         - id: rwa_text
-          gridRow: 1
+          gridRow: 2
           gridColumn: 10 / span 12
           minHeight: 500px
     - name: Yields
@@ -49,9 +53,23 @@ OnChainActivity:
           gridRow: 1
           gridColumn: 1 / span 12
           minHeight: 500px
+
+    - name: Flows
+      order: 3
+      icon: "🌊"
+      iconClass: "trending-up"
+      metrics:
+        - id: sankey_transaction_flow
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: sankey_gas_flow
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 500px
         
     - name: Execution
-      order: 3
+      order: 4
       icon: "🚀"
       iconClass: "zap"
       metrics:
@@ -69,7 +87,7 @@ OnChainActivity:
           minHeight: 500px
 
     - name: Consensus
-      order: 4
+      order: 5
       icon: "🔄"
       iconClass: "check-circle"
       metrics:
@@ -146,8 +164,22 @@ Network:
           gridColumn: 1 / span 12
           minHeight: 500px
 
-    - name: Probelab
+    - name: Topology
       order: 4
+      icon: "🔗"
+      iconClass: "link"
+      metrics:
+        - id: network_validator_connections
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 600px
+        - id: network_client_distribution
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 600px
+
+    - name: Probelab
+      order: 5
       icon: "🔬"
       iconClass: "search"
       metrics:

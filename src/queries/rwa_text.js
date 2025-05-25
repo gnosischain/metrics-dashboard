@@ -3,6 +3,7 @@ const metric = {
     name: 'Tokenized Stocks',
     description: 'Backed Finance tokenized stocks prices',
     chartType: 'text',
+    minimal: true,
     content: `
  
     __Backed internal oracles price feeds.__

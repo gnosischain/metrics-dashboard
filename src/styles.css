@@ -1,3 +1,5 @@
+@import './tabulator-styles.css';
+
 /* Base styles */
 * {
   box-sizing: border-box;
@@ -1404,3 +1406,132 @@ button:focus-visible, .button:focus-visible,
   }
 }
 
+
+/* ==================
+   d3 Charts
+   ================== */
+
+.d3-chart {
+  position: relative;
+  overflow: hidden;
+}
+
+.d3-chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sankey specific styles */
+.sankey-tooltip {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Network graph specific styles */  
+.network-tooltip {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 200px;
+}
+
+.network-graph svg {
+  cursor: grab;
+}
+
+.network-graph svg.dragging {
+  cursor: grabbing;
+}
+
+
+/* ==================
+   Minimal Widget Styles
+   ================== */
+
+   .minimal-widget-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .minimal-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .minimal-widget-title {
+    flex-grow: 1;
+  }
+  
+  .minimal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: #24292F;
+  }
+  
+  .minimal-subtitle {
+    font-size: 0.85rem;
+    color: #57606A;
+    margin: 0;
+  }
+  
+  .minimal-widget-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  
+  .minimal-widget-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+  }
+  
+  /* Dark mode styles for minimal widgets */
+  .dark-mode .minimal-title {
+    color: #C9D1D9;
+  }
+  
+  .dark-mode .minimal-subtitle {
+    color: #8B949E;
+  }
+  
+  /* Special handling for minimal table widgets */
+  .minimal-widget-container .table-widget {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  
+  /* Special handling for minimal text widgets */
+  .minimal-widget-container .text-widget {
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+  
+  /* Responsive adjustments for minimal widgets */
+  @media (max-width: 768px) {
+    .minimal-widget-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    
+    .minimal-widget-controls {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }

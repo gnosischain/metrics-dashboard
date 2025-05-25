@@ -12,9 +12,19 @@ import ChartModal from './ChartModal';
  * @param {boolean} props.expandable - Whether the card can be expanded
  * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @param {string} props.chartType - Type of chart in the card
+ * @param {boolean} props.minimal - Whether to render without card styling (new prop)
  * @returns {JSX.Element} Card component
  */
-const Card = ({ title, subtitle, headerControls, children, expandable = true, isDarkMode = false, chartType }) => {
+const Card = ({ 
+  title, 
+  subtitle, 
+  headerControls, 
+  children, 
+  expandable = true, 
+  isDarkMode = false, 
+  chartType,
+  minimal = false // New prop for minimal styling
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -24,6 +34,53 @@ const Card = ({ title, subtitle, headerControls, children, expandable = true, is
   // Special styling for number displays
   const isNumberDisplay = chartType === 'numberDisplay';
   
+  // If minimal mode is enabled, render without card wrapper
+  if (minimal) {
+    return (
+      <>
+        <div className="minimal-widget-container">
+          {/* Optional minimal header - only show if title exists */}
+          {(title || subtitle || headerControls) && (
+            <div className="minimal-widget-header">
+              {(title || subtitle) && (
+                <div className="minimal-widget-title">
+                  {title && <h3 className="minimal-title">{title}</h3>}
+                  {subtitle && <div className="minimal-subtitle">{subtitle}</div>}
+                </div>
+              )}
+              {headerControls && (
+                <div className="minimal-widget-controls">
+                  {headerControls}
+                  {expandable && !isNumberDisplay && (
+                    <ExpandButton isExpanded={false} onClick={toggleExpand} />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="minimal-widget-content">
+            {children}
+          </div>
+        </div>
+
+        {/* Modal still available for minimal widgets */}
+        {expandable && !isNumberDisplay && (
+          <ChartModal 
+            isOpen={isExpanded}
+            onClose={toggleExpand}
+            title={title}
+            subtitle={subtitle}
+            headerControls={headerControls}
+            isDarkMode={isDarkMode}
+          >
+            {children}
+          </ChartModal>
+        )}
+      </>
+    );
+  }
+  
+  // Regular card rendering (existing logic)
   return (
     <>
       <div className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''}`} 

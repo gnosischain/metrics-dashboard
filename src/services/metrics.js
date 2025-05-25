@@ -30,7 +30,7 @@ class MetricsService {
       ...metric,
       tab: metric.tab || 'General',
       size: metric.size || 'medium',
-      vSize: metric.vSize || 'medium' // Add default vertical size
+      vSize: metric.vSize || 'medium'
     }));
   }
 
@@ -72,7 +72,7 @@ class MetricsService {
       tab: 'General',
       size: 'medium',
       vSize: 'medium',
-      valueField: 'value', // Default value field
+      valueField: 'value',
       enableFiltering: false,
     };
   }
@@ -83,6 +83,149 @@ class MetricsService {
    */
   getAllMetricsConfig() {
     return this.metrics;
+  }
+
+
+  /**
+   * Transform data for Sankey diagrams
+   * @param {Array} data - Raw data with source, target, value columns
+   * @param {Object} metricConfig - Metric configuration
+   * @returns {Object} - {nodes: [], links: []} format for D3 Sankey
+   */
+  transformSankeyData(data, metricConfig) {
+    console.log('=== SANKEY TRANSFORM DEBUG ===');
+    console.log('Raw data received:', data);
+    console.log('Metric config:', metricConfig);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn('transformSankeyData: Empty or invalid data');
+      return { nodes: [], links: [] };
+    }
+
+    // Extract source and target field names from config or use defaults
+    const sourceField = metricConfig.sourceField || 'source';
+    const targetField = metricConfig.targetField || 'target';
+    const valueField = metricConfig.valueField || 'total_value';
+
+    console.log('Field mapping:', { sourceField, targetField, valueField });
+
+    // Validate that required fields exist
+    const firstItem = data[0];
+    console.log('First data item:', firstItem);
+    console.log('Has source field?', firstItem[sourceField] !== undefined);
+    console.log('Has target field?', firstItem[targetField] !== undefined);
+    console.log('Has value field?', firstItem[valueField] !== undefined);
+
+    if (!firstItem[sourceField] || !firstItem[targetField] || firstItem[valueField] === undefined) {
+      console.error('Sankey data missing required fields:', { sourceField, targetField, valueField });
+      console.error('Available fields:', Object.keys(firstItem));
+      return { nodes: [], links: [] };
+    }
+
+    // Extract unique nodes from sources and targets
+    const nodeSet = new Set();
+    data.forEach(d => {
+      console.log(`Processing: ${d[sourceField]} -> ${d[targetField]} (${d[valueField]})`);
+      nodeSet.add(d[sourceField]);
+      nodeSet.add(d[targetField]);
+    });
+
+    // Create nodes array
+    const nodes = Array.from(nodeSet).map(name => ({ 
+      id: name, 
+      name: name 
+    }));
+
+    // Create links array
+    const links = data.map(d => ({
+      source: d[sourceField],
+      target: d[targetField],
+      value: parseFloat(d[valueField] || 0)
+    })).filter(link => link.value > 0);
+
+    const result = { nodes, links };
+    console.log('Sankey transformation result:', result);
+    console.log(`Generated ${nodes.length} nodes and ${links.length} links`);
+    console.log('=== END SANKEY TRANSFORM DEBUG ===');
+
+    return result;
+  }
+
+  /**
+   * Transform data for Network graphs
+   * @param {Array} data - Raw data with node and link information
+   * @param {Object} metricConfig - Metric configuration
+   * @returns {Object} - {nodes: [], links: []} format for D3 Network
+   */
+  transformNetworkData(data, metricConfig) {
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn('transformNetworkData: Empty or invalid data');
+      return { nodes: [], links: [] };
+    }
+
+    console.log('Transforming Network data:', data.slice(0, 3));
+
+    // Configuration for field mapping
+    const sourceIdField = metricConfig.sourceIdField || 'source_id';
+    const sourceNameField = metricConfig.sourceNameField || 'source_name';
+    const sourceGroupField = metricConfig.sourceGroupField || 'source_group';
+    const targetIdField = metricConfig.targetIdField || 'target_id';
+    const targetNameField = metricConfig.targetNameField || 'target_name';
+    const targetGroupField = metricConfig.targetGroupField || 'target_group';
+    const valueField = metricConfig.valueField || 'value';
+
+    // Extract unique nodes
+    const nodeMap = new Map();
+    
+    data.forEach(d => {
+      // Add source node
+      if (!nodeMap.has(d[sourceIdField])) {
+        nodeMap.set(d[sourceIdField], {
+          id: d[sourceIdField],
+          name: d[sourceNameField] || d[sourceIdField],
+          group: d[sourceGroupField] || 'default',
+          size: metricConfig.defaultNodeSize || 8
+        });
+      }
+      
+      // Add target node
+      if (!nodeMap.has(d[targetIdField])) {
+        nodeMap.set(d[targetIdField], {
+          id: d[targetIdField],
+          name: d[targetNameField] || d[targetIdField],
+          group: d[targetGroupField] || 'default',
+          size: metricConfig.defaultNodeSize || 8
+        });
+      }
+    });
+
+    const nodes = Array.from(nodeMap.values());
+
+    // Create links
+    const links = data.map(d => ({
+      source: d[sourceIdField],
+      target: d[targetIdField],
+      value: parseFloat(d[valueField] || 1)
+    })).filter(link => link.value > 0);
+
+    // Calculate node sizes based on connections if enabled
+    if (metricConfig.calculateNodeSize) {
+      const connectionCounts = new Map();
+      
+      links.forEach(link => {
+        connectionCounts.set(link.source, (connectionCounts.get(link.source) || 0) + 1);
+        connectionCounts.set(link.target, (connectionCounts.get(link.target) || 0) + 1);
+      });
+
+      nodes.forEach(node => {
+        const connections = connectionCounts.get(node.id) || 0;
+        node.size = Math.max(4, Math.min(20, 4 + connections * 2)); // Size between 4-20
+      });
+    }
+
+    console.log(`Network transformation complete: ${nodes.length} nodes, ${links.length} links`);
+
+    return { nodes, links };
   }
 
   /**
@@ -96,26 +239,23 @@ class MetricsService {
       return [];
     }
 
-    // Get field configuration with defaults
-    const labelField = metricConfig.labelField || Object.keys(data[0]).find(key => typeof data[0][key] === 'string' && key !== 'date'); // Avoid picking date as label
+    const labelField = metricConfig.labelField || Object.keys(data[0]).find(key => typeof data[0][key] === 'string' && key !== 'date');
     const valueField = metricConfig.valueField || 'value';
 
     if (!labelField || !data[0][labelField] === undefined) {
       console.warn(`No label field found or available in data for horizontal bar chart: ${metricConfig.id}`);
-      return data.map(item => ({ category: 'Unknown', value: parseFloat(item[valueField] || 0) })); // Fallback
+      return data.map(item => ({ category: 'Unknown', value: parseFloat(item[valueField] || 0) }));
     }
 
-    // Sort data by value in descending order (if not already sorted)
     const sortedData = [...data].sort((a, b) => {
       const valueA = parseFloat(a[valueField] || 0);
       const valueB = parseFloat(b[valueField] || 0);
       return valueB - valueA;
     });
 
-    // Transform the data for horizontal bar charts
     return sortedData.map(item => ({
-      category: item[labelField], // Use the label field as the category (y-axis)
-      value: parseFloat(item[valueField] || 0) // This will be the value (x-axis)
+      category: item[labelField],
+      value: parseFloat(item[valueField] || 0)
     }));
   }
 
@@ -133,7 +273,7 @@ class MetricsService {
 
     const labelField = metricConfig.labelField;
     const valueField = metricConfig.valueField || 'value';
-    const isTimeSeries = metricConfig.isTimeSeries; // Get from config
+    const isTimeSeries = metricConfig.isTimeSeries;
 
     // Determine the date field
     const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
@@ -169,7 +309,7 @@ class MetricsService {
     uniqueDates.forEach(date => {
       dataMap[date] = {};
       uniqueLabels.forEach(label => {
-        dataMap[date][label] = 0; // Initialize with zeros
+        dataMap[date][label] = 0;
       });
     });
 
@@ -182,7 +322,6 @@ class MetricsService {
       const label = item[labelField];
       const value = parseFloat(item[valueField] || 0);
 
-      // Add to existing value (in case of multiple entries for same date/label)
       if (dataMap[date] && label && !isNaN(value)) {
         dataMap[date][label] = (dataMap[date][label] || 0) + value;
       }
@@ -194,8 +333,6 @@ class MetricsService {
 
     // Convert to Chart.js datasets format
     const datasets = uniqueLabels.map((label, index) => {
-      // For time series, we DON'T use {x, y} format for StackedAreaChart
-      // StackedAreaChart expects simple arrays with labels separate
       const dataPoints = uniqueDates.map(date => dataMap[date][label] || 0);
 
       const dataset = {
@@ -204,13 +341,12 @@ class MetricsService {
         backgroundColor: colors[index],
         borderColor: colors[index],
         borderWidth: 1.5,
-        fill: true, // Always true for stacked areas
+        fill: true,
       };
 
       return dataset;
     });
 
-    // Log output for debugging
     console.log(`Created ${datasets.length} datasets with ${uniqueDates.length} points each`);
     console.log(`Sample dataset:`, {
       label: datasets[0]?.label,
@@ -240,12 +376,37 @@ class MetricsService {
    */
   transformData(data, metricId) {
     const metricConfig = this.getMetricConfig(metricId);
+    
+    console.log(`MetricsService[${metricId}]: transformData called with chartType: ${metricConfig.chartType}`);
+
+    // Handle table charts FIRST - pass data through without transformation
+    if (metricConfig.chartType === 'table') {
+      console.log(`MetricsService[${metricId}]: Passing table data through without transformation`);
+      
+      if (!Array.isArray(data)) {
+        console.warn(`MetricsService[${metricId}]: Expected array data for table, got:`, typeof data);
+        return [];
+      }
+      
+      console.log(`MetricsService[${metricId}]: Table data ready - ${data.length} rows`);
+      return data;
+    }
+
+    // Handle D3 chart types
+    if (metricConfig.chartType === 'sankey') {
+      console.log(`MetricsService[${metricId}]: Transforming for Sankey chart`);
+      return this.transformSankeyData(data, metricConfig);
+    }
+
+    if (metricConfig.chartType === 'network') {
+      console.log(`MetricsService[${metricId}]: Transforming for Network chart`);
+      return this.transformNetworkData(data, metricConfig);
+    }
 
     // Determine if this is a stacked area chart
     const isStackedArea = metricConfig.chartType === 'area' && 
                           (metricConfig.stackedArea === true || metricConfig.stacked === true);
 
-    // --- >>> CRITICAL CHECK <<< ---
     // If EnhancedChart is meant to handle filtering and sub-label stacking, pass raw data
     if (metricConfig.enableFiltering && metricConfig.labelField && metricConfig.subLabelField) {
         console.log(`MetricsService[${metricId}]: Passing raw data to EnhancedChart (filtering enabled with subLabelField).`);
@@ -253,28 +414,26 @@ class MetricsService {
         // Basic validation of raw data structure
         if (!Array.isArray(data)) {
             console.error(`MetricsService[${metricId}]: Expected raw data to be an array, but got:`, typeof data);
-            return []; // Return empty array if raw data isn't an array
+            return [];
         }
         if (data.length > 0) {
-             const firstRow = data[0];
-             const requiredFields = [metricConfig.labelField, metricConfig.subLabelField, metricConfig.valueField || 'value'];
-             // Also check for a date field
-             const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
-             const hasDateField = dateFields.some(field => firstRow[field] !== undefined);
-             if (!hasDateField) {
-                 console.warn(`MetricsService[${metricId}]: Raw data for EnhancedChart seems to be missing a date field.`);
-             }
-             requiredFields.forEach(field => {
-                 if (firstRow[field] === undefined) {
-                     console.warn(`MetricsService[${metricId}]: Raw data for EnhancedChart is missing expected field '${field}'.`);
-                 }
-             });
-         } else {
-             console.log(`MetricsService[${metricId}]: Raw data array is empty.`);
-         }
-        return data; // Return raw data directly
+            const firstRow = data[0];
+            const requiredFields = [metricConfig.labelField, metricConfig.subLabelField, metricConfig.valueField || 'value'];
+            const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
+            const hasDateField = dateFields.some(field => firstRow[field] !== undefined);
+            if (!hasDateField) {
+                console.warn(`MetricsService[${metricId}]: Raw data for EnhancedChart seems to be missing a date field.`);
+            }
+            requiredFields.forEach(field => {
+                if (firstRow[field] === undefined) {
+                    console.warn(`MetricsService[${metricId}]: Raw data for EnhancedChart is missing expected field '${field}'.`);
+                }
+            });
+        } else {
+            console.log(`MetricsService[${metricId}]: Raw data array is empty.`);
+        }
+        return data;
     }
-    // --- End Critical Check ---
 
     // Special case for stacked area charts (without EnhancedChart filtering)
     if (isStackedArea && metricConfig.labelField) {
@@ -282,7 +441,7 @@ class MetricsService {
         return this.transformStackedAreaData(data, metricConfig);
     }
 
-    // --- Standard Transformation Logic (if not handled by EnhancedChart) ---
+    // Standard Transformation Logic
     console.log(`MetricsService[${metricId}]: Applying standard transformation.`);
 
     if (!Array.isArray(data) || data.length === 0) {
@@ -297,55 +456,49 @@ class MetricsService {
     if (metricConfig.chartType === 'horizontalBar') {
         result = this.transformHorizontalBarData(data, metricConfig);
     } else if (metricConfig.chartType === 'pie' || metricConfig.chartType === 'map' || metricConfig.chartType === 'numberDisplay') {
-        // These types often need simpler category/value or just value.
-        // Let the Chart component handle internal structuring for these simpler types.
-        // We just ensure the data is an array.
         console.log(`MetricsService[${metricId}]: Passing data as-is for simple chart type ${metricConfig.chartType}.`);
-        result = data; // Assume Chart component can handle this structure
+        result = data;
     } else {
         // Handle Time Series Charts (Line, Bar, Stacked Bar without filtering handled above)
-
-        // Determine the date field
         const dateFields = ['date', 'hour', 'timestamp', 'time', 'day'];
         const dateField = dateFields.find(field => firstRow[field] !== undefined) || '';
 
         if (!dateField) {
             console.warn(`MetricsService[${metricId}]: No date field found for time series transformation.`);
-            // Fallback? Maybe return raw data if no other structure applies
             result = data;
         } else {
-             // Handle labelField (for multi-line etc., but NOT the EnhancedChart case)
-             if (metricConfig.labelField && firstRow[metricConfig.labelField] !== undefined) {
-                 console.log(`MetricsService[${metricId}]: Transforming standard labeled data (multi-line).`);
-                 result = this.transformLabeledData(data, dateField, metricConfig);
-             }
-             // Handle multi-series (columns other than date/value)
-             else {
-                 const seriesKeys = Object.keys(firstRow).filter(key =>
-                     key !== dateField && key !== 'value' && !dateFields.includes(key)
-                 );
-                 if (seriesKeys.length > 0 && firstRow.value === undefined) {
-                     console.log(`MetricsService[${metricId}]: Transforming standard multi-series data.`);
-                     result = this.transformMultiSeriesData(data, dateField, metricConfig, seriesKeys);
-                 }
-                 // Handle standard date/value
-                 else if (firstRow.value !== undefined) {
-                     console.log(`MetricsService[${metricId}]: Transforming standard date/value data.`);
-                     result = data.map(item => {
-                         let dateValue = item[dateField];
-                         if (typeof dateValue === 'string' && dateValue.includes(' ')) {
-                             dateValue = dateValue.split(' ')[0];
-                         }
-                         return {
-                             date: dateValue,
-                             value: parseFloat(item.value || 0)
-                         };
-                     });
-                 } else {
+            // Handle labelField (for multi-line etc., but NOT the EnhancedChart case)
+            if (metricConfig.labelField && firstRow[metricConfig.labelField] !== undefined) {
+                console.log(`MetricsService[${metricId}]: Transforming standard labeled data (multi-line).`);
+                result = this.transformLabeledData(data, dateField, metricConfig);
+            }
+            // Handle multi-series (columns other than date/value)
+            else {
+                const seriesKeys = Object.keys(firstRow).filter(key =>
+                    key !== dateField && key !== 'value' && !dateFields.includes(key)
+                );
+                if (seriesKeys.length > 0 && firstRow.value === undefined) {
+                    console.log(`MetricsService[${metricId}]: Transforming standard multi-series data.`);
+                    result = this.transformMultiSeriesData(data, dateField, metricConfig, seriesKeys);
+                }
+                // Handle standard date/value
+                else if (firstRow.value !== undefined) {
+                    console.log(`MetricsService[${metricId}]: Transforming standard date/value data.`);
+                    result = data.map(item => {
+                        let dateValue = item[dateField];
+                        if (typeof dateValue === 'string' && dateValue.includes(' ')) {
+                            dateValue = dateValue.split(' ')[0];
+                        }
+                        return {
+                            date: dateValue,
+                            value: parseFloat(item.value || 0)
+                        };
+                    });
+                } else {
                       console.warn(`MetricsService[${metricId}]: Could not determine standard format. Returning raw.`);
-                      result = data; // Fallback
-                 }
-             }
+                      result = data;
+                }
+            }
         }
     }
 
@@ -354,7 +507,6 @@ class MetricsService {
 
   /**
    * Transform data with a label field into a multi-line chart format
-   * (Used for standard multi-line charts, not the EnhancedChart filtering case)
    * @param {Array} data - Raw data
    * @param {string} dateField - Name of the date field
    * @param {Object} metricConfig - Metric configuration
@@ -364,7 +516,6 @@ class MetricsService {
     const labelField = metricConfig.labelField;
     const valueField = metricConfig.valueField || 'value';
 
-    // Validate required fields in data
     if (data.length === 0 || data[0][dateField] === undefined || data[0][labelField] === undefined || data[0][valueField] === undefined) {
         console.error(`MetricsService[${metricConfig.id}]: Data missing required fields for labeled transformation (date: ${dateField}, label: ${labelField}, value: ${valueField}).`);
         return { labels: [], datasets: [] };
@@ -388,22 +539,21 @@ class MetricsService {
       data.forEach(item => {
           if (item[labelField] === label) {
               const dateKey = typeof item[dateField] === 'string' && item[dateField].includes(' ') ? item[dateField].split(' ')[0] : item[dateField];
-              // Aggregate if multiple values for same label/date (e.g., sum)
               labelDataMap.set(dateKey, (labelDataMap.get(dateKey) || 0) + parseFloat(item[valueField] || 0));
           }
       });
 
-      const values = uniqueDates.map(date => labelDataMap.get(date) ?? null); // Use null for missing points
+      const values = uniqueDates.map(date => labelDataMap.get(date) ?? null);
 
       return {
         label: label,
         data: values,
-        backgroundColor: colors[index % colors.length], // Assign color
+        backgroundColor: colors[index % colors.length],
         borderColor: colors[index % colors.length],
         borderWidth: 1.5,
         pointRadius: 2,
         pointHoverRadius: 4,
-        fill: metricConfig.fill ?? (metricConfig.chartType === 'area'), // Handle fill based on config or area type
+        fill: metricConfig.fill ?? (metricConfig.chartType === 'area'),
       };
     });
 
@@ -422,7 +572,7 @@ class MetricsService {
    * @returns {Object} Transformed data for chart
    */
   transformMultiSeriesData(data, dateField, metricConfig, seriesKeys) {
-     // Extract labels (dates or hours)
+    // Extract labels (dates or hours)
     const labels = data.map(item => {
       const dateTime = item[dateField];
       if (dateTime && typeof dateTime === 'string') {
@@ -445,11 +595,10 @@ class MetricsService {
       const color = colors[index % colors.length];
       return {
         label: series,
-        data: data.map(item => parseFloat(item[series] || 0)), // Default to 0 if undefined
-        backgroundColor: color, // Use solid color for stacked bars usually
+        data: data.map(item => parseFloat(item[series] || 0)),
+        backgroundColor: color,
         borderColor: color,
         borderWidth: 1,
-         // stack: 'a' // Assign to a stack group if needed for Chart.js v3+ options
       };
     });
 
@@ -480,7 +629,7 @@ class MetricsService {
       return transformedData;
     } catch (error) {
       console.error(`MetricsService[${metricId}]: Error fetching or transforming data:`, error);
-      return []; // Return empty array on error
+      return [];
     }
   }
 
@@ -504,33 +653,28 @@ class MetricsService {
       return transformedResults;
     } catch (error) {
       console.error('Error in fetchAllMetricsData:', error);
-      return {}; // Return empty object instead of throwing
+      return {};
     }
   }
 
   /**
    * Handle single value metrics
-   * Ensures that even metrics that return a single value have the proper format
    * @param {Array|Object} data - Raw data from API
    * @returns {Array} - Data in a format compatible with Chart component
    */
   transformSingleValueData(data) {
-    // If data is already an array with at least one item, return it
     if (Array.isArray(data) && data.length > 0) {
       return data;
     }
 
-    // If data is a single object with a value property
     if (data && typeof data === 'object' && data.value !== undefined) {
       return [data];
     }
 
-    // If data is just a number, wrap it in an object
     if (typeof data === 'number') {
       return [{ value: data }];
     }
 
-    // Default case - empty array
     return [];
   }
 
@@ -547,7 +691,6 @@ class MetricsService {
       return { labels: [], datasets: [] };
     }
 
-    // Check if the data has the required fields
     if (!data[0][labelField] || !data[0][subLabelField] || !data[0][valueField]) {
       console.error('Data missing required fields for label/sublabel transformation',
         { labelField, subLabelField, valueField });
@@ -571,7 +714,6 @@ class MetricsService {
       const label = item[labelField];
       const sublabel = item[subLabelField];
 
-      // Create a composite label that combines primary and secondary
       const compositeKey = `${label}-${sublabel}`;
 
       if (!groupedByDate[date]) {
@@ -607,9 +749,7 @@ class MetricsService {
         datasets.push({
           label: `${primaryLabel} ${secondaryLabel}`,
           data: dates.map(date => groupedByDate[date][compositeKey] || 0),
-          // Store the primary label for filtering
           _primaryLabel: primaryLabel,
-          // Store the secondary label for tooltips/legends
           _secondaryLabel: secondaryLabel
         });
       });
@@ -618,7 +758,6 @@ class MetricsService {
     return {
       labels: dates,
       datasets: datasets,
-      // Add a hint that this data has been processed for label/sublabel filtering
       _hasLabelSubLabelStructure: true
     };
   }

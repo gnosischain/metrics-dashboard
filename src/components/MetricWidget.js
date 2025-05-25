@@ -39,12 +39,13 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       stacked = false,
       fill = false,
       isTimeSeries = false,
-      enableZoom = false
+      enableZoom = false,
+      minimal = false // New configuration option
   } = metricConfig;
 
   const isStackedAreaChart = chartType === 'area' && (stackedArea === true || stacked === true);
   const requiresEnhancedFiltering = enableFiltering && labelField && subLabelField;
-  const isExpandable = chartType !== 'numberDisplay' && chartType !== 'text';
+  const isExpandable = chartType !== 'numberDisplay' && chartType !== 'text' && chartType !== 'table';
 
   // NEW: Determine which component should handle zoom for stacked area charts
   const shouldUseStackedAreaChartWithZoom = isStackedAreaChart && !requiresEnhancedFiltering && (enableZoom || isTimeSeries);
@@ -60,9 +61,10 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       isExpandable,
       isTimeSeries,
       enableZoom,
-      shouldUseStackedAreaChartWithZoom // Log the new decision
+      shouldUseStackedAreaChartWithZoom,
+      minimal // Log the minimal flag
     });
-  }, [metricId, chartType, isStackedAreaChart, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable, isTimeSeries, enableZoom, shouldUseStackedAreaChartWithZoom]);
+  }, [metricId, chartType, isStackedAreaChart, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable, isTimeSeries, enableZoom, shouldUseStackedAreaChartWithZoom, minimal]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -84,18 +86,57 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       console.log(`MetricWidget[${metricId}]: Fetching data...`);
       const fetchedData = await metricsService.fetchMetricData(metricId);
       if (!isMounted.current) return;
-
+  
       if (fetchedData) {
         console.log(`MetricWidget[${metricId}]: Data structure:`,
           Array.isArray(fetchedData)
             ? `Array with ${fetchedData.length} items`
-            : (fetchedData.datasets ? `Chart.js format with ${fetchedData.datasets.length} datasets` : 'Other format'));
+            : (fetchedData.datasets ? `Chart.js format with ${fetchedData.datasets.length} datasets` 
+               : (fetchedData.nodes && fetchedData.links ? `D3 format with ${fetchedData.nodes.length} nodes and ${fetchedData.links.length} links`
+                  : 'Other format')));
       }
-
-      if (fetchedData && Array.isArray(fetchedData)) {
+  
+      // Handle D3 chart types (sankey, network)
+      if (chartType === 'sankey' || chartType === 'network') {
+        if (fetchedData && typeof fetchedData === 'object' && fetchedData.nodes && fetchedData.links) {
+          console.log(`MetricWidget[${metricId}]: Valid D3 data format received.`);
+          setRawData(null);
+          setChartDisplayData(fetchedData);
+          setUniquePrimaryLabels([]);
+          setSelectedLabel('');
+          setError(null);
+        } else {
+          console.warn(`MetricWidget[${metricId}]: Invalid D3 data format:`, fetchedData);
+          setError(`No valid data available for ${title}`);
+          setRawData(null);
+          setChartDisplayData(null);
+          setUniquePrimaryLabels([]);
+          setSelectedLabel('');
+        }
+      }
+      // Handle table chart types
+      else if (chartType === 'table') {
+        if (fetchedData && Array.isArray(fetchedData)) {
+          console.log(`MetricWidget[${metricId}]: Valid table data format received with ${fetchedData.length} rows.`);
+          setRawData(null);
+          setChartDisplayData(fetchedData);
+          setUniquePrimaryLabels([]);
+          setSelectedLabel('');
+          setError(null);
+        } else {
+          console.warn(`MetricWidget[${metricId}]: Invalid table data format:`, fetchedData);
+          setError(`No valid data available for ${title}`);
+          setRawData(null);
+          setChartDisplayData(null);
+          setUniquePrimaryLabels([]);
+          setSelectedLabel('');
+        }
+      }
+      // Handle regular Chart.js data formats
+      else if (fetchedData && Array.isArray(fetchedData)) {
           console.log(`MetricWidget[${metricId}]: Received data count: ${fetchedData.length}. Requires Filtering: ${requiresEnhancedFiltering}`);
           setRawData(fetchedData);
-
+  
           if (!requiresEnhancedFiltering) {
               setChartDisplayData(fetchedData);
               console.log(`MetricWidget[${metricId}]: Setting display data directly (standard chart).`);
@@ -166,7 +207,7 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
   };
 
   if (chartType === 'text') {
-    return <TextWidget title={title} subtitle={subtitle} content={content} />;
+    return <TextWidget title={title} subtitle={subtitle} content={content} minimal={minimal} />;
   }
 
   const createHeaderControls = () => {
@@ -194,6 +235,7 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
       expandable={isExpandable}
       isDarkMode={isDarkMode}
       chartType={chartType}
+      minimal={minimal} // Pass the minimal flag to Card
     >
       {loading ? (
         <div className="loading-indicator">Loading...</div>
@@ -201,11 +243,41 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {(chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
+          {/* Check for D3 charts first */}
+          {(chartType === 'sankey' || chartType === 'network') && chartDisplayData && chartDisplayData.nodes && chartDisplayData.links ? (
+            <Chart
+              key={`d3-chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
+              data={chartDisplayData}
+              title={title}
+              type={chartType}
+              height={getChartHeight()}
+              format={metricConfig.format}
+              isDarkMode={isDarkMode}
+              sankeyConfig={metricConfig.sankeyConfig}
+              networkConfig={metricConfig.networkConfig}
+              metricId={metricId}
+            />
+          ) : 
+          /* Check for table charts */
+          chartType === 'table' && chartDisplayData && Array.isArray(chartDisplayData) ? (
+            <Chart
+              key={`table-chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
+              data={chartDisplayData}
+              title={title}
+              type={chartType}
+              height={getChartHeight()}
+              format={metricConfig.format}
+              isDarkMode={isDarkMode}
+              tableConfig={metricConfig.tableConfig || {}}
+              metricId={metricId}
+            />
+          ) :
+          /* Regular charts */
+          (chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
             requiresEnhancedFiltering ? (
               <EnhancedChart
                 key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`}
-                data={rawData} // EnhancedChart receives rawData
+                data={rawData}
                 selectedLabel={selectedLabel}
                 title={title}
                 type={chartType}
@@ -224,7 +296,6 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 metricId={metricId}
               />
             ) : shouldUseStackedAreaChartWithZoom ? (
-              // NEW: Use StackedAreaChart for stacked area charts with zoom support
               <StackedAreaChart
                 key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
                 data={chartDisplayData}
@@ -232,12 +303,11 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 height={getChartHeight()}
                 format={metricConfig.format}
                 isDarkMode={isDarkMode}
-                isTimeSeries={isTimeSeries} // Pass the new props
-                enableZoom={enableZoom}     // Pass the new props
-                metricId={metricId}         // Pass metricId for keying
+                isTimeSeries={isTimeSeries}
+                enableZoom={enableZoom}
+                metricId={metricId}
               />
             ) : isStackedAreaChart && chartDisplayData.labels && chartDisplayData.datasets ? (
-              // Legacy StackedAreaChart without zoom
               <StackedAreaChart
                 key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
                 data={chartDisplayData}
@@ -245,7 +315,6 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 height={getChartHeight()}
                 format={metricConfig.format}
                 isDarkMode={isDarkMode}
-                // Note: isTimeSeries and enableZoom are not passed here for legacy behavior
               />
             ) : (
               <Chart
@@ -265,6 +334,9 @@ const MetricWidget = ({ metricId, isDarkMode = false }) => {
                 isTimeSeries={isTimeSeries}
                 enableZoom={enableZoom}
                 metricId={metricId}
+                tableConfig={metricConfig.tableConfig || {}}
+                sankeyConfig={metricConfig.sankeyConfig}
+                networkConfig={metricConfig.networkConfig}
               />
             )
           ) : (

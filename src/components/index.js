@@ -21,6 +21,7 @@ import IconComponent from './IconComponent';
 import LabelSelector from './LabelSelector';
 import ExpandButton from './ExpandButton';
 import ChartModal from './ChartModal';
+import TableWidget from './TableWidget'; // Add this line
 
 // Export all components
 export {
@@ -40,8 +41,8 @@ export {
   IconComponent,
   LabelSelector,
   ExpandButton,
-  ChartModal
+  ChartModal,
+  TableWidget 
 };
 
-// Default export for backward compatibility
 export default Dashboard;

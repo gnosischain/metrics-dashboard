@@ -1,0 +1,4 @@
+{
+  "id": "sankey_transaction_flow",
+  "query": "SELECT 'DEX' AS source, 'Lending' AS target, 1500 AS total_value\n    UNION ALL\n    SELECT 'EOA' AS source, 'DEX' AS target, 2300 AS total_value\n    UNION ALL\n    SELECT 'EOA' AS source, 'Lending' AS target, 800 AS total_value\n    UNION ALL\n    SELECT 'Bridge' AS source, 'DEX' AS target, 1200 AS total_value\n    UNION ALL\n    SELECT 'Lending' AS source, 'EOA' AS target, 900 AS total_value\n    UNION ALL\n    SELECT 'DEX' AS source, 'EOA' AS target, 1800 AS total_value"
+}

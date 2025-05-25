@@ -1,4 +1,0 @@
-{
-  "id": "historical_el_forks",
-  "query": "SELECT * FROM dbt.p2p_peers_el_fork_daily ORDER BY date ASC, fork ASC"
-}
