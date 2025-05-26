@@ -30,7 +30,7 @@ OnChainActivity:
     - name: RWA
       order: 1
       icon: "📈"
-      iconClass: "trending-up"
+      iconClass: "rwa"
       metrics:
         - id: node_status_table
           gridRow: 1
@@ -47,7 +47,7 @@ OnChainActivity:
     - name: Yields
       order: 2
       icon: "📈"
-      iconClass: "trending-up"
+      iconClass: "yield"
       metrics:
         - id: historical_yield_sdai
           gridRow: 1
@@ -57,14 +57,18 @@ OnChainActivity:
     - name: Flows
       order: 3
       icon: "🌊"
-      iconClass: "trending-up"
+      iconClass: "flow"
       metrics:
-        - id: sankey_transaction_flow
+        - id: erc20_network_transfers
           gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: sankey_transaction_flow
+          gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 500px
         - id: sankey_gas_flow
-          gridRow: 1
+          gridRow: 2
           gridColumn: 7 / span 6
           minHeight: 500px
         

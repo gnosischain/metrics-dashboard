@@ -1,10 +1,9 @@
-/* Tabulator Table Styles - Restored Clean Version */
 
-/* Base table styling to match dashboard theme */
 .table-widget {
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden; /* Prevent table from overflowing card */
   }
   
   .tabulator-table {
@@ -13,6 +12,33 @@
     border: 1px solid rgba(0,0,0,0.1);
     border-radius: 8px;
     overflow: hidden;
+    height: 100%; /* Fill the card */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Ensure table holder takes remaining space */
+  .tabulator-tableHolder {
+    flex: 1; /* Take remaining space after header and footer */
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+  
+  /* Header stays fixed */
+  .tabulator-header {
+    flex-shrink: 0; /* Don't shrink header */
+  }
+  
+  /* Footer stays fixed at bottom */
+  .tabulator-footer {
+    flex-shrink: 0; /* Don't shrink footer */
+    display: flex !important; /* Always show pagination */
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    min-height: 50px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    background-color: #F6F8FA;
   }
   
   /* Light mode styles */
@@ -31,6 +57,7 @@
     border-right: 1px solid rgba(0,0,0,0.05);
     color: #24292F;
     font-weight: 600;
+    padding: 12px 8px; /* Good padding for headers */
   }
   
   .tabulator-light .tabulator-header .tabulator-col:hover {
@@ -40,6 +67,7 @@
   .tabulator-light .tabulator-row {
     background-color: #ffffff;
     border-bottom: 1px solid rgba(0,0,0,0.05);
+    min-height: 44px; /* Consistent row height */
   }
   
   .tabulator-light .tabulator-row:nth-child(even) {
@@ -53,11 +81,7 @@
   .tabulator-light .tabulator-cell {
     border-right: 1px solid rgba(0,0,0,0.05);
     color: #24292F;
-  }
-  
-  .tabulator-light .tabulator-footer {
-    background-color: #F6F8FA;
-    border-top: 1px solid rgba(0,0,0,0.1);
+    padding: 12px 8px; /* Good padding for cells */
   }
   
   /* Dark mode styles */
@@ -116,25 +140,12 @@
     color: #C9D1D9;
   }
   
-  /* Pagination styles - Clean and minimal */
-  .tabulator-footer {
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-    padding: 12px;
-    min-height: 50px;
-  }
-  
+  /* Pagination styling */
   .tabulator-paginator {
     display: flex !important;
     align-items: center;
     justify-content: center;
     gap: 8px;
-  }
-  
-  .dark-mode .tabulator-paginator,
-  .tabulator-dark-theme .tabulator-paginator {
-    color: #C9D1D9;
   }
   
   .tabulator-page {
@@ -186,7 +197,7 @@
     border-color: #58A6FF;
   }
   
-  /* Page counter text */
+  /* Page counter */
   .tabulator-page-counter {
     margin: 0 16px;
     font-size: 14px;
@@ -199,93 +210,15 @@
     color: #8B949E;
   }
   
-  /* Page size selector */
-  .tabulator-page-size {
-    margin-left: 16px;
-    padding: 8px 12px;
-    border: 1px solid #D0D7DE;
-    border-radius: 6px;
-    background-color: #ffffff;
-    color: #24292F;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  
-  .dark-mode .tabulator-page-size,
-  .tabulator-dark-theme .tabulator-page-size {
-    background-color: #21262D;
-    color: #C9D1D9;
-    border: 1px solid #30363D;
-  }
-  
-  /* Header filter styles - COMPLETELY HIDDEN */
-  .tabulator-header-filter {
-    display: none !important;
-  }
-  
-  .tabulator-col .tabulator-header-filter {
-    display: none !important;
-  }
-  
+  /* COMPLETELY HIDE header filters */
+  .tabulator-header-filter,
+  .tabulator-col .tabulator-header-filter,
   .tabulator-header-filter input {
     display: none !important;
-  }
-  
-  /* Loading spinner */
-  .dark-mode .tabulator-loader,
-  .tabulator-dark-theme .tabulator-loader {
-    background-color: rgba(13, 17, 23, 0.8);
-  }
-  
-  .dark-mode .tabulator-loader-msg,
-  .tabulator-dark-theme .tabulator-loader-msg {
-    color: #C9D1D9;
-  }
-  
-  /* Responsive styles */
-  @media (max-width: 768px) {
-    .tabulator-table {
-      font-size: 12px;
-    }
-    
-    .tabulator-col {
-      min-width: 100px;
-    }
-    
-    .tabulator-cell {
-      padding: 8px 6px;
-    }
-    
-    .tabulator-page {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 8px;
-      margin: 0 2px;
-    }
-    
-    .tabulator-footer {
-      padding: 8px;
-    }
-  }
-  
-  /* Custom styles for specific data types */
-  .tabulator-cell.number-cell {
-    text-align: right;
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  }
-  
-  .tabulator-cell.date-cell {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  }
-  
-  .tabulator-cell.percentage-cell {
-    text-align: right;
-    color: #0969DA;
-  }
-  
-  .dark-mode .tabulator-cell.percentage-cell,
-  .tabulator-dark-theme .tabulator-cell.percentage-cell {
-    color: #58A6FF;
+    visibility: hidden !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   
   /* Error state */
@@ -299,12 +232,7 @@
     font-weight: 500;
   }
   
-  /* Hide original scrollbars and use custom ones */
-  .tabulator-tableHolder {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.3) transparent;
-  }
-  
+  /* Scrollbar styling */
   .tabulator-tableHolder::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -323,7 +251,6 @@
     background: rgba(0,0,0,0.5);
   }
   
-  /* Dark mode scrollbar */
   .dark-mode .tabulator-tableHolder::-webkit-scrollbar-thumb,
   .tabulator-dark-theme .tabulator-tableHolder::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,0.3);
@@ -334,7 +261,7 @@
     background: rgba(255,255,255,0.5);
   }
   
-  /* Minimal widget compatibility */
+  /* Minimal widget support */
   .minimal-widget-container .table-widget {
     background: transparent;
     border: none;
@@ -347,4 +274,22 @@
   
   .dark-mode .minimal-widget-container .tabulator-table {
     border: 1px solid #30363D;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .tabulator-table {
+      font-size: 12px;
+    }
+    
+    .tabulator-cell {
+      padding: 8px 6px;
+    }
+    
+    .tabulator-page {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      margin: 0 2px;
+    }
   }

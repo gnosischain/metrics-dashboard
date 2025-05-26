@@ -306,67 +306,92 @@ const generateColumns = (data, config, format, isDarkMode) => {
  * @returns {Object} Tabulator configuration
  */
 const createTableConfig = (data, columns, config, isDarkMode, height) => {
-  const baseConfig = {
-    data: data,
-    columns: columns,
-    height: height === 'auto' ? 'auto' : height,
-    layout: config.layout || 'fitColumns',
-    responsiveLayout: config.responsiveLayout !== false ? 'collapse' : false,
-    
-    // Pagination settings - make sure these are explicit and can't be overridden
-    pagination: config.pagination !== false ? true : false,
-    paginationSize: config.paginationSize || 10,
-    paginationSizeSelector: config.paginationSizeSelector || [5, 10, 20, 50],
-    paginationButtonCount: config.paginationButtonCount || 5,
-    
-    // Other settings
-    movableColumns: config.movableColumns !== false,
-    resizableRows: config.resizableRows || false,
-    selectable: config.selectable || false,
-    reactiveData: true,
-    debugInvalidOptions: false,
-    
-    // Optimize for pagination
-    autoResize: config.autoResize || false,
-    renderVerticalBuffer: config.renderVerticalBuffer || 0,
-    
-    // Ensure pagination renders properly
-    paginationElement: undefined, // Let Tabulator create its own pagination element
-    
-    // Event callbacks for debugging
-    paginationInitialized: function() {
-      console.log('TableWidget: Pagination initialized with size:', this.getPageSize());
-      console.log('TableWidget: Total pages:', this.getPageMax());
-    },
-    
-    tableBuilt: function() {
-      console.log('TableWidget: Table built, total rows:', this.getDataCount());
-      const paginationElement = this.element.querySelector('.tabulator-footer');
-      if (paginationElement) {
-        console.log('TableWidget: Pagination element found and visible');
-        paginationElement.style.display = 'flex'; // Force visibility
-      } else {
-        console.warn('TableWidget: Pagination element NOT found');
+    const baseConfig = {
+      data: data,
+      columns: columns,
+      height: height, // Use the provided height (not 'auto')
+      layout: config.layout || 'fitColumns',
+      responsiveLayout: config.responsiveLayout !== false ? 'collapse' : false,
+      
+      // Pagination settings - ALWAYS force pagination if data exists
+      pagination: data && data.length > 0 ? true : false, // Force pagination if we have data
+      paginationSize: config.paginationSize || 5, // Default to smaller page size
+      paginationSizeSelector: config.paginationSizeSelector || [3, 5, 10, 20],
+      paginationButtonCount: config.paginationButtonCount || 5,
+      paginationInitialPage: 1, // Always start on page 1
+      paginationCounter: config.paginationCounter || "rows", // Show row counter
+      
+      // Force pagination to show even with small datasets
+      paginationElement: undefined, // Let Tabulator create pagination
+      
+      // Other settings
+      movableColumns: config.movableColumns !== false,
+      resizableRows: config.resizableRows || false,
+      selectable: config.selectable || false,
+      reactiveData: true,
+      debugInvalidOptions: false,
+      
+      // Ensure proper sizing
+      autoResize: false, // Don't auto-resize, use fixed height
+      renderVerticalBuffer: 0,
+      
+      // Event callbacks for debugging and ensuring pagination shows
+      tableBuilt: function() {
+        console.log('TableWidget: Table built');
+        console.log('TableWidget: Data count:', this.getDataCount());
+        console.log('TableWidget: Page size:', this.getPageSize());
+        console.log('TableWidget: Page max:', this.getPageMax());
+        
+        // Force pagination to be visible
+        const paginationElement = this.element.querySelector('.tabulator-footer');
+        if (paginationElement) {
+          console.log('TableWidget: Pagination element found');
+          paginationElement.style.display = 'flex';
+          paginationElement.style.visibility = 'visible';
+        } else {
+          console.warn('TableWidget: Pagination element NOT found');
+        }
+        
+        // Force redraw after a moment
+        setTimeout(() => {
+          this.redraw();
+        }, 50);
+      },
+      
+      paginationInitialized: function() {
+        console.log('TableWidget: Pagination initialized');
+        console.log('TableWidget: Current page:', this.getPage());
+        console.log('TableWidget: Total pages:', this.getPageMax());
+      },
+      
+      renderComplete: function() {
+        console.log('TableWidget: Render complete');
+        // Ensure pagination is visible after render
+        const paginationElement = this.element.querySelector('.tabulator-footer');
+        if (paginationElement) {
+          paginationElement.style.display = 'flex';
+        }
       }
-    }
-  };
-
-  // Add theme-specific styling
-  if (isDarkMode) {
-    baseConfig.renderComplete = function() {
-      applyDarkModeStyles(this.element);
     };
-  }
-
-  // Merge with custom config, but protect critical pagination settings
-  const customConfig = { ...config.tabulatorConfig };
-  // Don't let custom config override our pagination settings
-  delete customConfig.pagination;
-  delete customConfig.paginationSize;
-  delete customConfig.paginationSizeSelector;
   
-  return { ...baseConfig, ...customConfig };
-};
+    // Add theme-specific styling
+    if (isDarkMode) {
+      const originalRenderComplete = baseConfig.renderComplete;
+      baseConfig.renderComplete = function() {
+        applyDarkModeStyles(this.element);
+        if (originalRenderComplete) originalRenderComplete.call(this);
+      };
+    }
+  
+    // Merge with custom config, but protect critical pagination settings
+    const customConfig = { ...config.tabulatorConfig };
+    // Don't let custom config override our pagination settings
+    delete customConfig.pagination;
+    delete customConfig.paginationSize;
+    delete customConfig.height; // Don't override height
+    
+    return { ...baseConfig, ...customConfig };
+  };
 
 /**
  * Get formatter function for column

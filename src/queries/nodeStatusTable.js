@@ -1,3 +1,4 @@
+
 const metric = {
     id: 'node_status_table',
     name: 'Node Status Table',
@@ -8,56 +9,55 @@ const metric = {
     tableConfig: {
       layout: 'fitColumns',
       pagination: true, // Enable pagination
-      paginationSize: 6, // Show 6 rows per page
-      paginationSizeSelector: [5, 10, 15, 20], // Options for rows per page
+      paginationSize: 4, // Show only 4 rows per page (this will force pagination)
+      paginationSizeSelector: [3, 4, 6, 10], // Options for rows per page
       responsiveLayout: 'collapse',
-      autoResize: true,
-      height: 'auto',
+      height: 350, // Fixed height to fit in card properly
       
       // DISABLE header filters (search boxes)
-      enableFiltering: false, // This will disable all header filters
+      enableFiltering: false,
       
-      // Optimize pagination display
-      renderVerticalBuffer: 0,
-      paginationButtonCount: 5, // Show page numbers
+      // Force pagination to always show
+      paginationInitialPage: 1,
+      paginationCounter: "rows", // Show row counter
       
-      // Custom column definitions to ensure no filters
+      // Custom column definitions to ensure no filters and proper formatting
       columns: [
         {
           title: "Node ID",
           field: "node_id",
           width: 120,
           sorter: "string",
-          headerFilter: false // Explicitly disable filter for this column
+          headerFilter: false
         },
         {
           title: "Country",
           field: "country",
           width: 150,
           sorter: "string",
-          headerFilter: false // Explicitly disable filter for this column
+          headerFilter: false
         },
         {
           title: "Client",
           field: "client",
           width: 130,
           sorter: "string",
-          headerFilter: false // Explicitly disable filter for this column
+          headerFilter: false
         },
         {
           title: "Peer Count",
           field: "peer_count",
           width: 120,
           sorter: "number",
-          headerFilter: false, // Explicitly disable filter for this column
-          formatter: "plaintext" // Simple number formatting
+          headerFilter: false,
+          formatter: "plaintext"
         },
         {
           title: "Status",
           field: "status",
           width: 100,
           sorter: "string",
-          headerFilter: false, // Explicitly disable filter for this column
+          headerFilter: false,
           formatter: function(cell) {
             const value = cell.getValue();
             const color = value === 'Online' ? '#28a745' : '#dc3545';

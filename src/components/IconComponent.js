@@ -158,7 +158,45 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
       ),
-      // Add more icons as needed
+      'rwa': (
+        <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M27,11a1,1,0,0,0,1-1V7a1,1,0,0,0-.66-.94l-11-4a1,1,0,0,0-.68,0l-11,4A1,1,0,0,0,4,7v3a1,1,0,0,0,1,1H6V24H4v2H28V24H26V11ZM6,7.7,16,4.06,26,7.7V9H6ZM18,24H14V11h4ZM8,11h4V24H8ZM24,24H20V11h4Z" transform="translate(0 0)"></path>
+        </svg>
+      ),
+      'yield': (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 64 64"
+            fill="none"
+            stroke={color}
+            strokeWidth="3.648"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <circle cx="16" cy="16" r="8" />
+            <circle cx="48" cy="48" r="8" />
+            <line x1="48" y1="8" x2="16" y2="56" />
+        </svg>
+        ),
+        'flow': (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={pixelSize}
+                height={pixelSize}
+                viewBox="0 0 32 32"
+                fill={color}
+            >
+                <path d="M30,30H22V22h8Zm-6-2h4V24H24Z" />
+                <path d="M20,27H8A6,6,0,0,1,8,15h2v2H8a4,4,0,0,0,0,8H20Z" />
+                <path d="M20,20H12V12h8Zm-6-2h4V14H14Z" />
+                <path d="M24,17H22V15h2a4,4,0,0,0,0-8H12V5H24a6,6,0,0,1,0,12Z" />
+                <path d="M10,10H2V2h8ZM4,8H8V4H4Z" />
+            </svg>
+            ),
+
+
     };
     
     // Return the SVG icon if it exists, otherwise fallback

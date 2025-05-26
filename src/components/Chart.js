@@ -25,6 +25,7 @@ import NumberWidget from './NumberWidget';
 import StackedAreaChart from './StackedAreaChart';
 import InFrameZoomSlider from './InFrameZoomSlider';
 import TableWidget from './TableWidget';
+import NetworkGraph from './d3/NetworkGraph'; // Import the enhanced NetworkGraph component
 import formatters from '../utils/formatter';
 
 // Register ChartJS components
@@ -231,257 +232,6 @@ const SankeyChart = ({ data, isDarkMode, config = {}, format, containerRef }) =>
 };
 
 /**
- * D3.js Network Graph Component
- */
-const NetworkGraph = ({ data, isDarkMode, config = {}, format, containerRef }) => {
-  const svgRef = useRef(null);
-  const [selectedNode, setSelectedNode] = useState(null);
-
-  useEffect(() => {
-    if (!data || !data.nodes || !data.links) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
-
-    const containerRect = containerRef.current?.getBoundingClientRect();
-    if (!containerRect) return;
-
-    const width = containerRect.width;
-    const height = containerRect.height;
-
-    const cfg = {
-      nodeRadius: config.nodeRadius || 8,
-      linkDistance: config.linkDistance || 50,
-      linkStrength: config.linkStrength || 0.1,
-      chargeStrength: config.chargeStrength || -300,
-      centerStrength: config.centerStrength || 0.1,
-      enableDrag: config.enableDrag !== false,
-      enableZoom: config.enableZoom !== false,
-      showLabels: config.showLabels !== false,
-      clusterByGroup: config.clusterByGroup || false,
-      ...config
-    };
-
-    const linkColor = isDarkMode ? '#666666' : '#999999';
-    const textColor = isDarkMode ? '#ffffff' : '#333333';
-
-    const colorScale = d3.scaleOrdinal()
-      .domain([...new Set(data.nodes.map(d => d.group || 'default'))])
-      .range(isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS);
-
-    const zoom = d3.zoom()
-      .scaleExtent([0.1, 4])
-      .on('zoom', (event) => {
-        g.attr('transform', event.transform);
-      });
-
-    if (cfg.enableZoom) {
-      svg.call(zoom);
-    }
-
-    const g = svg
-      .attr('width', width)
-      .attr('height', height)
-      .append('g');
-
-    const simulation = d3.forceSimulation(data.nodes)
-      .force('link', d3.forceLink(data.links)
-        .id(d => d.id)
-        .distance(cfg.linkDistance)
-        .strength(cfg.linkStrength))
-      .force('charge', d3.forceManyBody().strength(cfg.chargeStrength))
-      .force('center', d3.forceCenter(width / 2, height / 2).strength(cfg.centerStrength));
-
-    if (cfg.clusterByGroup) {
-      const groupCenters = {};
-      const groups = [...new Set(data.nodes.map(d => d.group || 'default'))];
-      
-      groups.forEach((group, i) => {
-        const angle = (i / groups.length) * 2 * Math.PI;
-        const radius = Math.min(width, height) * 0.3;
-        groupCenters[group] = {
-          x: width / 2 + Math.cos(angle) * radius,
-          y: height / 2 + Math.sin(angle) * radius
-        };
-      });
-
-      simulation.force('cluster', d3.forceX()
-        .x(d => groupCenters[d.group || 'default'].x)
-        .strength(0.1))
-        .force('clusterY', d3.forceY()
-        .y(d => groupCenters[d.group || 'default'].y)
-        .strength(0.1));
-    }
-
-    const link = g.append('g')
-      .attr('class', 'links')
-      .selectAll('line')
-      .data(data.links)
-      .join('line')
-      .attr('stroke', linkColor)
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', d => Math.sqrt(d.value || 1));
-
-    const node = g.append('g')
-      .attr('class', 'nodes')
-      .selectAll('circle')
-      .data(data.nodes)
-      .join('circle')
-      .attr('r', d => d.size || cfg.nodeRadius)
-      .attr('fill', d => colorScale(d.group || 'default'))
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5);
-
-    let labels = null;
-    if (cfg.showLabels) {
-      labels = g.append('g')
-        .attr('class', 'labels')
-        .selectAll('text')
-        .data(data.nodes)
-        .join('text')
-        .text(d => d.name || d.id)
-        .attr('font-size', '10px')
-        .attr('fill', textColor)
-        .attr('text-anchor', 'middle')
-        .attr('dy', d => (d.size || cfg.nodeRadius) + 12);
-    }
-
-    if (cfg.enableDrag) {
-      const drag = d3.drag()
-        .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        })
-        .on('drag', (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
-        })
-        .on('end', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        });
-
-      node.call(drag);
-    }
-
-    const tooltip = d3.select('body').append('div')
-      .attr('class', 'network-tooltip')
-      .style('position', 'absolute')
-      .style('visibility', 'hidden')
-      .style('background-color', isDarkMode ? '#333333' : '#ffffff')
-      .style('color', textColor)
-      .style('border', `1px solid ${isDarkMode ? '#555555' : '#cccccc'}`)
-      .style('border-radius', '4px')
-      .style('padding', '8px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('z-index', '10000');
-
-    node
-      .on('mouseover', function(event, d) {
-        d3.select(this)
-          .attr('stroke-width', 3)
-          .attr('stroke', '#ffff00');
-        
-        link
-          .attr('stroke-opacity', l => 
-            (l.source === d || l.target === d) ? 1 : 0.1)
-          .attr('stroke-width', l => 
-            (l.source === d || l.target === d) ? Math.sqrt(l.value || 1) + 1 : Math.sqrt(l.value || 1));
-        
-        const connections = data.links.filter(l => l.source === d || l.target === d).length;
-        const value = d.value && format && formatters[format]
-          ? formatters[format](d.value)
-          : d.value || 'N/A';
-        
-        tooltip
-          .style('visibility', 'visible')
-          .html(`
-            <strong>${d.name || d.id}</strong><br/>
-            ${d.group ? `Group: ${d.group}<br/>` : ''}
-            ${d.value ? `Value: ${value}<br/>` : ''}
-            Connections: ${connections}
-          `);
-      })
-      .on('mousemove', function(event) {
-        tooltip
-          .style('top', (event.pageY - 10) + 'px')
-          .style('left', (event.pageX + 10) + 'px');
-      })
-      .on('mouseout', function(event, d) {
-        d3.select(this)
-          .attr('stroke-width', 1.5)
-          .attr('stroke', '#fff');
-        
-        link
-          .attr('stroke-opacity', 0.6)
-          .attr('stroke-width', d => Math.sqrt(d.value || 1));
-        
-        tooltip.style('visibility', 'hidden');
-      })
-      .on('click', function(event, d) {
-        setSelectedNode(d);
-      });
-
-    simulation.on('tick', () => {
-      link
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
-
-      node
-        .attr('cx', d => d.x)
-        .attr('cy', d => d.y);
-
-      if (labels) {
-        labels
-          .attr('x', d => d.x)
-          .attr('y', d => d.y);
-      }
-    });
-
-    return () => {
-      tooltip.remove();
-      simulation.stop();
-    };
-
-  }, [data, isDarkMode, config, format]);
-
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <svg ref={svgRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} />
-      <div 
-        style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          background: isDarkMode ? '#333333' : '#ffffff',
-          border: `1px solid ${isDarkMode ? '#555555' : '#cccccc'}`,
-          borderRadius: '4px',
-          padding: '8px',
-          fontSize: '12px',
-          color: isDarkMode ? '#ffffff' : '#333333'
-        }}
-      >
-        <div>Nodes: {data.nodes.length}</div>
-        <div>Links: {data.links.length}</div>
-        {selectedNode && (
-          <div>
-            <hr style={{ margin: '4px 0', borderColor: isDarkMode ? '#555555' : '#cccccc' }} />
-            <div><strong>Selected:</strong></div>
-            <div>{selectedNode.name || selectedNode.id}</div>
-            {selectedNode.group && <div>Group: {selectedNode.group}</div>}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/**
  * Universal chart component that handles various chart types including D3 visualizations
  */
 const Chart = ({
@@ -518,7 +268,7 @@ const Chart = ({
   const [zoomRange, setZoomRange] = useState({ min: 80, max: 100 });
 
   // Determine chart type category
-  const isD3Chart = ['sankey', 'network'].includes(type);
+  const isD3Chart = ['sankey', 'network','network_temporal'].includes(type);
   const isChartJSChart = ['line', 'bar', 'pie', 'area', 'stackedBar', 'horizontalBar'].includes(type);
 
   // Safety check for data validity
@@ -612,7 +362,8 @@ const Chart = ({
             containerRef={containerRef}
           />
         )}
-        {type === 'network' && (
+        {/* Updated to handle both 'network' and 'network_temporal' using the imported NetworkGraph */}
+        {(type === 'network' || type === 'network_temporal') && (
           <NetworkGraph
             data={data}
             isDarkMode={isDarkMode}

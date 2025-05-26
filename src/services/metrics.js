@@ -152,18 +152,18 @@ class MetricsService {
   }
 
   /**
-   * Transform data for Network graphs
-   * @param {Array} data - Raw data with node and link information
-   * @param {Object} metricConfig - Metric configuration
-   * @returns {Object} - {nodes: [], links: []} format for D3 Network
-   */
+  * Transform data for Network graphs with enhanced temporal support
+  * @param {Array} data - Raw data with node and link information
+  * @param {Object} metricConfig - Metric configuration
+  * @returns {Object} - {nodes: [], links: []} format for D3 Network
+  */
   transformNetworkData(data, metricConfig) {
     if (!Array.isArray(data) || data.length === 0) {
       console.warn('transformNetworkData: Empty or invalid data');
       return { nodes: [], links: [] };
     }
 
-    console.log('Transforming Network data:', data.slice(0, 3));
+    console.log('Transforming Network data with temporal features:', data.slice(0, 3));
 
     // Configuration for field mapping
     const sourceIdField = metricConfig.sourceIdField || 'source_id';
@@ -173,59 +173,120 @@ class MetricsService {
     const targetNameField = metricConfig.targetNameField || 'target_name';
     const targetGroupField = metricConfig.targetGroupField || 'target_group';
     const valueField = metricConfig.valueField || 'value';
+    const dateField = metricConfig.dateField || 'date'; // NEW: For temporal features
 
-    // Extract unique nodes
+    // Extract unique nodes with aggregated values
     const nodeMap = new Map();
+    const nodeValueMap = new Map(); // Track total values per node
     
     data.forEach(d => {
+      const sourceId = d[sourceIdField];
+      const targetId = d[targetIdField];
+      const value = parseFloat(d[valueField] || 0);
+      
       // Add source node
-      if (!nodeMap.has(d[sourceIdField])) {
-        nodeMap.set(d[sourceIdField], {
-          id: d[sourceIdField],
-          name: d[sourceNameField] || d[sourceIdField],
+      if (!nodeMap.has(sourceId)) {
+        nodeMap.set(sourceId, {
+          id: sourceId,
+          name: d[sourceNameField] || sourceId,
           group: d[sourceGroupField] || 'default',
-          size: metricConfig.defaultNodeSize || 8
+          size: metricConfig.defaultNodeSize || 8,
+          type: 'source'
         });
+        nodeValueMap.set(sourceId, 0);
       }
       
       // Add target node
-      if (!nodeMap.has(d[targetIdField])) {
-        nodeMap.set(d[targetIdField], {
-          id: d[targetIdField],
-          name: d[targetNameField] || d[targetIdField],
+      if (!nodeMap.has(targetId)) {
+        nodeMap.set(targetId, {
+          id: targetId,
+          name: d[targetNameField] || targetId,
           group: d[targetGroupField] || 'default',
-          size: metricConfig.defaultNodeSize || 8
+          size: metricConfig.defaultNodeSize || 8,
+          type: 'target'
         });
+        nodeValueMap.set(targetId, 0);
       }
+      
+      // Accumulate values for node sizing
+      nodeValueMap.set(sourceId, nodeValueMap.get(sourceId) + value);
+      nodeValueMap.set(targetId, nodeValueMap.get(targetId) + value);
     });
 
+    // Convert to arrays
     const nodes = Array.from(nodeMap.values());
-
-    // Create links
-    const links = data.map(d => ({
-      source: d[sourceIdField],
-      target: d[targetIdField],
-      value: parseFloat(d[valueField] || 1)
-    })).filter(link => link.value > 0);
-
-    // Calculate node sizes based on connections if enabled
-    if (metricConfig.calculateNodeSize) {
-      const connectionCounts = new Map();
+    
+    // Create links with temporal information
+    const links = data.map(d => {
+      const link = {
+        source: d[sourceIdField],
+        target: d[targetIdField],
+        value: parseFloat(d[valueField] || 1)
+      };
       
-      links.forEach(link => {
-        connectionCounts.set(link.source, (connectionCounts.get(link.source) || 0) + 1);
-        connectionCounts.set(link.target, (connectionCounts.get(link.target) || 0) + 1);
-      });
+      // Add date information if available
+      if (d[dateField]) {
+        link.date = d[dateField];
+      }
+      
+      // Add any additional fields that might be useful
+      if (d.token_address) {
+        link.token = d.token_address;
+      }
+      
+      return link;
+    }).filter(link => link.value > 0);
 
+    // Calculate node sizes based on total transaction volume if enabled
+    if (metricConfig.calculateNodeSize) {
+      const maxValue = Math.max(...Array.from(nodeValueMap.values()));
+      const minSize = 6;
+      const maxSize = 25;
+      
       nodes.forEach(node => {
-        const connections = connectionCounts.get(node.id) || 0;
-        node.size = Math.max(4, Math.min(20, 4 + connections * 2)); // Size between 4-20
+        const nodeValue = nodeValueMap.get(node.id) || 0;
+        // Logarithmic scaling for better visual distribution
+        const normalizedValue = nodeValue > 0 ? Math.log(nodeValue + 1) / Math.log(maxValue + 1) : 0;
+        node.size = minSize + (normalizedValue * (maxSize - minSize));
+        node.totalValue = nodeValue; // Store for tooltip display
       });
     }
 
-    console.log(`Network transformation complete: ${nodes.length} nodes, ${links.length} links`);
+    // Sort links by date if available (for potential animation features)
+    if (links.some(l => l.date)) {
+      links.sort((a, b) => {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(a.date) - new Date(b.date);
+      });
+    }
 
-    return { nodes, links };
+    // Add network statistics
+    const networkStats = {
+      totalNodes: nodes.length,
+      totalLinks: links.length,
+      totalVolume: links.reduce((sum, l) => sum + l.value, 0),
+      uniqueTokens: [...new Set(nodes.map(n => n.group))].length,
+      dateRange: null
+    };
+
+    // Calculate date range if temporal data exists
+    const datesWithData = links.filter(l => l.date).map(l => new Date(l.date));
+    if (datesWithData.length > 0) {
+      networkStats.dateRange = {
+        min: new Date(Math.min(...datesWithData)),
+        max: new Date(Math.max(...datesWithData))
+      };
+    }
+
+    console.log(`Network transformation complete: ${nodes.length} nodes, ${links.length} links`);
+    console.log('Network stats:', networkStats);
+
+    return { 
+      nodes, 
+      links, 
+      stats: networkStats 
+    };
   }
 
   /**
