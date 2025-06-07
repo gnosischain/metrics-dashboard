@@ -8,6 +8,7 @@
  * @returns {string} Formatted number
  */
 export const formatNumber = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0';
   return new Intl.NumberFormat('en-US').format(value);
 };
 
@@ -18,11 +19,11 @@ export const formatNumber = (value) => {
  * @returns {string} Formatted byte size
  */
 export const formatBytes = (bytes, decimals = 2) => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0 || bytes === null || bytes === undefined) return '0 Bytes';
   
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 };
@@ -34,6 +35,7 @@ export const formatBytes = (bytes, decimals = 2) => {
  * @returns {string} Formatted percentage
  */
 export const formatPercentage = (value, decimals = 2) => {
+  if (value === null || value === undefined || isNaN(value)) return '0.00%';
   return value.toFixed(decimals) + '%';
 };
 
@@ -43,6 +45,8 @@ export const formatPercentage = (value, decimals = 2) => {
  * @returns {string} Formatted duration
  */
 export const formatDuration = (seconds) => {
+  if (seconds === null || seconds === undefined || isNaN(seconds)) return '0 sec';
+  
   if (seconds < 60) {
     return seconds.toFixed(2) + ' sec';
   } else if (seconds < 3600) {
@@ -52,12 +56,44 @@ export const formatDuration = (seconds) => {
   }
 };
 
+/**
+ * Format a value based on its type and magnitude
+ * @param {number} value - The value to format
+ * @param {string} format - Format type (optional)
+ * @returns {string} Formatted value
+ */
+export const formatValue = (value, format) => {
+  if (value === null || value === undefined) return '-';
+  
+  // Use specific formatter if provided
+  if (format && formatters[format]) {
+    return formatters[format](value);
+  }
+  
+  // Auto-format based on value
+  if (typeof value === 'number') {
+    if (Math.abs(value) >= 1000000000) {
+      return (value / 1000000000).toFixed(1) + 'B';
+    } else if (Math.abs(value) >= 1000000) {
+      return (value / 1000000).toFixed(1) + 'M';
+    } else if (Math.abs(value) >= 1000) {
+      return (value / 1000).toFixed(1) + 'K';
+    } else if (value % 1 !== 0) {
+      return value.toFixed(2);
+    }
+    return value.toString();
+  }
+  
+  return String(value);
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
-  formatDuration
+  formatDuration,
+  formatValue
 };
 
 export default formatters;

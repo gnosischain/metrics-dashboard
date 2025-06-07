@@ -47,6 +47,16 @@
         "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
       }
     },
+    {
+      "src": "/api/metric/(.*)",
+      "dest": "/api/metrics.js",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS,POST",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

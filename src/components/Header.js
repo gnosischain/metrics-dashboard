@@ -1,6 +1,5 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
-import { getLastUpdateTime } from '../utils/dates';
 
 /**
  * Enhanced Header component for the dashboard with logo

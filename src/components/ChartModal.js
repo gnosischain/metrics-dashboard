@@ -1,9 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import ExpandButton from './ExpandButton';
+import { addUniversalWatermark, removeUniversalWatermark } from '../utils/watermarkUtils';
 
 const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children, isDarkMode = false }) => {
   const modalContentRef = useRef(null);
+
+  const handleEscKey = useCallback((event) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -14,24 +21,43 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
       document.removeEventListener('keydown', handleEscKey);
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
-
-  const handleEscKey = (event) => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  };
+  }, [isOpen, handleEscKey]);
 
   useEffect(() => {
-    if (isOpen && modalContentRef.current) {
-      const existingWatermarks = modalContentRef.current.querySelectorAll('.chart-watermark');
-      existingWatermarks.forEach(watermark => watermark.remove());
+    const modalNode = modalContentRef.current;
+    if (isOpen && modalNode) {
+      // Remove any existing watermarks first to prevent duplicates
+      const existingWatermarks = modalNode.querySelectorAll(
+        '.chart-watermark, .chartjs-watermark, .d3-chart-watermark, .universal-chart-watermark'
+      );
+      existingWatermarks.forEach(watermark => {
+        try { 
+          watermark.remove(); 
+        } catch (e) { 
+          /* Ignore removal errors */ 
+        }
+      });
       
-      const watermark = document.createElement('div');
-      watermark.className = 'chart-watermark';
-      modalContentRef.current.appendChild(watermark);
+      // Add a single modal watermark with a slight delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        addUniversalWatermark({ current: modalNode }, isDarkMode, {
+            className: 'modal-chart-watermark',
+            size: 35, // Slightly larger for modal
+            position: 'bottom-right',
+            margin: 15,
+            opacity: isDarkMode ? 0.4 : 0.3,
+            zIndex: 1001 // Higher z-index for modal
+        });
+      }, 200);
+      
+      return () => {
+        clearTimeout(timer);
+        if (modalNode) {
+          removeUniversalWatermark({ current: modalNode }, 'modal-chart-watermark');
+        }
+      };
     }
-  }, [isOpen]);
+  }, [isOpen, isDarkMode]);
 
   if (!isOpen) return null;
 

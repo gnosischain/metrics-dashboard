@@ -195,6 +195,19 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
                 <path d="M10,10H2V2h8ZM4,8H8V4H4Z" />
             </svg>
             ),
+        'fork': (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={pixelSize}
+                height={pixelSize}
+                viewBox="0 0 32 32"
+                fill={color}
+            >
+                <path d="M19,2v6h2v5c0,1.103-0.897,2-2,2h-3c-0.732,0-1.409,0.212-2,0.556V8h2V2h-6v6h2v11v5h-2v6h6v-6h-2v-5
+                c0-1.103,0.897-2,2-2h3c2.206,0,4-1.794,4-4V8h2V2H19z M12,4h2v2h-2V4z M14,28h-2v-2h2V28z M23,6h-2V4h2V6z" />
+            </svg>
+            ),
+
 
 
     };

@@ -3,10 +3,32 @@ const metric = {
   name: 'CL Forks Distribution',
   description: 'Distribution for forks across the network (Consensus Layer)',
   format: 'formatNumber',
-  labelField: 'fork',
-  valueField: 'cnt',
-  chartType: 'stackedBar',
-  query: `SELECT * FROM dbt.p2p_peers_cl_fork_daily ORDER BY date ASC, fork ASC`,
+  chartType: 'd3StackedBar',
+  isTimeSeries: true,
+  enableZoom: true,
+  
+  d3Config: {
+    // Field mappings
+    xField: 'date',
+    yField: 'cnt',
+    seriesField: 'fork',
+    
+   // Stacked area specific settings
+   stacked: true,
+   multiSeries: true,
+   opacity: 0.8,
+   strokeWidth: 1, 
+   interpolate: 'monotoneX',
+   
+   // Visual settings
+   enableLegend: true,
+   enableTooltip: true,
+   legendPosition: 'top',
+   legendScrollable: true,
+    
+  },
+
+  query: `SELECT date, fork, cnt FROM dbt.p2p_peers_cl_fork_daily WHERE label = 'Current Fork' ORDER BY date ASC, fork ASC`,
 };
 
 export default metric;

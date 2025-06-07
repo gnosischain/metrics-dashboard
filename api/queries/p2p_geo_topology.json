@@ -1,0 +1,4 @@
+{
+  "id": "p2p_geo_topology",
+  "query": "SELECT\n\n        date,\n        peer_discovery_id_prefix,\n        peer_cl_fork_name,\n        peer_cl_next_fork_name,\n        peer_client,\n        peer_hostname,\n        peer_city,\n        peer_country,\n        peer_org,\n        splitByChar(',', peer_loc)[1] AS peer_lat,\n        splitByChar(',', peer_loc)[2] AS peer_lon,\n        neighbor_discovery_id_prefix,\n        neighbor_cl_fork_name,\n        neighbor_cl_next_fork_name,\n        neighbor_client,\n        neighbor_city,\n        neighbor_country,\n        neighbor_org,\n        splitByChar(',', neighbor_loc)[1] AS neighbor_lat,\n        splitByChar(',', neighbor_loc)[2] AS neighbor_lon,\n        cnt\n      FROM dbt.p2p_peers_geo_topology_latest\n      WHERE \n        peer_loc != '' \n        AND neighbor_loc != ''"
+}

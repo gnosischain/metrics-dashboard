@@ -3,7 +3,6 @@ import Card from './Card';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';      // GFM features (keep for non-table GFM)
 import rehypeRaw from 'rehype-raw';      // Raw HTML (for tables and ToC anchor)
-import rehypeSlug from 'rehype-slug';    // Heading IDs for links
 import remarkMath from 'remark-math';    // Recognize $...$ math syntax
 import rehypeKatex from 'rehype-katex';  // Render math using KaTeX
 
@@ -22,7 +21,6 @@ const TextWidget = ({ title, subtitle, content, minimal = false }) => {
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[
         rehypeRaw,
-        rehypeSlug,
         rehypeKatex
       ]}
     >

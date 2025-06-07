@@ -1,20 +1,27 @@
 import dashboardsService from '../services/dashboards';
 
 // Default dashboard configuration as a fallback
-const DEFAULT_CONFIG = `## Network Dashboard
-name: Network
-order: 1
-tabs:
-  - name: Overview
-    order: 1
-    metrics:
-      - id: 01_network_1000
-        size: small
-        vSize: large
-      - id: 01_network_1100
-        size: large
-        vSize: large
-`;
+const DEFAULT_CONFIG = `Overview:
+  name: Overview
+  order: 1
+  icon: "📊"
+  iconClass: "chart-line"
+  metrics:
+    - id: under_construction
+      gridRow: 2
+      gridColumn: 1 / span 12
+      minHeight: 500px
+
+Financials:
+  name: Financials
+  order: 2
+  icon: "💰"
+  iconClass: "dollar-sign"
+  metrics:
+    - id: under_construction
+      gridRow: 2
+      gridColumn: 1 / span 12
+      minHeight: 500px`;
 
 /**
  * Dashboard configuration utility
@@ -41,12 +48,13 @@ class DashboardConfig {
       
       if (response.ok) {
         const yamlContent = await response.text();
+        console.log('Loaded dashboard.yml content:', yamlContent.substring(0, 200) + '...');
         const success = dashboardsService.loadFromYaml(yamlContent);
         this.isLoaded = success;
-        console.log('Loaded dashboard configuration from file');
+        console.log('Successfully loaded dashboard configuration from file');
         return success;
       } else {
-        console.warn(`Could not load dashboard config from ${this.configPath}, using default`);
+        console.warn(`Could not load dashboard config from ${this.configPath} (status: ${response.status}), using default`);
         this.useDefaultConfig();
         return true;
       }
@@ -62,9 +70,13 @@ class DashboardConfig {
    */
   useDefaultConfig() {
     console.log('Using default dashboard configuration');
-    dashboardsService.loadFromYaml(DEFAULT_CONFIG);
+    console.log('Default config content:', DEFAULT_CONFIG);
+    const success = dashboardsService.loadFromYaml(DEFAULT_CONFIG);
+    console.log('Default config loaded successfully:', success);
     this.isLoaded = true;
   }
 }
 
-export default new DashboardConfig();
+// Create and export the service instance
+const dashboardConfigInstance = new DashboardConfig();
+export default dashboardConfigInstance;

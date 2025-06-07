@@ -1,349 +1,288 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Card from './Card';
-import Chart from './Chart';
-import EnhancedChart from './EnhancedChart';
-import StackedAreaChart from './StackedAreaChart';
-import TextWidget from './TextWidget';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Card, NumberWidget, TextWidget, TableWidget } from './index';
+import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
 
 /**
- * MetricWidget component for displaying a single metric.
- * Manages filter state if the metric is configured for EnhancedChart filtering.
- * @param {Object} props - Component props
- * @param {string} props.metricId - ID of the metric to display
- * @param {boolean} props.isDarkMode - Whether dark mode is active
- * @returns {JSX.Element} - Rendered component
+ * Enhanced MetricWidget with ECharts integration
+ * Supports all chart types through the modular ECharts system
  */
-const MetricWidget = ({ metricId, isDarkMode = false }) => {
-  const [rawData, setRawData] = useState(null);
-  const [chartDisplayData, setChartDisplayData] = useState(null);
+const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '' }) => {
+  // State management
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isMounted = useRef(true);
-
-  const [uniquePrimaryLabels, setUniquePrimaryLabels] = useState([]);
   const [selectedLabel, setSelectedLabel] = useState('');
+  const [availableLabels, setAvailableLabels] = useState([]);
+  
+  // Refs
+  const isMounted = useRef(true);
+  const previousMetricId = useRef(metricId);
 
-  const metricConfig = metricsService.getMetricConfig(metricId);
-  const {
-      enableFiltering,
+  // Get metric configuration
+  const metricConfig = useMemo(() => {
+    return metricsService.getMetricConfig(metricId);
+  }, [metricId]);
+
+  // Determine widget type and configuration
+  const widgetConfig = useMemo(() => {
+    if (!metricConfig) {
+      return { type: 'error', error: 'Metric configuration not found' };
+    }
+
+    const {
+      chartType = 'line',
+      name,
+      description,
+      format,
+      color,
+      xField = 'date',
+      yField = 'value',
+      seriesField,
       labelField,
-      subLabelField,
-      chartType,
-      name: title,
-      description: subtitle,
-      content,
       valueField = 'value',
-      stackedArea = false,
-      stacked = false,
-      fill = false,
-      isTimeSeries = false,
+      enableFiltering = false,
+      legendPosition = 'top',
       enableZoom = false,
-      minimal = false // New configuration option
-  } = metricConfig;
+      enablePan = false,
+      smooth = false,
+      symbolSize = 4,
+      lineWidth = 2
+    } = metricConfig;
 
-  const isStackedAreaChart = chartType === 'area' && (stackedArea === true || stacked === true);
-  const requiresEnhancedFiltering = enableFiltering && labelField && subLabelField;
-  const isExpandable = chartType !== 'numberDisplay' && chartType !== 'text' && chartType !== 'table';
+    // Determine widget type
+    let widgetType;
+    if (chartType === 'text') {
+      widgetType = 'text';
+    } else if (chartType === 'number') {
+      widgetType = 'number';
+    } else if (chartType === 'table') {
+      widgetType = 'table';
+    } else {
+      widgetType = 'chart';
+    }
 
-  // NEW: Determine which component should handle zoom for stacked area charts
-  const shouldUseStackedAreaChartWithZoom = isStackedAreaChart && !requiresEnhancedFiltering && (enableZoom || isTimeSeries);
-
-  useEffect(() => {
-    console.log(`MetricWidget[${metricId}]: Configuration:`, {
+    return {
+      type: widgetType,
       chartType,
-      isStackedAreaChart,
-      requiresEnhancedFiltering,
+      title: name,
+      description,
+      format,
+      color,
+      xField,
+      yField,
+      seriesField,
       labelField,
-      stackedArea,
-      stacked,
-      isExpandable,
-      isTimeSeries,
+      valueField,
+      enableFiltering,
+      legendPosition,
       enableZoom,
-      shouldUseStackedAreaChartWithZoom,
-      minimal // Log the minimal flag
-    });
-  }, [metricId, chartType, isStackedAreaChart, requiresEnhancedFiltering, labelField, stackedArea, stacked, isExpandable, isTimeSeries, enableZoom, shouldUseStackedAreaChartWithZoom, minimal]);
+      enablePan,
+      smooth,
+      symbolSize,
+      lineWidth,
+      config: metricConfig
+    };
+  }, [metricConfig]);
 
+  // Fetch data effect
   useEffect(() => {
-    isMounted.current = true;
+    const fetchData = async () => {
+      if (!metricId || widgetConfig.type === 'error') {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log(`MetricWidget[${metricId}]: Fetching data...`);
+        const fetchedData = await metricsService.fetchMetricData(metricId);
+        
+        if (!isMounted.current) return;
+
+        if (fetchedData) {
+          console.log(`MetricWidget[${metricId}]: Data received`, {
+            type: Array.isArray(fetchedData) ? 'array' : typeof fetchedData,
+            length: Array.isArray(fetchedData) ? fetchedData.length : 'N/A',
+            sample: Array.isArray(fetchedData) ? fetchedData.slice(0, 2) : fetchedData
+          });
+
+          setData(fetchedData);
+
+          // Extract available labels for filtering
+          if (widgetConfig.enableFiltering && widgetConfig.labelField && Array.isArray(fetchedData)) {
+            const labels = [...new Set(fetchedData.map(item => item[widgetConfig.labelField]).filter(Boolean))];
+            setAvailableLabels(labels);
+            
+            // Set default selection to first label if none selected
+            if (!selectedLabel && labels.length > 0) {
+              setSelectedLabel(labels[0]);
+            }
+          }
+        } else {
+          setData([]);
+        }
+      } catch (err) {
+        console.error(`MetricWidget[${metricId}]: Error fetching data:`, err);
+        setError(err.message || 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [metricId, widgetConfig.type, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
+
+  // Filter data based on selected label
+  const filteredData = useMemo(() => {
+    if (!data || !Array.isArray(data) || !widgetConfig.enableFiltering || !selectedLabel || !widgetConfig.labelField) {
+      return data;
+    }
+
+    return data.filter(item => item[widgetConfig.labelField] === selectedLabel);
+  }, [data, selectedLabel, widgetConfig.enableFiltering, widgetConfig.labelField]);
+
+  // Handle label selection
+  const handleLabelChange = useCallback((newLabel) => {
+    setSelectedLabel(newLabel);
+  }, []);
+
+  // Cleanup effect
+  useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
 
-  const fetchData = useCallback(async () => {
-    if (chartType === 'text') {
-      if (isMounted.current) setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      setRawData(null);
-      setChartDisplayData(null);
-      console.log(`MetricWidget[${metricId}]: Fetching data...`);
-      const fetchedData = await metricsService.fetchMetricData(metricId);
-      if (!isMounted.current) return;
-  
-      if (fetchedData) {
-        console.log(`MetricWidget[${metricId}]: Data structure:`,
-          Array.isArray(fetchedData)
-            ? `Array with ${fetchedData.length} items`
-            : (fetchedData.datasets ? `Chart.js format with ${fetchedData.datasets.length} datasets` 
-               : (fetchedData.nodes && fetchedData.links ? `D3 format with ${fetchedData.nodes.length} nodes and ${fetchedData.links.length} links`
-                  : 'Other format')));
-      }
-  
-      // Handle D3 chart types (sankey, network)
-      if (chartType === 'sankey' || chartType === 'network') {
-        if (fetchedData && typeof fetchedData === 'object' && fetchedData.nodes && fetchedData.links) {
-          console.log(`MetricWidget[${metricId}]: Valid D3 data format received.`);
-          setRawData(null);
-          setChartDisplayData(fetchedData);
-          setUniquePrimaryLabels([]);
-          setSelectedLabel('');
-          setError(null);
-        } else {
-          console.warn(`MetricWidget[${metricId}]: Invalid D3 data format:`, fetchedData);
-          setError(`No valid data available for ${title}`);
-          setRawData(null);
-          setChartDisplayData(null);
-          setUniquePrimaryLabels([]);
-          setSelectedLabel('');
-        }
-      }
-      // Handle table chart types
-      else if (chartType === 'table') {
-        if (fetchedData && Array.isArray(fetchedData)) {
-          console.log(`MetricWidget[${metricId}]: Valid table data format received with ${fetchedData.length} rows.`);
-          setRawData(null);
-          setChartDisplayData(fetchedData);
-          setUniquePrimaryLabels([]);
-          setSelectedLabel('');
-          setError(null);
-        } else {
-          console.warn(`MetricWidget[${metricId}]: Invalid table data format:`, fetchedData);
-          setError(`No valid data available for ${title}`);
-          setRawData(null);
-          setChartDisplayData(null);
-          setUniquePrimaryLabels([]);
-          setSelectedLabel('');
-        }
-      }
-      // Handle regular Chart.js data formats
-      else if (fetchedData && Array.isArray(fetchedData)) {
-          console.log(`MetricWidget[${metricId}]: Received data count: ${fetchedData.length}. Requires Filtering: ${requiresEnhancedFiltering}`);
-          setRawData(fetchedData);
-  
-          if (!requiresEnhancedFiltering) {
-              setChartDisplayData(fetchedData);
-              console.log(`MetricWidget[${metricId}]: Setting display data directly (standard chart).`);
-          } else {
-              if (fetchedData.length > 0) {
-                  const labels = [...new Set(fetchedData.map(item => item[labelField]))].filter(Boolean).sort();
-                  setUniquePrimaryLabels(labels);
-                  console.log(`MetricWidget[${metricId}]: Extracted unique labels:`, labels);
-                  if (labels.length > 0 && !labels.includes(selectedLabel)) {
-                      setSelectedLabel(labels[0]);
-                      console.log(`MetricWidget[${metricId}]: Setting default selected label to: '${labels[0]}'`);
-                  } else if (labels.length === 0) {
-                      setSelectedLabel('');
-                  }
-                  setChartDisplayData(fetchedData);
-              } else {
-                  setUniquePrimaryLabels([]);
-                  setSelectedLabel('');
-                  setChartDisplayData([]);
-                  console.log(`MetricWidget[${metricId}]: No raw data found for enhanced filtering.`);
-              }
-          }
-          setError(null);
-      } else if (fetchedData && typeof fetchedData === 'object' && fetchedData.labels && fetchedData.datasets) {
-           console.log(`MetricWidget[${metricId}]: Received pre-formatted Chart.js data object.`);
-           setRawData(null);
-           setChartDisplayData(fetchedData);
-           setUniquePrimaryLabels([]);
-           setSelectedLabel('');
-      } else {
-          console.warn(`MetricWidget[${metricId}]: Received invalid data:`, fetchedData);
-          setError(`No valid data available for ${title}`);
-          setRawData(null);
-          setChartDisplayData([]);
-          setUniquePrimaryLabels([]);
-          setSelectedLabel('');
-      }
-    } catch (err) {
-      if (!isMounted.current) return;
-      console.error(`MetricWidget[${metricId}]: Error fetching data:`, err);
-      setError(`Failed to load data for ${title}`);
-      setRawData(null);
-      setChartDisplayData([]);
-      setUniquePrimaryLabels([]);
-      setSelectedLabel('');
-    } finally {
-      if (isMounted.current) {
-        setLoading(false);
-        console.log(`MetricWidget[${metricId}]: Fetching complete. Loading: false.`);
-      }
-    }
-  }, [metricId, title, chartType, requiresEnhancedFiltering, labelField, selectedLabel]);
-
+  // Reset state when metric changes
   useEffect(() => {
-    fetchData();
-  }, [fetchData, metricId]);
+    if (previousMetricId.current !== metricId) {
+      setData(null);
+      setError(null);
+      setSelectedLabel('');
+      setAvailableLabels([]);
+      previousMetricId.current = metricId;
+    }
+  }, [metricId]);
 
-  const getChartHeight = () => {
-      const configuredHeight = metricConfig.minHeight;
-      if (configuredHeight) return configuredHeight;
-      switch (metricConfig.vSize?.toLowerCase()) {
-          case 'small': return '300px';
-          case 'medium': return '400px';
-          case 'large': return '500px';
-          case 'xl': return '600px';
-          default: return '400px';
-      }
-  };
-
-  if (chartType === 'text') {
-    return <TextWidget title={title} subtitle={subtitle} content={content} minimal={minimal} />;
+  // Render loading state
+  if (loading) {
+    return (
+      <Card 
+        minimal={minimal} 
+        title={widgetConfig.title} 
+        subtitle={widgetConfig.description}
+        className={`metric-widget loading ${className}`}
+      >
+        <div className="metric-widget-loading">
+          <div className="loading-spinner" />
+          <span>Loading...</span>
+        </div>
+      </Card>
+    );
   }
 
-  const createHeaderControls = () => {
-    if (requiresEnhancedFiltering && uniquePrimaryLabels.length > 0) {
-      return (
-        <LabelSelector
-          idPrefix={metricId}
-          labels={uniquePrimaryLabels}
-          selectedLabel={selectedLabel}
-          onSelectLabel={setSelectedLabel}
-          labelField={labelField}
+  // Render error state
+  if (error || widgetConfig.type === 'error') {
+    return (
+      <Card 
+        minimal={minimal} 
+        title={widgetConfig.title} 
+        subtitle={widgetConfig.description}
+        className={`metric-widget error ${className}`}
+      >
+        <div className="metric-widget-error">
+          <span className="error-icon">⚠️</span>
+          <span className="error-text">{error || widgetConfig.error}</span>
+        </div>
+      </Card>
+    );
+  }
+
+  // Render text widget
+  if (widgetConfig.type === 'text') {
+    const content = typeof data === 'string' ? data : (data?.content || 'No content available');
+    return (
+      <TextWidget
+        title={widgetConfig.title}
+        subtitle={widgetConfig.description}
+        content={content}
+        minimal={minimal}
+      />
+    );
+  }
+
+  // Render number widget
+  if (widgetConfig.type === 'number') {
+    const value = typeof data === 'number' ? data : (data?.value || data?.[0]?.[widgetConfig.valueField] || 0);
+    return (
+      <NumberWidget
+        title={widgetConfig.title}
+        subtitle={widgetConfig.description}
+        value={value}
+        format={widgetConfig.format}
+        color={widgetConfig.color}
+        minimal={minimal}
+      />
+    );
+  }
+
+  // Render table widget
+  if (widgetConfig.type === 'table') {
+    return (
+      <Card 
+        minimal={minimal} 
+        title={widgetConfig.title} 
+        subtitle={widgetConfig.description}
+        className={`metric-widget table ${className}`}
+      >
+        {widgetConfig.enableFiltering && availableLabels.length > 0 && (
+          <LabelSelector
+            labels={availableLabels}
+            selectedLabel={selectedLabel}
+            onLabelChange={handleLabelChange}
+            isDarkMode={isDarkMode}
+          />
+        )}
+        <TableWidget
+          data={filteredData || []}
+          config={widgetConfig.config}
+          format={widgetConfig.format}
+          isDarkMode={isDarkMode}
         />
-      );
-    }
-    return null;
-  };
+      </Card>
+    );
+  }
 
-  const headerControls = createHeaderControls();
-
+  // Render chart widget (default)
   return (
-    <Card
-      title={title}
-      subtitle={subtitle}
-      headerControls={headerControls}
-      expandable={isExpandable}
-      isDarkMode={isDarkMode}
-      chartType={chartType}
-      minimal={minimal} // Pass the minimal flag to Card
+    <Card 
+      minimal={minimal} 
+      title={widgetConfig.title} 
+      subtitle={widgetConfig.description}
+      className={`metric-widget chart ${className}`}
     >
-      {loading ? (
-        <div className="loading-indicator">Loading...</div>
-      ) : error ? (
-        <div className="error-message">{error}</div>
-      ) : (
-        <>
-          {/* Check for D3 charts first */}
-          {(chartType === 'sankey' || chartType === 'network') && chartDisplayData && chartDisplayData.nodes && chartDisplayData.links ? (
-            <Chart
-              key={`d3-chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
-              data={chartDisplayData}
-              title={title}
-              type={chartType}
-              height={getChartHeight()}
-              format={metricConfig.format}
-              isDarkMode={isDarkMode}
-              sankeyConfig={metricConfig.sankeyConfig}
-              networkConfig={metricConfig.networkConfig}
-              metricId={metricId}
-            />
-          ) : 
-          /* Check for table charts */
-          chartType === 'table' && chartDisplayData && Array.isArray(chartDisplayData) ? (
-            <Chart
-              key={`table-chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
-              data={chartDisplayData}
-              title={title}
-              type={chartType}
-              height={getChartHeight()}
-              format={metricConfig.format}
-              isDarkMode={isDarkMode}
-              tableConfig={metricConfig.tableConfig || {}}
-              metricId={metricId}
-            />
-          ) :
-          /* Regular charts */
-          (chartDisplayData && (Array.isArray(chartDisplayData) || (chartDisplayData.labels && chartDisplayData.datasets))) ? (
-            requiresEnhancedFiltering ? (
-              <EnhancedChart
-                key={`enhanced-${metricId}-${selectedLabel}-${isDarkMode ? 'dark' : 'light'}`}
-                data={rawData}
-                selectedLabel={selectedLabel}
-                title={title}
-                type={chartType}
-                labelField={labelField}
-                subLabelField={subLabelField}
-                valueField={valueField}
-                enableFiltering={true}
-                height={getChartHeight()}
-                format={metricConfig.format}
-                pointRadius={metricConfig.pointRadius}
-                showPoints={metricConfig.showPoints}
-                fill={metricConfig.fill}
-                isDarkMode={isDarkMode}
-                isTimeSeries={isTimeSeries}
-                enableZoom={enableZoom}
-                metricId={metricId}
-              />
-            ) : shouldUseStackedAreaChartWithZoom ? (
-              <StackedAreaChart
-                key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
-                data={chartDisplayData}
-                title={title}
-                height={getChartHeight()}
-                format={metricConfig.format}
-                isDarkMode={isDarkMode}
-                isTimeSeries={isTimeSeries}
-                enableZoom={enableZoom}
-                metricId={metricId}
-              />
-            ) : isStackedAreaChart && chartDisplayData.labels && chartDisplayData.datasets ? (
-              <StackedAreaChart
-                key={`stacked-area-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
-                data={chartDisplayData}
-                title={title}
-                height={getChartHeight()}
-                format={metricConfig.format}
-                isDarkMode={isDarkMode}
-              />
-            ) : (
-              <Chart
-                key={`chart-${metricId}-${isDarkMode ? 'dark' : 'light'}`}
-                data={chartDisplayData}
-                title={title}
-                type={chartType}
-                height={getChartHeight()}
-                color={metricConfig.color}
-                format={metricConfig.format}
-                pointRadius={metricConfig.pointRadius}
-                showPoints={metricConfig.showPoints}
-                fill={metricConfig.fill}
-                stacked={metricConfig.stacked}
-                stackedArea={metricConfig.stackedArea}
-                isDarkMode={isDarkMode}
-                isTimeSeries={isTimeSeries}
-                enableZoom={enableZoom}
-                metricId={metricId}
-                tableConfig={metricConfig.tableConfig || {}}
-                sankeyConfig={metricConfig.sankeyConfig}
-                networkConfig={metricConfig.networkConfig}
-              />
-            )
-          ) : (
-            <div className="no-data-message">No data available</div>
-          )}
-        </>
+      {widgetConfig.enableFiltering && availableLabels.length > 0 && (
+        <LabelSelector
+          labels={availableLabels}
+          selectedLabel={selectedLabel}
+          onLabelChange={handleLabelChange}
+          isDarkMode={isDarkMode}
+        />
       )}
+      <div className="chart-container">
+        <EChartsContainer
+          data={filteredData || []}
+          chartType={widgetConfig.chartType}
+          config={widgetConfig.config}
+          isDarkMode={isDarkMode}
+          width="100%"
+          height="400px"
+        />
+      </div>
     </Card>
   );
 };
