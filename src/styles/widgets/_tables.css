@@ -1,0 +1,362 @@
+/* 
+ * Table Widget Styles
+ * Basic table styles (Tabulator-specific styles are in tabulator-styles.css)
+ */
+
+/* ==================
+   Table Widget Container
+   ================== */
+
+.table-widget {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================
+   Basic Table Styles
+   ================== */
+
+.basic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.basic-table thead {
+  background-color: var(--color-background);
+  border-bottom: 2px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.basic-table th {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.basic-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-fast);
+}
+
+.basic-table tbody tr:hover {
+  background-color: var(--color-background);
+}
+
+.basic-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+/* ==================
+   Table Scroll Container
+   ================== */
+
+.table-scroll-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* ==================
+   Table Loading State
+   ================== */
+
+.table-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.table-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top: 3px solid var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ==================
+   Table Error State
+   ================== */
+
+.table-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+/* ==================
+   Table Empty State
+   ================== */
+
+.table-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+/* ==================
+   Table Actions
+   ================== */
+
+.table-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--spacing-md);
+}
+
+.table-search {
+  flex: 1;
+  max-width: 300px;
+}
+
+.table-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* ==================
+   Table Sorting
+   ================== */
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px;
+}
+
+.sortable::after {
+  content: '↕';
+  position: absolute;
+  right: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.sortable.sort-asc::after {
+  content: '↑';
+  color: var(--primary-blue);
+}
+
+.sortable.sort-desc::after {
+  content: '↓';
+  color: var(--primary-blue);
+}
+
+/* ==================
+   Table Cell Types
+   ================== */
+
+.cell-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-currency {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-percentage {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-date {
+  white-space: nowrap;
+}
+
+.cell-status {
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.status-badge.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--color-success);
+}
+
+.status-badge.warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--color-warning);
+}
+
+.status-badge.error {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--color-error);
+}
+
+.status-badge.info {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: var(--color-info);
+}
+
+/* ==================
+   Table Selection
+   ================== */
+
+.table-checkbox {
+  width: 20px;
+  text-align: center;
+}
+
+.table-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.basic-table tbody tr.selected {
+  background-color: rgba(9, 105, 218, 0.05);
+}
+
+/* ==================
+   Responsive Table
+   ================== */
+
+@media (max-width: 768px) {
+  .basic-table {
+    font-size: var(--font-size-xs);
+  }
+  
+  .basic-table th,
+  .basic-table td {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .table-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .table-search {
+    max-width: none;
+  }
+  
+  /* Responsive table scroll */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-responsive table {
+    min-width: 600px;
+  }
+}
+
+/* ==================
+   Striped Table
+   ================== */
+
+.basic-table.striped tbody tr:nth-child(even) {
+  background-color: var(--color-background);
+}
+
+/* ==================
+   Bordered Table
+   ================== */
+
+.basic-table.bordered {
+  border: 1px solid var(--color-border);
+}
+
+.basic-table.bordered th,
+.basic-table.bordered td {
+  border: 1px solid var(--color-border);
+}
+
+/* ==================
+   Compact Table
+   ================== */
+
+.basic-table.compact th,
+.basic-table.compact td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* ==================
+   Dark Mode Tables
+   ================== */
+
+.dark-mode .basic-table thead {
+  background-color: var(--color-background);
+}
+
+.dark-mode .basic-table tbody tr:hover {
+  background-color: rgba(139, 148, 158, 0.05);
+}
+
+.dark-mode .basic-table tbody tr.selected {
+  background-color: rgba(88, 166, 255, 0.1);
+}
+
+.dark-mode .basic-table.striped tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .table-actions {
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+}
+
+.dark-mode .sortable::after {
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .sortable.sort-asc::after,
+.dark-mode .sortable.sort-desc::after {
+  color: var(--primary-blue);
+}
+
+/* Status badges in dark mode */
+.dark-mode .status-badge.success {
+  background-color: rgba(40, 167, 69, 0.2);
+}
+
+.dark-mode .status-badge.warning {
+  background-color: rgba(255, 193, 7, 0.2);
+}
+
+.dark-mode .status-badge.error {
+  background-color: rgba(248, 81, 73, 0.2);
+}
+
+.dark-mode .status-badge.info {
+  background-color: rgba(88, 166, 255, 0.2);
+}

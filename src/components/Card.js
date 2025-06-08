@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Card.js - Updated to support ref forwarding
+import React, { useState, forwardRef } from 'react';
 import ExpandButton from './ExpandButton';
 import ChartModal from './ChartModal';
 
@@ -13,9 +14,10 @@ import ChartModal from './ChartModal';
  * @param {boolean} props.isDarkMode - Whether dark mode is active
  * @param {string} props.chartType - Type of chart in the card
  * @param {boolean} props.minimal - Whether to render without card styling (new prop)
+ * @param {React.Ref} ref - Forwarded ref
  * @returns {JSX.Element} Card component
  */
-const Card = ({ 
+const Card = forwardRef(({ 
   title, 
   subtitle, 
   headerControls, 
@@ -24,7 +26,7 @@ const Card = ({
   isDarkMode = false, 
   chartType,
   minimal = false // New prop for minimal styling
-}) => {
+}, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -38,7 +40,7 @@ const Card = ({
   if (minimal) {
     return (
       <>
-        <div className="minimal-widget-container">
+        <div className="minimal-widget-container" ref={ref}>
           {/* Optional minimal header - only show if title exists */}
           {(title || subtitle || headerControls) && (
             <div className="minimal-widget-header">
@@ -83,13 +85,15 @@ const Card = ({
   // Regular card rendering (existing logic)
   return (
     <>
-      <div className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''}`} 
-           style={isNumberDisplay ? { 
-             boxShadow: 'none', 
-             border: 'none',
-             "border-left": '1px solid rgba(0,0,0,0.4)', 
-             background: 'transparent' 
-           } : {}}>
+      <div 
+        ref={ref}
+        className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''}`} 
+        style={isNumberDisplay ? { 
+          boxShadow: 'none', 
+          border: 'none',
+          "borderLeft": '1px solid rgba(0,0,0,0.4)', 
+          background: 'transparent' 
+        } : {}}>
         <div className="card-header" style={isNumberDisplay ? { 
           borderBottom: 'none', 
           background: 'transparent',
@@ -125,6 +129,8 @@ const Card = ({
       )}
     </>
   );
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;

@@ -1,0 +1,317 @@
+/* 
+ * Header Layout Styles
+ * Main header and navigation
+ */
+
+/* ==================
+   Main Header
+   ================== */
+
+.dashboard-header {
+  background-color: var(--color-surface);
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  min-height: var(--header-height);
+}
+
+/* ==================
+   Header Logo Section
+   ================== */
+
+.header-logo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dashboard-logo {
+  height: 30px;
+  object-fit: contain;
+  transition: transform var(--transition-base);
+}
+
+.dashboard-logo:hover {
+  transform: scale(1.05);
+}
+
+/* ==================
+   Header Title
+   ================== */
+
+.header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title h1 {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 0.25rem;
+  color: var(--color-text-primary);
+}
+
+.last-updated {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.analytics-title {
+  font-size: 1.2rem;
+  font-weight: var(--font-weight-normal);
+  color: var(--primary-blue);
+}
+
+/* ==================
+   Header Actions
+   ================== */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.active-dashboard-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .active-dashboard-name {
+    display: block;
+  }
+}
+
+/* ==================
+   Theme Toggle
+   ================== */
+
+.theme-toggle {
+  background-color: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-base), color var(--transition-base);
+  width: 40px;
+  height: 40px;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--primary-blue);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==================
+   Header Navigation
+   ================== */
+
+.header-nav {
+  display: none;
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 1024px) {
+  .header-nav {
+    display: flex;
+  }
+}
+
+.header-nav-item {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+  position: relative;
+}
+
+.header-nav-item:hover {
+  color: var(--primary-blue);
+}
+
+.header-nav-item.active {
+  color: var(--primary-blue);
+}
+
+.header-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--primary-blue);
+  border-radius: var(--border-radius-full);
+}
+
+/* ==================
+   Mobile Menu Toggle
+   ================== */
+
+.mobile-menu-toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 24px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+.mobile-menu-toggle span {
+  width: 24px;
+  height: 2px;
+  background-color: var(--color-text-primary);
+  border-radius: var(--border-radius-full);
+  transition: all var(--transition-base);
+  transform-origin: 1px;
+}
+
+.mobile-menu-toggle.active span:first-child {
+  transform: rotate(45deg);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+/* ==================
+   Header Dropdown
+   ================== */
+
+.header-dropdown {
+  position: relative;
+}
+
+.header-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+
+.header-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--spacing-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
+  display: none;
+  z-index: var(--z-index-dropdown);
+}
+
+.header-dropdown-menu.show {
+  display: block;
+}
+
+.header-dropdown-item {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.header-dropdown-item:hover {
+  background-color: var(--color-background);
+}
+
+.header-dropdown-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--spacing-xs) 0;
+}
+
+/* ==================
+   Sticky Header
+   ================== */
+
+.dashboard-header.sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky);
+}
+
+/* ==================
+   Header Responsive
+   ================== */
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .header-title h1 {
+    font-size: 1.1rem;
+  }
+  
+  .analytics-title {
+    font-size: 1rem;
+  }
+  
+  .header-actions {
+    gap: var(--spacing-sm);
+  }
+  
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ==================
+   Dark Mode Header
+   ================== */
+
+.dark-mode .dashboard-header {
+  background-color: var(--color-surface);
+  border-bottom-color: var(--color-border);
+  box-shadow: 0 1px 0 rgba(201, 209, 217, 0.08);
+}
+
+.dark-mode .mobile-menu-toggle span {
+  background-color: var(--color-text-primary);
+}
+
+.dark-mode .header-dropdown-menu {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.dark-mode .header-dropdown-item:hover {
+  background-color: var(--color-background);
+}

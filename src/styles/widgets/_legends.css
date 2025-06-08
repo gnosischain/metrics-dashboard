@@ -1,0 +1,353 @@
+/* 
+ * Legend Component Styles
+ * Chart legends and controls
+ */
+
+/* ==================
+   Legend Container
+   ================== */
+
+.chart-legend-container {
+  position: absolute;
+  top: 10px;
+  left: 1rem;
+  right: 1rem;
+  height: 45px;
+  z-index: 5;
+  background-color: transparent;
+}
+
+/* ==================
+   Legend Items
+   ================== */
+
+.chart-legend-items {
+  padding: 5px 0px;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  justify-content: flex-start;
+  height: 100%;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+
+.chart-legend-items::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==================
+   Legend Item
+   ================== */
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: var(--border-radius-base);
+  cursor: pointer;
+  transition: background-color var(--transition-base), 
+              border-color var(--transition-base),
+              opacity var(--transition-base);
+  user-select: none;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  gap: 6px;
+}
+
+.legend-item:hover {
+  background-color: #EFF3F7;
+  border-color: #ADBAC7;
+}
+
+.legend-item:active {
+  transform: scale(0.98);
+}
+
+/* ==================
+   Legend Color
+   ================== */
+
+.legend-item-color {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  transition: opacity var(--transition-base);
+}
+
+/* ==================
+   Legend Label
+   ================== */
+
+.legend-item-label {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  font-weight: var(--font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-base), 
+              text-decoration var(--transition-base);
+}
+
+/* ==================
+   Hidden State
+   ================== */
+
+.legend-item.hidden {
+  opacity: 0.5;
+}
+
+.legend-item.hidden .legend-item-label {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+
+.legend-item.hidden .legend-item-color {
+  opacity: 0.3;
+}
+
+/* ==================
+   Legend Controls
+   ================== */
+
+.legend-controls {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 25px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-controls.show {
+  display: flex;
+}
+
+/* ==================
+   Legend Buttons
+   ================== */
+
+.legend-btn {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  transition: background-color var(--transition-base), 
+              transform var(--transition-fast), 
+              border-color var(--transition-base);
+}
+
+.legend-btn:hover {
+  background-color: #EFF3F7;
+  border-color: #ADBAC7;
+  transform: scale(1.1);
+}
+
+.legend-btn:active {
+  background-color: #EBF3FC;
+  transform: scale(0.95);
+}
+
+.legend-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.legend-btn:disabled:hover {
+  transform: none;
+  background-color: var(--color-background);
+}
+
+/* ==================
+   Legend Actions
+   ================== */
+
+.legend-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+  padding-left: var(--spacing-sm);
+}
+
+.legend-action-btn {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.legend-action-btn:hover {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  border-color: var(--primary-blue);
+}
+
+/* ==================
+   Mobile Legend
+   ================== */
+
+@media (max-width: 768px) {
+  .chart-legend-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    height: auto;
+    padding: 5px 1rem;
+    order: -1;
+    margin-bottom: 5px;
+    z-index: auto;
+  }
+  
+  .chart-legend-items {
+    padding: 5px 0;
+    height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .legend-item {
+    margin-bottom: 0 !important;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  
+  .legend-controls {
+    position: static;
+    height: auto;
+    padding-top: 5px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* ==================
+   Dark Mode Legend
+   ================== */
+
+.dark-mode .chart-legend-container {
+  background-color: transparent;
+}
+
+.dark-mode .legend-item {
+  background-color: rgba(139, 148, 158, 0.1);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.dark-mode .legend-item:hover {
+  background-color: rgba(88, 166, 255, 0.15);
+}
+
+.dark-mode .legend-item-label {
+  color: var(--color-text-primary);
+}
+
+.dark-mode .legend-item.hidden .legend-item-label {
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .legend-btn {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.dark-mode .legend-btn:hover {
+  background-color: rgba(139, 148, 158, 0.1);
+  border-color: var(--color-text-secondary);
+}
+
+.dark-mode .legend-action-btn {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .legend-action-btn:hover {
+  background-color: rgba(88, 166, 255, 0.08);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+/* ==================
+   Legend Variants
+   ================== */
+
+/* Compact Legend */
+.legend-compact .legend-item {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.legend-compact .legend-item-color {
+  width: 10px;
+  height: 10px;
+}
+
+/* Inline Legend */
+.legend-inline {
+  position: static;
+  margin-bottom: var(--spacing-md);
+  height: auto;
+}
+
+.legend-inline .chart-legend-items {
+  flex-wrap: wrap;
+  height: auto;
+  overflow: visible;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Vertical Legend */
+.legend-vertical {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  left: auto;
+  width: auto;
+  height: auto;
+}
+
+.legend-vertical .chart-legend-items {
+  flex-direction: column;
+  overflow: visible;
+  height: auto;
+  gap: 4px;
+}
+
+.legend-vertical .legend-item {
+  width: 100%;
+}

@@ -1,0 +1,276 @@
+/* 
+ * Watermark Styles
+ * Chart branding and watermarks
+ */
+
+/* ==================
+   Base Watermark
+   ================== */
+
+.chart-watermark {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 80px;
+  height: 80px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity var(--transition-base);
+}
+
+/* Alternative positioning classes */
+.card-chart-watermark,
+.universal-chart-watermark {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 35px;
+  height: 35px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 1000;
+  transition: opacity var(--transition-base);
+}
+
+/* Ensure card content has relative positioning */
+.card-content {
+  position: relative !important;
+}
+
+/* ==================
+   Watermark Images
+   ================== */
+
+/* Light theme watermark */
+.chart-container .chart-watermark,
+.enhanced-chart-container .chart-watermark,
+.chart-modal-content .chart-watermark,
+.card-chart-watermark,
+.universal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png');
+}
+
+/* Dark theme watermark */
+.dark-mode .chart-container .chart-watermark,
+.dark-mode .enhanced-chart-container .chart-watermark,
+.dark-mode .chart-modal-content .chart-watermark,
+.dark-mode .card-chart-watermark,
+.dark-mode .universal-chart-watermark,
+[data-theme="dark"] .chart-watermark,
+[data-theme="dark"] .card-chart-watermark,
+[data-theme="dark"] .universal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png');
+  opacity: 0.4;
+}
+
+/* ==================
+   Modal Watermark
+   ================== */
+
+.modal-chart-watermark {
+  position: absolute;
+  bottom: 15px !important;
+  right: 15px !important;
+  width: 35px;
+  height: 35px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 1001;
+  transition: opacity var(--transition-base);
+}
+
+/* Modal watermark images */
+.modal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png');
+}
+
+.dark-mode .modal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png');
+  opacity: 0.4;
+}
+
+/* ==================
+   Watermark Positioning Variants
+   ================== */
+
+/* Center positioning (legacy support) */
+.chart-watermark.center {
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  transform: translate(-50%, -50%);
+}
+
+/* Top-right positioning variant */
+.card-chart-watermark.top-right,
+.universal-chart-watermark.top-right {
+  top: 10px;
+  bottom: auto;
+}
+
+/* ==================
+   Watermark Sizes
+   ================== */
+
+/* Small watermark for compact charts */
+.grid-item[style*="grid-column: span 3"] .chart-watermark,
+.grid-item[style*="grid-column: span 3"] .card-chart-watermark,
+.grid-item[style*="grid-column: span 3"] .universal-chart-watermark {
+  width: 60px;
+  height: 60px;
+}
+
+/* Extra small watermark */
+.watermark-xs {
+  width: 40px;
+  height: 40px;
+}
+
+/* Large watermark */
+.watermark-lg {
+  width: 120px;
+  height: 120px;
+}
+
+/* ==================
+   Watermark with Zoom
+   ================== */
+
+/* Adjust position when zoom bar is present - ONLY in modal */
+.chart-modal-content .chart-container.has-zoom .chart-watermark,
+.chart-modal-content .chart-container.has-zoom .card-chart-watermark,
+.chart-modal-content .chart-container.has-zoom .universal-chart-watermark {
+  bottom: 55px !important;
+}
+
+/* Dynamic height containers with zoom */
+.chart-container.dynamic-height.has-zoom .chart-watermark,
+.chart-container.dynamic-height.has-zoom .card-chart-watermark,
+.chart-container.dynamic-height.has-zoom .universal-chart-watermark {
+  bottom: 55px !important;
+}
+
+/* ==================
+   Prevent Duplicates - CRITICAL FIX
+   ================== */
+
+/* Prevent duplicate watermarks in nested containers */
+.enhanced-chart-container .chart-container .chart-watermark {
+  display: none !important;
+}
+
+.chart-container .chart-container .chart-watermark,
+.chart-modal-content .chart-container .chart-watermark:not(:first-child) {
+  display: none !important;
+}
+
+/* CRITICAL: Hide ALL watermarks from the original card when inside modal to prevent duplicates */
+.chart-modal-content .echarts-watermark,
+.chart-modal-content .chart-watermark,
+.chart-modal-content .card-chart-watermark,
+.chart-modal-content .universal-chart-watermark {
+  display: none !important;
+}
+
+/* Only show the modal-specific watermark in modal view */
+.chart-modal-content .modal-chart-watermark {
+  display: block !important;
+}
+
+/* ==================
+   Watermark Visibility
+   ================== */
+
+/* Hide watermark on hover (optional) */
+.chart-container:hover .chart-watermark.hide-on-hover {
+  opacity: 0;
+}
+
+/* More visible watermark */
+.chart-watermark.visible {
+  opacity: 0.2;
+}
+
+/* ==================
+   Custom Watermarks
+   ================== */
+
+/* Text watermark */
+.text-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 3rem;
+  font-weight: var(--font-weight-bold);
+  color: rgba(0, 0, 0, 0.05);
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.dark-mode .text-watermark {
+  color: rgba(255, 255, 255, 0.05);
+}
+
+/* ==================
+   Responsive Watermarks
+   ================== */
+
+@media (max-width: 768px) {
+  .chart-watermark,
+  .card-chart-watermark,
+  .universal-chart-watermark {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .chart-container.has-zoom .chart-watermark,
+  .chart-container.has-zoom .card-chart-watermark,
+  .chart-container.has-zoom .universal-chart-watermark {
+    bottom: 50px !important;
+  }
+}
+
+/* ==================
+   Dark Mode Adjustments
+   ================== */
+
+.dark-mode .chart-watermark,
+.dark-mode .card-chart-watermark,
+.dark-mode .universal-chart-watermark {
+  opacity: 0.4;
+}
+
+.dark-mode .modal-chart-watermark {
+  opacity: 0.4;
+}
+
+/* ==================
+   Print Styles
+   ================== */
+
+@media print {
+  .chart-watermark,
+  .card-chart-watermark,
+  .universal-chart-watermark,
+  .modal-chart-watermark {
+    opacity: 0.3;
+  }
+  
+  .text-watermark {
+    color: rgba(0, 0, 0, 0.1);
+  }
+}

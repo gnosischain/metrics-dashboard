@@ -1,0 +1,332 @@
+/* 
+ * Modal Component Styles
+ * Modal overlays and dialog boxes
+ */
+
+/* ==================
+   Modal Overlay
+   ================== */
+
+.modal-overlay,
+.chart-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(27, 31, 35, 0.45) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  padding: 20px !important;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+/* ==================
+   Modal Container
+   ================== */
+
+.modal,
+.chart-modal {
+  background-color: var(--color-surface) !important;
+  border-radius: var(--border-radius-lg) !important;
+  width: calc(100% - 40px) !important;
+  max-width: 90vw !important;
+  height: calc(100% - 40px) !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  position: relative !important;
+  z-index: 10000 !important;
+  transform: scale(1);
+  opacity: 1;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+/* ==================
+   Modal Sizes
+   ================== */
+
+.modal.small {
+  width: 400px;
+}
+
+.modal.medium {
+  width: 600px;
+}
+
+.modal.large {
+  width: 800px;
+}
+
+.modal.full {
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+}
+
+/* ==================
+   Modal Header
+   ================== */
+
+.modal-header,
+.chart-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  min-height: 70px;
+  flex-shrink: 0;
+}
+
+.modal-title,
+.chart-modal-title {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.modal-title h2,
+.chart-modal-title h2 {
+  font-size: var(--font-size-xl);
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modal-subtitle,
+.chart-modal-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* ==================
+   Modal Content
+   ================== */
+
+.modal-content,
+.chart-modal-content {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  padding: 0;
+}
+
+/* ==================
+   Modal Footer
+   ================== */
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: 1px solid var(--color-border);
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.modal-footer.space-between {
+  justify-content: space-between;
+}
+
+/* ==================
+   Modal Close Button
+   ================== */
+
+.modal-close,
+.chart-modal-close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-base);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  z-index: 10;
+}
+
+.modal-close:hover,
+.chart-modal-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}
+
+/* ==================
+   Chart Modal Specific
+   ================== */
+
+.chart-modal-content .chart-container,
+.chart-modal-content .enhanced-chart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+}
+
+.chart-modal-content .chart-container canvas,
+.chart-modal-content .enhanced-chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.chart-modal-content .echarts-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: calc(100vh - 200px);
+  flex: 1;
+}
+
+/* ==================
+   Modal Animations
+   ================== */
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ==================
+   Confirmation Modal
+   ================== */
+
+.modal-confirm {
+  text-align: center;
+}
+
+.modal-confirm .modal-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-confirm .modal-icon.success {
+  color: var(--color-success);
+}
+
+.modal-confirm .modal-icon.warning {
+  color: var(--color-warning);
+}
+
+.modal-confirm .modal-icon.error {
+  color: var(--color-error);
+}
+
+.modal-confirm .modal-message {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ==================
+   Modal Responsive
+   ================== */
+
+@media (max-width: 768px) {
+  .modal-overlay,
+  .chart-modal-overlay {
+    padding: 10px !important;
+  }
+  
+  .modal,
+  .chart-modal {
+    width: calc(100% - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+  }
+  
+  .modal-header,
+  .chart-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-md);
+  }
+  
+  .modal-content {
+    padding: var(--spacing-md);
+  }
+  
+  .chart-modal-content {
+    padding: 0;
+  }
+  
+  .modal-footer {
+    padding: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+}
+
+/* ==================
+   Modal Z-Index Management
+   ================== */
+
+/* Extra high z-index for mobile modals */
+@media (max-width: 768px) {
+  .chart-modal-overlay {
+    z-index: 19999 !important;
+  }
+  
+  .chart-modal {
+    z-index: 20000 !important;
+  }
+}
+
+/* ==================
+   Dark Mode Modal
+   ================== */
+
+.dark-mode .modal,
+.dark-mode .chart-modal {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.dark-mode .modal-header,
+.dark-mode .chart-modal-header {
+  border-bottom-color: var(--color-border) !important;
+}
+
+.dark-mode .modal-close:hover,
+.dark-mode .chart-modal-close:hover {
+  background-color: rgba(139, 148, 158, 0.1);
+}
+
+.dark-mode .modal-footer {
+  border-top-color: var(--color-border) !important;
+}

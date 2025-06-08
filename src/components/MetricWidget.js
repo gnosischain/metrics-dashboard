@@ -1,3 +1,4 @@
+// MetricWidget.js - Complete file with proper watermark positioning
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
@@ -16,11 +17,13 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const [error, setError] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState('');
   const [availableLabels, setAvailableLabels] = useState([]);
+  const [containerHeight, setContainerHeight] = useState('400px');
   
   // Refs
   const isMounted = useRef(true);
-  const previousMetricId = useRef(metricId);
   const chartContainerRef = useRef(null);
+  const cardRef = useRef(null);
+  const resizeObserverRef = useRef(null);
 
   // Get metric configuration
   const metricConfig = useMemo(() => {
@@ -88,6 +91,95 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     };
   }, [metricConfig]);
 
+  // Add watermark to chart container
+  useEffect(() => {
+    if (widgetConfig.type === 'chart' && chartContainerRef.current && !loading && !minimal) {
+      const chartContainer = chartContainerRef.current;
+      
+      // Add watermark with a slight delay to ensure chart is rendered
+      const timer = setTimeout(() => {
+        // Check if chart has zoom enabled
+        const hasZoom = widgetConfig.enableZoom;
+        
+        addUniversalWatermark({ current: chartContainer }, isDarkMode, {
+          className: 'card-chart-watermark',
+          size: 35,
+          position: 'bottom-right',
+          margin: 15,
+          opacity: isDarkMode ? 0.4 : 0.3,
+          zIndex: 1000,
+          preventDuplicates: true,
+          // Adjust position if zoom is enabled
+          customStyles: hasZoom ? { bottom: '55px' } : {}
+        });
+      }, 300);
+      
+      return () => {
+        clearTimeout(timer);
+        if (chartContainer) {
+          removeUniversalWatermark({ current: chartContainer }, 'card-chart-watermark');
+        }
+      };
+    }
+  }, [widgetConfig.type, widgetConfig.enableZoom, chartContainerRef, loading, isDarkMode, minimal]);
+
+  // Calculate dynamic chart height based on card size
+  const calculateChartHeight = useCallback(() => {
+    if (!cardRef.current || widgetConfig.type !== 'chart') return;
+
+    const card = cardRef.current;
+    const cardContent = card.querySelector('.card-content');
+    if (!cardContent) return;
+
+    // Get the card's total height
+    const cardRect = cardContent.getBoundingClientRect();
+    const cardHeight = cardRect.height;
+
+    // Calculate available height for chart
+    // Account for header, padding, and controls
+    const headerHeight = card.querySelector('.card-header')?.offsetHeight || 0;
+    const filterHeight = card.querySelector('.label-selector')?.offsetHeight || 0;
+    const padding = 32; // Total vertical padding
+    const minHeight = 300; // Minimum chart height
+    
+    // For charts with zoom, reserve less space at bottom since zoom is now inline
+    const bottomReserve = widgetConfig.enableZoom ? 20 : 10;
+    
+    // Calculate the optimal height
+    let optimalHeight = cardHeight - headerHeight - filterHeight - padding - bottomReserve;
+    
+    // Ensure minimum height
+    optimalHeight = Math.max(optimalHeight, minHeight);
+    
+    // Apply the calculated height
+    setContainerHeight(`${optimalHeight}px`);
+  }, [widgetConfig.type, widgetConfig.enableZoom]);
+
+  // Setup ResizeObserver for dynamic height adjustment
+  useEffect(() => {
+    if (widgetConfig.type !== 'chart' || !cardRef.current) return;
+
+    // Create ResizeObserver
+    resizeObserverRef.current = new ResizeObserver((entries) => {
+      // Use requestAnimationFrame to debounce resize calculations
+      requestAnimationFrame(() => {
+        calculateChartHeight();
+      });
+    });
+
+    // Observe the card element
+    resizeObserverRef.current.observe(cardRef.current);
+
+    // Initial calculation
+    calculateChartHeight();
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, [calculateChartHeight, widgetConfig.type]);
+
   // Fetch data effect
   useEffect(() => {
     const fetchData = async () => {
@@ -108,126 +200,82 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         if (fetchedData) {
           console.log(`MetricWidget[${metricId}]: Data received`, {
             type: Array.isArray(fetchedData) ? 'array' : typeof fetchedData,
-            length: Array.isArray(fetchedData) ? fetchedData.length : 'N/A',
-            sample: Array.isArray(fetchedData) ? fetchedData.slice(0, 2) : fetchedData
+            length: Array.isArray(fetchedData) ? fetchedData.length : undefined
           });
-
           setData(fetchedData);
-
-          // Extract available labels for filtering
+          
+          // Extract available labels if filtering is enabled
           if (widgetConfig.enableFiltering && widgetConfig.labelField && Array.isArray(fetchedData)) {
             const labels = [...new Set(fetchedData.map(item => item[widgetConfig.labelField]).filter(Boolean))];
             setAvailableLabels(labels);
-            
-            // Set default selection to first label if none selected
-            if (!selectedLabel && labels.length > 0) {
+            if (labels.length > 0 && !selectedLabel) {
               setSelectedLabel(labels[0]);
             }
           }
         } else {
+          console.warn(`MetricWidget[${metricId}]: No data received`);
           setData([]);
         }
       } catch (err) {
+        if (!isMounted.current) return;
         console.error(`MetricWidget[${metricId}]: Error fetching data:`, err);
-        setError(err.message || 'Failed to fetch data');
+        setError(err.message || 'Failed to load data');
       } finally {
-        setLoading(false);
+        if (isMounted.current) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [metricId, widgetConfig.type, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
 
-  // Filter data based on selected label
-  const filteredData = useMemo(() => {
-    if (!data || !Array.isArray(data) || !widgetConfig.enableFiltering || !selectedLabel || !widgetConfig.labelField) {
-      return data;
-    }
-
-    return data.filter(item => item[widgetConfig.labelField] === selectedLabel);
-  }, [data, selectedLabel, widgetConfig.enableFiltering, widgetConfig.labelField]);
-
-  // Handle label selection
-  const handleLabelChange = useCallback((newLabel) => {
-    setSelectedLabel(newLabel);
-  }, []);
-
-  // Add watermark effect for chart widgets
-  useEffect(() => {
-    if (widgetConfig.type === 'chart' && chartContainerRef.current && !loading && !error) {
-      // Store reference to avoid stale closure
-      const currentContainer = chartContainerRef.current;
-      
-      // Delay to ensure chart is rendered
-      const timer = setTimeout(() => {
-        if (currentContainer) {
-          addUniversalWatermark({ current: currentContainer }, isDarkMode, {
-            className: 'card-chart-watermark',
-            size: 30,
-            position: 'bottom-right',
-            margin: 10,
-            opacity: isDarkMode ? 0.4 : 0.3,
-            zIndex: 1000
-          });
-        }
-      }, 300);
-
-      return () => {
-        clearTimeout(timer);
-        if (currentContainer) {
-          removeUniversalWatermark({ current: currentContainer }, 'card-chart-watermark');
-        }
-      };
-    }
-  }, [widgetConfig.type, isDarkMode, loading, error, data]);
-
-  // Cleanup effect
-  useEffect(() => {
+    // Cleanup function
     return () => {
       isMounted.current = false;
     };
+  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, widgetConfig.type, selectedLabel]);
+
+  // Handle label selection change
+  const handleLabelChange = useCallback((label) => {
+    setSelectedLabel(label);
   }, []);
 
-  // Reset state when metric changes
-  useEffect(() => {
-    if (previousMetricId.current !== metricId) {
-      setData(null);
-      setError(null);
-      setSelectedLabel('');
-      setAvailableLabels([]);
-      previousMetricId.current = metricId;
+  // Filter data based on selected label
+  const filteredData = useMemo(() => {
+    if (!widgetConfig.enableFiltering || !selectedLabel || !widgetConfig.labelField || !Array.isArray(data)) {
+      return data;
     }
-  }, [metricId]);
+    return data.filter(item => item[widgetConfig.labelField] === selectedLabel);
+  }, [data, selectedLabel, widgetConfig.enableFiltering, widgetConfig.labelField]);
 
-  // Render loading state
-  if (loading) {
+  // Handle error state
+  if (widgetConfig.type === 'error') {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
-        subtitle={widgetConfig.description}
-        className={`metric-widget loading ${className}`}
-      >
-        <div className="metric-widget-loading">
-          <div className="loading-spinner" />
-          <span>Loading...</span>
+      <Card minimal={minimal} className={`metric-widget error ${className}`}>
+        <div className="error-message">
+          <h3>Configuration Error</h3>
+          <p>{widgetConfig.error}</p>
         </div>
       </Card>
     );
   }
 
-  // Render error state
-  if (error || widgetConfig.type === 'error') {
+  // Handle loading state
+  if (loading) {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
-        subtitle={widgetConfig.description}
-        className={`metric-widget error ${className}`}
-      >
-        <div className="metric-widget-error">
-          <span className="error-icon">⚠️</span>
-          <span className="error-text">{error || widgetConfig.error}</span>
+      <Card minimal={minimal} className={`metric-widget loading ${className}`}>
+        <div className="loading-spinner">Loading...</div>
+      </Card>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <Card minimal={minimal} className={`metric-widget error ${className}`}>
+        <div className="error-message">
+          <h3>Error Loading Data</h3>
+          <p>{error}</p>
         </div>
       </Card>
     );
@@ -265,6 +313,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   if (widgetConfig.type === 'table') {
     return (
       <Card 
+        ref={cardRef}
         minimal={minimal} 
         title={widgetConfig.title} 
         subtitle={widgetConfig.description}
@@ -291,6 +340,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   // Render chart widget (default)
   return (
     <Card 
+      ref={cardRef}
       minimal={minimal} 
       title={widgetConfig.title} 
       subtitle={widgetConfig.description}
@@ -304,14 +354,19 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
           isDarkMode={isDarkMode}
         />
       )}
-      <div className="chart-container" ref={chartContainerRef}>
+      <div 
+        className={`chart-container dynamic-height ${widgetConfig.enableZoom ? 'has-zoom' : ''}`} 
+        ref={chartContainerRef} 
+        style={{ height: containerHeight }}
+      >
         <EChartsContainer
           data={filteredData || []}
           chartType={widgetConfig.chartType}
           config={widgetConfig.config}
           isDarkMode={isDarkMode}
           width="100%"
-          height="400px"
+          height="100%"
+          showWatermark={false}
         />
       </div>
     </Card>

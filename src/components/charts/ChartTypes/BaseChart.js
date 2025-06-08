@@ -1,3 +1,4 @@
+// BaseChart.js - Complete file with all fixes
 import { formatValue } from '../../../utils';
 
 export class BaseChart {
@@ -146,7 +147,7 @@ export class BaseChart {
       const formattedDate = axisValue ? 
         BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext) : '';
       
-      let tooltip = `<div style="font-weight: 600; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
+      let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
       let total = 0;
       
       params.forEach(param => {
@@ -155,12 +156,12 @@ export class BaseChart {
           const formattedValue = formatValue(param.value, config.format);
           const color = param.color || '#999';
           
-          tooltip += `<div style="display: flex; justify-content: space-between; align-items: center; margin: 2px 0;">`;
-          tooltip += `<div style="display: flex; align-items: center;">`;
-          tooltip += `<div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${color}; margin-right: 6px; flex-shrink: 0;"></div>`;
-          tooltip += `<span>${seriesName}</span>`;
+          tooltip += `<div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; min-width: 150px;">`;
+          tooltip += `<div style="display: flex; align-items: center; flex: 1;">`;
+          tooltip += `<div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${color}; margin-right: 8px; flex-shrink: 0;"></div>`;
+          tooltip += `<span style="margin-right: 16px;">${seriesName}</span>`;
           tooltip += `</div>`;
-          tooltip += `<span style="font-weight: 600; margin-left: 12px;">${formattedValue}</span>`;
+          tooltip += `<span style="font-weight: 600; white-space: nowrap;">${formattedValue}</span>`;
           tooltip += `</div>`;
           
           // Add to total if showTotal is enabled
@@ -172,10 +173,10 @@ export class BaseChart {
       
       // Add total if enabled and we have multiple series
       if (config.showTotal && params.length > 1) {
-        tooltip += `<div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(128,128,128,0.3);">`;
+        tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.3);">`;
         tooltip += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
         tooltip += `<span style="font-weight: 600;">Total</span>`;
-        tooltip += `<span style="font-weight: 600;">${formatValue(total, config.format)}</span>`;
+        tooltip += `<span style="font-weight: 600; margin-left: 16px;">${formatValue(total, config.format)}</span>`;
         tooltip += `</div>`;
         tooltip += `</div>`;
       }
@@ -185,24 +186,39 @@ export class BaseChart {
   }
 
   /**
-   * RESPONSIVE grid configuration - adapts to card size
+   * RESPONSIVE grid configuration - adapts to card size and dynamic height
    * Detects container width and adjusts spacing accordingly
    */
   static getGridConfig(config = {}) {
     // Check if we have card size hint in config
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
+    const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
     
     // Different spacing for small vs large cards
     let bottomMargin, topMargin;
     
-    if (config.dataZoom || config.enableZoom) {
-      // With zoom slider
-      bottomMargin = isSmallCard ? '18%' : '15%'; // More space needed for small cards
-      topMargin = isSmallCard ? '8%' : '10%';     // Less top space for small cards
+    if (isDynamicHeight) {
+      // For dynamic height containers, use minimal margins
+      if (config.dataZoom || config.enableZoom) {
+        // With inline zoom slider
+        bottomMargin = '40px'; // Space for zoom slider
+        topMargin = isSmallCard ? '5%' : '8%';
+      } else {
+        // Without zoom slider
+        bottomMargin = '20px'; // Minimal fixed bottom margin
+        topMargin = isSmallCard ? '5%' : '8%';
+      }
     } else {
-      // Without zoom slider
-      bottomMargin = isSmallCard ? '8%' : '3%';   // More bottom space for small cards
-      topMargin = isSmallCard ? '6%' : '10%';     // Less top space for small cards
+      // Original percentage-based margins for fixed height
+      if (config.dataZoom || config.enableZoom) {
+        // With zoom slider
+        bottomMargin = isSmallCard ? '18%' : '15%';
+        topMargin = isSmallCard ? '8%' : '10%';
+      } else {
+        // Without zoom slider
+        bottomMargin = isSmallCard ? '8%' : '3%';
+        topMargin = isSmallCard ? '6%' : '10%';
+      }
     }
 
     return {
@@ -257,7 +273,7 @@ export class BaseChart {
       textStyle: {
         color: config.isDarkMode ? '#e5e7eb' : '#374151'
       },
-      padding: [8, 12],
+      padding: [10, 14],
       ...config.tooltip
     };
   }
@@ -269,6 +285,7 @@ export class BaseChart {
     if (!config.dataZoom && !config.enableZoom) return {};
     
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
+    const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
     
     const dataZoomConfig = {
       dataZoom: [
@@ -281,11 +298,34 @@ export class BaseChart {
           type: 'slider',
           xAxisIndex: [0],
           filterMode: 'filter',
-          bottom: isSmallCard ? 12 : 10,  // Higher position for small cards
-          height: isSmallCard ? 18 : 20,  // Slightly smaller for small cards
+          bottom: isDynamicHeight ? 5 : (isSmallCard ? 12 : 10), // Lower position for dynamic height
+          height: isSmallCard ? 18 : 20,
           // Custom label formatter for zoom slider
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
+          },
+          handleStyle: {
+            color: config.isDarkMode ? '#58A6FF' : '#0969DA',
+            borderColor: config.isDarkMode ? '#58A6FF' : '#0969DA'
+          },
+          textStyle: {
+            color: config.isDarkMode ? '#9ca3af' : '#6b7280'
+          },
+          dataBackground: {
+            lineStyle: {
+              color: config.isDarkMode ? '#4b5563' : '#d1d5db'
+            },
+            areaStyle: {
+              color: config.isDarkMode ? '#374151' : '#f3f4f6'
+            }
+          },
+          selectedDataBackground: {
+            lineStyle: {
+              color: config.isDarkMode ? '#58A6FF' : '#0969DA'
+            },
+            areaStyle: {
+              color: config.isDarkMode ? 'rgba(88, 166, 255, 0.2)' : 'rgba(9, 105, 218, 0.2)'
+            }
           }
         }
       ]

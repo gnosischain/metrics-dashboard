@@ -1551,3 +1551,175 @@ button:focus-visible, .button:focus-visible,
       justify-content: flex-end;
     }
   }
+
+/* Add these styles to your existing styles.css file */
+
+/* ==================
+   Dynamic Chart Container Styles
+   ================== */
+
+/* Enhanced chart container with dynamic height support */
+.chart-container.dynamic-height {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px !important; /* Ensure minimum height */
+  transition: height 0.3s ease; /* Smooth height transitions */
+}
+
+/* Remove fixed minimum height from base chart container when dynamic */
+.chart-container.dynamic-height,
+.enhanced-chart-container.dynamic-height {
+  min-height: unset !important;
+}
+
+/* Ensure charts fill their dynamic container */
+.chart-container.dynamic-height canvas,
+.enhanced-chart-container.dynamic-height canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+}
+
+/* Adjust padding for dynamic height containers */
+.chart-container.dynamic-height.has-legend {
+  padding: 60px 1rem 1rem !important; /* Less bottom padding */
+}
+
+.chart-container.dynamic-height.no-legend {
+  padding: 20px 1rem 10px !important; /* Minimal bottom padding */
+}
+
+/* Card content should use flexbox for proper height distribution */
+.metric-card .card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0; /* Important for flexbox children */
+}
+
+/* Ensure metric widget content fills available space */
+.metric-widget.chart .card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Label selector should not flex */
+.metric-widget .label-selector {
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* ECharts container within dynamic height wrapper */
+.chart-container.dynamic-height .echarts-container {
+  flex: 1;
+  min-height: 0; /* Allow shrinking */
+  height: 100% !important;
+}
+
+/* Responsive adjustments for dynamic charts */
+@media (max-width: 768px) {
+  .chart-container.dynamic-height {
+    min-height: 250px !important; /* Smaller minimum on mobile */
+  }
+  
+  .chart-container.dynamic-height.has-legend {
+    padding: 50px 1rem 1rem !important;
+  }
+}
+
+/* Grid item height constraints for better layout */
+.metrics-grid-positioned .grid-item {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* Allow items to shrink */
+}
+
+/* Ensure metric cards fill their grid cells */
+.metrics-grid-positioned .grid-item .metric-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading and error states should also be dynamic */
+.metric-widget.loading .card-content,
+.metric-widget.error .card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  flex: 1;
+}
+
+/* Dark mode adjustments for dynamic containers */
+.dark-mode .chart-container.dynamic-height {
+  background-color: transparent;
+}
+
+/* Watermark positioning in dynamic containers */
+.chart-container.dynamic-height .card-chart-watermark,
+.chart-container.dynamic-height .universal-chart-watermark {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+/* In-frame zoom slider adjustments for dynamic height */
+.chart-container.dynamic-height .in-frame-zoom-slider {
+  position: absolute;
+  bottom: 5px; /* Closer to bottom in dynamic containers */
+}
+
+/* ==================
+   Watermark Position Fixes for Zoom Bar
+   ================== */
+
+/* Adjust watermark position when zoom bar is present */
+.chart-container.has-zoom .card-chart-watermark,
+.chart-container.has-zoom .universal-chart-watermark {
+  bottom: 55px !important; /* Move watermark above zoom bar */
+}
+
+/* Dynamic height containers with zoom */
+.chart-container.dynamic-height.has-zoom .card-chart-watermark,
+.chart-container.dynamic-height.has-zoom .universal-chart-watermark {
+  bottom: 55px !important; /* Consistent positioning above zoom bar */
+}
+
+/* Without zoom bar, standard position */
+.chart-container:not(.has-zoom) .card-chart-watermark,
+.chart-container:not(.has-zoom) .universal-chart-watermark {
+  bottom: 10px !important;
+}
+
+/* ECharts zoom slider specific styling */
+.echarts-dataZoom-slider {
+  /* Ensure zoom slider has proper z-index */
+  z-index: 100;
+}
+
+/* Watermark should be above chart but below zoom controls */
+.card-chart-watermark,
+.universal-chart-watermark {
+  z-index: 50; /* Lower than zoom slider but above chart */
+}
+
+/* Responsive watermark positioning */
+@media (max-width: 768px) {
+  .chart-container.has-zoom .card-chart-watermark,
+  .chart-container.has-zoom .universal-chart-watermark {
+    bottom: 50px !important; /* Slightly less on mobile */
+  }
+}
+
+/* Dark mode specific adjustments */
+.dark-mode .chart-container.has-zoom .card-chart-watermark,
+.dark-mode .chart-container.has-zoom .universal-chart-watermark {
+  /* Same positioning in dark mode */
+  bottom: 55px !important;
+}

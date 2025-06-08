@@ -25,13 +25,14 @@ export const addUniversalWatermark = (containerRef, isDarkMode, options = {}) =>
       opacity = isDarkMode ? 0.4 : 0.3,
       className = 'universal-chart-watermark',
       zIndex = 1000,
-      preventDuplicates = true
+      preventDuplicates = true,
+      customStyles = {}
     } = options;
   
     // Remove existing watermarks to prevent duplicates
     if (preventDuplicates) {
       const existingWatermarks = containerRef.current.querySelectorAll(
-        '.chart-watermark, .chartjs-watermark, .d3-chart-watermark, .universal-chart-watermark, .modal-chart-watermark'
+        '.chart-watermark, .chartjs-watermark, .d3-chart-watermark, .universal-chart-watermark, .modal-chart-watermark, .card-chart-watermark'
       );
       existingWatermarks.forEach(wm => {
         try { wm.remove(); } catch (e) { /* Ignore */ }
@@ -62,7 +63,8 @@ export const addUniversalWatermark = (containerRef, isDarkMode, options = {}) =>
       opacity: String(opacity),
       pointerEvents: 'none',
       zIndex: String(zIndex),
-      ...positionStyles
+      ...positionStyles,
+      ...customStyles // Apply custom styles last to allow overrides
     });
   
     const logoUrl = isDarkMode
@@ -79,15 +81,7 @@ export const addUniversalWatermark = (containerRef, isDarkMode, options = {}) =>
     img.onerror = () => {
       // Fallback to text watermark
       watermark.style.backgroundImage = 'none';
-      watermark.style.backgroundColor = isDarkMode ? '#333' : '#ccc';
-      watermark.style.borderRadius = '50%';
-      watermark.textContent = 'G';
-      watermark.style.display = 'flex';
-      watermark.style.alignItems = 'center';
-      watermark.style.justifyContent = 'center';
-      watermark.style.fontSize = `${Math.floor(size / 2.5)}px`;
-      watermark.style.fontWeight = 'bold';
-      watermark.style.color = isDarkMode ? '#fff' : '#000';
+      watermark.style.backgroundColor = isDarkMode ? '#fff' : '#000';
     };
     img.src = logoUrl;
   
@@ -218,7 +212,7 @@ export const addUniversalWatermark = (containerRef, isDarkMode, options = {}) =>
         position: 'bottom-right',
         margin: 10,
         opacity: isDarkMode ? 0.4 : 0.3,
-        zIndex: 1000,
+        zIndex: 1001,
         preventDuplicates: true
       });
     }
