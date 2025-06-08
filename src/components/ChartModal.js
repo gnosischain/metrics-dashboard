@@ -59,6 +59,25 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
     }
   }, [isOpen, isDarkMode]);
 
+  // Handle chart resize when modal opens
+  useEffect(() => {
+    if (isOpen && modalContentRef.current) {
+      const timer = setTimeout(() => {
+        // Trigger resize event for ECharts
+        const echartsContainers = modalContentRef.current.querySelectorAll('.echarts-container');
+        echartsContainers.forEach(container => {
+          // Force resize of ECharts instance
+          const echartsInstance = container.__echarts__;
+          if (echartsInstance) {
+            echartsInstance.resize();
+          }
+        });
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Use portal to render modal outside the component hierarchy

@@ -1,17 +1,11 @@
-/**
- * EChartsContainer.js
- * Location: src/components/charts/ChartTypes/EChartsContainer.js
- * Fixed version with enhanced debugging and error handling
- */
+// ===========================================
+// FILE 1: src/components/charts/ChartTypes/EChartsContainer.js
+// ===========================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import * as echarts from 'echarts';
 import { getChartComponent } from './index';
 
-/**
- * Universal ECharts container component
- * Supports all chart types with a unified interface
- */
 const EChartsContainer = ({
   data = [],
   chartType = 'line',
@@ -28,21 +22,23 @@ const EChartsContainer = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get chart component based on chart type
   const ChartComponent = useMemo(() => {
     console.log(`EChartsContainer: Getting chart component for type: ${chartType}`);
     const component = getChartComponent(chartType);
     if (!component) {
       console.warn(`EChartsContainer: Unsupported chart type: ${chartType}`);
-    } else {
-      console.log(`EChartsContainer: Found chart component for: ${chartType}`);
     }
     return component;
   }, [chartType]);
 
-  // Generate chart options using the specific chart component
   const chartOptions = useMemo(() => {
     console.log(`EChartsContainer: Generating chart options for ${chartType}`);
+    console.log(`EChartsContainer: Input data:`, { 
+      dataType: Array.isArray(data) ? 'array' : typeof data,
+      dataLength: Array.isArray(data) ? data.length : 'N/A',
+      sampleData: Array.isArray(data) ? data.slice(0, 2) : data
+    });
+    
     try {
       if (!ChartComponent) {
         throw new Error(`Unsupported chart type: ${chartType}`);
@@ -55,9 +51,18 @@ const EChartsContainer = ({
           getDefaultEmptyOptions(isDarkMode);
       }
 
-      console.log(`EChartsContainer: Calling ${chartType}.getOptions with data of length:`, data.length || 'N/A');
+      console.log(`EChartsContainer: Calling ${chartType}.getOptions with data`);
       const options = ChartComponent.getOptions(data, config, isDarkMode);
-      console.log(`EChartsContainer: Generated chart options successfully.`);
+      
+      console.log(`EChartsContainer: Generated chart options:`, {
+        hasXAxis: !!options.xAxis,
+        hasYAxis: !!options.yAxis,
+        seriesCount: options.series?.length || 0,
+        xAxisDataLength: options.xAxis?.data?.length || 0,
+        seriesNames: options.series?.map(s => s.name) || [],
+        firstSeriesDataLength: options.series?.[0]?.data?.length || 0
+      });
+      
       return options;
     } catch (err) {
       console.error('EChartsContainer: Error generating chart options:', err);
@@ -66,66 +71,87 @@ const EChartsContainer = ({
     }
   }, [data, chartType, config, isDarkMode, ChartComponent]);
 
-  // Main effect to initialize and update the chart
   useEffect(() => {
-    // 1. If options are calculated, stop loading to allow the div to render.
     if (chartOptions) {
       setIsLoading(false);
     }
     
-    // 2. If the div is rendered and we have options, initialize the chart.
-    if (chartRef.current && chartOptions) {
-      console.log('EChartsContainer: DOM element and options are ready. Initializing chart.');
+    if (chartRef.current && chartOptions && !isLoading) {
+      console.log('EChartsContainer: Initializing chart...');
       
       try {
-        // Dispose of the old instance before creating a new one
+        // Dispose previous instance
         if (instanceRef.current) {
-            instanceRef.current.dispose();
-        }
-        
-        // Initialize ECharts instance
-        const chartInstance = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
-          renderer: 'canvas',
-          width: 'auto',
-          height: 'auto'
-        });
-
-        // Set chart options
-        chartInstance.setOption(chartOptions, true);
-        instanceRef.current = chartInstance;
-        
-        // Clear any previous errors
-        setError(null);
-
-        // Call onReady callback if provided
-        if (onReady && typeof onReady === 'function') {
-          onReady(chartInstance);
-        }
-
-        // Add resize listener
-        const handleResize = () => {
-          if (chartInstance && !chartInstance.isDisposed()) {
-            chartInstance.resize();
-          }
-        };
-        window.addEventListener('resize', handleResize);
-
-        // Return cleanup function
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          if (chartInstance && !chartInstance.isDisposed()) {
-            chartInstance.dispose();
-          }
+          instanceRef.current.dispose();
           instanceRef.current = null;
-        };
+        }
+        
+        // Force a brief delay to ensure DOM is ready
+        const timer = setTimeout(() => {
+          if (!chartRef.current) return;
+          
+          // Calculate container dimensions
+          const container = chartRef.current;
+          const containerRect = container.getBoundingClientRect();
+          
+          // Initialize ECharts instance with calculated dimensions
+          const chartInstance = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
+            renderer: 'canvas',
+            width: containerRect.width || 'auto',
+            height: containerRect.height || 'auto'
+          });
+
+          console.log('EChartsContainer: Setting options...', chartOptions);
+          
+          // Set chart options with proper merge strategy
+          chartInstance.setOption(chartOptions, {
+            notMerge: true, // Don't merge with previous options
+            replaceMerge: ['series', 'xAxis', 'yAxis'], // Replace these components
+            silent: false
+          });
+          
+          // Store reference to ECharts instance on container for modal resize
+          container.__echarts__ = chartInstance;
+          
+          // Force resize after setting options
+          setTimeout(() => {
+            if (chartInstance && !chartInstance.isDisposed()) {
+              chartInstance.resize();
+            }
+          }, 100);
+          
+          instanceRef.current = chartInstance;
+          setError(null);
+
+          console.log('EChartsContainer: Chart initialized successfully');
+
+          if (onReady && typeof onReady === 'function') {
+            onReady(chartInstance);
+          }
+
+          const handleResize = () => {
+            if (chartInstance && !chartInstance.isDisposed()) {
+              chartInstance.resize();
+            }
+          };
+          window.addEventListener('resize', handleResize);
+
+          return () => {
+            window.removeEventListener('resize', handleResize);
+            if (chartInstance && !chartInstance.isDisposed()) {
+              chartInstance.dispose();
+            }
+          };
+        }, 50);
+        
+        return () => clearTimeout(timer);
       } catch (err) {
         console.error('EChartsContainer: Error initializing chart:', err);
         setError(`Chart initialization failed: ${err.message}`);
       }
     }
-  }, [chartOptions, isDarkMode, onReady]);
+  }, [chartOptions, isDarkMode, onReady, isLoading]);
 
-  // Render error state
   if (error) {
     return (
       <div
@@ -154,7 +180,6 @@ const EChartsContainer = ({
     );
   }
 
-  // Render loading state
   if (isLoading) {
     return (
       <div
@@ -193,7 +218,6 @@ const EChartsContainer = ({
     );
   }
 
-  // Render chart container
   return (
     <div
       ref={chartRef}
@@ -205,16 +229,12 @@ const EChartsContainer = ({
         minWidth: '300px',
         display: 'block',
         position: 'relative',
-        flex: '1',
         ...style
       }}
     />
   );
 };
 
-/**
- * Default empty chart options when component is not found or data is empty
- */
 function getDefaultEmptyOptions(isDarkMode) {
   return {
     title: {

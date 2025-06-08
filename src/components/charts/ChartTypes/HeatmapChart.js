@@ -1,5 +1,5 @@
 /**
- * Heatmap Chart implementation for ECharts
+ * Heatmap Chart implementation for ECharts with time series support
  */
 
 import { BaseChart } from './BaseChart';
@@ -64,8 +64,8 @@ export class HeatmapChart extends BaseChart {
         position: 'top',
         formatter: (params) => {
           const [xIndex, yIndex, value] = params.data;
-          const xLabel = processedData.xCategories[xIndex];
-          const yLabel = processedData.yCategories[yIndex];
+          const xLabel = this.formatTimeSeriesInTooltip(processedData.xCategories[xIndex]);
+          const yLabel = this.formatTimeSeriesInTooltip(processedData.yCategories[yIndex]);
           return `${xLabel} - ${yLabel}<br/><strong>${formatValue(value, config.format)}</strong>`;
         }
       },

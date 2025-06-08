@@ -1,25 +1,35 @@
-/**
- * Line Chart implementation for ECharts
- * Location: src/components/charts/ChartTypes/LineChart.js
- * 
- * FIXED: Updated to properly handle series data structure for ECharts
- */
-
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { generateColorPalette } from '../../../utils';
 
 export class LineChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
-    console.log('LineChart.getOptions called with:', { data, config, isDarkMode });
+    console.log('LineChart.getOptions called with:', { 
+      dataLength: data?.length, 
+      configFields: { xField: config.xField, yField: config.yField, seriesField: config.seriesField }
+    });
     
     if (!this.validateData(data)) {
-      console.log('LineChart: Data validation failed, returning empty chart');
+      console.log('LineChart: Data validation failed');
       return this.getEmptyChartOptions(isDarkMode);
     }
 
     try {
       const processedData = this.processData(data, config);
-      console.log('LineChart: Processed data:', processedData);
+      console.log('LineChart: Processed data result:', {
+        categoriesLength: processedData.categories?.length,
+        seriesCount: processedData.series?.length,
+        seriesNames: processedData.series?.map(s => s.name)
+      });
+      
+      // Analyze time granularity for smart formatting
+      const timeAnalysis = BaseChart.analyzeTimeGranularity(processedData.categories);
+      console.log('LineChart: Time analysis:', timeAnalysis);
+      
+      // Add time context to config
+      const enhancedConfig = {
+        ...config,
+        timeContext: timeAnalysis
+      };
       
       const colors = generateColorPalette(processedData.series.length, isDarkMode);
 
@@ -29,12 +39,12 @@ export class LineChart extends BaseChart {
         xAxis: {
           type: 'category',
           data: processedData.categories,
-          ...this.getAxisConfig(isDarkMode, 'category', config)
+          ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
         },
         
         yAxis: {
           type: 'value',
-          ...this.getAxisConfig(isDarkMode, 'value', config)
+          ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
         },
         
         series: processedData.series.map((series, index) => ({
@@ -55,26 +65,18 @@ export class LineChart extends BaseChart {
         })),
         
         tooltip: {
-          ...this.getTooltipConfig({ ...config, isDarkMode }),
-          formatter: (params) => {
-            let tooltip = `<strong>${params[0].axisValue}</strong><br/>`;
-            params.forEach(param => {
-              if (param.value !== null && param.value !== undefined) {
-                tooltip += `${param.seriesName}: <strong>${formatValue(param.value, config.format)}</strong><br/>`;
-              }
-            });
-            return tooltip;
-          }
+          ...this.getTooltipConfig({ ...enhancedConfig, isDarkMode }),
+          formatter: BaseChart.createTimeSeriesAwareTooltipFormatter(enhancedConfig)
         },
         
-        legend: this.getLegendConfig(isDarkMode, processedData.series.length, config),
+        legend: this.getLegendConfig(isDarkMode, processedData.series.length, enhancedConfig),
+        grid: this.getGridConfig(enhancedConfig),
         
-        grid: this.getGridConfig(config),
-        
-        ...this.getDataZoomConfig(config)
+        // Add default zoom configuration
+        ...this.getDataZoomConfig(enhancedConfig)
       };
 
-      console.log('LineChart: Final chart options:', chartOptions);
+      console.log('LineChart: Final chart options created successfully');
       return chartOptions;
     } catch (error) {
       console.error('LineChart: Error in getOptions:', error);
@@ -83,25 +85,20 @@ export class LineChart extends BaseChart {
   }
 
   static validateData(data) {
-    console.log('LineChart.validateData called with:', data);
-    
     if (!data || !Array.isArray(data) || data.length === 0) {
-      console.log('LineChart.validateData: Data is invalid (not a non-empty array).');
       return false;
     }
     
     const firstItem = data[0];
     if (!firstItem || typeof firstItem !== 'object') {
-      console.log('LineChart.validateData: First item is not an object:', firstItem);
       return false;
     }
     
-    console.log('LineChart.validateData: Data is valid');
     return true;
   }
 
   static processData(data, config) {
-    console.log('LineChart.processData called with:', { data, config });
+    console.log('LineChart.processData called with data length:', data.length);
 
     if (!Array.isArray(data)) {
         throw new Error('Line chart data must be an array');
@@ -115,88 +112,83 @@ export class LineChart extends BaseChart {
     const actualYField = this.findBestField(availableFields, yField, ['value', 'y', 'count', 'amount', 'apy']);
     const actualSeriesField = seriesField ? this.findBestField(availableFields, seriesField, ['label', 'series', 'category', 'group']) : null;
 
-    console.log('LineChart.processData: Resolved fields:', { actualXField, actualYField, actualSeriesField });
+    console.log('LineChart.processData: Field mapping:', { actualXField, actualYField, actualSeriesField });
 
-    // Extract unique, sorted categories (x-axis), ensuring date sorting is correct
+    // Extract and sort categories
     const categories = [...new Set(data.map(item => item[actualXField]))]
       .sort((a, b) => {
-        // Handle date sorting more robustly
         const dateA = new Date(a);
         const dateB = new Date(b);
         if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
           return dateA - dateB;
         }
-        // Fallback to string comparison for non-date categories
         return String(a).localeCompare(String(b));
       });
     
-    console.log('LineChart.processData: Categories found:', categories.length, categories.slice(0, 5));
+    console.log('LineChart.processData: Categories extracted:', categories.length);
 
-    const seriesMap = new Map();
+    let processedSeries = [];
 
     if (actualSeriesField) {
-        // Multi-series data: group data by series name first
+        // Multi-series data
+        console.log('LineChart.processData: Processing multi-series data');
+        
+        // Group data by series
+        const seriesGroups = {};
         data.forEach(item => {
             const seriesName = item[actualSeriesField] || 'Unnamed Series';
-            if (!seriesMap.has(seriesName)) {
-                seriesMap.set(seriesName, new Map());
+            if (!seriesGroups[seriesName]) {
+                seriesGroups[seriesName] = {};
             }
-            // Store value against its x-category for quick lookup
-            seriesMap.get(seriesName).set(item[actualXField], item[actualYField]);
-        });
-    } else {
-        // Single-series data
-        const seriesName = config.seriesName || actualYField || 'Value';
-        seriesMap.set(seriesName, new Map());
-        data.forEach(item => {
-            seriesMap.get(seriesName).set(item[actualXField], item[actualYField]);
-        });
-    }
-    
-    console.log(`LineChart.processData: Found ${seriesMap.size} distinct series.`);
-
-    // Build the final series array for ECharts
-    const processedSeries = [];
-    for (const [seriesName, dataMap] of seriesMap.entries()) {
-        const seriesData = categories.map(category => {
-            const rawValue = dataMap.get(category);
-            
-            if (rawValue === null || rawValue === undefined) {
-                return null;
-            }
-            
-            // Robust parsing: handles numbers, or strings containing numbers (e.g., "3.5%", "1,234.56")
-            let value;
-            if (typeof rawValue === 'number') {
-                value = rawValue;
-            } else {
-                // For strings, try to extract numeric value
-                const cleanedValue = String(rawValue).replace(/[^0-9.-]+/g, "");
-                value = parseFloat(cleanedValue);
-            }
-            
-            return isNaN(value) ? null : value;
+            seriesGroups[seriesName][item[actualXField]] = item[actualYField];
         });
         
-        console.log(`LineChart.processData: Series "${seriesName}" data:`, seriesData.slice(0, 5), '... (showing first 5 values)');
-        processedSeries.push({ name: seriesName, data: seriesData });
+        console.log('LineChart.processData: Series groups found:', Object.keys(seriesGroups));
+
+        // Convert to ECharts format
+        processedSeries = Object.entries(seriesGroups).map(([seriesName, dataMap]) => {
+            const seriesData = categories.map(category => {
+                const rawValue = dataMap[category];
+                if (rawValue === null || rawValue === undefined) return null;
+                
+                const numValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue);
+                return isNaN(numValue) ? null : numValue;
+            });
+            
+            return { name: seriesName, data: seriesData };
+        });
+    } else {
+        // Single series data
+        console.log('LineChart.processData: Processing single-series data');
+        const seriesName = config.seriesName || actualYField || 'Value';
+        
+        const dataMap = {};
+        data.forEach(item => {
+            dataMap[item[actualXField]] = item[actualYField];
+        });
+        
+        const seriesData = categories.map(category => {
+            const rawValue = dataMap[category];
+            if (rawValue === null || rawValue === undefined) return null;
+            
+            const numValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue);
+            return isNaN(numValue) ? null : numValue;
+        });
+        
+        processedSeries = [{ name: seriesName, data: seriesData }];
     }
 
     const result = { categories, series: processedSeries };
-    console.log('LineChart.processData: Final result structure:', {
+    console.log('LineChart.processData: Final result:', {
         categoriesLength: result.categories.length,
         seriesCount: result.series.length,
-        firstSeriesDataLength: result.series[0]?.data?.length || 0,
-        sampleCategories: result.categories.slice(0, 3),
-        sampleSeriesData: result.series[0]?.data?.slice(0, 3) || []
+        seriesNames: result.series.map(s => s.name),
+        firstSeriesDataLength: result.series[0]?.data?.length
     });
     
     return result;
   }
   
-  /**
-   * Helper method to find the best matching field name
-   */
   static findBestField(availableFields, preferredField, fallbackFields) {
     if (availableFields.includes(preferredField)) {
       return preferredField;

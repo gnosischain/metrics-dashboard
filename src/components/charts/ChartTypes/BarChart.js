@@ -2,11 +2,11 @@
  * Bar Chart implementation for ECharts
  * Location: src/components/charts/ChartTypes/BarChart.js
  * 
- * FIXED: Updated import paths to use centralized utils
+ * Includes time series formatting and default zoom support
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { generateColorPalette } from '../../../utils';
 
 export class BarChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -15,6 +15,16 @@ export class BarChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
+    
+    // Analyze time granularity for smart formatting
+    const timeAnalysis = BaseChart.analyzeTimeGranularity(processedData.categories);
+    
+    // Add time context to config
+    const enhancedConfig = {
+      ...config,
+      timeContext: timeAnalysis
+    };
+    
     const colors = generateColorPalette(processedData.series?.length || 1, isDarkMode);
 
     return {
@@ -23,12 +33,12 @@ export class BarChart extends BaseChart {
       xAxis: {
         type: 'category',
         data: processedData.categories,
-        ...this.getAxisConfig(isDarkMode, 'category', config)
+        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
       },
       
       yAxis: {
         type: 'value',
-        ...this.getAxisConfig(isDarkMode, 'value', config)
+        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
       },
       
       series: processedData.series ? processedData.series.map((series, index) => ({
@@ -53,21 +63,17 @@ export class BarChart extends BaseChart {
       }],
       
       tooltip: {
-        ...this.getTooltipConfig({ ...config, isDarkMode }),
+        ...this.getTooltipConfig({ ...enhancedConfig, isDarkMode }),
         trigger: 'axis',
-        formatter: (params) => {
-          let tooltip = `<strong>${params[0].axisValue}</strong><br/>`;
-          params.forEach(param => {
-            const seriesName = param.seriesName || 'Value';
-            tooltip += `${seriesName}: <strong>${formatValue(param.value, config.format)}</strong><br/>`;
-          });
-          return tooltip;
-        }
+        formatter: BaseChart.createTimeSeriesAwareTooltipFormatter(enhancedConfig)
       },
       
-      legend: this.getLegendConfig(isDarkMode, processedData.series?.length || 1, config),
+      legend: this.getLegendConfig(isDarkMode, processedData.series?.length || 1, enhancedConfig),
       
-      grid: this.getGridConfig(config)
+      grid: this.getGridConfig(enhancedConfig),
+      
+      // Add default zoom configuration
+      ...this.getDataZoomConfig(enhancedConfig)
     };
   }
 
@@ -82,11 +88,28 @@ export class BarChart extends BaseChart {
       throw new Error('Bar chart data must be an array');
     }
 
-    const categories = [...new Set(data.map(item => item[xField]))];
+    // Use the same field detection logic as LineChart
+    const firstItem = data[0] || {};
+    const availableFields = Object.keys(firstItem);
 
-    if (seriesField) {
+    const actualXField = this.findBestField(availableFields, xField, ['date', 'time', 'timestamp', 'category', 'x']);
+    const actualYField = this.findBestField(availableFields, yField, ['value', 'y', 'count', 'amount']);
+    const actualSeriesField = seriesField ? this.findBestField(availableFields, seriesField, ['label', 'series', 'category', 'group']) : null;
+
+    // Extract and sort categories (handle dates if present)
+    const categories = [...new Set(data.map(item => item[actualXField]))]
+      .sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+          return dateA - dateB;
+        }
+        return String(a).localeCompare(String(b));
+      });
+
+    if (actualSeriesField) {
       // Multi-series bar chart
-      const seriesNames = [...new Set(data.map(item => item[seriesField]))].filter(Boolean);
+      const seriesNames = [...new Set(data.map(item => item[actualSeriesField]))].filter(Boolean);
       
       return {
         categories,
@@ -94,19 +117,40 @@ export class BarChart extends BaseChart {
           name: seriesName,
           data: categories.map(category => {
             const item = data.find(d => 
-              d[xField] === category && d[seriesField] === seriesName
+              d[actualXField] === category && d[actualSeriesField] === seriesName
             );
-            return item ? parseFloat(item[yField] || 0) : 0;
+            return item ? parseFloat(item[actualYField] || 0) : 0;
           })
         }))
       };
     } else {
       // Single series bar chart
+      const dataMap = {};
+      data.forEach(item => {
+        dataMap[item[actualXField]] = item[actualYField];
+      });
+
       return {
         categories,
-        values: data.map(item => parseFloat(item[yField] || 0))
+        values: categories.map(category => {
+          const rawValue = dataMap[category];
+          return rawValue !== undefined ? parseFloat(rawValue || 0) : 0;
+        })
       };
     }
+  }
+
+  // Inherit field detection from LineChart
+  static findBestField(availableFields, preferredField, fallbackFields) {
+    if (availableFields.includes(preferredField)) {
+      return preferredField;
+    }
+    for (const fallback of fallbackFields) {
+      if (availableFields.includes(fallback)) {
+        return fallback;
+      }
+    }
+    return preferredField;
   }
 }
 

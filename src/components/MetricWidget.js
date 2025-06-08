@@ -3,9 +3,10 @@ import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
+import { addUniversalWatermark, removeUniversalWatermark } from '../utils/watermarkUtils';
 
 /**
- * Enhanced MetricWidget with ECharts integration
+ * Enhanced MetricWidget with ECharts integration and watermark support
  * Supports all chart types through the modular ECharts system
  */
 const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '' }) => {
@@ -19,6 +20,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   // Refs
   const isMounted = useRef(true);
   const previousMetricId = useRef(metricId);
+  const chartContainerRef = useRef(null);
 
   // Get metric configuration
   const metricConfig = useMemo(() => {
@@ -150,6 +152,35 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     setSelectedLabel(newLabel);
   }, []);
 
+  // Add watermark effect for chart widgets
+  useEffect(() => {
+    if (widgetConfig.type === 'chart' && chartContainerRef.current && !loading && !error) {
+      // Store reference to avoid stale closure
+      const currentContainer = chartContainerRef.current;
+      
+      // Delay to ensure chart is rendered
+      const timer = setTimeout(() => {
+        if (currentContainer) {
+          addUniversalWatermark({ current: currentContainer }, isDarkMode, {
+            className: 'card-chart-watermark',
+            size: 30,
+            position: 'bottom-right',
+            margin: 10,
+            opacity: isDarkMode ? 0.4 : 0.3,
+            zIndex: 1000
+          });
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+        if (currentContainer) {
+          removeUniversalWatermark({ current: currentContainer }, 'card-chart-watermark');
+        }
+      };
+    }
+  }, [widgetConfig.type, isDarkMode, loading, error, data]);
+
   // Cleanup effect
   useEffect(() => {
     return () => {
@@ -273,7 +304,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
           isDarkMode={isDarkMode}
         />
       )}
-      <div className="chart-container">
+      <div className="chart-container" ref={chartContainerRef}>
         <EChartsContainer
           data={filteredData || []}
           chartType={widgetConfig.chartType}
