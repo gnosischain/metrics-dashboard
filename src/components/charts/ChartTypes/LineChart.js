@@ -70,9 +70,11 @@ export class LineChart extends BaseChart {
         },
         
         legend: this.getLegendConfig(isDarkMode, processedData.series.length, enhancedConfig),
+        
+        // UNIVERSAL grid configuration - same for all chart types
         grid: this.getGridConfig(enhancedConfig),
         
-        // Add default zoom configuration
+        // UNIVERSAL zoom configuration - same for all chart types
         ...this.getDataZoomConfig(enhancedConfig)
       };
 

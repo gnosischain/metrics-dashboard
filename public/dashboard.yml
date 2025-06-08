@@ -52,6 +52,10 @@ OnChainActivity:
           gridRow: 1
           gridColumn: 1 / span 12
           minHeight: 500px
+        - id: historical_yield_sdai
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 600px
     - name: Flows
       order: 3
       icon: "🌊"

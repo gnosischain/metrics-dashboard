@@ -146,24 +146,70 @@ export class BaseChart {
       const formattedDate = axisValue ? 
         BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext) : '';
       
-      let tooltip = `<strong>${formattedDate}</strong><br/>`;
+      let tooltip = `<div style="font-weight: 600; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
+      let total = 0;
       
       params.forEach(param => {
         if (param.value !== null && param.value !== undefined) {
           const seriesName = param.seriesName || 'Value';
-          tooltip += `${seriesName}: <strong>${formatValue(param.value, config.format)}</strong><br/>`;
+          const formattedValue = formatValue(param.value, config.format);
+          const color = param.color || '#999';
+          
+          tooltip += `<div style="display: flex; justify-content: space-between; align-items: center; margin: 2px 0;">`;
+          tooltip += `<div style="display: flex; align-items: center;">`;
+          tooltip += `<div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${color}; margin-right: 6px; flex-shrink: 0;"></div>`;
+          tooltip += `<span>${seriesName}</span>`;
+          tooltip += `</div>`;
+          tooltip += `<span style="font-weight: 600; margin-left: 12px;">${formattedValue}</span>`;
+          tooltip += `</div>`;
+          
+          // Add to total if showTotal is enabled
+          if (config.showTotal && typeof param.value === 'number') {
+            total += param.value;
+          }
         }
       });
+      
+      // Add total if enabled and we have multiple series
+      if (config.showTotal && params.length > 1) {
+        tooltip += `<div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(128,128,128,0.3);">`;
+        tooltip += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
+        tooltip += `<span style="font-weight: 600;">Total</span>`;
+        tooltip += `<span style="font-weight: 600;">${formatValue(total, config.format)}</span>`;
+        tooltip += `</div>`;
+        tooltip += `</div>`;
+      }
       
       return tooltip;
     };
   }
 
+  /**
+   * RESPONSIVE grid configuration - adapts to card size
+   * Detects container width and adjusts spacing accordingly
+   */
   static getGridConfig(config = {}) {
+    // Check if we have card size hint in config
+    const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
+    
+    // Different spacing for small vs large cards
+    let bottomMargin, topMargin;
+    
+    if (config.dataZoom || config.enableZoom) {
+      // With zoom slider
+      bottomMargin = isSmallCard ? '18%' : '15%'; // More space needed for small cards
+      topMargin = isSmallCard ? '8%' : '10%';     // Less top space for small cards
+    } else {
+      // Without zoom slider
+      bottomMargin = isSmallCard ? '8%' : '3%';   // More bottom space for small cards
+      topMargin = isSmallCard ? '6%' : '10%';     // Less top space for small cards
+    }
+
     return {
       left: '3%',
       right: '4%',
-      bottom: config.dataZoom || config.enableZoom ? '15%' : '3%',
+      bottom: bottomMargin,
+      top: topMargin,
       containLabel: true,
       ...config.grid
     };
@@ -211,12 +257,18 @@ export class BaseChart {
       textStyle: {
         color: config.isDarkMode ? '#e5e7eb' : '#374151'
       },
+      padding: [8, 12],
       ...config.tooltip
     };
   }
 
+  /**
+   * RESPONSIVE data zoom configuration - adapts to card size
+   */
   static getDataZoomConfig(config = {}) {
     if (!config.dataZoom && !config.enableZoom) return {};
+    
+    const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     
     const dataZoomConfig = {
       dataZoom: [
@@ -229,8 +281,8 @@ export class BaseChart {
           type: 'slider',
           xAxisIndex: [0],
           filterMode: 'filter',
-          bottom: 10,
-          height: 20,
+          bottom: isSmallCard ? 12 : 10,  // Higher position for small cards
+          height: isSmallCard ? 18 : 20,  // Slightly smaller for small cards
           // Custom label formatter for zoom slider
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);

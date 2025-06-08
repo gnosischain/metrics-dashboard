@@ -21,6 +21,7 @@ const EChartsContainer = ({
   const instanceRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cardSize, setCardSize] = useState('large');
 
   const ChartComponent = useMemo(() => {
     console.log(`EChartsContainer: Getting chart component for type: ${chartType}`);
@@ -30,6 +31,33 @@ const EChartsContainer = ({
     }
     return component;
   }, [chartType]);
+
+  // Detect card size based on container width
+  useEffect(() => {
+    const detectCardSize = () => {
+      if (chartRef.current) {
+        const containerRect = chartRef.current.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        
+        // Determine if this is a small card (half-width) or large card (full-width)
+        // Typical breakpoint: cards under 600px are considered small
+        const isSmallCard = containerWidth < 600;
+        setCardSize(isSmallCard ? 'small' : 'large');
+        
+        console.log(`EChartsContainer: Detected card size: ${isSmallCard ? 'small' : 'large'} (width: ${containerWidth}px)`);
+      }
+    };
+
+    // Detect on mount and resize
+    detectCardSize();
+    
+    const resizeObserver = new ResizeObserver(detectCardSize);
+    if (chartRef.current) {
+      resizeObserver.observe(chartRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const chartOptions = useMemo(() => {
     console.log(`EChartsContainer: Generating chart options for ${chartType}`);
@@ -51,8 +79,19 @@ const EChartsContainer = ({
           getDefaultEmptyOptions(isDarkMode);
       }
 
-      console.log(`EChartsContainer: Calling ${chartType}.getOptions with data`);
-      const options = ChartComponent.getOptions(data, config, isDarkMode);
+      // Enhanced config with card size information
+      const enhancedConfig = {
+        ...config,
+        cardSize: cardSize,
+        isHalfWidth: cardSize === 'small'
+      };
+
+      console.log(`EChartsContainer: Calling ${chartType}.getOptions with enhanced config`, {
+        cardSize,
+        isHalfWidth: cardSize === 'small'
+      });
+      
+      const options = ChartComponent.getOptions(data, enhancedConfig, isDarkMode);
       
       console.log(`EChartsContainer: Generated chart options:`, {
         hasXAxis: !!options.xAxis,
@@ -60,7 +99,8 @@ const EChartsContainer = ({
         seriesCount: options.series?.length || 0,
         xAxisDataLength: options.xAxis?.data?.length || 0,
         seriesNames: options.series?.map(s => s.name) || [],
-        firstSeriesDataLength: options.series?.[0]?.data?.length || 0
+        firstSeriesDataLength: options.series?.[0]?.data?.length || 0,
+        gridConfig: options.grid
       });
       
       return options;
@@ -69,7 +109,7 @@ const EChartsContainer = ({
       setError(err.message);
       return null;
     }
-  }, [data, chartType, config, isDarkMode, ChartComponent]);
+  }, [data, chartType, config, isDarkMode, ChartComponent, cardSize]);
 
   useEffect(() => {
     if (chartOptions) {
