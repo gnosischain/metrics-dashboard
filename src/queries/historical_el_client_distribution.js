@@ -2,31 +2,26 @@ const metric = {
   id: 'historical_el_client_distribution',
   name: 'EL Client Distribution',
   description: 'Distribution of block production per client',
-  format: 'formatNumber',
-  chartType: 'd3StackedArea',
+  chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,
+  format: 'formatNumber',
   
-  d3Config: {
-    // Field mappings - make sure these match your data structure
-    xField: 'date',
-    yField: 'value',
-    seriesField: 'client',
-    
-    // Stacked area specific settings
-    stacked: true,
-    multiSeries: true,
-    opacity: 0.8,
-    strokeWidth: 1, // Add some stroke for definition
-    interpolate: 'monotoneX',
-    
-    // Visual settings
-    enableLegend: true,
-    enableTooltip: true,
-    legendPosition: 'top', // Can be 'top' or 'right'
-    legendScrollable: true, // Enable scrolling for many legend items
-    
+  defaultZoom: {
+    start: 70, 
+    end: 100   
   },
+  
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'client', 
+  
+  smooth: true,
+  symbolSize: 2,
+  lineWidth: 2,
+  areaOpacity: 0.7, 
+  
+  showTotal: true, 
 
   query: `SELECT date, client, value AS value FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
 };

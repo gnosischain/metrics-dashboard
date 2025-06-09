@@ -23,33 +23,26 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
     };
   }, [isOpen, handleEscKey]);
 
+  // Restore and fix watermark logic for the modal view
   useEffect(() => {
     const modalNode = modalContentRef.current;
     if (isOpen && modalNode) {
-      // Remove any existing watermarks first to prevent duplicates
-      const existingWatermarks = modalNode.querySelectorAll(
-        '.chart-watermark, .chartjs-watermark, .d3-chart-watermark, .universal-chart-watermark'
-      );
-      existingWatermarks.forEach(watermark => {
-        try { 
-          watermark.remove(); 
-        } catch (e) { 
-          /* Ignore removal errors */ 
-        }
-      });
-      
-      // Add a single modal watermark with a slight delay to ensure content is rendered
       const timer = setTimeout(() => {
+        const chartContainer = modalNode.querySelector('.chart-container');
+        const hasZoom = chartContainer ? chartContainer.classList.contains('has-zoom') : false;
+
         addUniversalWatermark({ current: modalNode }, isDarkMode, {
             className: 'modal-chart-watermark',
-            size: 35, // Slightly larger for modal
-            position: 'bottom-right',
-            margin: 15,
-            opacity: isDarkMode ? 0.4 : 0.3,
-            zIndex: 1001 // Higher z-index for modal
+            preventDuplicates: true,
+            // Use custom styles to position correctly above the zoom bar
+            customStyles: {
+              bottom: hasZoom ? '40px' : '15px',
+              right: '15px',
+              zIndex: 1001
+            }
         });
       }, 200);
-      
+
       return () => {
         clearTimeout(timer);
         if (modalNode) {
@@ -57,33 +50,23 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
         }
       };
     }
-  }, [isOpen, isDarkMode]);
+  }, [isOpen, isDarkMode, children]);
 
-  // Handle chart resize when modal opens
+
   useEffect(() => {
-    if (isOpen && modalContentRef.current) {
+    if (isOpen) {
       const timer = setTimeout(() => {
-        // Trigger resize event for ECharts
-        const echartsContainers = modalContentRef.current.querySelectorAll('.echarts-container');
-        echartsContainers.forEach(container => {
-          // Force resize of ECharts instance
-          const echartsInstance = container.__echarts__;
-          if (echartsInstance) {
-            echartsInstance.resize();
-          }
-        });
+        window.dispatchEvent(new Event('resize'));
       }, 300);
-
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // Use portal to render modal outside the component hierarchy
   return ReactDOM.createPortal(
-    <div className="chart-modal-overlay">
-      <div className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div className="chart-modal-overlay" onClick={onClose}>
+      <div className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="chart-modal-header">
           <div className="chart-modal-title">
             <h2>{title}</h2>

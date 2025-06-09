@@ -1,67 +1,57 @@
 const metric = {
-    id: 'p2p_geo_topology',
-    name: 'P2P Geographic Network Topology',
-    description: 'Geographic visualization of peer-to-peer network connections the past day',
-    format: 'formatNumber',
-    chartType: 'geoNetwork',
-    
-    // Geographic network configuration
-    networkConfig: {
-      // Source node field mappings
-      sourceIdField: 'peer_discovery_id_prefix',
-      sourceLatField: 'peer_lat',           // Use separate lat field
-      sourceLonField: 'peer_lon',           // Use separate lon field
-      sourceLocationField: 'peer_loc',      // Fallback combined field
-      sourceNameField: 'peer_hostname',
-      sourceCityField: 'peer_city',
-      sourceCountryField: 'peer_country',
-      sourceGroupField: 'peer_client',         // For node coloring by organization
-      
-      // Target node field mappings
-      targetIdField: 'neighbor_discovery_id_prefix',
-      targetLatField: 'neighbor_lat',       // Use separate lat field
-      targetLonField: 'neighbor_lon',       // Use separate lon field
-      targetLocationField: 'neighbor_loc',  // Fallback combined field
-      targetNameField: 'neighbor_ip',        // Using IP as name since hostname might not exist
-      targetCityField: 'neighbor_city',
-      targetCountryField: 'neighbor_country',
-      targetGroupField: 'neighbor_client',
-      
-      // Edge configuration
-      valueField: 'cnt', // Connection count for edge thickness
-      directed: true, // Show directional arrows from peer to neighbor
-      
-      // Visual styling
-      minNodeRadius: 2,
-      maxNodeRadius: 4,
-      nodeOpacity: 0.8,
-      
-      // Thin but visible edges to avoid clutter
-      minEdgeWidth: 0.2,
-      maxEdgeWidth: 1.5,
-      edgeOpacity: 0.01,
-      
-      // Other settings for dense networks
-      linkOpacity: 0.3,       
+  id: 'p2p_geo_topology',
+  name: 'P2P Geographic Network Topology',
+  description: 'Geographic visualization of peer-to-peer network connections',
+  format: 'formatNumber',
+  chartType: 'map',
+  
+  // Map-specific configuration
+  // Required fields for geographic coordinates
+  peerLatField: 'peer_lat',
+  peerLonField: 'peer_lon',
+  neighborLatField: 'neighbor_lat',
+  neighborLonField: 'neighbor_lon',
+  
+  // Optional fields for enhanced visualization
+  valueField: 'cnt', // Connection count/strength
+  labelField: 'peer_client', // For categorizing nodes by color
+  
+  // Optional ID fields (if not provided, lat_lon will be used as ID)
+  peerIdField: 'peer_discovery_id_prefix',
+  neighborIdField: 'neighbor_discovery_id_prefix',
+  
+  // Optional name fields for node labels
+  peerNameField: 'peer_city',
+  neighborNameField: 'neighbor_city',
+  
+  // Tooltip configuration - fields to show in tooltip
+  peerTooltipFields: [
+    { field: 'peer_country', label: 'Country' },
+    { field: 'peer_org', label: 'Organization' },
+    { field: 'peer_hostname', label: 'Hostname' }
+  ],
+  neighborTooltipFields: [
+    { field: 'neighbor_country', label: 'Country' },
+    { field: 'neighbor_org', label: 'Organization' }
+  ],
+  
+  // Visual customization
+  nodeMinSize: 8,
+  nodeMaxSize: 35,
+  lineMinWidth: 0.5,
+  lineMaxWidth: 5,
+  lineOpacity: 0.2,
+  
+  // Animation toggle
+  enableAnimation: false, // Set to true to enable animated connection trails
+  
+  // Custom color palette (optional)
+  colors: [
+    '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
+    '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9845'
+  ],
 
-      nodeStroke: 'transparent',    // Invisible borders
-      nodeStrokeWidth: 0.1,           // Or set width to 0
-      
-      // Location parsing
-      locationSeparator: ',', // For parsing 'lat,lon' format
-      
-      // Map configuration
-      mapProjection: 'geoNaturalEarth1', // Natural Earth projection
-      mapScale: 180,
-      mapCenter: [0, 20], // Slight northward center
-      
-      // Interaction
-      enableZoom: true,
-      enablePan: true
-    },
-    
-    // Query - using the data structure you already have
-    query: `
+  query: `
       SELECT
 
         date,
@@ -90,6 +80,6 @@ const metric = {
         peer_loc != '' 
         AND neighbor_loc != ''
     `
-  };
-  
-  export default metric;
+};
+
+export default metric;

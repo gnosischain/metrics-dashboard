@@ -1,7 +1,8 @@
 /**
  * Chart Types Index - The "ECharts Chart Types Export" file
  * Location: src/components/charts/ChartTypes/index.js
- * * This file exports all available chart types and provides utilities
+ * 
+ * This file exports all available chart types and provides utilities
  * for the ECharts integration system.
  */
 
@@ -16,6 +17,14 @@ import { BoxplotChart } from './BoxplotChart';
 import { HeatmapChart } from './HeatmapChart';
 import { GraphChart } from './GraphChart';
 import { SunburstChart } from './SunburstChart';
+import { Geo2DMapChart } from './Geo2DMapChart';
+
+// Import QuantileBandsChart - make sure this file exists
+// If this import fails, the chart type won't be registered
+import { QuantileBandsChart } from './QuantileBandsChart';
+
+// Debug: Log to verify import
+console.log('QuantileBandsChart imported:', QuantileBandsChart);
 
 // Export individual chart components
 export {
@@ -28,7 +37,9 @@ export {
   BoxplotChart,
   HeatmapChart,
   GraphChart,
-  SunburstChart
+  SunburstChart,
+  Geo2DMapChart,
+  QuantileBandsChart
 };
 
 /**
@@ -49,6 +60,13 @@ export const CHART_TYPES = {
   heatmap: HeatmapChart,
   graph: GraphChart,
   sunburst: SunburstChart,
+  map: Geo2DMapChart, // Use standard 2D map
+  'geo-map': Geo2DMapChart,
+  'network-map': Geo2DMapChart,
+  
+  // Quantile bands chart - all lowercase keys
+  quantilebands: QuantileBandsChart,
+  'quantile-bands': QuantileBandsChart,
   
   // Aliases for compatibility with existing configs
   'line-chart': LineChart,
@@ -65,153 +83,135 @@ export const CHART_TYPES = {
   'sunburst-chart': SunburstChart,
   'boxplot-chart': BoxplotChart,
   'heatmap-chart': HeatmapChart,
-  
-  // Legacy D3 compatibility mappings
-  'd3Line': LineChart,
-  'd3StackedArea': AreaChart,
-  'd3Bar': BarChart,
-  'd3HorizontalBar': BarChart,
-  'd3Pie': PieChart,
-  'd3Sankey': SankeyChart,
-  'd3Radar': RadarChart,
-  'd3Network': GraphChart,
-  'd3Sunburst': SunburstChart
+  'quantile-bands-chart': QuantileBandsChart,
 };
 
+// Debug: Log available chart types
+console.log('Available chart types:', Object.keys(CHART_TYPES));
+
 /**
- * Get chart component by type
- * @param {string} chartType - Chart type identifier
- * @returns {Object|null} Chart component class or null if not found
+ * Get a chart component by type string
+ * @param {string} type - The chart type identifier
+ * @returns {Object|null} The chart component class or null if not found
  */
-export const getChartComponent = (chartType) => {
-  if (!chartType) {
-    console.warn('getChartComponent: No chart type provided');
+export function getChartComponent(type) {
+  if (!type) {
+    console.warn('getChartComponent: No type provided');
     return null;
   }
-
-  const normalizedType = chartType.toLowerCase().trim();
-  const component = CHART_TYPES[normalizedType];
   
-  if (!component) {
-    console.warn(`getChartComponent: Unsupported chart type "${chartType}"`);
-    // Return a fallback to LineChart for unknown types
-    return LineChart;
+  // Normalize the type string (lowercase, trim)
+  const normalizedType = type.toLowerCase().trim();
+  
+  console.log('getChartComponent: Looking for type:', type, 'normalized:', normalizedType);
+  
+  // Try exact match first
+  if (CHART_TYPES[normalizedType]) {
+    console.log('getChartComponent: Found exact match for:', normalizedType);
+    return CHART_TYPES[normalizedType];
   }
   
-  return component;
-};
+  // Try camelCase version
+  const camelCase = normalizedType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+  if (CHART_TYPES[camelCase]) {
+    console.log('getChartComponent: Found camelCase match for:', camelCase);
+    return CHART_TYPES[camelCase];
+  }
+  
+  // Try without 'Chart' suffix
+  const withoutChart = normalizedType.replace(/chart$/i, '').trim();
+  if (CHART_TYPES[withoutChart]) {
+    console.log('getChartComponent: Found match without chart suffix:', withoutChart);
+    return CHART_TYPES[withoutChart];
+  }
+  
+  // Try with '-chart' suffix
+  const withDashChart = `${withoutChart}-chart`;
+  if (CHART_TYPES[withDashChart]) {
+    console.log('getChartComponent: Found match with -chart suffix:', withDashChart);
+    return CHART_TYPES[withDashChart];
+  }
+  
+  console.warn(`getChartComponent: Unknown chart type: ${type}. Available types:`, Object.keys(CHART_TYPES));
+  return null;
+}
 
 /**
- * Get all available chart types
- * @returns {Array<string>} Array of chart type names
+ * Get list of available chart types
+ * @returns {string[]} Array of available chart type identifiers
  */
-export const getAvailableChartTypes = () => {
-  return Object.keys(CHART_TYPES);
-};
+export function getAvailableChartTypes() {
+  // Return unique base types (without aliases)
+  return [
+    'line',
+    'area', 
+    'bar',
+    'pie',
+    'sankey',
+    'radar',
+    'boxplot',
+    'heatmap',
+    'graph',
+    'sunburst',
+    'map',
+    'quantileBands'
+  ];
+}
 
 /**
  * Check if a chart type is supported
- * @param {string} chartType - Chart type identifier
- * @returns {boolean} Whether the chart type is supported
+ * @param {string} type - The chart type to check
+ * @returns {boolean} True if the chart type is supported
  */
-export const isChartTypeSupported = (chartType) => {
-  if (!chartType) return false;
-  const normalizedType = chartType.toLowerCase().trim();
-  return normalizedType in CHART_TYPES;
-};
+export function isChartTypeSupported(type) {
+  return getChartComponent(type) !== null;
+}
 
 /**
- * Get chart type metadata
- * @param {string} chartType - Chart type identifier
- * @returns {Object} Chart type metadata
+ * Get chart type information
+ * @param {string} type - The chart type
+ * @returns {Object} Information about the chart type
  */
-export const getChartTypeInfo = (chartType) => {
-  const component = getChartComponent(chartType);
-  
+export function getChartTypeInfo(type) {
+  const component = getChartComponent(type);
   if (!component) {
-    return {
-      type: chartType,
-      supported: false,
-      category: 'unknown'
-    };
+    return null;
   }
-
-  // Determine category
-  let category = 'basic';
-  const chartTypeLower = chartType.toLowerCase();
-  if (['sankey', 'radar', 'boxplot', 'heatmap', 'graph', 'sunburst'].some(type => chartTypeLower.includes(type))) {
-    category = 'advanced';
-  }
-
+  
   return {
-    type: chartType,
-    supported: true,
-    category,
-    component
+    type: type,
+    component: component,
+    name: component.name || type,
+    // Add more metadata as needed
   };
-};
+}
 
 /**
- * Chart configuration validator
- * @param {Object} config - Chart configuration
- * @param {string} chartType - Chart type
- * @returns {Object} Validation result
+ * Validate chart configuration
+ * @param {Object} config - The chart configuration object
+ * @returns {Object} Validation result with { valid: boolean, errors: string[] }
  */
-export const validateChartConfig = (config, chartType) => {
+export function validateChartConfig(config) {
   const errors = [];
-  const warnings = [];
-
+  
   if (!config) {
-    errors.push('Chart configuration is required');
-    return { valid: false, errors, warnings };
+    errors.push('Configuration is required');
+    return { valid: false, errors };
   }
-
-  // Type-specific validation
-  switch (chartType?.toLowerCase()) {
-    case 'line':
-    case 'area':
-      if (!config.xField && !config.dateField) {
-        warnings.push('xField or dateField should be specified for time series charts');
-      }
-      if (!config.yField && !config.valueField) {
-        warnings.push('yField or valueField should be specified');
-      }
-      break;
-      
-    case 'pie':
-      if (!config.nameField) {
-        warnings.push('nameField should be specified for pie charts');
-      }
-      if (!config.valueField) {
-        warnings.push('valueField should be specified for pie charts');
-      }
-      break;
-      
-    case 'sankey':
-      if (!config.sourceField || !config.targetField) {
-        errors.push('sourceField and targetField are required for sankey charts');
-      }
-      break;
-    default:
-      // No specific validation for other types yet
-      break;
+  
+  if (!config.chartType) {
+    errors.push('Chart type is required');
+  } else if (!isChartTypeSupported(config.chartType)) {
+    errors.push(`Unsupported chart type: ${config.chartType}`);
   }
-
+  
+  // Add more validation as needed
+  
   return {
     valid: errors.length === 0,
-    errors,
-    warnings
+    errors
   };
-};
+}
 
-// Default export for convenience
-const chartTypesUtils = {
-  getChartComponent,
-  getAvailableChartTypes,
-  isChartTypeSupported,
-  getChartTypeInfo,
-  validateChartConfig,
-  CHART_TYPES
-};
-
-export default chartTypesUtils;
+// Export the default EChartsContainer
+export { default as EChartsContainer } from './EChartsContainer';

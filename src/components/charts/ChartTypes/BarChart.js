@@ -2,7 +2,7 @@
  * Bar Chart implementation for ECharts
  * Location: src/components/charts/ChartTypes/BarChart.js
  * 
- * Includes time series formatting and default zoom support
+ * Includes time series formatting, default zoom support, and stacking capability
  */
 
 import { BaseChart } from './BaseChart';
@@ -27,6 +27,9 @@ export class BarChart extends BaseChart {
     
     const colors = generateColorPalette(processedData.series?.length || 1, isDarkMode);
 
+    // Check if this should be a stacked bar chart
+    const isStacked = config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1;
+
     return {
       ...this.getBaseOptions(isDarkMode),
       
@@ -41,26 +44,35 @@ export class BarChart extends BaseChart {
         ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
       },
       
-      series: processedData.series ? processedData.series.map((series, index) => ({
-        name: series.name,
-        type: 'bar',
-        data: series.data,
-        itemStyle: {
-          color: colors[index],
-          borderRadius: config.borderRadius || [2, 2, 0, 0]
-        },
-        barWidth: config.barWidth || 'auto',
-        barMaxWidth: config.barMaxWidth || 50
-      })) : [{
-        type: 'bar',
-        data: processedData.values,
-        itemStyle: {
-          color: colors[0],
-          borderRadius: config.borderRadius || [2, 2, 0, 0]
-        },
-        barWidth: config.barWidth || 'auto',
-        barMaxWidth: config.barMaxWidth || 50
-      }],
+      series: processedData.series ? 
+        processedData.series.map((series, index) => ({
+          name: series.name,
+          type: 'bar',
+          data: series.data,
+          itemStyle: {
+            color: colors[index],
+            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            // Add opacity support - same as areaOpacity but for bars
+            opacity: config.barOpacity !== undefined ? config.barOpacity : 
+                     config.opacity !== undefined ? config.opacity : 1.0
+          },
+          barWidth: config.barWidth || 'auto',
+          barMaxWidth: config.barMaxWidth || 50,
+          // Enable stacking if we have multiple series
+          stack: isStacked ? 'total' : undefined
+        })) : [{
+          type: 'bar',
+          data: processedData.values,
+          itemStyle: {
+            color: colors[0],
+            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            // Add opacity support for single series too
+            opacity: config.barOpacity !== undefined ? config.barOpacity : 
+                     config.opacity !== undefined ? config.opacity : 1.0
+          },
+          barWidth: config.barWidth || 'auto',
+          barMaxWidth: config.barMaxWidth || 50
+        }],
       
       tooltip: {
         ...this.getTooltipConfig({ ...enhancedConfig, isDarkMode }),

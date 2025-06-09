@@ -2,31 +2,26 @@ const metric = {
   id: 'historical_cl_client_distribution',
   name: 'Client Distribution',
   description: 'Distribution of client implementations across the network',
-  format: 'formatNumber',
-  chartType: 'd3StackedArea',
+  chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,
+  format: 'formatNumber',
   
-  d3Config: {
-    // Field mappings
-    xField: 'date',
-    yField: 'value',
-    seriesField: 'client',
-    
-   // Stacked area specific settings
-   stacked: true,
-   multiSeries: true,
-   opacity: 0.8,
-   strokeWidth: 1, 
-   interpolate: 'monotoneX',
-   
-   // Visual settings
-   enableLegend: true,
-   enableTooltip: true,
-   legendPosition: 'top',
-   legendScrollable: true,
-    
+  defaultZoom: {
+    start: 70, 
+    end: 100   
   },
+  
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'client', 
+  
+  smooth: true,
+  symbolSize: 2,
+  lineWidth: 2,
+  areaOpacity: 0.7, 
+  
+  showTotal: true, 
 
   query: `SELECT * FROM dbt.p2p_peers_clients_daily ORDER BY date ASC, client ASC`,
 };

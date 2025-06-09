@@ -1,4 +1,3 @@
-// BaseChart.js - Complete file with all fixes
 import { formatValue } from '../../../utils';
 
 export class BaseChart {
@@ -36,7 +35,6 @@ export class BaseChart {
     if (type === 'value') {
       baseConfig.axisLabel.formatter = (value) => formatValue(value, config.format);
     } else if (type === 'category') {
-      // Apply smart time series formatting for category axes
       baseConfig.axisLabel.formatter = (value) => 
         BaseChart.formatTimeSeriesLabel(value, config.timeContext);
     }
@@ -45,26 +43,18 @@ export class BaseChart {
     return { ...baseConfig, ...(axisOverrides || {}) };
   }
 
-  /**
-   * Analyze data to determine time granularity
-   * @param {Array} categories - Array of time values
-   * @returns {Object} Analysis result with granularity info
-   */
   static analyzeTimeGranularity(categories) {
     if (!categories || categories.length < 2) {
       return { granularity: 'unknown', shouldRemoveTime: false };
     }
 
-    // Sample a few time values to determine granularity
     const sampleSize = Math.min(10, categories.length);
     const timeFormats = [];
     
     for (let i = 0; i < sampleSize; i++) {
       const timeStr = String(categories[i]);
       
-      // Check if it looks like a date/time string
       if (timeStr.match(/\d{4}-\d{2}-\d{2}/)) {
-        // Extract time part if exists
         if (timeStr.includes(' ')) {
           const timePart = timeStr.split(' ')[1];
           if (timePart) {
@@ -76,7 +66,6 @@ export class BaseChart {
       }
     }
 
-    // Analyze the time formats
     if (timeFormats.length === 0) {
       return { granularity: 'unknown', shouldRemoveTime: false };
     }
@@ -85,12 +74,10 @@ export class BaseChart {
     const hasZeroTime = timeFormats.some(t => t === '00:00:00');
     const hasNonZeroTime = timeFormats.some(t => t !== '00:00:00' && t !== 'date-only');
     
-    // If we have mixed formats or non-zero times, keep the time
     if (hasNonZeroTime) {
       return { granularity: 'sub-daily', shouldRemoveTime: false };
     }
     
-    // If all times are 00:00:00 or date-only, it's daily data
     if (hasDateOnly || (hasZeroTime && !hasNonZeroTime)) {
       return { granularity: 'daily', shouldRemoveTime: true };
     }
@@ -98,24 +85,15 @@ export class BaseChart {
     return { granularity: 'unknown', shouldRemoveTime: false };
   }
 
-  /**
-   * Smart time series label formatter
-   * Only removes time part for daily data, preserves meaningful timestamps
-   * @param {string|number} value - The label value
-   * @param {Object} context - Context with granularity info
-   * @returns {string} Formatted label
-   */
   static formatTimeSeriesLabel(value, context = {}) {
     if (typeof value !== 'string') {
       return value;
     }
 
-    // If we have granularity context, use it
     if (context.shouldRemoveTime === false) {
       return value;
     }
 
-    // If we explicitly should remove time or detect daily pattern
     if (context.shouldRemoveTime === true || value.includes(' 00:00:00')) {
       return value.split(' ')[0];
     }
@@ -123,26 +101,14 @@ export class BaseChart {
     return value;
   }
 
-  /**
-   * Smart tooltip date formatter
-   * @param {string|number} dateValue - The date value from tooltip
-   * @param {Object} context - Context with granularity info
-   * @returns {string} Formatted date for tooltip
-   */
   static formatTimeSeriesInTooltip(dateValue, context = {}) {
     return this.formatTimeSeriesLabel(dateValue, context);
   }
 
-  /**
-   * Enhanced tooltip formatter that handles time series formatting
-   * @param {Object} config - Chart configuration
-   * @returns {Function} Tooltip formatter function
-   */
   static createTimeSeriesAwareTooltipFormatter(config = {}) {
     return (params) => {
       if (!Array.isArray(params)) params = [params];
       
-      // Format the axis value (typically date) using time series formatting
       const axisValue = params[0]?.axisValue;
       const formattedDate = axisValue ? 
         BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext) : '';
@@ -164,14 +130,12 @@ export class BaseChart {
           tooltip += `<span style="font-weight: 600; white-space: nowrap;">${formattedValue}</span>`;
           tooltip += `</div>`;
           
-          // Add to total if showTotal is enabled
           if (config.showTotal && typeof param.value === 'number') {
             total += param.value;
           }
         }
       });
       
-      // Add total if enabled and we have multiple series
       if (config.showTotal && params.length > 1) {
         tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.3);">`;
         tooltip += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
@@ -185,37 +149,27 @@ export class BaseChart {
     };
   }
 
-  /**
-   * RESPONSIVE grid configuration - adapts to card size and dynamic height
-   * Detects container width and adjusts spacing accordingly
-   */
   static getGridConfig(config = {}) {
-    // Check if we have card size hint in config
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
     
-    // Different spacing for small vs large cards
     let bottomMargin, topMargin;
     
     if (isDynamicHeight) {
-      // For dynamic height containers, use minimal margins
       if (config.dataZoom || config.enableZoom) {
-        // With inline zoom slider
-        bottomMargin = '40px'; // Space for zoom slider
+        // *** FIX: Reduced bottom margin to bring zoom slider closer to the chart ***
+        bottomMargin = '30px'; 
         topMargin = isSmallCard ? '5%' : '8%';
       } else {
-        // Without zoom slider
-        bottomMargin = '20px'; // Minimal fixed bottom margin
+        bottomMargin = '20px';
         topMargin = isSmallCard ? '5%' : '8%';
       }
     } else {
-      // Original percentage-based margins for fixed height
       if (config.dataZoom || config.enableZoom) {
-        // With zoom slider
-        bottomMargin = isSmallCard ? '18%' : '15%';
+        // *** FIX: Reduced percentage for fixed-height charts as well ***
+        bottomMargin = '12%'; 
         topMargin = isSmallCard ? '8%' : '10%';
       } else {
-        // Without zoom slider
         bottomMargin = isSmallCard ? '8%' : '3%';
         topMargin = isSmallCard ? '6%' : '10%';
       }
@@ -223,7 +177,7 @@ export class BaseChart {
 
     return {
       left: '3%',
-      right: '4%',
+      right: '50px',
       bottom: bottomMargin,
       top: topMargin,
       containLabel: true,
@@ -257,10 +211,8 @@ export class BaseChart {
         type: 'cross',
         label: {
           backgroundColor: config.isDarkMode ? '#374151' : '#6b7280',
-          // Format axis pointer labels (the ones that appear on axes)
           formatter: (params) => {
             if (params.axisDimension === 'x') {
-              // Format x-axis labels using time context
               return BaseChart.formatTimeSeriesLabel(params.value, config.timeContext);
             }
             return formatValue(params.value, config.format);
@@ -278,9 +230,6 @@ export class BaseChart {
     };
   }
 
-  /**
-   * RESPONSIVE data zoom configuration - adapts to card size
-   */
   static getDataZoomConfig(config = {}) {
     if (!config.dataZoom && !config.enableZoom) return {};
     
@@ -298,9 +247,8 @@ export class BaseChart {
           type: 'slider',
           xAxisIndex: [0],
           filterMode: 'filter',
-          bottom: isDynamicHeight ? 5 : (isSmallCard ? 12 : 10), // Lower position for dynamic height
+          bottom: isDynamicHeight ? 5 : (isSmallCard ? 12 : 10),
           height: isSmallCard ? 18 : 20,
-          // Custom label formatter for zoom slider
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
           },
@@ -312,26 +260,17 @@ export class BaseChart {
             color: config.isDarkMode ? '#9ca3af' : '#6b7280'
           },
           dataBackground: {
-            lineStyle: {
-              color: config.isDarkMode ? '#4b5563' : '#d1d5db'
-            },
-            areaStyle: {
-              color: config.isDarkMode ? '#374151' : '#f3f4f6'
-            }
+            lineStyle: { color: config.isDarkMode ? '#4b5563' : '#d1d5db' },
+            areaStyle: { color: config.isDarkMode ? '#374151' : '#f3f4f6' }
           },
           selectedDataBackground: {
-            lineStyle: {
-              color: config.isDarkMode ? '#58A6FF' : '#0969DA'
-            },
-            areaStyle: {
-              color: config.isDarkMode ? 'rgba(88, 166, 255, 0.2)' : 'rgba(9, 105, 218, 0.2)'
-            }
+            lineStyle: { color: config.isDarkMode ? '#58A6FF' : '#0969DA' },
+            areaStyle: { color: config.isDarkMode ? 'rgba(88, 166, 255, 0.2)' : 'rgba(9, 105, 218, 0.2)' }
           }
         }
       ]
     };
 
-    // Apply default zoom if specified
     if (config.defaultZoom) {
       dataZoomConfig.dataZoom.forEach(zoom => {
         zoom.start = config.defaultZoom.start || 0;
