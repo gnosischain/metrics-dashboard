@@ -1,0 +1,295 @@
+/* 
+ * Zoom Slider Styles
+ * Chart zoom controls and slider
+ */
+
+/* ==================
+   Zoom Slider Container
+   ================== */
+
+.zoom-slider-container {
+  padding: 10px 20px 15px 20px;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background-color: var(--color-background);
+  display: none; /* Hidden by default, shown when needed */
+}
+
+/* Show when chart has zoom */
+.chart-container.has-zoom-slider .zoom-slider-container {
+  display: block;
+}
+
+/* ==================
+   Chart Wrapper
+   ================== */
+
+.chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.chart-wrapper.with-zoom-slider {
+  /* Ensure proper layout with zoom slider */
+}
+
+.chart-container {
+  flex-grow: 1;
+  position: relative;
+}
+
+/* ==================
+   Interactive Zoom Slider
+   ================== */
+
+.zoom-slider-interactive {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: grab;
+}
+
+.zoom-slider-interactive:active {
+  cursor: grabbing;
+}
+
+/* Webkit browsers (Chrome, Safari) */
+.zoom-slider-interactive::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1px;
+  height: 1px;
+  background: transparent;
+  border: none;
+}
+
+/* Firefox */
+.zoom-slider-interactive::-moz-range-thumb {
+  width: 1px;
+  height: 1px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+/* ==================
+   Visual Zoom Slider
+   ================== */
+
+.zoom-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: var(--border-radius-sm);
+  background: var(--color-border);
+  outline: none;
+  margin: 6px 0;
+}
+
+/* ==================
+   In-Frame Zoom Slider
+   ================== */
+
+/* Remove old external container styles */
+.zoom-slider-container {
+  display: none !important;
+}
+
+/* Ensure chart containers can contain absolute positioned elements */
+.chart-container {
+  position: relative !important;
+}
+
+/* Enhanced chart container adjustments */
+.enhanced-chart-container {
+  position: relative !important;
+}
+
+/* Remove the external zoom slider container styles */
+.chart-wrapper.with-zoom-slider {
+  display: block !important;
+}
+
+/* ==================
+   ECharts Zoom Integration
+   ================== */
+
+/* ECharts zoom slider specific styling */
+.echarts-dataZoom-slider {
+  z-index: 100;
+}
+
+/* Chart container zoom state */
+.chart-container.has-zoom {
+  /* Additional styles for charts with zoom enabled */
+}
+
+/* ==================
+   Zoom Controls
+   ================== */
+
+.zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: var(--spacing-xs);
+  z-index: 10;
+}
+
+.zoom-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
+}
+
+.zoom-btn:hover {
+  background-color: var(--color-background);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.zoom-btn:active {
+  transform: scale(0.95);
+}
+
+.zoom-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================
+   Zoom Reset Button
+   ================== */
+
+.zoom-reset {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  padding: 4px 12px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 10;
+  display: none;
+}
+
+.chart-container.is-zoomed .zoom-reset {
+  display: block;
+}
+
+.zoom-reset:hover {
+  background-color: var(--color-background);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+/* ==================
+   Mobile Zoom
+   ================== */
+
+@media (max-width: 768px) {
+  .chart-container {
+    min-height: 400px !important;
+  }
+  
+  .zoom-controls {
+    top: 5px;
+    right: 5px;
+  }
+  
+  .zoom-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .zoom-reset {
+    bottom: 55px;
+    right: 5px;
+    padding: 3px 8px;
+  }
+}
+
+/* ==================
+   Dark Mode Zoom
+   ================== */
+
+.dark-mode .zoom-slider-container {
+  border-top-color: var(--color-border);
+  background-color: var(--color-background);
+}
+
+.dark-mode .zoom-slider {
+  background: var(--color-border);
+}
+
+.dark-mode .zoom-btn {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .zoom-btn:hover {
+  background-color: rgba(88, 166, 255, 0.1);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.dark-mode .zoom-reset {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .zoom-reset:hover {
+  background-color: rgba(88, 166, 255, 0.1);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+/* ==================
+   Zoom Indicator
+   ================== */
+
+.zoom-indicator {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+
+.chart-container.is-zoomed .zoom-indicator {
+  display: block;
+}
+
+.dark-mode .zoom-indicator {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}

@@ -1,0 +1,204 @@
+Overview:
+  name: Overview
+  order: 1
+  icon: "📊"
+  iconClass: "chart-line"
+  metrics:
+    - id: under_construction
+      gridRow: 2
+      gridColumn: 1 / span 12
+      minHeight: 500px
+
+Financials:
+  name: Financials
+  order: 2
+  icon: "💰"
+  iconClass: "dollar-sign"
+  metrics:
+    - id: under_construction
+      gridRow: 2
+      gridColumn: 1 / span 12
+      minHeight: 500px
+
+OnChainActivity:
+  name: OnChain Activity
+  order: 3
+  icon: "⛓️"
+  iconClass: "link"
+  tabs:
+    - name: Yields
+      order: 2
+      icon: "📈"
+      iconClass: "yield"
+      metrics:
+        - id: historical_yield_sdai
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+    - name: Execution
+      order: 4
+      icon: "🚀"
+      iconClass: "zap"
+      metrics:
+        - id: historical_n_txs
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 600px
+        - id: historical_gas_used
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 600px
+        - id: historical_state_growth
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 500px
+    - name: Consensus
+      order: 5
+      icon: "🔄"
+      iconClass: "check-circle"
+      metrics:
+        - id: historical_active_validators
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 600px
+        - id: example_quantile_bands
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 600px
+
+Network:
+  name: Network
+  order: 4
+  icon: "🌐"
+  iconClass: "globe"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "activity"
+      metrics:
+        - id: p2p_geo_topology
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 650px
+        - id: last_day_nodes
+          gridRow: 2
+          gridColumn: 1 / span 4
+          minHeight: 100px
+        - id: last_day_countries
+          gridRow: 2
+          gridColumn: 5 / span 4
+          minHeight: 100px
+        - id: last_day_countries
+          gridRow: 2
+          gridColumn: 9 / span 4
+          minHeight: 100px
+        - id: test
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 650px
+        - id: last_day_cl_client_distribution
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: last_day_el_client_distribution
+          gridRow: 5
+          gridColumn: 1 / span 6
+          minHeight: 450px
+    - name: Clients
+      order: 2
+      icon: "💻"
+      iconClass: "monitor"
+      metrics:
+        - id: historical_el_client_distribution
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 600px
+        - id: historical_cl_client_distribution
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 600px
+    - name: Forks
+      order: 3
+      icon: "🗺️"
+      iconClass: "fork"
+      metrics:
+        - id: historical_cl_forks
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_cl_next_forks
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 500px
+    - name: Topology
+      order: 4
+      icon: "🔗"
+      iconClass: "link"
+      metrics:
+        - id: p2p_geo_topology
+          gridRow: 1
+          gridColumn: 1 / span 10
+          minHeight: 600px
+        - id: network_client_distribution
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 600px
+    - name: Probelab
+      order: 5
+      icon: "🔬"
+      iconClass: "search"
+      metrics:
+        - id: historical_probelab_cl_client_distribution
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: historical_probelab_cl_client_version_distribution
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_probelab_cl_client_quic_distribution
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 500px
+        - id: historical_probelab_cl_client_cloud_distribution
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: historical_probelab_cl_client_country_distribution
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: 500px
+
+ESG:
+  name: ESG
+  order: 5
+  icon: "🌱"
+  iconClass: "leaf"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "bar-chart-2"
+      metrics:
+        - id: historical_co2_emissions
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 400px
+        - id: historical_electricity_demand
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: historical_power_demand
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 500px
+    - name: Methodology
+      order: 2
+      icon: "📝"
+      iconClass: "file-text"
+      metrics:
+        - id: esg_methodology
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 16000px

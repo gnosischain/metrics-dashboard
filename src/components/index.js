@@ -1,7 +1,9 @@
 /**
  * Components Index
+ * Location: src/components/index.js
  * 
  * This file exports all components to make imports cleaner
+ * FIXED: Corrected EChartsContainer import path
  */
 
 import Dashboard from './Dashboard';
@@ -10,18 +12,29 @@ import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
 import MetricWidget from './MetricWidget';
 import Card from './Card';
-import Chart from './Chart';
 import TextWidget from './TextWidget';
-import EnhancedChart from './EnhancedChart';
-import StackedAreaChart from './StackedAreaChart';
-import WorldMapChart from './WorldMapChart';
 import NumberWidget from './NumberWidget';
 import ThemeToggle from './ThemeToggle';
 import IconComponent from './IconComponent';
 import LabelSelector from './LabelSelector';
 import ExpandButton from './ExpandButton';
 import ChartModal from './ChartModal';
-import TableWidget from './TableWidget'; // Add this line
+import TableWidget from './TableWidget';
+
+// ECharts components - FIXED IMPORT PATH
+import EChartsContainer from './charts/ChartTypes/EChartsContainer';
+import { 
+  LineChart, 
+  AreaChart, 
+  BarChart, 
+  SankeyChart, 
+  PieChart, 
+  RadarChart,
+  BoxplotChart,
+  HeatmapChart,
+  GraphChart,
+  SunburstChart 
+} from './charts/ChartTypes';
 
 // Export all components
 export {
@@ -31,18 +44,27 @@ export {
   MetricGrid,
   MetricWidget,
   Card,
-  Chart,
   TextWidget,
-  EnhancedChart,
-  StackedAreaChart,
-  WorldMapChart,
   NumberWidget,
   ThemeToggle,
   IconComponent,
   LabelSelector,
   ExpandButton,
   ChartModal,
-  TableWidget 
+  TableWidget,
+  
+  // ECharts components
+  EChartsContainer,
+  LineChart,
+  AreaChart,
+  BarChart,
+  SankeyChart,
+  PieChart,
+  RadarChart,
+  BoxplotChart,
+  HeatmapChart,
+  GraphChart,
+  SunburstChart
 };
 
 export default Dashboard;

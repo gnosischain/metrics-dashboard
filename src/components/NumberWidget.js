@@ -1,5 +1,5 @@
 import React from 'react';
-import formatters from '../utils/formatter';
+import formatters from '../utils/formatters';
 
 /**
  * Component to display a metric as a large number

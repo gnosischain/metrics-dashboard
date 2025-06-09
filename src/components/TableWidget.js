@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import 'tabulator-tables/dist/css/tabulator.min.css';
-import formatters from '../utils/formatter';
+import formatters from '../utils/formatters';
 
 /**
  * TableWidget component using Tabulator with improved height handling and pagination
@@ -187,7 +187,7 @@ const TableWidget = ({
       console.error('TableWidget: Error creating table:', error);
       setError('Failed to create table: ' + error.message);
     }
-  }, [data, config, isDarkMode, height, format]);
+  }, [data, config, isDarkMode, height, format, table]);
 
   if (error) {
     return (

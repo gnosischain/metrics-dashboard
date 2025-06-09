@@ -2,16 +2,28 @@ const metric = {
   id: 'historical_el_client_distribution',
   name: 'EL Client Distribution',
   description: 'Distribution of block production per client',
-  format: 'formatNumber',
   chartType: 'area', 
-  labelField: 'client', 
-  valueField: 'value',
-  fill: true, 
-  showPoints: false, 
-  stackedArea: true,
+  isTimeSeries: true,
   enableZoom: true,
-  isTimeSeries: true, 
-  query: `SELECT * FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
+  format: 'formatNumber',
+  
+  defaultZoom: {
+    start: 70, 
+    end: 100   
+  },
+  
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'client', 
+  
+  smooth: true,
+  symbolSize: 2,
+  lineWidth: 2,
+  areaOpacity: 0.7, 
+  
+  showTotal: true, 
+
+  query: `SELECT date, client, value AS value FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC`,
 };
 
 export default metric;

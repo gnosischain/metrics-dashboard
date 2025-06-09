@@ -1,0 +1,47 @@
+/* 
+ * Main CSS Entry Point
+ * This file imports all modular CSS files in the correct order
+ */
+
+/* Base styles - must be loaded first */
+@import './base/_variables.css';
+@import './base/_reset.css';
+@import './base/_typography.css';
+@import './base/_animations.css';
+
+/* Layout styles */
+@import './layout/_app.css';
+@import './layout/_dashboard.css';
+@import './layout/_grid.css';
+@import './layout/_header.css';
+
+/* Component styles */
+@import './components/_buttons.css';
+@import './components/_cards.css';
+@import './components/_modals.css';
+@import './components/_forms.css';
+@import './components/_sidebar.css';
+@import './components/_tabs.css';
+@import './components/_tooltips.css';
+
+/* Widget styles */
+@import './widgets/_charts.css';
+@import './widgets/_tables.css';
+@import './widgets/_text.css';
+@import './widgets/_numbers.css';
+@import './widgets/_legends.css';
+
+/* Feature styles */
+@import './features/_zoom-slider.css';
+@import './features/_watermark.css';
+@import './features/_filters.css';
+@import './features/_loading.css';
+
+/* Theme styles - must be loaded after components */
+@import './themes/_light-mode.css';
+@import './themes/_dark-mode.css';
+
+/* Utility styles - loaded last for override capability */
+@import './utilities/_helpers.css';
+@import './utilities/_responsive.css';
+@import './utilities/_scrollbars.css';

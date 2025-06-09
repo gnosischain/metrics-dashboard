@@ -1,9 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import ExpandButton from './ExpandButton';
+import { addUniversalWatermark, removeUniversalWatermark } from '../utils/watermarkUtils';
 
 const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children, isDarkMode = false }) => {
   const modalContentRef = useRef(null);
+
+  const handleEscKey = useCallback((event) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -14,31 +21,52 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
       document.removeEventListener('keydown', handleEscKey);
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, handleEscKey]);
 
-  const handleEscKey = (event) => {
-    if (event.key === 'Escape') {
-      onClose();
+  // Restore and fix watermark logic for the modal view
+  useEffect(() => {
+    const modalNode = modalContentRef.current;
+    if (isOpen && modalNode) {
+      const timer = setTimeout(() => {
+        const chartContainer = modalNode.querySelector('.chart-container');
+        const hasZoom = chartContainer ? chartContainer.classList.contains('has-zoom') : false;
+
+        addUniversalWatermark({ current: modalNode }, isDarkMode, {
+            className: 'modal-chart-watermark',
+            preventDuplicates: true,
+            // Use custom styles to position correctly above the zoom bar
+            customStyles: {
+              bottom: hasZoom ? '40px' : '15px',
+              right: '15px',
+              zIndex: 1001
+            }
+        });
+      }, 200);
+
+      return () => {
+        clearTimeout(timer);
+        if (modalNode) {
+          removeUniversalWatermark({ current: modalNode }, 'modal-chart-watermark');
+        }
+      };
     }
-  };
+  }, [isOpen, isDarkMode, children]);
+
 
   useEffect(() => {
-    if (isOpen && modalContentRef.current) {
-      const existingWatermarks = modalContentRef.current.querySelectorAll('.chart-watermark');
-      existingWatermarks.forEach(watermark => watermark.remove());
-      
-      const watermark = document.createElement('div');
-      watermark.className = 'chart-watermark';
-      modalContentRef.current.appendChild(watermark);
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // Use portal to render modal outside the component hierarchy
   return ReactDOM.createPortal(
-    <div className="chart-modal-overlay">
-      <div className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div className="chart-modal-overlay" onClick={onClose}>
+      <div className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="chart-modal-header">
           <div className="chart-modal-title">
             <h2>{title}</h2>

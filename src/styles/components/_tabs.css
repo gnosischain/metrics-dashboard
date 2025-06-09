@@ -1,0 +1,352 @@
+/* 
+ * Tab Component Styles
+ * Tab navigation and content switching
+ */
+
+/* ==================
+   Tab Container
+   ================== */
+
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ==================
+   Tab Navigation
+   ================== */
+
+.tabs-nav {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==================
+   Tab Items
+   ================== */
+
+.tab,
+.dashboard-tab {
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: background-color var(--transition-base), 
+              color var(--transition-base), 
+              border-color var(--transition-base);
+  border-bottom: 3px solid transparent;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.tab:hover,
+.dashboard-tab:hover {
+  background-color: rgba(9, 105, 218, 0.05);
+  color: var(--primary-blue);
+}
+
+.tab.active,
+.dashboard-tab.active {
+  border-bottom: 3px solid var(--primary-blue);
+  color: var(--primary-blue);
+  font-weight: var(--font-weight-semibold);
+  background-color: transparent;
+}
+
+/* ==================
+   Tab Icons
+   ================== */
+
+.tab-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================
+   Tab Badge
+   ================== */
+
+.tab-badge {
+  background-color: var(--primary-blue);
+  color: white;
+  font-size: var(--font-size-xs);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--border-radius-full);
+  margin-left: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  min-width: 20px;
+  text-align: center;
+}
+
+.tab.active .tab-badge {
+  background-color: var(--primary-blue-hover);
+}
+
+/* ==================
+   Tab Content
+   ================== */
+
+.tabs-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--color-surface);
+}
+
+.tab-panel {
+  display: none;
+  padding: var(--spacing-lg);
+  animation: fadeIn var(--transition-base);
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ==================
+   Vertical Tabs
+   ================== */
+
+.tabs-container.vertical {
+  flex-direction: row;
+}
+
+.tabs-container.vertical .tabs-nav {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: 1px solid var(--color-border);
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tabs-container.vertical .tab {
+  border-bottom: none;
+  border-left: 3px solid transparent;
+  justify-content: flex-start;
+}
+
+.tabs-container.vertical .tab.active {
+  border-left: 3px solid var(--primary-blue);
+  background-color: rgba(9, 105, 218, 0.05);
+}
+
+/* ==================
+   Pills Style Tabs
+   ================== */
+
+.tabs-nav.pills {
+  border-bottom: none;
+  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
+  background-color: transparent;
+}
+
+.tabs-nav.pills .tab {
+  border: none;
+  border-radius: var(--border-radius-full);
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background);
+}
+
+.tabs-nav.pills .tab:hover {
+  background-color: rgba(9, 105, 218, 0.1);
+}
+
+.tabs-nav.pills .tab.active {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+}
+
+/* ==================
+   Boxed Style Tabs
+   ================== */
+
+.tabs-nav.boxed {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-xs);
+  gap: var(--spacing-xs);
+}
+
+.tabs-nav.boxed .tab {
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: transparent;
+}
+
+.tabs-nav.boxed .tab:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tabs-nav.boxed .tab.active {
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  border: none;
+}
+
+/* ==================
+   Tab Dropdown (Mobile)
+   ================== */
+
+.tab-dropdown {
+  display: none;
+  position: relative;
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-dropdown-toggle {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tab-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  box-shadow: var(--shadow-md);
+  display: none;
+  z-index: var(--z-index-dropdown);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tab-dropdown-menu.show {
+  display: block;
+}
+
+.tab-dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.tab-dropdown-item:hover {
+  background-color: var(--color-background);
+}
+
+.tab-dropdown-item.active {
+  color: var(--primary-blue);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ==================
+   Tab Responsive
+   ================== */
+
+@media (max-width: 768px) {
+  .tabs-nav {
+    display: none;
+  }
+  
+  .tab-dropdown {
+    display: block;
+  }
+  
+  .tabs-container.vertical {
+    flex-direction: column;
+  }
+  
+  .tabs-container.vertical .tabs-nav {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .tabs-container.vertical .tab {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .tabs-container.vertical .tab.active {
+    border-left: none;
+    border-bottom: 3px solid var(--primary-blue);
+    background-color: transparent;
+  }
+}
+
+/* ==================
+   Tab Dark Mode
+   ================== */
+
+.dark-mode .tabs-nav {
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+}
+
+.dark-mode .tab,
+.dark-mode .dashboard-tab {
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .tab:hover,
+.dark-mode .dashboard-tab:hover {
+  background-color: rgba(88, 166, 255, 0.08);
+  color: var(--primary-blue);
+}
+
+.dark-mode .tab.active,
+.dark-mode .dashboard-tab.active {
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.dark-mode .tabs-content {
+  background-color: var(--color-surface);
+}
+
+.dark-mode .tab-dropdown {
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+}
+
+.dark-mode .tab-dropdown-toggle {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.dark-mode .tab-dropdown-menu {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.dark-mode .tab-dropdown-item:hover {
+  background-color: var(--color-background);
+}

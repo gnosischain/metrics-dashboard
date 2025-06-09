@@ -1,0 +1,102 @@
+/* 
+ * Dashboard Layout Styles
+ * Main dashboard structure and layout
+ */
+
+/* ==================
+   Dashboard Container
+   ================== */
+
+   .dashboard {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+  }
+  
+  .dashboard-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* ==================
+     Dashboard Content
+     ================== */
+  
+  .dashboard-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    padding-left: 1.75rem;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    position: relative;
+    z-index: 80;
+    height: calc(100vh - var(--header-height));
+  }
+  
+  /* ==================
+     Tab Content
+     ================== */
+  
+  .tab-content {
+    width: 100%;
+    animation: fadeIn var(--transition-slow);
+  }
+  
+  /* ==================
+     Empty States
+     ================== */
+  
+  .empty-dashboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-size: 1.1rem;
+  }
+  
+  /* ==================
+     Dashboard Selector
+     ================== */
+  
+  .dashboard-selector-container {
+    background-color: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .dashboard-selector {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
+  
+  .dashboard-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .dashboard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* ==================
+     Responsive Layout
+     ================== */
+  
+  @media (max-width: 768px) {
+    .dashboard-content {
+      margin-left: var(--sidebar-width-collapsed);
+      width: calc(100% - var(--sidebar-width-collapsed));
+      padding: var(--spacing-md);
+    }
+    
+    .dashboard-tabs {
+      flex-wrap: wrap;
+    }
+  }

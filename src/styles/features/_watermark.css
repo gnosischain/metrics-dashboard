@@ -1,0 +1,51 @@
+/*
+ * Watermark Styles
+ * Chart branding and watermarks
+ */
+
+/* ==================
+   Base Watermark Styles
+   ================== */
+.card-chart-watermark,
+.modal-chart-watermark {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 50;
+  transition: opacity 0.2s ease;
+}
+
+/* Ensure the parent container can position the watermark */
+.card-content, .chart-modal-content {
+  position: relative !important;
+}
+
+/* ==================
+   Theming
+   ================== */
+/* Light Theme Image */
+.card-chart-watermark,
+.modal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png');
+}
+
+/* Dark Theme Image */
+.dark-mode .card-chart-watermark,
+.dark-mode .modal-chart-watermark {
+  background-image: url('https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png');
+  opacity: 0.4;
+}
+
+/* ==================
+   Contextual Visibility
+   ================== */
+/* When a card is shown inside a modal, hide its own watermark */
+/* This prevents two watermarks from appearing in the expanded view */
+.chart-modal-content .card-chart-watermark {
+  display: none !important;
+}

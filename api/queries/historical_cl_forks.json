@@ -1,4 +1,4 @@
 {
   "id": "historical_cl_forks",
-  "query": "SELECT * FROM dbt.p2p_peers_cl_fork_daily ORDER BY date ASC, fork ASC"
+  "query": "SELECT date, fork, cnt FROM dbt.p2p_peers_cl_fork_daily WHERE label = 'Current Fork' ORDER BY date ASC, fork ASC"
 }

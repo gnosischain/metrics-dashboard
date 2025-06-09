@@ -1,0 +1,102 @@
+/* 
+ * Light Mode Theme
+ * Default light theme styles (most are in base styles)
+ */
+
+/* ==================
+   Light Mode Variables
+   ================== */
+
+:root {
+  /* Already defined in _variables.css */
+  /* This file can be used for light-mode-specific overrides if needed */
+}
+
+/* ==================
+   Light Mode Specific Styles
+   ================== */
+
+/* Ensure light mode is default */
+body:not(.dark-mode) {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+/* ==================
+   Component Overrides
+   ================== */
+
+/* Add any light-mode-specific component overrides here */
+/* Most light mode styles are the defaults in other files */
+
+/* ==================
+   Chart Styles
+   ================== */
+
+.chartjs-render-monitor {
+  color-scheme: light;
+}
+
+.chart-container[data-theme="light"] {
+  --chart-color-scheme: light;
+  --chart-text-color: #333333;
+}
+
+/* ==================
+   Watermark
+   ================== */
+
+.chart-watermark {
+  opacity: 0.15; /* Slightly more visible in light mode */
+}
+
+/* ==================
+   Scrollbars
+   ================== */
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D0D7DE;
+  border-radius: 5px;
+  border: 2px solid var(--color-background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ADBAC7;
+}
+
+/* ==================
+   Focus States
+   ================== */
+
+*:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* ==================
+   Selection
+   ================== */
+
+::selection {
+  background-color: rgba(9, 105, 218, 0.2);
+  color: var(--color-text-primary);
+}
+
+/* ==================
+   Print Styles
+   ================== */
+
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}

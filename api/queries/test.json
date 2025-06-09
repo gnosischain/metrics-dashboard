@@ -1,0 +1,4 @@
+{
+  "id": "test",
+  "query": "SELECT \n        CONCAT(client,' → ',IF(version='', 'Unknown',version)) AS sequence\n        ,value\n    FROM execution_blocks_clients_version_daily\n    WHERE date = today() - INTERVAL 1 DAY AND client != 'Unknown'\n      \n      ORDER BY count DESC"
+}

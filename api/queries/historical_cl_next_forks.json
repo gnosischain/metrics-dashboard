@@ -1,0 +1,4 @@
+{
+  "id": "historical_cl_next_forks",
+  "query": "SELECT date, fork, cnt FROM dbt.p2p_peers_cl_fork_daily WHERE label = 'Next Fork' ORDER BY date ASC, fork ASC"
+}

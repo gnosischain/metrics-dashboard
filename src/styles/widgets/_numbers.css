@@ -1,0 +1,322 @@
+/* 
+ * Number Widget Styles
+ * Number display and KPI widgets
+ */
+
+/* ==================
+   Number Widget Base
+   ================== */
+
+.number-widget {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: left;
+  height: 100%;
+  width: 100%;
+  padding-left: 1.5rem;
+  text-align: left;
+  background: transparent;
+}
+
+/* ==================
+   Number Value
+   ================== */
+
+.number-value {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+  color: var(--primary-blue);
+  margin-bottom: 8px;
+  transition: color var(--transition-base);
+}
+
+/* ==================
+   Number Label
+   ================== */
+
+.number-label {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================
+   Number Variations
+   ================== */
+
+/* With Change Indicator */
+.number-widget-with-change {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.number-change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+}
+
+.number-change.positive {
+  color: var(--color-success);
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.number-change.negative {
+  color: var(--color-error);
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.number-change.neutral {
+  color: var(--color-text-secondary);
+  background-color: var(--color-background);
+}
+
+.change-arrow {
+  width: 12px;
+  height: 12px;
+}
+
+/* ==================
+   Number Sizes
+   ================== */
+
+/* Small numbers for tight spaces */
+.grid-item[style*="grid-column: span 3"] .number-value,
+.grid-item[style*="grid-column: span 4"] .number-value {
+  font-size: 1.7rem;
+}
+
+/* Large numbers for wide spaces */
+.grid-item[style*="grid-column: span 8"] .number-value,
+.grid-item[style*="grid-column: span 12"] .number-value {
+  font-size: 3rem;
+}
+
+/* ==================
+   Number with Icon
+   ================== */
+
+.number-widget-with-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.number-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  color: var(--primary-blue);
+  flex-shrink: 0;
+}
+
+.number-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.number-content {
+  flex: 1;
+}
+
+/* ==================
+   Number Progress
+   ================== */
+
+.number-progress {
+  margin-top: var(--spacing-md);
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary-blue);
+  border-radius: var(--border-radius-full);
+  transition: width var(--transition-slow);
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ==================
+   Number Sparkline
+   ================== */
+
+.number-sparkline {
+  margin-top: var(--spacing-sm);
+  height: 40px;
+  width: 100%;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke: var(--primary-blue);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline-area {
+  fill: var(--primary-blue);
+  opacity: 0.1;
+}
+
+/* ==================
+   Number Grid
+   ================== */
+
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.number-grid-item {
+  text-align: center;
+}
+
+.number-grid-item .number-value {
+  font-size: 1.8rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.number-grid-item .number-label {
+  font-size: var(--font-size-sm);
+}
+
+/* ==================
+   Animated Numbers
+   ================== */
+
+.number-value.animate {
+  animation: numberPulse 0.3s ease;
+}
+
+@keyframes numberPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ==================
+   Number Display Card
+   ================== */
+
+.number-display-card {
+  box-shadow: none !important;
+  border: none !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.4) !important;
+  background: transparent !important;
+}
+
+.number-display-card .card-header {
+  border-bottom: none;
+  background: transparent;
+  padding: var(--spacing-sm) var(--spacing-md) 0;
+}
+
+.number-display-card .card-content {
+  padding: 0;
+}
+
+/* ==================
+   Responsive Numbers
+   ================== */
+
+@media (max-width: 768px) {
+  .number-value {
+    font-size: 2rem;
+  }
+  
+  .number-widget-with-icon {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .number-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+  }
+}
+
+/* ==================
+   Dark Mode Numbers
+   ================== */
+
+.dark-mode .number-value {
+  color: var(--primary-blue);
+}
+
+.dark-mode .number-label {
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .number-icon {
+  background-color: rgba(88, 166, 255, 0.1);
+  color: var(--primary-blue);
+}
+
+.dark-mode .progress-bar {
+  background-color: rgba(139, 148, 158, 0.1);
+}
+
+.dark-mode .progress-fill {
+  background-color: var(--primary-blue);
+}
+
+.dark-mode .number-change.positive {
+  background-color: rgba(40, 167, 69, 0.15);
+}
+
+.dark-mode .number-change.negative {
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+.dark-mode .sparkline-path {
+  stroke: var(--primary-blue);
+}
+
+.dark-mode .sparkline-area {
+  fill: var(--primary-blue);
+  opacity: 0.15;
+}
+
+.dark-mode .number-display-card {
+  border-left-color: rgba(255, 255, 255, 0.2) !important;
+}
