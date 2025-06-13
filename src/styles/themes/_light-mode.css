@@ -43,14 +43,6 @@ body:not(.dark-mode) {
 }
 
 /* ==================
-   Watermark
-   ================== */
-
-.chart-watermark {
-  opacity: 0.15; /* Slightly more visible in light mode */
-}
-
-/* ==================
    Scrollbars
    ================== */
 

@@ -1,4 +1,5 @@
 import formatters from '../formatters';
+import { getWatermarkConfig } from '../../config/watermark';
 
 /**
  * ECharts utility functions
@@ -105,187 +106,407 @@ export const generateGridConfig = (config, legendPosition = 'top') => {
  */
 export const hexToRgba = (hex, alpha = 1) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return `rgba(0, 0, 0, ${alpha})`;
+  return result
+    ? `rgba(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}, ${alpha})`
+    : hex;
+};
+
+/**
+ * Default color palette
+ */
+export const defaultColors = [
+  '#5470c6',
+  '#91cc75',
+  '#fac858',
+  '#ee6666',
+  '#73c0de',
+  '#3ba272',
+  '#fc8452',
+  '#9a60b4',
+  '#ea7ccc'
+];
+
+/**
+ * Get color from palette
+ * @param {number} index - Color index
+ * @param {Array} customColors - Custom color palette
+ * @returns {string} Color value
+ */
+export const getColor = (index, customColors = null) => {
+  const colors = customColors || defaultColors;
+  return colors[index % colors.length];
+};
+
+/**
+ * Add watermark to chart options
+ * @param {Object} options - Chart options
+ * @param {Object} config - Watermark configuration
+ * @returns {Object} Updated chart options
+ */
+export const addWatermark = (options, config = {}) => {
+  // Get global watermark configuration
+  const globalConfig = getWatermarkConfig({
+    isDarkMode: config.isDarkMode || false,
+    position: config.watermarkPosition || 'bottom-right'
+  });
   
-  const r = parseInt(result[1], 16);
-  const g = parseInt(result[2], 16);
-  const b = parseInt(result[3], 16);
+  // Merge with any passed config, global config takes precedence for positioning
+  const finalConfig = {
+    ...config,
+    ...globalConfig,
+    showWatermark: config.showWatermark !== undefined ? config.showWatermark : globalConfig.showWatermark
+  };
+
+  if (!finalConfig.showWatermark) return options;
+
+  // Create watermark graphic element
+  const watermarkGraphic = {
+    type: 'image',
+    id: 'watermark',
+    z: 1000,  // High z-index to ensure it's on top
+    bounding: 'raw',
+    style: {
+      image: finalConfig.watermarkImage,
+      width: finalConfig.watermarkSize,
+      height: finalConfig.watermarkSize,
+      opacity: finalConfig.watermarkOpacity
+    },
+    right: 10,
+    // Position at the same level as the zoom slider
+    bottom: config.hasZoom ? 15 : 10  // Same height as zoom slider when present
+  };
+
+  // Add graphic to options
+  if (!options.graphic) {
+    options.graphic = [];
+  } else if (!Array.isArray(options.graphic)) {
+    options.graphic = [options.graphic];
+  }
   
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  // Remove any existing watermark
+  options.graphic = options.graphic.filter(g => g.id !== 'watermark');
+  
+  // Add new watermark
+  options.graphic.push(watermarkGraphic);
+
+  return options;
+};
+
+/**
+ * Generate tooltip formatter
+ * @param {Object} config - Chart configuration
+ * @returns {Function} Tooltip formatter function
+ */
+export const getTooltipFormatter = (config) => {
+  return (params) => {
+    if (!params) return '';
+    
+    const isArray = Array.isArray(params);
+    const data = isArray ? params : [params];
+    
+    if (data.length === 0) return '';
+    
+    let content = `<div class="echarts-tooltip-content">`;
+    
+    // Add title (x-axis value)
+    const title = data[0].axisValue || data[0].name;
+    if (title) {
+      content += `<div class="tooltip-title">${title}</div>`;
+    }
+    
+    // Add series data
+    data.forEach(item => {
+      const color = item.color;
+      const name = item.seriesName;
+      const value = formatValue(item.value, config.format);
+      
+      content += `
+        <div class="tooltip-item">
+          <span class="tooltip-marker" style="background-color: ${color}"></span>
+          <span class="tooltip-label">${name}:</span>
+          <span class="tooltip-value">${value}</span>
+        </div>
+      `;
+    });
+    
+    content += `</div>`;
+    
+    return content;
+  };
 };
 
 /**
  * Generate axis configuration
- * @param {string} type - Axis type ('category', 'value', 'time')
- * @param {Object} config - Axis configuration
- * @param {boolean} isDarkMode - Dark mode flag
+ * @param {Object} config - Chart configuration
+ * @param {string} axisType - Type of axis ('x' or 'y')
  * @returns {Object} Axis configuration
  */
-export const generateAxisConfig = (type, config = {}, isDarkMode = false) => {
-  const baseConfig = {
-    type: type,
+export const generateAxisConfig = (config, axisType = 'x') => {
+  const baseAxis = {
+    type: 'category',
+    boundaryGap: true,
     axisLine: {
+      show: true,
       lineStyle: {
-        color: isDarkMode ? '#444' : '#ddd'
+        color: '#D0D7DE'
       }
+    },
+    axisTick: {
+      show: true,
+      alignWithLabel: true
     },
     axisLabel: {
-      color: isDarkMode ? '#ccc' : '#666'
+      show: true,
+      color: '#57606A',
+      fontSize: 12
     },
     splitLine: {
+      show: false
+    }
+  };
+
+  // Apply axis-specific defaults
+  if (axisType === 'y') {
+    baseAxis.type = 'value';
+    baseAxis.boundaryGap = [0, '10%'];
+    baseAxis.splitLine = {
+      show: true,
       lineStyle: {
-        color: isDarkMode ? '#333' : '#f0f0f0',
+        color: '#F6F8FA',
         type: 'dashed'
       }
-    }
-  };
-
-  if (type === 'value') {
-    baseConfig.axisLabel.formatter = (value) => formatValue(value, config.format);
+    };
   }
 
+  // Apply custom configuration
   return {
-    ...baseConfig,
-    ...config
+    ...baseAxis,
+    ...(config[`${axisType}Axis`] || {})
   };
 };
 
 /**
- * Detect data type and structure
- * @param {Array|Object} data - Chart data
+ * Analyze data to determine chart characteristics
+ * @param {Array} data - Chart data
+ * @param {Object} config - Chart configuration
  * @returns {Object} Data analysis result
  */
-export const analyzeData = (data) => {
-  if (!data) {
-    return { type: 'empty', fields: [], structure: 'none' };
-  }
+export const analyzeData = (data, config = {}) => {
+  const analysis = {
+    dataCount: data.length,
+    hasData: data.length > 0,
+    dateFields: [],
+    numericFields: [],
+    stringFields: [],
+    uniqueCategories: [],
+    uniqueSeries: [],
+    valueRange: { min: Infinity, max: -Infinity },
+    dateRange: null,
+    isTimeSeries: false,
+    isMultiSeries: false,
+    recommendedChartType: null
+  };
 
-  if (Array.isArray(data)) {
-    if (data.length === 0) {
-      return { type: 'empty', fields: [], structure: 'array' };
-    }
+  if (!analysis.hasData) return analysis;
 
-    const firstItem = data[0];
+  // Analyze first few items to determine field types
+  const sampleSize = Math.min(data.length, 10);
+  const sampleData = data.slice(0, sampleSize);
+  
+  // Get all field names
+  const allFields = new Set();
+  sampleData.forEach(item => {
+    Object.keys(item).forEach(key => allFields.add(key));
+  });
+
+  // Analyze each field
+  allFields.forEach(field => {
+    const values = sampleData.map(item => item[field]).filter(v => v !== null && v !== undefined);
+    if (values.length === 0) return;
+
+    const firstValue = values[0];
     
-    if (typeof firstItem === 'object' && firstItem !== null) {
-      const fields = Object.keys(firstItem);
-      const dateFields = fields.filter(field => 
-        ['date', 'time', 'timestamp', 'created_at', 'updated_at'].includes(field.toLowerCase()) ||
-        (typeof firstItem[field] === 'string' && !isNaN(Date.parse(firstItem[field])))
-      );
-      const numericFields = fields.filter(field => typeof firstItem[field] === 'number');
-      const stringFields = fields.filter(field => typeof firstItem[field] === 'string' && !dateFields.includes(field));
-
-      return {
-        type: 'object_array',
-        fields,
-        dateFields,
-        numericFields,
-        stringFields,
-        structure: 'tabular',
-        isTimeSeries: dateFields.length > 0,
-        isMultiSeries: numericFields.length > 1
-      };
-    } else {
-      return {
-        type: 'primitive_array',
-        fields: [],
-        structure: 'list',
-        dataType: typeof firstItem
-      };
+    // Check if date field
+    if (typeof firstValue === 'string' || firstValue instanceof Date) {
+      const date = new Date(firstValue);
+      if (!isNaN(date.getTime())) {
+        analysis.dateFields.push(field);
+      } else {
+        analysis.stringFields.push(field);
+      }
+    } else if (typeof firstValue === 'number') {
+      analysis.numericFields.push(field);
     }
+  });
+
+  // Determine categories and series
+  const categoriesSet = new Set();
+  const seriesSet = new Set();
+  let minDate = null;
+  let maxDate = null;
+
+  data.forEach(item => {
+    // Categories (x-axis)
+    if (item.date) {
+      const date = new Date(item.date);
+      if (!isNaN(date.getTime())) {
+        minDate = minDate ? new Date(Math.min(minDate, date)) : date;
+        maxDate = maxDate ? new Date(Math.max(maxDate, date)) : date;
+      }
+      categoriesSet.add(item.date);
+    } else if (item.category) {
+      categoriesSet.add(item.category);
+    } else if (item.x) {
+      categoriesSet.add(item.x);
+    }
+
+    // Series names
+    if (item.series) {
+      seriesSet.add(item.series);
+    } else if (item.name) {
+      seriesSet.add(item.name);
+    } else if (item.label) {
+      seriesSet.add(item.label);
+    }
+
+    // Value range
+    const value = item.value || item.y || item.count || 0;
+    if (typeof value === 'number') {
+      analysis.valueRange.min = Math.min(analysis.valueRange.min, value);
+      analysis.valueRange.max = Math.max(analysis.valueRange.max, value);
+    }
+  });
+
+  analysis.uniqueCategories = Array.from(categoriesSet);
+  analysis.uniqueSeries = Array.from(seriesSet);
+  analysis.isTimeSeries = analysis.dateFields.length > 0;
+  analysis.isMultiSeries = analysis.uniqueSeries.length > 1 || analysis.numericFields.length > 1;
+  
+  if (minDate && maxDate) {
+    analysis.dateRange = { start: minDate, end: maxDate };
   }
 
-  if (typeof data === 'object') {
-    // Check for special structures
-    if (data.nodes && data.links) {
-      return { type: 'graph', fields: ['nodes', 'links'], structure: 'network' };
-    }
-    if (data.children || data.name) {
-      return { type: 'hierarchy', fields: Object.keys(data), structure: 'tree' };
-    }
-    
-    return { type: 'object', fields: Object.keys(data), structure: 'key_value' };
+  // Recommend chart type based on data characteristics
+  if (analysis.uniqueSeries.length > 5) {
+    analysis.recommendedChartType = 'line';
+  } else if (analysis.uniqueCategories.length < 10) {
+    analysis.recommendedChartType = 'bar';
+  } else if (analysis.dateRange) {
+    analysis.recommendedChartType = 'area';
   }
 
-  return { type: 'primitive', fields: [], structure: 'single' };
+  return analysis;
 };
 
 /**
- * Auto-detect appropriate chart type based on data
- * @param {Array|Object} data - Chart data
- * @param {Object} config - Configuration hints
+ * Suggest appropriate chart type based on data characteristics
+ * @param {Array} data - Chart data
+ * @param {Object} config - Chart configuration
  * @returns {string} Suggested chart type
  */
 export const suggestChartType = (data, config = {}) => {
-  const analysis = analyzeData(data);
-
-  // Explicit type in config takes precedence
+  // If chart type is explicitly set, use it
   if (config.chartType) {
     return config.chartType;
   }
 
-  // Based on data structure
-  switch (analysis.structure) {
-    case 'network':
-      return analysis.type === 'graph' ? 'sankey' : 'graph';
-    case 'tree':
-      return 'sunburst';
-    case 'key_value':
-      return 'pie';
-    case 'tabular':
-      if (analysis.isTimeSeries) {
-        return analysis.isMultiSeries ? 'line' : 'line';
-      } else {
-        return analysis.numericFields.length > 1 ? 'bar' : 'bar';
-      }
-    case 'list':
-      return 'bar';
-    default:
+  const analysis = analyzeData(data, config);
+  
+  if (!analysis.hasData) {
+    return 'line'; // Default fallback
+  }
+
+  // Time series data
+  if (analysis.dateRange) {
+    if (analysis.uniqueSeries.length === 1) {
+      return 'area';
+    } else if (analysis.uniqueSeries.length > 5) {
       return 'line';
+    } else {
+      return 'line';
+    }
+  }
+
+  // Categorical data
+  if (analysis.uniqueCategories.length < 10) {
+    return 'bar';
+  } else if (analysis.uniqueCategories.length < 30) {
+    return 'line';
+  } else {
+    return 'area';
   }
 };
 
 /**
  * Validate data for specific chart type
- * @param {Array|Object} data - Chart data
- * @param {string} chartType - Target chart type
+ * @param {Array} data - Chart data
+ * @param {string} chartType - Chart type to validate for
  * @returns {Object} Validation result
  */
 export const validateDataForChartType = (data, chartType) => {
-  const analysis = analyzeData(data);
-  
-  const validationRules = {
-    line: () => analysis.structure === 'tabular' || analysis.structure === 'list',
-    area: () => analysis.structure === 'tabular' || analysis.structure === 'list',
-    bar: () => analysis.structure === 'tabular' || analysis.structure === 'list' || analysis.structure === 'key_value',
-    pie: () => analysis.structure === 'key_value' || (analysis.structure === 'tabular' && analysis.numericFields.length >= 1),
-    sankey: () => analysis.structure === 'network' || (analysis.structure === 'tabular' && analysis.fields.includes('source') && analysis.fields.includes('target')),
-    radar: () => analysis.structure === 'tabular' && analysis.numericFields.length >= 3,
-    boxplot: () => analysis.structure === 'tabular' && analysis.numericFields.length >= 1,
-    heatmap: () => analysis.structure === 'tabular' && analysis.numericFields.length >= 1,
-    graph: () => analysis.structure === 'network',
-    sunburst: () => analysis.structure === 'tree' || analysis.structure === 'tabular'
+  const result = {
+    isValid: true,
+    errors: [],
+    warnings: []
   };
 
-  const isValid = validationRules[chartType] ? validationRules[chartType]() : false;
-  
-  return {
-    valid: isValid,
-    analysis: analysis,
-    suggestions: isValid ? [] : [suggestChartType(data)]
-  };
-};
+  if (!data || !Array.isArray(data)) {
+    result.isValid = false;
+    result.errors.push('Data must be an array');
+    return result;
+  }
 
-const chartUtils = {
-  formatValue,
-  determineLegendPosition,
-  generateGridConfig,
-  hexToRgba,
-  generateAxisConfig,
-  analyzeData,
-  suggestChartType,
-  validateDataForChartType
-};
+  if (data.length === 0) {
+    result.isValid = false;
+    result.errors.push('Data array is empty');
+    return result;
+  }
 
-export default chartUtils;
+  // Chart-specific validation
+  switch (chartType) {
+    case 'pie':
+    case 'donut':
+      // Pie charts need name and value
+      data.forEach((item, index) => {
+        if (!item.name && !item.label) {
+          result.errors.push(`Item ${index} missing name or label`);
+          result.isValid = false;
+        }
+        if (item.value === undefined && item.count === undefined) {
+          result.errors.push(`Item ${index} missing value or count`);
+          result.isValid = false;
+        }
+      });
+      break;
+
+    case 'sankey':
+      // Sankey needs source, target, and value
+      data.forEach((item, index) => {
+        if (!item.source) {
+          result.errors.push(`Item ${index} missing source`);
+          result.isValid = false;
+        }
+        if (!item.target) {
+          result.errors.push(`Item ${index} missing target`);
+          result.isValid = false;
+        }
+        if (item.value === undefined) {
+          result.errors.push(`Item ${index} missing value`);
+          result.isValid = false;
+        }
+      });
+      break;
+
+    default:
+      // Most charts need at least x and y values
+      const firstItem = data[0];
+      const hasXField = firstItem.hasOwnProperty('x') || firstItem.hasOwnProperty('date') || firstItem.hasOwnProperty('category');
+      const hasYField = firstItem.hasOwnProperty('y') || firstItem.hasOwnProperty('value') || firstItem.hasOwnProperty('count');
+      
+      if (!hasXField && !hasYField) {
+        result.warnings.push('Data may not have standard x/y fields');
+      }
+  }
+
+  return result;
+};

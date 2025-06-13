@@ -1,161 +1,122 @@
-// EChartsContainer.js - Updated with GL support
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { getChartComponent } from './index';
+import { addWatermark } from '../../../utils/echarts/chartUtils';
 
-// Lazy load echarts-gl only when needed
-const loadEChartsGL = () => import('echarts-gl');
-
-const EChartsContainer = ({
-  data = [],
-  chartType = 'line',
-  config = {},
+const EChartsContainer = ({ 
+  data, 
+  chartType, 
+  config = {}, 
   isDarkMode = false,
   width = '100%',
   height = '400px',
-  onReady = null,
+  showWatermark = true,
   className = '',
   style = {},
-  showWatermark = true
+  cardSize = 'medium',
+  isDynamicHeight = false,
+  glLoaded = false
 }) => {
   const chartRef = useRef(null);
   const instanceRef = useRef(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [chartOptions, setChartOptions] = useState(null);
-  const [cardSize, setCardSize] = useState('large');
-  const [isDynamicHeight, setIsDynamicHeight] = useState(false);
-  const [glLoaded, setGlLoaded] = useState(false);
+  const [hasZoom, setHasZoom] = useState(false);
+  const [requiresGL, setRequiresGL] = useState(false);
+
+  console.log(`EChartsContainer: Rendering with chartType=${chartType}, dataLength=${data?.length}, isDarkMode=${isDarkMode}`);
 
   // Check if chart type requires GL
-  const requiresGL = chartType && (
-    chartType.toLowerCase().includes('gl') || 
-    chartType === 'gl-map' ||
-    chartType === 'glmap' ||
-    chartType === '3d-map'
-  );
-
-  // Load echarts-gl if required
   useEffect(() => {
+    const needsGL = ['3dbar', '3dmap', 'globe', 'geo-gl', 'scatter3d', 'surface', 'geo3d-map'].includes(chartType);
+    setRequiresGL(needsGL);
+    console.log(`EChartsContainer: Chart type ${chartType} requires GL: ${needsGL}`);
+  }, [chartType]);
+
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (instanceRef.current) {
+        instanceRef.current.resize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Generate chart options
+  useEffect(() => {
+    if (!data || !chartType) {
+      console.log(`EChartsContainer: Missing required props - data: ${!!data}, chartType: ${chartType}`);
+      setError('Missing required data or chart type');
+      setLoading(false);
+      return;
+    }
+
+    // Don't proceed if GL is required but not loaded
     if (requiresGL && !glLoaded) {
-      console.log('EChartsContainer: Loading echarts-gl...');
-      loadEChartsGL()
-        .then(() => {
-          console.log('EChartsContainer: echarts-gl loaded successfully');
-          setGlLoaded(true);
-        })
-        .catch(err => {
-          console.error('EChartsContainer: Failed to load echarts-gl:', err);
-          setError('Failed to load 3D visualization library');
-        });
-    } else if (!requiresGL) {
-      setGlLoaded(true); // Mark as "loaded" for non-GL charts
+      console.log('EChartsContainer: Waiting for GL to load...');
+      setLoading(true);
+      return;
     }
-  }, [requiresGL, glLoaded]);
-
-  // Detect card size based on container width
-  useEffect(() => {
-    const detectCardSize = () => {
-      if (chartRef.current) {
-        const containerRect = chartRef.current.getBoundingClientRect();
-        const containerWidth = containerRect.width;
-        
-        const isSmallCard = containerWidth < 600;
-        setCardSize(isSmallCard ? 'small' : 'large');
-        
-        console.log(`EChartsContainer: Detected card size: ${isSmallCard ? 'small' : 'large'} (width: ${containerWidth}px)`);
-      }
-    };
-
-    detectCardSize();
-    
-    const resizeObserver = new ResizeObserver(detectCardSize);
-    if (chartRef.current) {
-      resizeObserver.observe(chartRef.current);
-    }
-
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  // Detect if container has dynamic height
-  useEffect(() => {
-    const detectDynamicHeight = () => {
-      if (chartRef.current) {
-        const container = chartRef.current;
-        const parent = container.parentElement;
-        
-        const hasDynamicClass = parent?.classList.contains('dynamic-height');
-        setIsDynamicHeight(hasDynamicClass);
-        
-        console.log(`EChartsContainer: Dynamic height detected: ${hasDynamicClass}`);
-      }
-    };
-
-    detectDynamicHeight();
-  }, []);
-
-  // Generate chart options (now supports async and GL)
-  useEffect(() => {
-    if (!glLoaded) return; // Wait for GL to load if required
 
     const generateOptions = async () => {
-      console.log(`EChartsContainer: Generating chart options for ${chartType}`);
-      console.log(`EChartsContainer: Input data:`, { 
-        dataType: Array.isArray(data) ? 'array' : typeof data,
-        dataLength: Array.isArray(data) ? data.length : 'N/A',
-        sampleData: Array.isArray(data) ? data.slice(0, 2) : data 
-      });
-
-      setLoading(true);
-      setError(null);
-
-      // Get the chart component class
-      const ChartComponent = getChartComponent(chartType);
-      
-      if (!ChartComponent) {
-        console.error(`EChartsContainer: No chart component found for type: ${chartType}`);
-        setError(`Unsupported chart type: ${chartType}`);
-        setLoading(false);
-        return;
-      }
-
-      // Prepare chart data
-      const chartData = Array.isArray(data) ? data : [];
-
       try {
-        // Call the static getOptions method on the chart component class
-        // Handle both sync and async getOptions methods
-        const optionsPromise = ChartComponent.getOptions(chartData, {
+        setLoading(true);
+        setError(null);
+
+        console.log(`EChartsContainer: Getting chart component for type: ${chartType}`);
+        const ChartComponent = getChartComponent(chartType);
+        
+        if (!ChartComponent) {
+          throw new Error(`Unsupported chart type: ${chartType}`);
+        }
+
+        const mergedConfig = {
           ...config,
           cardSize,
           isDynamicHeight
-        }, isDarkMode);
+        };
 
+        console.log(`EChartsContainer: Generating options with config:`, mergedConfig);
+        const optionsPromise = ChartComponent.getOptions(data, mergedConfig, isDarkMode);
         const options = optionsPromise instanceof Promise ? await optionsPromise : optionsPromise;
 
-        console.log(`EChartsContainer: Generated options:`, {
-          hasOptions: !!options,
-          hasData: !!options?.series?.[0]?.data
+        // Check if chart has zoom enabled
+        const zoomEnabled = options?.dataZoom && options.dataZoom.length > 0;
+        setHasZoom(zoomEnabled);
+
+        // Apply watermark to ALL charts here, after options are built
+        const finalOptions = addWatermark(options, {
+          hasZoom: zoomEnabled,
+          isDarkMode: isDarkMode,
+          showWatermark: showWatermark
         });
 
-        setChartOptions(options);
-        setLoading(false);
-      } catch (error) {
-        console.error(`EChartsContainer: Error generating chart options:`, error);
-        setError(error.message || 'Failed to generate chart options');
+        console.log(`EChartsContainer: Generated options:`, {
+          hasOptions: !!finalOptions,
+          hasData: !!finalOptions?.series?.length,
+          hasZoom: zoomEnabled
+        });
+
+        setChartOptions(finalOptions);
+      } catch (err) {
+        console.error(`EChartsContainer: Error generating chart options:`, err);
+        setError(err.message || 'Failed to generate chart options');
+      } finally {
         setLoading(false);
       }
     };
 
     generateOptions();
-  }, [data, chartType, config, cardSize, isDynamicHeight, isDarkMode, glLoaded]);
+  }, [data, chartType, config, isDarkMode, cardSize, isDynamicHeight, glLoaded, showWatermark, requiresGL]);
 
-  // Initialize and update ECharts instance
+  // Initialize/update chart
   useEffect(() => {
-    console.log(`EChartsContainer: Initializing/updating chart instance`);
-    
     if (!chartRef.current || !chartOptions || loading) {
-      console.warn(`EChartsContainer: Missing requirements:`, {
+      console.log(`EChartsContainer: Skipping chart initialization`, {
         hasChartRef: !!chartRef.current,
         hasChartOptions: !!chartOptions,
         isLoading: loading
@@ -167,68 +128,25 @@ const EChartsContainer = ({
       // Initialize or get existing instance
       if (!instanceRef.current) {
         console.log(`EChartsContainer: Creating new ECharts instance`);
-        const renderer = requiresGL ? 'canvas' : 'canvas'; // GL charts must use canvas
+        const renderer = requiresGL ? 'canvas' : 'canvas';
         instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
           renderer: renderer,
-          useDirtyRect: !requiresGL // Disable dirty rect for GL charts
+          useDirtyRect: !requiresGL
         });
-      } else {
-        console.log(`EChartsContainer: Using existing ECharts instance`);
       }
 
-      // Set options with notMerge to ensure clean update
       console.log(`EChartsContainer: Setting chart options`);
       instanceRef.current.setOption(chartOptions, { notMerge: true });
-      
-      setError(null);
-
-      // Call onReady callback if provided
-      if (onReady && typeof onReady === 'function') {
-        onReady(instanceRef.current);
-      }
     } catch (err) {
       console.error(`EChartsContainer: Error initializing chart:`, err);
       setError(err.message || 'Failed to initialize chart');
     }
-  }, [chartOptions, isDarkMode, onReady, loading, requiresGL]);
+  }, [chartOptions, loading, isDarkMode, requiresGL]);
 
-  // Handle resize
+  // Update theme
   useEffect(() => {
-    const handleResize = () => {
-      if (instanceRef.current) {
-        console.log(`EChartsContainer: Resizing chart`);
-        instanceRef.current.resize();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (chartRef.current) {
-      resizeObserver.observe(chartRef.current);
-    }
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (instanceRef.current) {
-        console.log(`EChartsContainer: Disposing chart instance`);
-        instanceRef.current.dispose();
-        instanceRef.current = null;
-      }
-    };
-  }, []);
-
-  // Update theme when isDarkMode changes
-  useEffect(() => {
-    if (instanceRef.current && chartOptions && !loading) {
-      console.log(`EChartsContainer: Theme changed, recreating instance`);
+    if (instanceRef.current && !loading && chartOptions) {
+      console.log(`EChartsContainer: Updating theme to ${isDarkMode ? 'dark' : 'light'}`);
       instanceRef.current.dispose();
       const renderer = requiresGL ? 'canvas' : 'canvas';
       instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
@@ -239,35 +157,50 @@ const EChartsContainer = ({
     }
   }, [isDarkMode, chartOptions, loading, requiresGL]);
 
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (instanceRef.current) {
+        console.log('EChartsContainer: Disposing chart instance');
+        instanceRef.current.dispose();
+        instanceRef.current = null;
+      }
+    };
+  }, []);
+
   const containerClasses = [
     'echarts-container',
     isDynamicHeight ? 'dynamic-height' : '',
     requiresGL ? 'echarts-gl' : '',
+    error ? 'has-error' : '',
+    loading ? 'is-loading' : '',
     className
   ].filter(Boolean).join(' ');
 
-  if (error) {
-    return (
-      <div className="echarts-error" style={{ height, ...style }}>
-        <div>Error loading chart: {error}</div>
-      </div>
-    );
-  }
-
-  if (loading || (requiresGL && !glLoaded)) {
-    return (
-      <div className="echarts-loading" style={{ height, ...style }}>
-        <div>{requiresGL && !glLoaded ? 'Loading 3D visualization...' : 'Loading chart data...'}</div>
-      </div>
-    );
-  }
-
   return (
-    <div 
-      ref={chartRef}
-      className={containerClasses}
-      style={{ width: '100%', height: '100%', ...style }}
-    />
+    <div className={`chart-container-wrapper ${hasZoom ? 'has-zoom' : ''}`}>
+      <div
+        ref={chartRef}
+        className={containerClasses}
+        style={{
+          width,
+          height: isDynamicHeight ? '100%' : height,
+          ...style
+        }}
+      >
+        {loading && (
+          <div className="echarts-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading chart...</p>
+          </div>
+        )}
+        {error && (
+          <div className="echarts-error">
+            <p>Error: {error}</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

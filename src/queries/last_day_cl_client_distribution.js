@@ -4,6 +4,10 @@ const metric = {
   description: 'Last day % distribution',
   format: 'formatNumber',
   chartType: 'pie',
+  
+  nameField: 'category',
+  valueField: 'value',
+  
   query: `
     SELECT 
       client AS category

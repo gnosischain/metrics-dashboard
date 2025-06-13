@@ -1,4 +1,4 @@
 {
   "id": "erc20_network_transfers",
-  "query": "SELECT\n        date,\n        from,\n        to,\n        token_address,\n        value\n      FROM (\n        SELECT\n          toStartOfDay(block_timestamp) AS date,\n          from,\n          to,\n          token_address,\n          SUM(toUInt256OrNull(value)/POWER(10,18)) AS value\n        FROM dbt.transfers_erc20_bluechips\n        WHERE block_timestamp >= DATE '2025-05-20'\n        GROUP BY 1, 2, 3, 4\n      )\n      WHERE value > 1000\n      ORDER BY date ASC, value DESC"
+  "query": "SELECT\n      date,\n      from,\n      to,\n      token_address,\n      value\n    FROM (\n      SELECT\n        toStartOfDay(block_timestamp) AS date,\n        from,\n        to,\n        token_address,\n        SUM(toUInt256OrNull(value)/POWER(10,18)) AS value\n      FROM dbt.transfers_erc20_bluechips\n      WHERE block_timestamp >= DATE '2025-05-20'\n      GROUP BY 1, 2, 3, 4\n    )\n    WHERE value > 1000\n    ORDER BY date ASC, value DESC"
 }

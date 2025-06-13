@@ -26,6 +26,15 @@ OnChainActivity:
   icon: "⛓️"
   iconClass: "link"
   tabs:
+    - name: RWA
+      order: 1
+      icon: "📈"
+      iconClass: "rwa"
+      metrics:
+        - id: historical_rwa_prices
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
     - name: Yields
       order: 2
       icon: "📈"
@@ -52,8 +61,25 @@ OnChainActivity:
           gridRow: 2
           gridColumn: 1 / span 12
           minHeight: 500px
-    - name: Consensus
+    - name: Flows
       order: 5
+      icon: "🌊"
+      iconClass: "flow"
+      metrics:
+        - id: erc20_network_transfers
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 500px
+        - id: sankey_transaction_flow
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: sankey_gas_flow
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 500px
+    - name: Consensus
+      order: 6
       icon: "🔄"
       iconClass: "check-circle"
       metrics:
@@ -93,31 +119,36 @@ Network:
           gridRow: 2
           gridColumn: 9 / span 4
           minHeight: 100px
-        - id: test
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 650px
-        - id: last_day_cl_client_distribution
-          gridRow: 4
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: last_day_el_client_distribution
-          gridRow: 5
-          gridColumn: 1 / span 6
-          minHeight: 450px
     - name: Clients
       order: 2
       icon: "💻"
       iconClass: "monitor"
       metrics:
-        - id: historical_el_client_distribution
+        - id: clients_intro
           gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 450px
+        - id: last_day_el_client_distribution
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: last_day_cl_client_distribution
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: historical_el_client_distribution
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 600px
-        - id: historical_cl_client_distribution
-          gridRow: 1
+        - id: last_day_el_client_version_distribution
+          gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 600px
+        - id: historical_cl_client_distribution
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 600px
+       
     - name: Forks
       order: 3
       icon: "🗺️"
@@ -131,21 +162,8 @@ Network:
           gridRow: 1
           gridColumn: 7 / span 6
           minHeight: 500px
-    - name: Topology
-      order: 4
-      icon: "🔗"
-      iconClass: "link"
-      metrics:
-        - id: p2p_geo_topology
-          gridRow: 1
-          gridColumn: 1 / span 10
-          minHeight: 600px
-        - id: network_client_distribution
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 600px
     - name: Probelab
-      order: 5
+      order: 4
       icon: "🔬"
       iconClass: "search"
       metrics:

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import ExpandButton from './ExpandButton';
-import { addUniversalWatermark, removeUniversalWatermark } from '../utils/watermarkUtils';
 
 const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children, isDarkMode = false }) => {
   const modalContentRef = useRef(null);
@@ -22,36 +21,6 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
       document.body.style.overflow = '';
     };
   }, [isOpen, handleEscKey]);
-
-  // Restore and fix watermark logic for the modal view
-  useEffect(() => {
-    const modalNode = modalContentRef.current;
-    if (isOpen && modalNode) {
-      const timer = setTimeout(() => {
-        const chartContainer = modalNode.querySelector('.chart-container');
-        const hasZoom = chartContainer ? chartContainer.classList.contains('has-zoom') : false;
-
-        addUniversalWatermark({ current: modalNode }, isDarkMode, {
-            className: 'modal-chart-watermark',
-            preventDuplicates: true,
-            // Use custom styles to position correctly above the zoom bar
-            customStyles: {
-              bottom: hasZoom ? '40px' : '15px',
-              right: '15px',
-              zIndex: 1001
-            }
-        });
-      }, 200);
-
-      return () => {
-        clearTimeout(timer);
-        if (modalNode) {
-          removeUniversalWatermark({ current: modalNode }, 'modal-chart-watermark');
-        }
-      };
-    }
-  }, [isOpen, isDarkMode, children]);
-
 
   useEffect(() => {
     if (isOpen) {

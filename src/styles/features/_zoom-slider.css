@@ -95,36 +95,12 @@
 }
 
 /* ==================
-   In-Frame Zoom Slider
-   ================== */
-
-/* Remove old external container styles */
-.zoom-slider-container {
-  display: none !important;
-}
-
-/* Ensure chart containers can contain absolute positioned elements */
-.chart-container {
-  position: relative !important;
-}
-
-/* Enhanced chart container adjustments */
-.enhanced-chart-container {
-  position: relative !important;
-}
-
-/* Remove the external zoom slider container styles */
-.chart-wrapper.with-zoom-slider {
-  display: block !important;
-}
-
-/* ==================
    ECharts Zoom Integration
    ================== */
 
 /* ECharts zoom slider specific styling */
 .echarts-dataZoom-slider {
-  z-index: 100;
+  z-index: 50; /* Below watermark */
 }
 
 /* Chart container zoom state */

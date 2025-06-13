@@ -43,7 +43,6 @@ export * from './dashboardConfig';
 
 // Other utilities
 export * from './gridLayoutManager';
-export * from './watermarkUtils';
 
 // Commonly used functions for quick access
 export { generateColorPalette, hexToRgba } from './colors';

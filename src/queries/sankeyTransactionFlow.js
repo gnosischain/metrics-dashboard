@@ -4,13 +4,23 @@ const metric = {
   description: 'Flow of transactions between different contract types and services',
   format: 'formatNumber',
   chartType: 'sankey',
+  
+  // Field mappings at root level (for backwards compatibility)
   sourceField: 'source',
   targetField: 'target', 
   valueField: 'total_value',
+  
+  // Visual configuration
   sankeyConfig: {
     nodeWidth: 20,
     nodePadding: 15
   },
+  
+  // Additional configuration options
+  removeCycles: true,
+  allowCycles: false,
+  nodeAlign: 'justify',
+  
   query: `
     SELECT 'DEX' AS source, 'Lending' AS target, 1500 AS total_value
     UNION ALL
