@@ -1,7 +1,6 @@
 const metric = {
   id: 'last_day_geo',
   name: 'Geo Distribution',
-  description: 'Last day geografical distribution of peers in the network',
   format: 'formatNumber',
   labelField: 'country',
   valueField: 'cnt',

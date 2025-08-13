@@ -1,9 +1,13 @@
 const metric = {
-  id: 'p2p_geo_topology',
+  id: 'api_p2p_topology_latest',
   name: 'P2P Geographic Network Topology',
   description: 'Geographic visualization of peer-to-peer network connections',
   format: 'formatNumber',
   chartType: 'map',
+
+  enableFiltering: true,
+  labelField: 'protocol', // This will create a dropdown to filter by network type
+  
   
   // Map-specific configuration
   // Required fields for geographic coordinates
@@ -14,7 +18,9 @@ const metric = {
   
   // Optional fields for enhanced visualization
   valueField: 'cnt', // Connection count/strength
-  labelField: 'peer_client', // For categorizing nodes by color
+  categoryField: 'peer_client', // For categorizing nodes by color (separate from filtering)
+  
+//  labelField: 'peer_client', // For categorizing nodes by color
   
   // Optional ID fields (if not provided, lat_lon will be used as ID)
   peerIdField: 'peer_discovery_id_prefix',
@@ -27,8 +33,7 @@ const metric = {
   // Tooltip configuration - fields to show in tooltip
   peerTooltipFields: [
     { field: 'peer_country', label: 'Country' },
-    { field: 'peer_org', label: 'Organization' },
-    { field: 'peer_hostname', label: 'Hostname' }
+    { field: 'peer_org', label: 'Organization' }
   ],
   neighborTooltipFields: [
     { field: 'neighbor_country', label: 'Country' },
@@ -51,35 +56,7 @@ const metric = {
     '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9845'
   ],
 
-  query: `
-      SELECT
-
-        date,
-        peer_discovery_id_prefix,
-        peer_cl_fork_name,
-        peer_cl_next_fork_name,
-        peer_client,
-        peer_hostname,
-        peer_city,
-        peer_country,
-        peer_org,
-        splitByChar(',', peer_loc)[1] AS peer_lat,
-        splitByChar(',', peer_loc)[2] AS peer_lon,
-        neighbor_discovery_id_prefix,
-        neighbor_cl_fork_name,
-        neighbor_cl_next_fork_name,
-        neighbor_client,
-        neighbor_city,
-        neighbor_country,
-        neighbor_org,
-        splitByChar(',', neighbor_loc)[1] AS neighbor_lat,
-        splitByChar(',', neighbor_loc)[2] AS neighbor_lon,
-        cnt
-      FROM dbt.p2p_peers_geo_topology_latest
-      WHERE 
-        peer_loc != '' 
-        AND neighbor_loc != ''
-    `
+  query: `SELECT *FROM dbt.api_p2p_topology_latest`
 };
 
 export default metric;

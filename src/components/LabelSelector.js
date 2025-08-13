@@ -18,14 +18,14 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   }
 
   // Capitalize labelField for display
-  const displayLabel = labelField.charAt(0).toUpperCase() + labelField.slice(1);
+  //const displayLabel = labelField.charAt(0).toUpperCase() + labelField.slice(1);
   const selectId = `${idPrefix}-label-selector`;
 
   return (
     <div className="label-selector title-level"> {/* Add class for styling */}
-      <label className="label-selector-label" htmlFor={selectId}>
-        {displayLabel}:&nbsp; {/* Simplified label */}
-      </label>
+      {/*<label className="label-selector-label" htmlFor={selectId}>
+        {displayLabel}:&nbsp;
+      </label> */}
       <select
         id={selectId}
         value={selectedLabel} // Should always have a value now

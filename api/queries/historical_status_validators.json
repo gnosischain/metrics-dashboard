@@ -1,0 +1,4 @@
+{
+  "id": "historical_status_validators",
+  "query": "SELECT date, status, cnt FROM dbt.consensus_validators_status_daily WHERE status NOT IN ('active_ongoing', 'withdrawal_done') ORDER BY date, status"
+}

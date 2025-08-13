@@ -3,6 +3,7 @@
  * Location: src/components/charts/ChartTypes/Geo2DMapChart.js
  * 
  * Standard 2D world map with animated connection lines
+ * Updated to support separate fields for filtering and node coloring
  */
 
 import * as echarts from 'echarts/core';
@@ -46,7 +47,9 @@ export class Geo2DMapChart {
       
       // Optional fields
       valueField = null,
-      labelField = null,
+      labelField = null, // Used for filtering dropdown (e.g., network_type)
+      categoryField = null, // NEW: Used for node coloring (e.g., peer_client)
+      nodeColorField = null, // Alias for categoryField
       peerIdField = null,
       neighborIdField = null,
       peerNameField = null,
@@ -58,8 +61,8 @@ export class Geo2DMapChart {
       nodeMinSize = 5,
       nodeMaxSize = 25,
       lineWidth = 1,
-      lineOpacity = 0.6, // Increased default opacity
-      lineHoverOpacity = 1, // Full opacity on hover
+      lineOpacity = 0.6,
+      lineHoverOpacity = 1,
       nodeBorderWidth = 1,
       
       // Animation settings
@@ -76,8 +79,8 @@ export class Geo2DMapChart {
       effectColor = '#fff',
       
       // Map settings
-      mapZoom = 1.8, // Slightly smaller zoom
-      mapCenter = [10, 30] // Center on Europe/Africa
+      mapZoom = 1.8,
+      mapCenter = [10, 10]
     } = config;
 
     // Validate required fields
@@ -85,14 +88,19 @@ export class Geo2DMapChart {
       return this.getErrorOptions('Missing required latitude/longitude fields');
     }
 
-    // Process data
+    // Determine which field to use for node categorization/coloring
+    // Priority: categoryField > nodeColorField > labelField > default
+    const actualCategoryField = categoryField || nodeColorField || labelField;
+
+    // Process data with separate fields for filtering and coloring
     const { nodes, connections } = this.processNetworkData(data, {
       peerLatField,
       peerLonField,
       neighborLatField,
       neighborLonField,
       valueField,
-      labelField,
+      labelField, // For filtering (e.g., network_type)
+      categoryField: actualCategoryField, // For node coloring (e.g., peer_client)
       peerIdField,
       neighborIdField,
       peerNameField,
@@ -101,11 +109,13 @@ export class Geo2DMapChart {
       neighborTooltipFields
     });
 
-    // Get unique categories for coloring
+    // Get unique categories for coloring (from the category field, not label field)
     const categories = [...new Set(nodes.map(n => n.category))].filter(c => c && c !== 'Unknown');
     if (!categories.includes('Unknown')) {
       categories.push('Unknown');
     }
+    
+    console.log('Geo2DMapChart: Node categories for coloring:', categories);
     
     // Create color palette
     const colorPalette = [
@@ -149,6 +159,7 @@ export class Geo2DMapChart {
       value: [...node.coords, node.value],
       symbolSize: this.scaleValue(node.value, minNodeValue, maxNodeValue, nodeMinSize, nodeMaxSize),
       category: node.category,
+      filterLabel: node.filterLabel, // NEW: Store filter label separately
       itemStyle: {
         color: categoryColorMap[node.category] || '#999999',
         borderColor: '#fff',
@@ -166,7 +177,7 @@ export class Geo2DMapChart {
 
     return {
       backgroundColor,
-      legend: labelField ? {
+      legend: actualCategoryField ? {
         orient: 'vertical',
         left: 'left',
         top: 'middle',
@@ -198,8 +209,16 @@ export class Geo2DMapChart {
             const node = params.data;
             let tooltip = `<div style="font-weight: bold">${node.name}</div>`;
             
-            if (node.category && labelField) {
-              tooltip += `<div>${labelField}: ${node.category}</div>`;
+            // Show category (coloring field)
+            if (node.category && actualCategoryField) {
+              const categoryLabel = this.getFieldLabel(actualCategoryField);
+              tooltip += `<div>${categoryLabel}: ${node.category}</div>`;
+            }
+            
+            // Show filter label if different from category
+            if (node.filterLabel && labelField && node.filterLabel !== node.category) {
+              const filterLabel = this.getFieldLabel(labelField);
+              tooltip += `<div>${filterLabel}: ${node.filterLabel}</div>`;
             }
             
             tooltip += `<div>Connections: ${node.value[2]}</div>`;
@@ -229,7 +248,7 @@ export class Geo2DMapChart {
       },
       geo: {
         map: 'world',
-        roam: true, // Enable both pan and zoom
+        roam: true,
         scaleLimit: {
           min: 0.5,
           max: 10
@@ -250,7 +269,6 @@ export class Geo2DMapChart {
             areaColor: emphasisColor
           }
         },
-        // Prevent clipping of lines when panning
         layoutCenter: ['50%', '50%'],
         layoutSize: '100%'
       },
@@ -267,7 +285,7 @@ export class Geo2DMapChart {
             // Static lines for this category
             {
               id: `${category}_lines`,
-              name: category, // Use same name as scatter series for legend linking
+              name: category,
               type: 'lines',
               coordinateSystem: 'geo',
               zlevel: 1,
@@ -294,7 +312,7 @@ export class Geo2DMapChart {
             // Animated lines effect for this category (if enabled)
             enableAnimation && {
               id: `${category}_effects`,
-              name: category, // Use same name for legend linking
+              name: category,
               type: 'lines',
               coordinateSystem: 'geo',
               zlevel: 2,
@@ -370,6 +388,11 @@ export class Geo2DMapChart {
     const nodesMap = new Map();
     const connections = [];
 
+    console.log('processNetworkData: Using fields:', {
+      labelField: fields.labelField,
+      categoryField: fields.categoryField
+    });
+
     data.forEach(row => {
       // Process peer node
       const peerLat = parseFloat(row[fields.peerLatField]);
@@ -378,7 +401,9 @@ export class Geo2DMapChart {
       
       if (!isNaN(peerLat) && !isNaN(peerLon)) {
         if (!nodesMap.has(peerId)) {
-          const category = fields.labelField ? (row[fields.labelField] || 'Unknown') : 'Default';
+          // Use categoryField for node coloring, labelField for filtering
+          const category = fields.categoryField ? (row[fields.categoryField] || 'Unknown') : 'Default';
+          const filterLabel = fields.labelField ? (row[fields.labelField] || 'Unknown') : null;
           const name = fields.peerNameField ? (row[fields.peerNameField] || 'Unknown') : peerId;
           
           nodesMap.set(peerId, {
@@ -386,7 +411,8 @@ export class Geo2DMapChart {
             name: name,
             coords: [peerLon, peerLat],
             value: 0,
-            category: category,
+            category: category, // For coloring
+            filterLabel: filterLabel, // For filtering
             tooltipData: this.extractTooltipData(row, fields.peerTooltipFields),
             type: 'peer'
           });
@@ -400,7 +426,9 @@ export class Geo2DMapChart {
       
       if (!isNaN(neighborLat) && !isNaN(neighborLon)) {
         if (!nodesMap.has(neighborId)) {
-          const category = fields.labelField ? (row[fields.labelField] || 'Unknown') : 'Default';
+          // Use categoryField for node coloring, labelField for filtering  
+          const category = fields.categoryField ? (row[fields.categoryField] || 'Unknown') : 'Default';
+          const filterLabel = fields.labelField ? (row[fields.labelField] || 'Unknown') : null;
           const name = fields.neighborNameField ? (row[fields.neighborNameField] || 'Unknown') : neighborId;
           
           nodesMap.set(neighborId, {
@@ -408,7 +436,8 @@ export class Geo2DMapChart {
             name: name,
             coords: [neighborLon, neighborLat],
             value: 0,
-            category: category,
+            category: category, // For coloring
+            filterLabel: filterLabel, // For filtering
             tooltipData: this.extractTooltipData(row, fields.neighborTooltipFields),
             type: 'neighbor'
           });
@@ -436,8 +465,11 @@ export class Geo2DMapChart {
       }
     });
 
+    const nodes = Array.from(nodesMap.values());
+    console.log('processNetworkData: Processed nodes sample:', nodes.slice(0, 3));
+
     return {
-      nodes: Array.from(nodesMap.values()),
+      nodes: nodes,
       connections: connections
     };
   }
@@ -460,6 +492,19 @@ export class Geo2DMapChart {
     if (max === min) return targetMin;
     const ratio = (value - min) / (max - min);
     return targetMin + ratio * (targetMax - targetMin);
+  }
+
+  static getFieldLabel(fieldName) {
+    // Convert field names to readable labels
+    const fieldLabels = {
+      'peer_client': 'Client',
+      'network_type': 'Network',
+      'peer_country': 'Country',
+      'neighbor_country': 'Country',
+      'peer_org': 'Organization',
+      'neighbor_org': 'Organization'
+    };
+    return fieldLabels[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 
   static getErrorOptions(message) {

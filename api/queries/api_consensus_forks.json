@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_forks",
+  "query": "SELECT * FROM dbt.api_consensus_forks"
+}

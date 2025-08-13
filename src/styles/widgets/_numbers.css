@@ -10,22 +10,21 @@
 .number-widget {
   display: flex;
   flex-direction: column;
-  justify-content: left;
-  align-items: left;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 100%;
-  padding-left: 1.5rem;
-  text-align: left;
+  text-align: center;
   background: transparent;
 }
 
 /* ==================
-   Number Value
+   Number Value (Default)
    ================== */
 
 .number-value {
   font-size: 2.5rem;
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-semibold);
   line-height: 1;
   color: var(--primary-blue);
   margin-bottom: 8px;
@@ -33,7 +32,7 @@
 }
 
 /* ==================
-   Number Label
+   Number Label (Default)
    ================== */
 
 .number-label {
@@ -43,7 +42,71 @@
 }
 
 /* ==================
-   Number Variations
+   COMPACT VARIANT STYLES
+   ================== */
+
+.number-widget-compact {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  background: transparent;
+}
+
+.compact-number-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Main content group (number only) */
+.compact-main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Compact Number Value */
+.compact-number-value {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  color: var(--primary-blue);
+  transition: color var(--transition-base);
+  margin-bottom: 8px;
+}
+
+/* Hide the label in compact mode since title is shown above */
+.compact-number-label {
+  display: none;
+}
+
+/* Compact Change Indicator - BELOW the number */
+.compact-change-indicator {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  padding: 0.1875rem 0.5rem;
+  border-radius: 0.375rem;
+  white-space: nowrap;
+}
+
+.compact-change-indicator .change-period {
+  opacity: 0.85;
+  font-size: 0.6875rem;
+  margin-left: 0.125rem;
+}
+
+/* ==================
+   Change Indicators (Both Variants)
    ================== */
 
 /* With Change Indicator */
@@ -51,6 +114,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+.number-change-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .number-change {
@@ -84,7 +153,7 @@
 }
 
 /* ==================
-   Number Sizes
+   Number Sizes (Default Variant)
    ================== */
 
 /* Small numbers for tight spaces */
@@ -97,6 +166,17 @@
 .grid-item[style*="grid-column: span 8"] .number-value,
 .grid-item[style*="grid-column: span 12"] .number-value {
   font-size: 3rem;
+}
+
+/* Compact variant sizing adjustments */
+.grid-item[style*="grid-column: span 3"] .compact-number-value,
+.grid-item[style*="grid-column: span 4"] .compact-number-value {
+  font-size: 1.5rem;
+}
+
+.grid-item[style*="grid-column: span 8"] .compact-number-value,
+.grid-item[style*="grid-column: span 12"] .compact-number-value {
+  font-size: 2.25rem;
 }
 
 /* ==================
@@ -255,6 +335,15 @@
   padding: 0;
 }
 
+/* Compact variant card adjustments */
+.number-display-card.compact .card-header {
+  display: none; /* Hide header for compact variant */
+}
+
+.number-display-card.compact .card-content {
+  height: 100%;
+}
+
 /* ==================
    Responsive Numbers
    ================== */
@@ -262,6 +351,37 @@
 @media (max-width: 768px) {
   .number-value {
     font-size: 2rem;
+  }
+  
+  .compact-number-value {
+    font-size: 1.5rem;
+  }
+  
+  .compact-number-container {
+    gap: 0.5rem;
+    /* Keep horizontal layout on mobile too */
+  }
+  
+  .compact-main-content {
+    gap: 0.5rem;
+  }
+  
+  .compact-number-label {
+    font-size: 0.75rem;
+  }
+  
+  .compact-change-indicator {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .number-widget-compact {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .metric-card.compact {
+    min-height: 45px;
+    max-height: 55px;
   }
   
   .number-widget-with-icon {
@@ -275,6 +395,38 @@
   }
 }
 
+@media (max-width: 480px) {
+  .compact-number-container {
+    gap: 0.375rem;
+  }
+  
+  .compact-main-content {
+    gap: 0.375rem;
+  }
+  
+  .compact-number-value {
+    font-size: 1.25rem;
+  }
+  
+  .compact-number-label {
+    font-size: 0.6875rem;
+  }
+  
+  .compact-change-indicator {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .number-widget-compact {
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .metric-card.compact {
+    min-height: 40px;
+    max-height: 50px;
+  }
+}
+
 /* ==================
    Dark Mode Numbers
    ================== */
@@ -283,7 +435,12 @@
   color: var(--primary-blue);
 }
 
-.dark-mode .number-label {
+.dark-mode .compact-number-value {
+  color: var(--primary-blue);
+}
+
+.dark-mode .number-label,
+.dark-mode .compact-number-label {
   color: var(--color-text-secondary);
 }
 
@@ -300,7 +457,8 @@
   background-color: var(--primary-blue);
 }
 
-.dark-mode .number-change.positive {
+.dark-mode .number-change.positive,
+.dark-mode .compact-change-indicator {
   background-color: rgba(40, 167, 69, 0.15);
 }
 

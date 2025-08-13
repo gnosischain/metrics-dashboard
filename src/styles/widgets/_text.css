@@ -4,75 +4,63 @@
  */
 
 /* ==================
-   Text Widget Container
+   Base Text Widget
    ================== */
 
 .text-widget {
-  padding: var(--spacing-sm);
+  padding: 1rem 1.5rem;
   height: 100%;
   overflow-y: auto;
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
+  font-size: 0.875rem;
+  line-height: 1.4;
   color: var(--color-text-primary);
 }
 
 /* ==================
-   Text Widget Typography
+   Headers
    ================== */
 
 .text-widget h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  font-weight: var(--font-weight-semibold);
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
   color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
+  line-height: 1.2;
 }
 
 .text-widget h2 {
-  font-size: 1.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  font-weight: var(--font-weight-semibold);
+  font-size: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
   color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
+  line-height: 1.2;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0.25rem;
+}
+
+.text-widget h2:first-child {
+  margin-top: 0;
 }
 
 .text-widget h3 {
-  font-size: 1.3rem;
-  margin-top: 1.2rem;
-  margin-bottom: 0.8rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  line-height: var(--line-height-tight);
-}
-
-.text-widget h4 {
   font-size: 1.1rem;
   margin-top: 1rem;
-  margin-bottom: 0.6rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.text-widget h5 {
-  font-size: 1rem;
-  margin-top: 0.8rem;
   margin-bottom: 0.5rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
+  font-weight: 600;
+  color: var(--primary-blue);
+  line-height: 1.3;
 }
 
-.text-widget h6 {
-  font-size: 0.9rem;
-  margin-top: 0.6rem;
-  margin-bottom: 0.4rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
+/* ==================
+   Paragraphs
+   ================== */
 
 .text-widget p {
-  margin-bottom: 1rem;
-  line-height: var(--line-height-base);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
 }
 
 .text-widget p:last-child {
@@ -80,41 +68,38 @@
 }
 
 /* ==================
-   Lists
+   Lists - Fix for duplicate bullets
    ================== */
 
 .text-widget ul,
 .text-widget ol {
-  margin-left: 1.5rem;
-  margin-bottom: 1rem;
-  line-height: var(--line-height-base);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-left: 0;
+  list-style: none !important;
 }
 
-.text-widget ul {
-  list-style-type: disc;
+.text-widget ul li,
+.text-widget ol li {
+  position: relative;
+  margin-bottom: 0.25rem;
+  padding-left: 1.5rem;
+  line-height: 1.5;
+  list-style: none !important;
 }
 
-.text-widget ol {
-  list-style-type: decimal;
+.text-widget ul > li::before {
+  content: '•';
+  position: absolute;
+  left: 0.5rem;
+  color: var(--primary-blue);
+  font-weight: bold;
+  font-size: 1em;
+  line-height: 1.5;
 }
 
-.text-widget li {
-  margin-bottom: 0.5rem;
-}
-
-.text-widget li:last-child {
-  margin-bottom: 0;
-}
-
-.text-widget ul ul,
-.text-widget ol ul {
-  list-style-type: circle;
-  margin-top: 0.5rem;
-}
-
-.text-widget ul ul ul,
-.text-widget ol ul ul {
-  list-style-type: square;
+.text-widget li::marker {
+  display: none !important;
 }
 
 /* ==================
@@ -122,15 +107,21 @@
    ================== */
 
 .text-widget blockquote {
-  border-left: 3px solid var(--color-border);
-  padding-left: 1rem;
-  margin: 1rem 0;
-  font-style: italic;
-  color: var(--color-text-secondary);
+  border-left: 4px solid var(--primary-blue);
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem 0.75rem 1rem;
+  background-color: rgba(9, 105, 218, 0.05);
+  border-radius: 0 8px 8px 0;
 }
 
 .text-widget blockquote p {
-  margin-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-style: normal;
+}
+
+.text-widget blockquote p:first-child {
+  margin-top: 0;
 }
 
 .text-widget blockquote p:last-child {
@@ -138,65 +129,16 @@
 }
 
 /* ==================
-   Code Blocks
+   Strong Text
    ================== */
 
-.text-widget code {
-  background-color: var(--color-background);
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--border-radius-base);
-  font-family: var(--font-family-mono);
-  font-size: 0.875em;
-  border: 1px solid var(--color-border);
+.text-widget strong {
+  font-weight: 600;
+  color: inherit;
 }
 
-.text-widget pre {
-  background-color: var(--color-background);
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-  border-radius: var(--border-radius-base);
-  overflow-x: auto;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-}
-
-.text-widget pre code {
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  font-size: 0.875rem;
-}
-
-/* ==================
-   Tables
-   ================== */
-
-.text-widget table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  overflow-x: auto;
-  display: block;
-}
-
-.text-widget table thead {
-  background-color: var(--color-background);
-}
-
-.text-widget th,
-.text-widget td {
-  padding: 0.5rem;
-  border: 1px solid var(--color-border);
-  text-align: left;
-}
-
-.text-widget th {
-  font-weight: var(--font-weight-semibold);
-}
-
-.text-widget tbody tr:hover {
-  background-color: var(--color-background);
+.text-widget blockquote strong {
+  color: var(--primary-blue);
 }
 
 /* ==================
@@ -204,9 +146,10 @@
    ================== */
 
 .text-widget hr {
-  border: 0;
+  border: none;
   border-top: 1px solid var(--color-border);
-  margin: 1.5rem 0;
+  margin: 1rem 0;
+  opacity: 0.3;
 }
 
 /* ==================
@@ -216,176 +159,58 @@
 .text-widget a {
   color: var(--primary-blue);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
 }
 
 .text-widget a:hover {
-  color: var(--primary-blue-hover);
-  text-decoration: underline;
-}
-
-.text-widget a:visited {
-  color: #5A00B8;
+  border-bottom-color: var(--primary-blue);
 }
 
 /* ==================
-   Images
+   Dark Mode
    ================== */
 
-.text-widget img {
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--border-radius-base);
-  margin: 1rem 0;
+.dark-mode .text-widget h3 {
+  color: #58A6FF;
 }
 
-.text-widget figure {
-  margin: 1rem 0;
-  text-align: center;
+.dark-mode .text-widget blockquote {
+  background-color: rgba(88, 166, 255, 0.1);
+  border-left-color: #58A6FF;
 }
 
-.text-widget figcaption {
-  margin-top: 0.5rem;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-style: italic;
+.dark-mode .text-widget blockquote strong {
+  color: #58A6FF;
 }
 
-/* ==================
-   Text Alignment
-   ================== */
-
-.text-widget .text-left {
-  text-align: left;
+.dark-mode .text-widget ul > li::before {
+  color: #58A6FF;
 }
 
-.text-widget .text-center {
-  text-align: center;
-}
-
-.text-widget .text-right {
-  text-align: right;
-}
-
-.text-widget .text-justify {
-  text-align: justify;
+.dark-mode .text-widget a {
+  color: #58A6FF;
 }
 
 /* ==================
-   Special Elements
-   ================== */
-
-.text-widget mark {
-  background-color: rgba(255, 235, 59, 0.3);
-  padding: 0.1rem 0.2rem;
-  border-radius: var(--border-radius-sm);
-}
-
-.text-widget abbr {
-  text-decoration: underline dotted;
-  cursor: help;
-}
-
-.text-widget kbd {
-  background-color: var(--color-text-primary);
-  color: var(--color-surface);
-  padding: 0.1rem 0.3rem;
-  border-radius: var(--border-radius-sm);
-  font-family: var(--font-family-mono);
-  font-size: 0.875em;
-}
-
-/* ==================
-   Responsive Text
+   Responsive
    ================== */
 
 @media (max-width: 768px) {
   .text-widget {
-    padding: var(--spacing-xs);
-  }
-  
-  .text-widget h1 {
-    font-size: 1.5rem;
+    padding: 0.75rem;
+    font-size: 0.8rem;
   }
   
   .text-widget h2 {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
   }
   
   .text-widget h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
-  .text-widget table {
-    font-size: 0.8rem;
+  .text-widget blockquote {
+    padding: 0.5rem 0.75rem;
   }
-}
-
-/* ==================
-   Dark Mode Text
-   ================== */
-
-.dark-mode .text-widget {
-  color: var(--color-text-primary);
-}
-
-.dark-mode .text-widget h1,
-.dark-mode .text-widget h2,
-.dark-mode .text-widget h3,
-.dark-mode .text-widget h4,
-.dark-mode .text-widget h5,
-.dark-mode .text-widget h6 {
-  color: var(--color-text-primary);
-}
-
-.dark-mode .text-widget blockquote {
-  border-left-color: var(--color-border);
-  color: var(--color-text-secondary);
-}
-
-.dark-mode .text-widget code {
-  background-color: rgba(139, 148, 158, 0.1);
-  color: var(--color-text-primary);
-  border-color: var(--color-border);
-}
-
-.dark-mode .text-widget pre {
-  background-color: rgba(139, 148, 158, 0.1);
-  border-color: var(--color-border);
-  color: var(--color-text-primary);
-}
-
-.dark-mode .text-widget table thead {
-  background-color: rgba(139, 148, 158, 0.1);
-}
-
-.dark-mode .text-widget tbody tr:hover {
-  background-color: rgba(139, 148, 158, 0.05);
-}
-
-.dark-mode .text-widget a {
-  color: var(--primary-blue);
-}
-
-.dark-mode .text-widget a:hover {
-  color: var(--primary-blue-hover);
-}
-
-.dark-mode .text-widget a:visited {
-  color: #A78BFA;
-}
-
-.dark-mode .text-widget mark {
-  background-color: rgba(255, 235, 59, 0.2);
-  color: var(--color-text-primary);
-}
-
-.dark-mode .text-widget kbd {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
-
-.dark-mode .text-widget hr {
-  border-top-color: var(--color-border);
 }

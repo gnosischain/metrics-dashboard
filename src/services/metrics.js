@@ -37,7 +37,25 @@ class MetricsService {
     }
 
     try {
-      // Fetch from API - FIXED: Use correct parameter name and endpoint
+      // Get metric configuration to check if it's a text widget
+      const metricConfig = this.getMetricConfig(metricId);
+      
+      // For text widgets with static content, return the content directly
+      if (metricConfig && metricConfig.chartType === 'text' && metricConfig.content) {
+        const data = {
+          content: metricConfig.content
+        };
+        
+        // Cache the result
+        this.cache.set(metricId, {
+          data: data,
+          timestamp: Date.now()
+        });
+        
+        return data;
+      }
+      
+      // For other widgets, fetch from API
       const response = await api.get(`/metrics/${metricId}`);
 
       // The API returns the data directly for a specific metric

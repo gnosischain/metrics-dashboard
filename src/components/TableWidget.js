@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import formatters from '../utils/formatters';
@@ -25,6 +25,9 @@ const TableWidget = ({
   const tableRef = useRef(null);
   const [table, setTable] = useState(null);
   const [error, setError] = useState(null);
+
+  // Memoize config to prevent unnecessary re-renders
+  const memoizedConfig = useMemo(() => config, [config]);
 
   // Calculate optimal height based on data and pagination
   const calculateOptimalHeight = (data, config) => {
@@ -76,7 +79,7 @@ const TableWidget = ({
       setError(null);
       
       console.log('TableWidget: Creating table with data:', data);
-      console.log('TableWidget: Config:', config);
+      console.log('TableWidget: Config:', memoizedConfig);
       console.log('TableWidget: tableRef.current:', tableRef.current);
       
       // Destroy existing table if it exists
@@ -86,7 +89,7 @@ const TableWidget = ({
       }
 
       // Process and validate data
-      const processedData = processTableData(data, config);
+      const processedData = processTableData(data, memoizedConfig);
       
       console.log('TableWidget: Processed data:', processedData);
       
@@ -97,17 +100,17 @@ const TableWidget = ({
       }
 
       // Generate columns configuration
-      const columns = generateColumns(processedData, config, format, isDarkMode);
+      const columns = generateColumns(processedData, memoizedConfig, format, isDarkMode);
       
       console.log('TableWidget: Generated columns:', columns);
       
       // Calculate optimal height if height is 'auto'
       const tableHeight = height === 'auto' || height === '100%' 
-        ? calculateOptimalHeight(processedData, config)
+        ? calculateOptimalHeight(processedData, memoizedConfig)
         : height;
-      
+        
       // Create table configuration with improved height handling
-      const tableConfig = createTableConfig(processedData, columns, config, isDarkMode, tableHeight);
+      const tableConfig = createTableConfig(processedData, columns, memoizedConfig, isDarkMode, tableHeight);
       
       console.log('TableWidget: Final table config:', tableConfig);
       
@@ -130,7 +133,7 @@ const TableWidget = ({
         }
         
         // Auto-resize to fit content if needed
-        if (height === 'auto' || config.autoResize) {
+        if (height === 'auto' || memoizedConfig.autoResize) {
           setTimeout(() => {
             try {
               // Get actual content height
@@ -187,7 +190,8 @@ const TableWidget = ({
       console.error('TableWidget: Error creating table:', error);
       setError('Failed to create table: ' + error.message);
     }
-  }, [data, config, isDarkMode, height, format, table]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, memoizedConfig, isDarkMode, height, format]); // Intentionally excluding 'table' to prevent infinite loop
 
   if (error) {
     return (
@@ -202,8 +206,8 @@ const TableWidget = ({
   }
 
   return (
-    <div className="table-widget" style={{ 
-      height: '100%', 
+    <div className={`table-widget ${isDarkMode ? 'dark' : ''}`} style={{ 
+      height: height === '100%' ? '100%' : 'auto',
       width: '100%', 
       minHeight: '200px',
       display: 'flex',
@@ -211,12 +215,13 @@ const TableWidget = ({
     }}>
       <div 
         ref={tableRef} 
-        className={`tabulator-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
+        className={`tabulator-table modern-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
         style={{ 
-          height: height === 'auto' ? 'auto' : height,
+          height: height,
           width: '100%',
           minHeight: '200px',
-          flex: height === '100%' ? '1' : 'none'
+          flex: 'none',
+          overflow: 'auto'
         }}
       />
     </div>
@@ -313,8 +318,8 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       layout: config.layout || 'fitColumns',
       responsiveLayout: config.responsiveLayout !== false ? 'collapse' : false,
       
-      // Pagination settings - ALWAYS force pagination if data exists
-      pagination: data && data.length > 0 ? true : false, // Force pagination if we have data
+      
+      pagination: config.pagination !== false ? (data && data.length > 0 ? true : false) : false,
       paginationSize: config.paginationSize || 5, // Default to smaller page size
       paginationSizeSelector: config.paginationSizeSelector || [3, 5, 10, 20],
       paginationButtonCount: config.paginationButtonCount || 5,
@@ -324,15 +329,15 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       // Force pagination to show even with small datasets
       paginationElement: undefined, // Let Tabulator create pagination
       
-      // Other settings
+      // Other settings - FIXED: Use selectableRows instead of selectable
       movableColumns: config.movableColumns !== false,
       resizableRows: config.resizableRows || false,
-      selectable: config.selectable || false,
-      reactiveData: true,
+      selectableRows: config.selectableRows || config.selectable || false, // FIXED: Use selectableRows
+      reactiveData: config.reactiveData !== false,
       debugInvalidOptions: false,
       
       // Ensure proper sizing
-      autoResize: false, // Don't auto-resize, use fixed height
+      autoResize: config.autoResize || false, // Don't auto-resize by default
       renderVerticalBuffer: 0,
       
       // Event callbacks for debugging and ensuring pagination shows

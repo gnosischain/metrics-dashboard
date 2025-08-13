@@ -10,6 +10,7 @@ const Card = forwardRef(({
   expandable = true, 
   isDarkMode = false, 
   chartType,
+  variant, // Add variant prop
   minimal = false,
   contentClassName = '' // New prop for custom class on content area
 }, ref) => {
@@ -40,7 +41,7 @@ const Card = forwardRef(({
   
   return (
     <>
-      <div ref={ref} className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''}`}>
+      <div ref={ref} className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''}`}>
         <div className="card-header">
           <div className="card-header-text">
             <h3 className="card-title">{title}</h3>

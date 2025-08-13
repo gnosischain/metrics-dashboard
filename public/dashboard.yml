@@ -86,11 +86,16 @@ OnChainActivity:
         - id: historical_active_validators
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 600px
-        - id: example_quantile_bands
+          minHeight: 450px
+        - id: historical_status_validators
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 600px
+          minHeight: 450px
+        - id: example_quantile_bands
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+       
 
 Network:
   name: Network
@@ -103,52 +108,68 @@ Network:
       icon: "📊"
       iconClass: "activity"
       metrics:
-        - id: p2p_geo_topology
+        - id: api_p2p_clients_latest_discv4
           gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 650px
-        - id: last_day_nodes
+          gridColumn: 1 / span 2
+          minHeight: 130px
+        - id: api_p2p_visits_latest_discv4
+          gridRow: 1
+          gridColumn: 3 / span 2
+          minHeight: 130px
+        - id: api_p2p_crawls_latest_discv4
+          gridRow: 1
+          gridColumn: 5 / span 2
+          minHeight: 130px
+        - id: api_p2p_clients_latest_discv5
+          gridRow: 1
+          gridColumn: 7 / span 2
+          minHeight: 130px
+        - id: api_p2p_visits_latest_discv5
+          gridRow: 1
+          gridColumn: 9 / span 2
+          minHeight: 130px
+        - id: api_p2p_crawls_latest_discv5
+          gridRow: 1
+          gridColumn: 11 / span 2
+          minHeight: 130px
+        - id: api_p2p_topology_latest
           gridRow: 2
-          gridColumn: 1 / span 4
-          minHeight: 100px
-        - id: last_day_countries
-          gridRow: 2
-          gridColumn: 5 / span 4
-          minHeight: 100px
-        - id: last_day_countries
+          gridColumn: 1 / span 8
+          minHeight: 460px
+        - id: text_network_overview
           gridRow: 2
           gridColumn: 9 / span 4
-          minHeight: 100px
+          minHeight: 460px
+        
     - name: Clients
       order: 2
       icon: "💻"
       iconClass: "monitor"
       metrics:
-        - id: clients_intro
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 450px
-        - id: last_day_el_client_distribution
+        - id: api_p2p_discv4_clients_latest
           gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 450px
-        - id: last_day_cl_client_distribution
+        - id: api_p2p_discv5_clients_latest
           gridRow: 2
           gridColumn: 7 / span 6
           minHeight: 450px
-        - id: historical_el_client_distribution
+        - id: api_p2p_discv4_clients_daily
           gridRow: 3
           gridColumn: 1 / span 6
-          minHeight: 600px
-        - id: last_day_el_client_version_distribution
+          minHeight: 450px
+        - id: api_p2p_discv5_clients_daily
           gridRow: 3
           gridColumn: 7 / span 6
-          minHeight: 600px
-        - id: historical_cl_client_distribution
+          minHeight: 450px
+        - id: clients_intro_1
           gridRow: 4
           gridColumn: 1 / span 6
-          minHeight: 600px
-       
+          minHeight: 450px
+        - id: clients_intro_2
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 450px
     - name: Forks
       order: 3
       icon: "🗺️"
@@ -157,11 +178,24 @@ Network:
         - id: historical_cl_forks
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 500px
+          minHeight: 400px
         - id: historical_cl_next_forks
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 500px
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 400px
+        - id: text_gnosis_chain_history
+          gridRow: 1 / span 1
+          gridColumn: 7/ span 6
+          minHeight: 400px
+        - id: api_consensus_forks
+          gridRow: 2 
+          gridColumn: 7/ span 6
+          minHeight: 400px
+        - id: table_gnosis_chain_history
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 900px
+       
     - name: Probelab
       order: 4
       icon: "🔬"
@@ -187,36 +221,3 @@ Network:
           gridRow: 4
           gridColumn: 1 / span 12
           minHeight: 500px
-
-ESG:
-  name: ESG
-  order: 5
-  icon: "🌱"
-  iconClass: "leaf"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "bar-chart-2"
-      metrics:
-        - id: historical_co2_emissions
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 400px
-        - id: historical_electricity_demand
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 500px
-        - id: historical_power_demand
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 500px
-    - name: Methodology
-      order: 2
-      icon: "📝"
-      iconClass: "file-text"
-      metrics:
-        - id: esg_methodology
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 16000px

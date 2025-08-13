@@ -28,7 +28,9 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         labelField,
         valueField,
         enableFiltering = false, 
-        enableZoom = false 
+        enableZoom = false,
+        variant, // New: support for widget variants
+        changeData // New: support for change indicators
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -36,7 +38,21 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
     if (chartType === 'table') widgetType = 'table';
     
-    return { type: widgetType, chartType, title: name, description, format, color, labelField, valueField, enableFiltering, enableZoom, config: metricConfig };
+    return { 
+      type: widgetType, 
+      chartType, 
+      title: name, 
+      description, 
+      format, 
+      color, 
+      labelField, 
+      valueField, 
+      enableFiltering, 
+      enableZoom, 
+      variant,
+      changeData,
+      config: metricConfig 
+    };
   }, [metricConfig]);
 
   useEffect(() => {
@@ -95,6 +111,63 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     };
   }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
 
+  // Process change data for number widgets
+  const processChangeData = useMemo(() => {
+    if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !filteredData?.data) {
+      return { showChange: false };
+    }
+
+    const changeConfig = widgetConfig.changeData;
+    const dataArray = Array.isArray(filteredData.data) ? filteredData.data : [filteredData.data];
+    
+    if (dataArray.length === 0) return { showChange: false };
+
+    // Get the first data point (assuming it contains change information)
+    const dataPoint = dataArray[0];
+    
+    // Try to extract change data from various possible fields
+    let changeValue = null;
+    let changePeriod = changeConfig.period || '';
+    
+    // Look for change data in common field patterns
+    const changeFields = [
+      changeConfig.field, // Explicit field from config
+      'change_percentage',
+      'change_percent', 
+      'change_value',
+      'change',
+      'pct_change',
+      'percentage_change'
+    ].filter(Boolean);
+    
+    for (const field of changeFields) {
+      if (dataPoint[field] !== undefined && dataPoint[field] !== null) {
+        changeValue = dataPoint[field];
+        break;
+      }
+    }
+
+    // If no change field found, return no change
+    if (changeValue === null || changeValue === undefined) {
+      return { showChange: false };
+    }
+
+    // Determine change type
+    let changeType = 'neutral';
+    const numericChange = parseFloat(changeValue);
+    if (!isNaN(numericChange)) {
+      if (numericChange > 0) changeType = 'positive';
+      else if (numericChange < 0) changeType = 'negative';
+    }
+
+    return {
+      showChange: true,
+      changeValue,
+      changeType,
+      changePeriod
+    };
+  }, [widgetConfig, filteredData]);
+
   const handleRefresh = useCallback(() => {
     fetchData();
   }, [fetchData]);
@@ -129,17 +202,33 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         return <TextWidget content={data?.content || 'No content available'} minimal={true} />;
       
       case 'number':
+        const value = filteredData?.data?.[0]?.[widgetConfig.valueField || 'value'] || 0;
         return (
           <NumberWidget
-            value={filteredData?.data?.[0]?.[widgetConfig.valueField || 'value'] || 0}
+            value={value}
             format={widgetConfig.format}
             color={widgetConfig.color}
+            label={undefined} // Never pass label in compact mode - title is shown in header
+            isDarkMode={isDarkMode}
+            variant={widgetConfig.variant || 'default'}
+            showChange={processChangeData.showChange}
+            changeValue={processChangeData.changeValue}
+            changeType={processChangeData.changeType}
+            changePeriod={processChangeData.changePeriod}
             minimal={true}
           />
         );
       
       case 'table':
-        return <TableWidget data={filteredData?.data || []} minimal={true} />;
+        return (
+          <TableWidget 
+            data={filteredData?.data || []} 
+            config={metricConfig.tableConfig || {}} 
+            minimal={true}
+            isDarkMode={isDarkMode}
+            format={widgetConfig.format}
+          />
+        );
       
       case 'chart':
         return (
@@ -166,7 +255,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     <LabelSelector
       labels={availableLabels}
       selectedLabel={selectedLabel}
-      onLabelChange={setSelectedLabel}
+      onSelectLabel={setSelectedLabel}
     />
   ) : undefined;
 
@@ -179,6 +268,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       headerControls={headerControls}
       expandable={widgetConfig.type === 'chart'}
       isDarkMode={isDarkMode}
+      chartType={widgetConfig.chartType}
     >
       {renderContent()}
     </Card>

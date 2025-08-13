@@ -28,7 +28,7 @@ const metric = {
   ],
   
   // Line configuration - array of field names to draw as lines
-  lines: ['q50'], // Median line
+  lines: ['q50','avg_balance'], 
   
   // Visual configuration
   lineOpacity: 0.9,
@@ -39,7 +39,7 @@ const metric = {
   bandColors: ['#4dabf7', '#69db7c', '#ffd43b'],
   
   // Custom colors for lines (optional)  
-  lineColors: ['#000000'], // Black median line
+  lineColors: ['#000000','#004525ff'], // Black median line
   
   // Legend and interaction
   enableLegend: true,
@@ -63,6 +63,13 @@ const metric = {
   watermarkSize: 25,
   watermarkOpacity: 0.3,
   
+  //yAxis: {
+  //  type: 'log',
+  //  logBase: 10, // Optional: specify the logarithm base (default is 10)
+  //  min: 'dataMin', // Optional: set minimum value
+  //  max: 'dataMax', // Optional: set maximum value
+  //},
+
   // Example query that returns quantile data
   query: `
     SELECT 
@@ -73,7 +80,8 @@ const metric = {
       q50,
       q75,
       q90,
-      q95
+      q95,
+      avg_balance
     FROM consensus_validators_balances_dist_daily
     ORDER BY date ASC
   `

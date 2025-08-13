@@ -1,0 +1,4 @@
+{
+  "id": "historical_pending_queued_validators",
+  "query": "SELECT date, status, cnt FROM dbt.consensus_validators_status_daily WHERE status != 'active_ongoing' ORDER BY date, status"
+}

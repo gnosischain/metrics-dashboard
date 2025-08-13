@@ -11,7 +11,7 @@
   background-color: var(--color-surface);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-base);
-  border: 1px solid var(--color-border);
+  border: 0.5px solid var(--color-border);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: var(--font-weight-semibold);
   margin-bottom: 0.1rem;
   color: var(--color-text-primary);
@@ -117,23 +117,59 @@
 }
 
 /* ==================
-   Number Display Card
+   Number Display Card - NO BORDERS AT ALL (Higher specificity)
    ================== */
 
-.number-display-card {
+.metric-card.number-display-card {
   box-shadow: none !important;
   border: none !important;
-  border-left: 1px solid rgba(0, 0, 0, 0.4) !important;
   background: transparent !important;
 }
 
-.number-display-card .card-header {
+.metric-card.number-display-card:hover {
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  transform: none;
+}
+
+.metric-card.number-display-card .card-header {
   border-bottom: none;
   background: transparent;
   padding: var(--spacing-sm) var(--spacing-md) 0;
 }
 
-.number-display-card .card-content {
+.metric-card.number-display-card .card-content {
+  padding: 0;
+}
+
+/* Remove the separate compact class since all number display cards should be borderless */
+
+/* ==================
+   Compact Number Display Card
+   ================== */
+
+.metric-card.compact {
+  /* Completely transparent - no borders at all */
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.metric-card.compact:hover {
+  /* Remove all hover effects */
+  border: none !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+.metric-card.compact .card-header {
+  border-bottom: none;
+  background: transparent;
+  padding: var(--spacing-sm) var(--spacing-md) 0;
+}
+
+.metric-card.compact .card-content {
   padding: 0;
 }
 
@@ -164,7 +200,7 @@
 }
 
 .minimal-title {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: var(--font-weight-semibold);
   margin: 0 0 var(--spacing-xs) 0;
   color: var(--color-text-primary);
@@ -189,6 +225,25 @@
   flex-direction: column;
   min-height: 0;
   width: 100%;
+}
+
+/* ==================
+   Compact Widget Specific
+   ================== */
+
+/* Override minimal widget styles for compact cards */
+.metric-card.compact .minimal-widget-container {
+  background: transparent;
+  height: 100%;
+}
+
+.metric-card.compact .minimal-widget-header {
+  display: none; /* Hide for compact - title is handled by NumberWidget */
+}
+
+.metric-card.compact .minimal-widget-content {
+  height: 100%;
+  margin-bottom: 0;
 }
 
 /* ==================
@@ -220,18 +275,55 @@
 }
 
 /* ==================
+   Card Grid Positioning
+   ================== */
+
+/* Special styling for different grid positions */
+.grid-item .metric-card.compact {
+  min-height: 80px; /* Minimum height for compact cards */
+}
+
+/* Adjust compact card height based on grid span */
+.grid-item[style*="span 3"] .metric-card.compact,
+.grid-item[style*="span 4"] .metric-card.compact {
+  min-height: 70px;
+}
+
+.grid-item[style*="span 6"] .metric-card.compact,
+.grid-item[style*="span 8"] .metric-card.compact {
+  min-height: 85px;
+}
+
+.grid-item[style*="span 12"] .metric-card.compact {
+  min-height: 90px;
+}
+
+/* ==================
    Dark Mode Cards
    ================== */
 
 .dark-mode .metric-card {
   background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 0.5px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .dark-mode .metric-card:hover {
   border-color: #4D565F;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .metric-card.compact {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.dark-mode .metric-card.compact:hover {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none;
 }
 
 .dark-mode .card-header {
@@ -297,4 +389,27 @@
     width: 100%;
     justify-content: flex-end;
   }
+
+  /* Compact cards on mobile */
+  .metric-card.compact {
+    min-height: 60px;
+    border-left-width: 2px !important;
+  }
+  
+  .grid-item .metric-card.compact {
+    min-height: 60px;
+  }
+}
+
+/* ==================
+   Card Accessibility
+   ================== */
+
+.metric-card:focus-within {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+.metric-card.compact:focus-within {
+  outline-color: var(--primary-blue);
 }

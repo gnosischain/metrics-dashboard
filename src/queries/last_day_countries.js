@@ -1,7 +1,6 @@
 const metric = {
   id: 'last_day_countries',
   name: 'Countries',
-  description: 'Last day',
   format: 'formatNumber',
   chartType: 'numberDisplay',
   color: '#0969DA',

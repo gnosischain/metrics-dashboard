@@ -1,362 +1,444 @@
-/* 
- * Table Widget Styles
- * Basic table styles (Tabulator-specific styles are in tabulator-styles.css)
- */
+/* Modern Table Widget Styles - Add this to your CSS file or create modern-table.css */
 
 /* ==================
-   Table Widget Container
+   Modern Table Base Styles
    ================== */
 
 .table-widget {
   position: relative;
   width: 100%;
   height: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
+.table-widget.dark {
+  background: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 /* ==================
-   Basic Table Styles
+   Modern Tabulator Overrides
    ================== */
 
-.basic-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
+/* Table Container */
+.tabulator {
+  background: transparent !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  height: 100% !important; /* Ensure full height usage */
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.basic-table thead {
-  background-color: var(--color-background);
-  border-bottom: 2px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+/* Table Holder - ensure it grows to fill available space */
+.tabulator .tabulator-tableHolder {
+  background: transparent !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
 }
 
-.basic-table th {
-  padding: var(--spacing-sm) var(--spacing-md);
-  text-align: left;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  white-space: nowrap;
+/* Header Styling */
+.tabulator .tabulator-header {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-radius: 0 !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important; /* Prevent header from shrinking */
 }
 
-.basic-table tbody tr {
-  border-bottom: 1px solid var(--color-border);
-  transition: background-color var(--transition-fast);
+.tabulator .tabulator-col {
+  background: transparent !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding: 0 !important;
+  position: relative !important;
 }
 
-.basic-table tbody tr:hover {
-  background-color: var(--color-background);
+.tabulator .tabulator-col:last-child {
+  border-right: none !important;
 }
 
-.basic-table td {
-  padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--color-text-primary);
+.tabulator .tabulator-col-content {
+  padding: 16px 20px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #64748b !important;
+}
+
+/* Remove default header border radius */
+.tabulator .tabulator-header .tabulator-col:first-child {
+  border-radius: 0 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col:last-child {
+  border-radius: 0 !important;
+}
+
+/* Row Styling */
+.tabulator .tabulator-table {
+  background: transparent !important;
+  color: #334155 !important;
+  height: 100% !important; /* Allow table to fill container */
+}
+
+.tabulator .tabulator-row {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  transition: all 0.2s ease !important;
+  min-height: 52px !important;
+}
+
+.tabulator .tabulator-row:hover {
+  background: #f8fafc !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.tabulator .tabulator-row:last-child {
+  border-bottom: none !important;
+}
+
+/* Cell Styling */
+.tabulator .tabulator-cell {
+  border-right: none !important;
+  padding: 16px 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+}
+
+/* Alternating row colors for better readability */
+.tabulator .tabulator-row:nth-child(even) {
+  background: #fafbfc !important;
+}
+
+.tabulator .tabulator-row:nth-child(even):hover {
+  background: #f1f5f9 !important;
 }
 
 /* ==================
-   Table Scroll Container
+   Full Height Table Support
    ================== */
 
-.table-scroll-container {
-  flex: 1;
-  overflow: auto;
-  position: relative;
+/* When table should use full card height */
+.metric-card .card-content {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Ensure table widget fills the card content */
+.metric-card .card-content .table-widget {
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+/* For grid items with specific height (like minHeight: 750px) */
+.grid-item[style*="minHeight"] .table-widget,
+.grid-item[style*="min-height"] .table-widget {
+  height: 100% !important;
 }
 
 /* ==================
-   Table Loading State
+   Modern Pagination Styling (when enabled)
    ================== */
 
-.table-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 200px;
+.tabulator .tabulator-footer {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  padding: 16px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 60px !important;
+  flex-shrink: 0 !important; /* Prevent footer from shrinking */
 }
 
-.table-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-border);
-  border-top: 3px solid var(--primary-blue);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.tabulator .tabulator-paginator {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.tabulator .tabulator-page {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-width: 40px !important;
+  text-align: center !important;
+}
+
+.tabulator .tabulator-page:hover {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+  transform: translateY(-1px) !important;
+}
+
+.tabulator .tabulator-page.active {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.tabulator .tabulator-page[data-page="first"],
+.tabulator .tabulator-page[data-page="prev"],
+.tabulator .tabulator-page[data-page="next"],
+.tabulator .tabulator-page[data-page="last"] {
+  background: #f8fafc !important;
+  border-color: #d1d5db !important;
+  font-weight: 600 !important;
+}
+
+.tabulator .tabulator-page[data-page="first"]:hover,
+.tabulator .tabulator-page[data-page="prev"]:hover,
+.tabulator .tabulator-page[data-page="next"]:hover,
+.tabulator .tabulator-page[data-page="last"]:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Page Size Selector */
+.tabulator .tabulator-page-size {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 14px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.tabulator .tabulator-page-size select {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.tabulator .tabulator-page-size select:hover {
+  border-color: #9ca3af !important;
+}
+
+.tabulator .tabulator-page-size select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Row Counter */
+.tabulator .tabulator-counter {
+  font-size: 14px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
 }
 
 /* ==================
-   Table Error State
+   Dark Mode Styles
    ================== */
 
-.table-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 200px;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-error);
-  text-align: center;
-  padding: var(--spacing-lg);
+.table-widget.dark .tabulator .tabulator-header {
+  background: #374151 !important;
+  border-bottom: 1px solid #4b5563 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-col {
+  border-right: 1px solid #4b5563 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-col-content {
+  color: #d1d5db !important;
+}
+
+.table-widget.dark .tabulator .tabulator-row {
+  background: #1f2937 !important;
+  border-bottom: 1px solid #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-row:hover {
+  background: #374151 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-row:nth-child(even) {
+  background: #111827 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-row:nth-child(even):hover {
+  background: #374151 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-cell {
+  color: #f3f4f6 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-footer {
+  background: #1f2937 !important;
+  border-top: 1px solid #4b5563 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-page {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #d1d5db !important;
+}
+
+.table-widget.dark .tabulator .tabulator-page:hover {
+  background: #4b5563 !important;
+  border-color: #6b7280 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-page.active {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.table-widget.dark .tabulator .tabulator-page-size select {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #d1d5db !important;
+}
+
+.table-widget.dark .tabulator .tabulator-counter {
+  color: #9ca3af !important;
 }
 
 /* ==================
-   Table Empty State
-   ================== */
-
-.table-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 200px;
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  text-align: center;
-  padding: var(--spacing-lg);
-}
-
-/* ==================
-   Table Actions
-   ================== */
-
-.table-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  background-color: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
-  gap: var(--spacing-md);
-}
-
-.table-search {
-  flex: 1;
-  max-width: 300px;
-}
-
-.table-filters {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-/* ==================
-   Table Sorting
-   ================== */
-
-.sortable {
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  padding-right: 20px;
-}
-
-.sortable::after {
-  content: '↕';
-  position: absolute;
-  right: 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-.sortable.sort-asc::after {
-  content: '↑';
-  color: var(--primary-blue);
-}
-
-.sortable.sort-desc::after {
-  content: '↓';
-  color: var(--primary-blue);
-}
-
-/* ==================
-   Table Cell Types
-   ================== */
-
-.cell-numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.cell-currency {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.cell-percentage {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.cell-date {
-  white-space: nowrap;
-}
-
-.cell-status {
-  text-align: center;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: var(--border-radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-}
-
-.status-badge.success {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: var(--color-success);
-}
-
-.status-badge.warning {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: var(--color-warning);
-}
-
-.status-badge.error {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: var(--color-error);
-}
-
-.status-badge.info {
-  background-color: rgba(13, 202, 240, 0.1);
-  color: var(--color-info);
-}
-
-/* ==================
-   Table Selection
-   ================== */
-
-.table-checkbox {
-  width: 20px;
-  text-align: center;
-}
-
-.table-checkbox input[type="checkbox"] {
-  cursor: pointer;
-}
-
-.basic-table tbody tr.selected {
-  background-color: rgba(9, 105, 218, 0.05);
-}
-
-/* ==================
-   Responsive Table
+   Responsive Design
    ================== */
 
 @media (max-width: 768px) {
-  .basic-table {
-    font-size: var(--font-size-xs);
+  .tabulator .tabulator-cell {
+    padding: 12px 16px !important;
+    font-size: 13px !important;
   }
   
-  .basic-table th,
-  .basic-table td {
-    padding: var(--spacing-xs) var(--spacing-sm);
+  .tabulator .tabulator-col-content {
+    padding: 12px 16px !important;
+    font-size: 12px !important;
   }
   
-  .table-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .tabulator .tabulator-footer {
+    padding: 12px 16px !important;
+    flex-direction: column !important;
+    gap: 12px !important;
   }
   
-  .table-search {
-    max-width: none;
-  }
-  
-  /* Responsive table scroll */
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .table-responsive table {
-    min-width: 600px;
+  .tabulator .tabulator-paginator {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
   }
 }
 
 /* ==================
-   Striped Table
+   Special Data Type Styling
    ================== */
 
-.basic-table.striped tbody tr:nth-child(even) {
-  background-color: var(--color-background);
+/* Numeric columns */
+.tabulator .tabulator-cell[data-type="number"] {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" !important;
+}
+
+/* Code/Hash columns */
+.tabulator .tabulator-cell[data-field*="digest"],
+.tabulator .tabulator-cell[data-field*="hash"],
+.tabulator .tabulator-cell[data-field*="version"] {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  font-size: 13px !important;
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  margin: 8px 0 !important;
+  display: inline-block !important;
+}
+
+.table-widget.dark .tabulator .tabulator-cell[data-field*="digest"],
+.table-widget.dark .tabulator .tabulator-cell[data-field*="hash"],
+.table-widget.dark .tabulator .tabulator-cell[data-field*="version"] {
+  background: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+/* Time columns */
+.tabulator .tabulator-cell[data-field*="time"],
+.tabulator .tabulator-cell[data-field*="date"] {
+  font-variant-numeric: tabular-nums !important;
+  color: #6b7280 !important;
+}
+
+.table-widget.dark .tabulator .tabulator-cell[data-field*="time"],
+.table-widget.dark .tabulator .tabulator-cell[data-field*="date"] {
+  color: #9ca3af !important;
 }
 
 /* ==================
-   Bordered Table
+   Loading and Empty States
    ================== */
 
-.basic-table.bordered {
-  border: 1px solid var(--color-border);
+.tabulator .tabulator-placeholder {
+  background: transparent !important;
+  color: #6b7280 !important;
+  font-size: 16px !important;
+  padding: 40px 20px !important;
+  text-align: center !important;
+  font-weight: 500 !important;
 }
 
-.basic-table.bordered th,
-.basic-table.bordered td {
-  border: 1px solid var(--color-border);
+.table-widget.dark .tabulator .tabulator-placeholder {
+  color: #9ca3af !important;
 }
 
 /* ==================
-   Compact Table
+   Scrollbar Styling
    ================== */
 
-.basic-table.compact th,
-.basic-table.compact td {
-  padding: var(--spacing-xs) var(--spacing-sm);
+.tabulator .tabulator-tableHolder::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
 }
 
-/* ==================
-   Dark Mode Tables
-   ================== */
-
-.dark-mode .basic-table thead {
-  background-color: var(--color-background);
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-track {
+  background: transparent !important;
 }
 
-.dark-mode .basic-table tbody tr:hover {
-  background-color: rgba(139, 148, 158, 0.05);
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 3px !important;
+  transition: background 0.2s ease !important;
 }
 
-.dark-mode .basic-table tbody tr.selected {
-  background-color: rgba(88, 166, 255, 0.1);
+.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
 }
 
-.dark-mode .basic-table.striped tbody tr:nth-child(even) {
-  background-color: rgba(0, 0, 0, 0.2);
+.table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
+  background: #4b5563 !important;
 }
 
-.dark-mode .table-actions {
-  background-color: var(--color-background);
-  border-color: var(--color-border);
-}
-
-.dark-mode .sortable::after {
-  color: var(--color-text-secondary);
-}
-
-.dark-mode .sortable.sort-asc::after,
-.dark-mode .sortable.sort-desc::after {
-  color: var(--primary-blue);
-}
-
-/* Status badges in dark mode */
-.dark-mode .status-badge.success {
-  background-color: rgba(40, 167, 69, 0.2);
-}
-
-.dark-mode .status-badge.warning {
-  background-color: rgba(255, 193, 7, 0.2);
-}
-
-.dark-mode .status-badge.error {
-  background-color: rgba(248, 81, 73, 0.2);
-}
-
-.dark-mode .status-badge.info {
-  background-color: rgba(88, 166, 255, 0.2);
+.table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
+  background: #6b7280 !important;
 }
