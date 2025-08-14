@@ -147,13 +147,17 @@ Network:
       iconClass: "monitor"
       metrics:
         - id: api_p2p_discv4_clients_latest
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
+          gridRow: 1
+          gridColumn: 1 / span 5
+          minHeight: 350px
+        - id: text_network_protocols_overview
+          gridRow: 1 / span 2
+          gridColumn: 6 / span 7
+          minHeight: 725px
         - id: api_p2p_discv5_clients_latest
           gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
+          gridColumn: 1 / span 5
+          minHeight: 350px
         - id: api_p2p_discv4_clients_daily
           gridRow: 3
           gridColumn: 1 / span 6
@@ -161,10 +165,6 @@ Network:
         - id: api_p2p_discv5_clients_daily
           gridRow: 3
           gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: clients_intro_1
-          gridRow: 4
-          gridColumn: 1 / span 6
           minHeight: 450px
         - id: clients_intro_2
           gridRow: 4
@@ -184,26 +184,25 @@ Network:
           gridColumn: 1 / span 6
           minHeight: 400px
         - id: text_gnosis_chain_history
-          gridRow: 1 / span 1
+          gridRow: 1 / span 2
           gridColumn: 7/ span 6
-          minHeight: 400px
-        - id: api_consensus_forks
-          gridRow: 2 
-          gridColumn: 7/ span 6
-          minHeight: 400px
-        - id: table_gnosis_chain_history
+          minHeight: 825px
+        - id: text_gnosis_chain_forks_history
           gridRow: 3
           gridColumn: 1 / span 12
           minHeight: 900px
-       
     - name: Probelab
       order: 4
       icon: "🔬"
       iconClass: "search"
       metrics:
+        - id: text_probelab
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 500px
         - id: historical_probelab_cl_client_distribution
           gridRow: 1
-          gridColumn: 1 / span 12
+          gridColumn: 7 / span 6
           minHeight: 500px
         - id: historical_probelab_cl_client_version_distribution
           gridRow: 2
@@ -221,3 +220,4 @@ Network:
           gridRow: 4
           gridColumn: 1 / span 12
           minHeight: 500px
+

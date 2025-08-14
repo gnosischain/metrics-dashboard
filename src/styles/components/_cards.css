@@ -64,6 +64,32 @@
 }
 
 /* ==================
+   TEXT WIDGET CARD SPECIFIC STYLES
+   ================== */
+
+/* Enhanced styles for text widget cards */
+.metric-card[data-chart-type="text"] .card-header .card-title {
+  font-size: 1.4rem; /* Increased from 0.9rem */
+  font-weight: var(--font-weight-bold); /* Increased from semibold */
+  margin-bottom: 0.5rem; /* Increased from 0.1rem */
+  line-height: 1.3;
+  color: var(--primary-blue); /* Blue title for text widgets */
+}
+
+.metric-card[data-chart-type="text"] .card-header .card-subtitle {
+  font-size: 1rem; /* Increased from var(--font-size-sm) which is 0.875rem */
+  color: var(--color-text-secondary); /* Keep gray like other charts */
+  font-weight: var(--font-weight-medium); /* Added weight */
+  line-height: 1.4;
+}
+
+/* Adjust card header padding for text widgets to accommodate larger text */
+.metric-card[data-chart-type="text"] .card-header {
+  padding: 1.25rem 1.25rem 1rem 1.25rem; /* Increased from var(--spacing-md) 1.25rem */
+  min-height: 70px; /* Increased from 50px */
+}
+
+/* ==================
    Card Controls
    ================== */
 
@@ -339,6 +365,15 @@
   color: var(--color-text-secondary);
 }
 
+/* Dark mode support for text widget enhanced styles */
+.dark-mode .metric-card[data-chart-type="text"] .card-header .card-title {
+  color: var(--primary-blue); /* Blue title in dark mode too */
+}
+
+.dark-mode .metric-card[data-chart-type="text"] .card-header .card-subtitle {
+  color: var(--color-text-secondary); /* Keep gray in dark mode */
+}
+
 .dark-mode .expand-chart-button {
   color: var(--color-text-secondary);
 }
@@ -398,6 +433,20 @@
   
   .grid-item .metric-card.compact {
     min-height: 60px;
+  }
+
+  /* Responsive adjustments for text widget cards */
+  .metric-card[data-chart-type="text"] .card-header .card-title {
+    font-size: 1.25rem; /* Slightly smaller on mobile */
+  }
+  
+  .metric-card[data-chart-type="text"] .card-header .card-subtitle {
+    font-size: 0.9rem; /* Slightly smaller on mobile */
+  }
+  
+  .metric-card[data-chart-type="text"] .card-header {
+    padding: 1rem; /* Reduced padding on mobile */
+    min-height: 60px; /* Reduced height on mobile */
   }
 }
 

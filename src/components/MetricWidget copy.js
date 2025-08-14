@@ -174,12 +174,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
   if (loading && !data) {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
-        subtitle={widgetConfig.description}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
-      >
+      <Card minimal={minimal} title={widgetConfig.title} subtitle={widgetConfig.description}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading...</p>
@@ -190,12 +185,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
   if (error) {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
-        subtitle={widgetConfig.description}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
-      >
+      <Card minimal={minimal} title={widgetConfig.title} subtitle={widgetConfig.description}>
         <div className="error-container">
           <p className="error-message">Error: {error}</p>
           <button onClick={handleRefresh} className="refresh-button">
@@ -278,7 +268,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       headerControls={headerControls}
       expandable={widgetConfig.type === 'chart'}
       isDarkMode={isDarkMode}
-      chartType={widgetConfig.chartType} // Pass chartType for CSS styling
+      chartType={widgetConfig.chartType}
     >
       {renderContent()}
     </Card>

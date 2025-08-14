@@ -107,6 +107,32 @@
 }
 
 /* ==================
+   TEXT WIDGET MODAL SPECIFIC STYLES
+   ================== */
+
+/* Enhanced styles for text widget modals */
+.chart-modal[data-chart-type="text"] .chart-modal-title h2 {
+  font-size: 1.75rem; /* Increased from var(--font-size-xl) which is 1.25rem */
+  font-weight: var(--font-weight-bold); /* Increased from semibold */
+  line-height: 1.3;
+  color: var(--primary-blue); /* Blue title for text widget modals */
+}
+
+.chart-modal[data-chart-type="text"] .chart-modal-subtitle {
+  font-size: 1.125rem; /* Increased from var(--font-size-sm) which is 0.875rem */
+  color: var(--color-text-secondary); /* Keep gray like other charts */
+  font-weight: var(--font-weight-medium); /* Added weight */
+  line-height: 1.4;
+  margin-top: 0.5rem; /* Increased spacing */
+}
+
+/* Adjust modal header padding for text widgets */
+.chart-modal[data-chart-type="text"] .chart-modal-header {
+  padding: 20px 24px 16px 24px; /* Increased padding */
+  min-height: 80px; /* Increased from 70px */
+}
+
+/* ==================
    Modal Content
    ================== */
 
@@ -289,6 +315,20 @@
     padding: var(--spacing-md);
     flex-wrap: wrap;
   }
+
+  /* Responsive adjustments for text widget modals */
+  .chart-modal[data-chart-type="text"] .chart-modal-title h2 {
+    font-size: 1.5rem; /* Slightly smaller on mobile */
+  }
+  
+  .chart-modal[data-chart-type="text"] .chart-modal-subtitle {
+    font-size: 1rem; /* Slightly smaller on mobile */
+  }
+  
+  .chart-modal[data-chart-type="text"] .chart-modal-header {
+    padding: 16px; /* Reduced padding on mobile */
+    min-height: 70px; /* Reduced height on mobile */
+  }
 }
 
 /* ==================
@@ -329,4 +369,13 @@
 
 .dark-mode .modal-footer {
   border-top-color: var(--color-border) !important;
+}
+
+/* Dark mode support for text widget enhanced modal styles */
+.dark-mode .chart-modal[data-chart-type="text"] .chart-modal-title h2 {
+  color: var(--primary-blue); /* Blue title in dark mode too */
+}
+
+.dark-mode .chart-modal[data-chart-type="text"] .chart-modal-subtitle {
+  color: var(--color-text-secondary); /* Keep gray in dark mode */
 }

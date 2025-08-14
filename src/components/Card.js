@@ -41,7 +41,11 @@ const Card = forwardRef(({
   
   return (
     <>
-      <div ref={ref} className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''}`}>
+      <div 
+        ref={ref} 
+        className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+        data-chart-type={chartType} // Added data attribute for CSS targeting
+      >
         <div className="card-header">
           <div className="card-header-text">
             <h3 className="card-title">{title}</h3>
@@ -57,7 +61,15 @@ const Card = forwardRef(({
         </div>
       </div>
       {expandable && !isNumberDisplay && (
-        <ChartModal isOpen={isExpanded} onClose={toggleExpand} title={title} subtitle={subtitle} headerControls={headerControls} isDarkMode={isDarkMode}>
+        <ChartModal 
+          isOpen={isExpanded} 
+          onClose={toggleExpand} 
+          title={title} 
+          subtitle={subtitle} 
+          headerControls={headerControls} 
+          isDarkMode={isDarkMode}
+          chartType={chartType} // Pass chartType to modal as well
+        >
           {children}
         </ChartModal>
       )}

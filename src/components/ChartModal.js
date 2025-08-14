@@ -2,7 +2,16 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import ExpandButton from './ExpandButton';
 
-const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children, isDarkMode = false }) => {
+const ChartModal = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  subtitle, 
+  headerControls, 
+  children, 
+  isDarkMode = false,
+  chartType // Added chartType prop to maintain styling in modal
+}) => {
   const modalContentRef = useRef(null);
 
   const handleEscKey = useCallback((event) => {
@@ -35,7 +44,11 @@ const ChartModal = ({ isOpen, onClose, title, subtitle, headerControls, children
 
   return ReactDOM.createPortal(
     <div className="chart-modal-overlay" onClick={onClose}>
-      <div className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
+      <div 
+        className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`} 
+        onClick={(e) => e.stopPropagation()}
+        data-chart-type={chartType} // Added data attribute for consistent styling
+      >
         <div className="chart-modal-header">
           <div className="chart-modal-title">
             <h2>{title}</h2>
