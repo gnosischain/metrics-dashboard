@@ -1,5 +1,6 @@
 /**
- * Boxplot Chart implementation for ECharts
+ * Fixed Boxplot Chart implementation for ECharts
+ * Uses correct data positioning for proper boxplot proportions
  */
 
 import { BaseChart } from './BaseChart';
@@ -14,6 +15,7 @@ export class BoxplotChart extends BaseChart {
 
     const processedData = this.processData(data, config);
     const colors = generateColorPalette(1, isDarkMode);
+    const primaryColor = colors[0];
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -30,41 +32,136 @@ export class BoxplotChart extends BaseChart {
       },
       
       series: [
+        // 1. Main box (Q1 to Q3) using candlestick
         {
-          name: 'Boxplot',
-          type: 'boxplot',
-          data: processedData.boxplotData,
+          name: 'Box',
+          type: 'candlestick',
+          data: processedData.categories.map((cat, i) => {
+            const data = processedData.boxplotData[i];
+            // Candlestick format: [open, close, low, high]
+            // We'll use: [Q1, Q3, Q1, Q3] to create a box
+            return [data.q1, data.q3, data.q1, data.q3];
+          }),
           itemStyle: {
-            color: colors[0],
-            borderColor: colors[0]
+            color: isDarkMode ? 'rgba(88, 166, 255, 0.3)' : 'rgba(9, 105, 218, 0.3)',
+            color0: isDarkMode ? 'rgba(88, 166, 255, 0.3)' : 'rgba(9, 105, 218, 0.3)',
+            borderColor: primaryColor,
+            borderColor0: primaryColor,
+            borderWidth: 2
+          },
+          barWidth: '60%',
+          // Add whisker lines as markLines
+          markLine: {
+            silent: true,
+            lineStyle: {
+              color: primaryColor,
+              width: 1,
+              type: 'solid'
+            },
+            symbol: 'none',
+            data: processedData.categories.flatMap((cat, i) => {
+              const data = processedData.boxplotData[i];
+              return [
+                // Lower whisker: from min to Q1
+                [
+                  { xAxis: i, yAxis: data.min },
+                  { xAxis: i, yAxis: data.q1 }
+                ],
+                // Upper whisker: from Q3 to max
+                [
+                  { xAxis: i, yAxis: data.q3 },
+                  { xAxis: i, yAxis: data.max }
+                ]
+              ];
+            })
           },
           tooltip: {
-            formatter: (param) => {
-              const data = param.data;
+            formatter: (params) => {
+              const dataIndex = params.dataIndex;
+              const boxData = processedData.boxplotData[dataIndex];
+              const categoryName = processedData.categories[dataIndex];
+              
               return `
-                ${param.name}<br/>
-                Upper: ${formatValue(data[4], config.format)}<br/>
-                Q3: ${formatValue(data[3], config.format)}<br/>
-                Median: ${formatValue(data[2], config.format)}<br/>
-                Q1: ${formatValue(data[1], config.format)}<br/>
-                Lower: ${formatValue(data[0], config.format)}
+                <div style="padding: 8px;">
+                  <div style="font-weight: bold; margin-bottom: 8px;">${categoryName}</div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span>Max (${config.maxField || '95th'}):</span>
+                    <strong style="margin-left: 16px;">${formatValue(boxData.max, config.format)}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span>Q3 (${config.q3Field || '75th'}):</span>
+                    <strong style="margin-left: 16px;">${formatValue(boxData.q3, config.format)}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span>Median (${config.medianField || '50th'}):</span>
+                    <strong style="margin-left: 16px;">${formatValue(boxData.median, config.format)}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span>Q1 (${config.q1Field || '25th'}):</span>
+                    <strong style="margin-left: 16px;">${formatValue(boxData.q1, config.format)}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span>Min (${config.minField || '5th'}):</span>
+                    <strong style="margin-left: 16px;">${formatValue(boxData.min, config.format)}</strong>
+                  </div>
+                </div>
               `;
             }
           }
         },
+        
+        // 2. Median line
         {
-          name: 'Outliers',
+          name: 'Median',
           type: 'scatter',
-          data: processedData.outliers,
+          symbol: 'rect',
+          symbolSize: [60, 3],
+          data: processedData.categories.map((cat, i) => {
+            const data = processedData.boxplotData[i];
+            return [i, data.median];
+          }),
           itemStyle: {
-            color: colors[0],
-            opacity: 0.6
-          }
+            color: isDarkMode ? '#ffffff' : '#000000',
+            borderWidth: 0
+          },
+          z: 10,
+          silent: true
+        },
+        
+        // 3. Whisker end caps
+        {
+          name: 'Caps',
+          type: 'scatter',
+          symbol: 'rect', 
+          symbolSize: [20, 2],
+          data: processedData.categories.flatMap((cat, i) => {
+            const data = processedData.boxplotData[i];
+            return [
+              [i, data.min],
+              [i, data.max]
+            ];
+          }),
+          itemStyle: {
+            color: primaryColor,
+            borderWidth: 0
+          },
+          z: 5,
+          silent: true
         }
       ],
       
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        confine: true,
+        backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        borderColor: isDarkMode ? '#555' : '#ccc',
+        textStyle: {
+          color: isDarkMode ? '#fff' : '#333'
+        }
+      },
+      
+      legend: {
+        show: false
       },
       
       grid: this.getGridConfig(config)
@@ -72,90 +169,66 @@ export class BoxplotChart extends BaseChart {
   }
 
   static processData(data, config) {
-    const {
-      categoryField = 'category',
-      valueField = 'value'
-    } = config;
+    console.log('FixedBoxplotChart.processData: Input data:', data);
+    console.log('FixedBoxplotChart.processData: Config:', config);
 
     if (!Array.isArray(data)) {
       throw new Error('Boxplot chart data must be an array');
     }
 
-    // Group data by category
-    const grouped = {};
-    data.forEach(item => {
-      const category = item[categoryField];
-      const value = parseFloat(item[valueField] || 0);
+    const {
+      categoryField = 'category',
+      minField = 'min',
+      q1Field = 'q1', 
+      medianField = 'median',
+      q3Field = 'q3',
+      maxField = 'max'
+    } = config;
+
+    // Extract categories
+    const categories = data.map(item => item[categoryField]);
+    
+    // Build boxplot data objects
+    const boxplotData = data.map(item => {
+      const boxData = {
+        min: parseFloat(item[minField]),
+        q1: parseFloat(item[q1Field]), 
+        median: parseFloat(item[medianField]),
+        q3: parseFloat(item[q3Field]),
+        max: parseFloat(item[maxField])
+      };
       
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
-      grouped[category].push(value);
-    });
-
-    const categories = Object.keys(grouped);
-    const boxplotData = [];
-    const outliers = [];
-
-    categories.forEach((category, categoryIndex) => {
-      const values = grouped[category].sort((a, b) => a - b);
-      const boxplotStats = this.calculateBoxplotStats(values);
-      
-      boxplotData.push([
-        boxplotStats.min,
-        boxplotStats.q1,
-        boxplotStats.median,
-        boxplotStats.q3,
-        boxplotStats.max
-      ]);
-
-      // Add outliers
-      boxplotStats.outliers.forEach(outlier => {
-        outliers.push([categoryIndex, outlier]);
+      console.log('FixedBoxplotChart: Processing item:', {
+        category: item[categoryField],
+        values: boxData,
+        ranges: {
+          'IQR (Q3-Q1)': boxData.q3 - boxData.q1,
+          'Total range': boxData.max - boxData.min
+        }
       });
+      
+      return boxData;
     });
 
     return {
       categories,
-      boxplotData,
-      outliers
+      boxplotData
     };
   }
 
-  static calculateBoxplotStats(values) {
-    const sorted = [...values].sort((a, b) => a - b);
-    
-    const q1 = this.quartile(sorted, 0.25);
-    const median = this.quartile(sorted, 0.5);
-    const q3 = this.quartile(sorted, 0.75);
-    
-    const iqr = q3 - q1;
-    const lowerFence = q1 - 1.5 * iqr;
-    const upperFence = q3 + 1.5 * iqr;
-    
-    const outliers = sorted.filter(v => v < lowerFence || v > upperFence);
-    const filtered = sorted.filter(v => v >= lowerFence && v <= upperFence);
-    
-    return {
-      min: Math.min(...filtered),
-      q1,
-      median,
-      q3,
-      max: Math.max(...filtered),
-      outliers
-    };
-  }
-
-  static quartile(values, q) {
-    const pos = (values.length - 1) * q;
-    const base = Math.floor(pos);
-    const rest = pos - base;
-    
-    if (values[base + 1] !== undefined) {
-      return values[base] + rest * (values[base + 1] - values[base]);
-    } else {
-      return values[base];
+  static validateData(data) {
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.warn('FixedBoxplotChart: Invalid data provided');
+      return false;
     }
+    
+    const firstItem = data[0];
+    if (!firstItem || typeof firstItem !== 'object') {
+      console.warn('FixedBoxplotChart: Data items must be objects');
+      return false;
+    }
+    
+    return true;
   }
 }
 
