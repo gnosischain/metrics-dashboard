@@ -149,3 +149,241 @@
   background: var(--color-surface);
   border-color: var(--color-border);
 }
+
+
+
+
+
+/* Word Cloud Chart Styling */
+
+
+/* Word cloud container specific styling */
+.metric-card[data-chart-type="wordcloud"],
+.metric-card[data-chart-type="word-cloud"] {
+  /* Ensure proper aspect ratio for word clouds */
+  min-height: 350px;
+}
+
+.metric-card[data-chart-type="wordcloud"] .card-content,
+.metric-card[data-chart-type="word-cloud"] .card-content {
+  /* Remove padding to maximize word cloud space */
+  padding: 0.5rem;
+}
+
+/* Chart container for word clouds */
+.chart-container-wrapper[data-chart-type="wordcloud"],
+.chart-container-wrapper[data-chart-type="word-cloud"] {
+  min-height: 300px;
+  /* Ensure the container doesn't collapse */
+  position: relative;
+}
+
+.echarts-container.wordcloud {
+  /* Word cloud specific container styles */
+  overflow: hidden;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Loading state styling for word cloud */
+.echarts-container.wordcloud .echarts-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.echarts-container.wordcloud .echarts-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+.echarts-container.wordcloud .echarts-loading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Dark mode loading state */
+.dark-mode .echarts-container.wordcloud .echarts-loading {
+  background: rgba(17, 24, 39, 0.95);
+}
+
+.dark-mode .echarts-container.wordcloud .echarts-loading .loading-spinner {
+  border-color: #374151;
+  border-top-color: #60a5fa;
+}
+
+.dark-mode .echarts-container.wordcloud .echarts-loading p {
+  color: #9ca3af;
+}
+
+/* Error state styling for word cloud */
+.echarts-container.wordcloud .echarts-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: rgba(254, 242, 242, 0.95);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.echarts-container.wordcloud .echarts-error p {
+  margin: 0;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dark-mode .echarts-container.wordcloud .echarts-error {
+  background: rgba(69, 26, 26, 0.95);
+}
+
+.dark-mode .echarts-container.wordcloud .echarts-error p {
+  color: #f87171;
+}
+
+/* Word cloud in modal (expanded view) */
+.chart-modal[data-chart-type="wordcloud"] .chart-modal-content,
+.chart-modal[data-chart-type="word-cloud"] .chart-modal-content {
+  /* Maximize space in modal for better word visibility */
+  padding: 1rem;
+}
+
+.chart-modal[data-chart-type="wordcloud"] .echarts-container,
+.chart-modal[data-chart-type="word-cloud"] .echarts-container {
+  min-height: 70vh;
+}
+
+/* Compact mode adjustments for word clouds */
+.metric-card.compact[data-chart-type="wordcloud"],
+.metric-card.compact[data-chart-type="word-cloud"] {
+  min-height: 250px;
+}
+
+.metric-card.compact[data-chart-type="wordcloud"] .card-content,
+.metric-card.compact[data-chart-type="word-cloud"] .card-content {
+  padding: 0.25rem;
+}
+
+/* Grid layout adjustments for word clouds */
+.grid-item[data-chart-type="wordcloud"],
+.grid-item[data-chart-type="word-cloud"] {
+  /* Ensure word clouds don't get too small in grid layouts */
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metric-card[data-chart-type="wordcloud"],
+  .metric-card[data-chart-type="word-cloud"] {
+    min-height: 280px;
+  }
+  
+  .chart-container-wrapper[data-chart-type="wordcloud"],
+  .chart-container-wrapper[data-chart-type="word-cloud"] {
+    min-height: 250px;
+  }
+  
+  /* Adjust modal size on mobile */
+  .chart-modal[data-chart-type="wordcloud"] .echarts-container,
+  .chart-modal[data-chart-type="word-cloud"] .echarts-container {
+    min-height: 60vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-card[data-chart-type="wordcloud"],
+  .metric-card[data-chart-type="word-cloud"] {
+    min-height: 240px;
+  }
+  
+  .chart-container-wrapper[data-chart-type="wordcloud"],
+  .chart-container-wrapper[data-chart-type="word-cloud"] {
+    min-height: 200px;
+  }
+}
+
+/* Word cloud legend styling (when using categories) */
+.metric-card[data-chart-type="wordcloud"] .echarts-container .echarts-legend,
+.metric-card[data-chart-type="word-cloud"] .echarts-container .echarts-legend {
+  /* Ensure legend doesn't overlap with words */
+  z-index: 100;
+}
+
+/* Animation keyframes */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tooltip styling for word cloud - ensure good contrast */
+.echarts-container.wordcloud .echarts-tooltip {
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 250px;
+}
+
+.dark-mode .echarts-container.wordcloud .echarts-tooltip {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Label selector styling when used with word cloud */
+.metric-card[data-chart-type="wordcloud"] .label-selector,
+.metric-card[data-chart-type="word-cloud"] .label-selector {
+  /* Ensure label selector is visible and properly styled */
+  z-index: 10;
+  margin-bottom: 0.5rem;
+}
+
+.metric-card[data-chart-type="wordcloud"] .label-selector-dropdown,
+.metric-card[data-chart-type="word-cloud"] .label-selector-dropdown {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .echarts-container.wordcloud .echarts-loading {
+    background: rgba(255, 255, 255, 1);
+    border: 2px solid #000;
+  }
+  
+  .dark-mode .echarts-container.wordcloud .echarts-loading {
+    background: rgba(0, 0, 0, 1);
+    border: 2px solid #fff;
+  }
+}
+
+/* Print styles */
+@media print {
+  .metric-card[data-chart-type="wordcloud"],
+  .metric-card[data-chart-type="word-cloud"] {
+    /* Ensure word clouds print well */
+    min-height: 400px;
+    break-inside: avoid;
+  }
+  
+  .echarts-container.wordcloud .echarts-loading,
+  .echarts-container.wordcloud .echarts-error {
+    display: none;
+  }
+}

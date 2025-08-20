@@ -15,9 +15,7 @@ ProbeLab offers transparent, data-rich insights—empowering developers, researc
 **Nebula** is a libp2p DHT crawler and monitor developed by ProbeLab. 
 It's designed to assess the liveliness and uptime of peers across various decentralized networks.
 
-## Weekly Reports on the Gnosis Discv5 DHT
-
-ProbeLab has recently extended its coverage to the Gnosis network, providing weekly **"network health" reports** utilizing Nebula's data. [reports](https://probelab.io/gnosis/dht/)
+> ProbeLab has recently extended its coverage to the Gnosis network, providing weekly **"network health" reports** utilizing Nebula's data. [reports](https://probelab.io/gnosis/dht/)
 `
 
 };

@@ -1,5 +1,5 @@
 const metric = {
-  id: 'historical_state_growth',
+  id: 'api_execution_state_full_size_daily',
   name: 'EL State Growth',
   description: 'Daily growth of the execution state size (GB)',
   chartType: 'area', // Changed from 'd3Area' to 'area'
@@ -26,7 +26,7 @@ const metric = {
   
   // No showTotal needed since it's a single series
   
-  query: `SELECT date, bytes/POWER(10,9) AS value FROM dbt.execution_state_size_daily ORDER BY date`,
+  query: `SELECT * FROM dbt.api_execution_state_full_size_daily`,
 };
 
 export default metric;

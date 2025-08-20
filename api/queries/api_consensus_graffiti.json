@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_graffiti",
+  "query": "SELECT * FROM api_consensus_graffiti_cloud"
+}

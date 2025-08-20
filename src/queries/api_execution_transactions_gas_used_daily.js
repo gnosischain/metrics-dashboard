@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_n_txs',
-  name: 'EL Transactions Count',
-  description: 'Daily count of transactions',
+  id: 'api_execution_transactions_gas_used_daily',
+  name: 'EL Gas Used',
+  description: 'Daily gas used in Gwei',
   chartType: 'area', // Changed from 'd3StackedArea' to 'area'
   isTimeSeries: true,
   enableZoom: true,
@@ -15,7 +15,7 @@ const metric = {
   
   // ECharts-compatible field configuration
   xField: 'date',
-  yField: 'value',
+  yField: 'gas_used',
   seriesField: 'transaction_type', // This will create stacked areas for different transaction types
   
   // Area chart specific styling for stacked areas
@@ -27,7 +27,7 @@ const metric = {
   // Tooltip configuration
   showTotal: true, // Show total sum in tooltip
   
-  query: `SELECT date, transaction_type, n_txs AS value FROM dbt.execution_txs_info_daily WHERE success = 1 ORDER BY date, transaction_type`,
+  query: `SELECT * FROM dbt.api_execution_transactions_gas_used_daily`,
 };
 
 export default metric;

@@ -1,39 +1,29 @@
-/**
- * Example metric configuration using the new QuantileBandsChart
- * Location: src/queries/consensus/example_quantile_bands.js
- */
-
 const metric = {
-  id: 'example_quantile_bands',
-  name: 'Balance Value Distribution',
-  description: 'Daily Validators balance quantiles',
-  chartType: 'quantileBands', // New chart type
+  id: 'api_consensus_validators_apy_dist_old',
+  name: 'Staking Rewards',
+  description: 'Last 30 Days APY Distribution',
+  chartType: 'quantileBands', 
   isTimeSeries: true,
-  enableZoom: true,
+  enableZoom: false,
   format: 'formatNumber',
 
-  defaultZoom: {
-    start: 80, 
-    end: 100   
-  },
   
   // QuantileBands specific configuration
   xField: 'date',
   
   // Band configuration - array of objects defining bands
   bands: [
-    { lower: 'q05', upper: 'q95', opacity: 0.15, name: '90% Range (5%-95%)' },
-    { lower: 'q10', upper: 'q90', opacity: 0.25, name: '80% Range (10%-90%)' },
-    { lower: 'q25', upper: 'q75', opacity: 0.35, name: 'IQR (25%-75%)' }
+    { lower: 'apy_p10', upper: 'apy_p90', opacity: 0.25, name: '80% Range (10%-90%)' },
+    { lower: 'apy_p25', upper: 'apy_p75', opacity: 0.35, name: 'IQR (25%-75%)' }
   ],
   
   // Line configuration - array of field names to draw as lines
-  lines: ['q50'], 
+  lines: ['apy_median'], 
   
   // Visual configuration
   lineOpacity: 0.9,
   lineStrokeWidth: 3,
-  interpolate: 'monotoneX',
+  interpolate: 'linear', //'monotoneX'
   
   // Custom colors for bands (optional)
   bandColors: ['#4dabf7', '#69db7c', '#ffd43b'],
@@ -74,15 +64,12 @@ const metric = {
   query: `
     SELECT 
       date,
-      q05,
-      q10, 
-      q25,
-      q50,
-      q75,
-      q90,
-      q95,
-      avg_balance
-    FROM consensus_validators_balances_dist_daily
+      apy_p10, 
+      apy_p25,
+      apy_median,
+      apy_p75,
+      apy_p90
+    FROM int_consensus_validators_apy_dist
     ORDER BY date ASC
   `
 };

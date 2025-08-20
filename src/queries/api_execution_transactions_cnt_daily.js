@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_gas_used',
-  name: 'EL Gas Used',
-  description: 'Daily gas used in Gwei',
+  id: 'api_execution_transactions_cnt_daily',
+  name: 'EL Transactions Count',
+  description: 'Daily count of transactions',
   chartType: 'area', // Changed from 'd3StackedArea' to 'area'
   isTimeSeries: true,
   enableZoom: true,
@@ -27,7 +27,7 @@ const metric = {
   // Tooltip configuration
   showTotal: true, // Show total sum in tooltip
   
-  query: `SELECT date, transaction_type, gas_used/POWER(10,9) AS value FROM dbt.execution_txs_info_daily WHERE success = 1 ORDER BY date, transaction_type`,
+  query: `SELECT * FROM dbt.api_execution_transactions_cnt_daily`,
 };
 
 export default metric;

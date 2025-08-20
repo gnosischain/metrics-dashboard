@@ -9,97 +9,128 @@ Overview:
       gridColumn: 1 / span 12
       minHeight: 500px
 
-Financials:
-  name: Financials
-  order: 2
-  icon: "💰"
-  iconClass: "dollar-sign"
-  metrics:
-    - id: under_construction
-      gridRow: 2
-      gridColumn: 1 / span 12
-      minHeight: 500px
 
-OnChainActivity:
-  name: OnChain Activity
-  order: 3
-  icon: "⛓️"
-  iconClass: "link"
+Consensus:
+  name: Consensus
+  order: 4
+  icon: "🔄"
+  iconClass: "check-circle"
   tabs:
-    - name: RWA
+    - name: Overview
       order: 1
-      icon: "📈"
-      iconClass: "rwa"
+      icon: "📊"
+      iconClass: "activity"
       metrics:
-        - id: historical_rwa_prices
+        - id: api_p2p_clients_latest_discv4
           gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
-    - name: Yields
+          gridColumn: 1 / span 2
+          minHeight: 130px
+        - id: api_consensus_graffiti
+          gridRow: 1 / span 2
+          gridColumn: 5 / span 8
+          minHeight: 600px
+       
+    - name: Performace
       order: 2
+      icon: "↔️"
+      iconClass: "gauge"
+      metrics:
+        - id: api_consensus_blocks_daily
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_consensus_attestations_daily
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_consensus_graffiti_label_daily
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_consensus_blob_commitments_daily
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+
+    - name: Staking
+      order: 3
       icon: "📈"
       iconClass: "yield"
       metrics:
-        - id: historical_yield_sdai
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
-    - name: Execution
-      order: 4
-      icon: "🚀"
-      iconClass: "zap"
-      metrics:
-        - id: historical_n_txs
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 600px
-        - id: historical_gas_used
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 600px
-        - id: historical_state_growth
+        - id: api_consensus_validators_apy_daily
           gridRow: 2
-          gridColumn: 1 / span 12
-          minHeight: 500px
-    - name: Flows
-      order: 5
-      icon: "🌊"
-      iconClass: "flow"
-      metrics:
-        - id: erc20_network_transfers
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
-        - id: sankey_transaction_flow
+          gridColumn: 1 / span 8
+          minHeight: 400px
+        - id: api_consensus_validators_apy_dist
           gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 500px
-        - id: sankey_gas_flow
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 500px
-    - name: Consensus
-      order: 6
-      icon: "🔄"
-      iconClass: "check-circle"
-      metrics:
-        - id: historical_active_validators
-          gridRow: 1
+          gridColumn: 9 / span 4
+          minHeight: 450px
+        - id: api_consensus_deposits_withdrawls_cnt_daily
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 450px
-        - id: historical_status_validators
+        - id: api_consensus_deposits_withdrawls_volume_daily
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_consensus_withdrawls_dist_daily
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 450px
+       
+    - name: Validators
+      order: 4
+      icon: "📊"
+      iconClass: "validator"
+      metrics:
+        - id: api_consensus_info_active_ongoing_latest
           gridRow: 1
+          gridColumn: 1 / span 2
+          minHeight: 130px
+        - id: api_consensus_info_deposits_cnt_latest
+          gridRow: 1
+          gridColumn: 3 / span 2
+          minHeight: 130px
+        - id: api_consensus_info_withdrawls_cnt_latest
+          gridRow: 1
+          gridColumn: 5 / span 2
+          minHeight: 130px
+        - id: text_consensus_validators_status
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 7
+          minHeight: 600px
+        - id: historical_status_validators
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: historical_active_validators
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_consensus_staked_daily
+          gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 450px
         - id: example_quantile_bands
-          gridRow: 2
+          gridRow: 5
           gridColumn: 1 / span 6
           minHeight: 450px
+        - id: api_consensus_credentials_latest
+          gridRow: 5
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: int_consensus_entry_queue_daily
+          gridRow: 6
+          gridColumn: 1 / span 6
+          minHeight: 450px
+       
+       
+          
        
 
 Network:
   name: Network
-  order: 4
+  order: 5
   icon: "🌐"
   iconClass: "globe"
   tabs:
@@ -150,7 +181,7 @@ Network:
           gridRow: 1
           gridColumn: 1 / span 5
           minHeight: 350px
-        - id: text_network_protocols_overview
+        - id: clients_intro_2
           gridRow: 1 / span 2
           gridColumn: 6 / span 7
           minHeight: 725px
@@ -166,10 +197,7 @@ Network:
           gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 450px
-        - id: clients_intro_2
-          gridRow: 4
-          gridColumn: 7 / span 6
-          minHeight: 450px
+        
     - name: Forks
       order: 3
       icon: "🗺️"
@@ -191,8 +219,23 @@ Network:
           gridRow: 3
           gridColumn: 1 / span 12
           minHeight: 900px
-    - name: Probelab
+    - name: Methodology
       order: 4
+      icon: "📝"
+      iconClass: "file-text"
+      metrics:
+        - id: text_network_protocols_overview
+          gridRow: 1 / span 1
+          gridColumn: 1 / span 12
+          minHeight: 725px
+        - id: text_network_methodology_1
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 725px
+        
+       
+    - name: Probelab
+      order: 5
       icon: "🔬"
       iconClass: "search"
       metrics:
@@ -220,4 +263,3 @@ Network:
           gridRow: 4
           gridColumn: 1 / span 12
           minHeight: 500px
-

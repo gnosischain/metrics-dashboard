@@ -23,7 +23,7 @@ const metric = {
   symbolSize: 4,
   lineWidth: 2,
   
-  query: `SELECT * FROM dbt.yields_sdai_apy_daily WHERE label NOT LIKE '%MA' AND date >= '2023-10-12' ORDER BY date ASC, label ASC`,
+  query: `SELECT * FROM dbt.fct_yields_sdai_apy_daily`,
 };
 
 export default metric;

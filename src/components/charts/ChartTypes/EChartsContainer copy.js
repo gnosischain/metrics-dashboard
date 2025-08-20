@@ -27,19 +27,11 @@ const EChartsContainer = ({
 
   console.log(`EChartsContainer: Rendering with chartType=${chartType}, dataLength=${data?.length}, isDarkMode=${isDarkMode}`);
 
-  // Check if chart type requires GL or special handling
+  // Check if chart type requires GL
   useEffect(() => {
     const needsGL = ['3dbar', '3dmap', 'globe', 'geo-gl', 'scatter3d', 'surface', 'geo3d-map'].includes(chartType);
-    const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-    
     setRequiresGL(needsGL);
-    
-    // Word cloud specific logging
-    if (isWordCloud) {
-      console.log(`EChartsContainer: Detected word cloud chart type: ${chartType}`);
-    }
-    
-    console.log(`EChartsContainer: Chart type ${chartType} requires GL: ${needsGL}, is word cloud: ${isWordCloud}`);
+    console.log(`EChartsContainer: Chart type ${chartType} requires GL: ${needsGL}`);
   }, [chartType]);
 
   // Handle resize
@@ -96,28 +88,17 @@ const EChartsContainer = ({
         const zoomEnabled = options?.dataZoom && options.dataZoom.length > 0;
         setHasZoom(zoomEnabled);
 
-        // Word cloud specific processing
-        const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-        
-        let finalOptions;
-        if (isWordCloud) {
-          // For word clouds, don't apply watermark as it interferes with the word layout
-          console.log('EChartsContainer: Skipping watermark for word cloud');
-          finalOptions = options;
-        } else {
-          // Apply watermark to other chart types
-          finalOptions = addWatermark(options, {
-            hasZoom: zoomEnabled,
-            isDarkMode: isDarkMode,
-            showWatermark: showWatermark
-          });
-        }
+        // Apply watermark to ALL charts here, after options are built
+        const finalOptions = addWatermark(options, {
+          hasZoom: zoomEnabled,
+          isDarkMode: isDarkMode,
+          showWatermark: showWatermark
+        });
 
         console.log(`EChartsContainer: Generated options:`, {
           hasOptions: !!finalOptions,
           hasData: !!finalOptions?.series?.length,
-          hasZoom: zoomEnabled,
-          isWordCloud: isWordCloud
+          hasZoom: zoomEnabled
         });
 
         setChartOptions(finalOptions);
@@ -144,153 +125,73 @@ const EChartsContainer = ({
     }
 
     try {
-      const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-      
       // Initialize or get existing instance
       if (!instanceRef.current) {
         console.log(`EChartsContainer: Creating new ECharts instance`);
         const renderer = requiresGL ? 'canvas' : 'canvas';
-        
         instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
           renderer: renderer,
-          useDirtyRect: !requiresGL && !isWordCloud,
-          width: isWordCloud ? 'auto' : undefined,
-          height: isWordCloud ? 'auto' : undefined
+          useDirtyRect: !requiresGL
         });
-        
-        if (isWordCloud) {
-          console.log('EChartsContainer: Initialized with word cloud specific settings');
-        }
       }
 
       console.log(`EChartsContainer: Setting chart options`);
-      
-      // For word cloud, use more stable options
-      const setOptionConfig = isWordCloud ? {
-        notMerge: false, // Use merge for word cloud to prevent re-layout
-        lazyUpdate: false,
-        silent: false
-      } : {
-        notMerge: true
-      };
-      
-      instanceRef.current.setOption(chartOptions, setOptionConfig);
-      
-      // Word cloud specific post-render handling
-      if (isWordCloud) {
-        // Ensure the word cloud is properly sized after a brief delay
-        setTimeout(() => {
-          if (instanceRef.current && chartRef.current) {
-            instanceRef.current.resize();
-            // Prevent additional renders that might cause flickering
-            console.log('EChartsContainer: Word cloud stabilized');
-          }
-        }, 200);
-      }
-      
+      instanceRef.current.setOption(chartOptions, { notMerge: true });
     } catch (err) {
       console.error(`EChartsContainer: Error initializing chart:`, err);
       setError(err.message || 'Failed to initialize chart');
     }
-  }, [chartOptions, loading, isDarkMode, requiresGL, chartType]);
+  }, [chartOptions, loading, isDarkMode, requiresGL]);
 
-  // Update theme - but avoid recreating for word clouds unless absolutely necessary
+  // Update theme
   useEffect(() => {
     if (instanceRef.current && !loading && chartOptions) {
-      const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-      
-      // For word clouds, avoid theme recreation as it causes flickering
-      if (isWordCloud) {
-        console.log(`EChartsContainer: Skipping theme recreation for word cloud to prevent flickering`);
-        return;
-      }
-      
       console.log(`EChartsContainer: Updating theme to ${isDarkMode ? 'dark' : 'light'}`);
-      
-      // Safe disposal for non-word cloud charts
-      try {
-        instanceRef.current.dispose();
-      } catch (err) {
-        console.warn('EChartsContainer: Error during disposal:', err);
-      }
-      
+      instanceRef.current.dispose();
       const renderer = requiresGL ? 'canvas' : 'canvas';
-      
       instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
         renderer: renderer,
         useDirtyRect: !requiresGL
       });
-      
-      instanceRef.current.setOption(chartOptions, { 
-        notMerge: true
-      });
+      instanceRef.current.setOption(chartOptions, { notMerge: true });
     }
-  }, [isDarkMode, chartOptions, loading, requiresGL, chartType]);
+  }, [isDarkMode, chartOptions, loading, requiresGL]);
 
   // Cleanup
   useEffect(() => {
     return () => {
       if (instanceRef.current) {
         console.log('EChartsContainer: Disposing chart instance');
-        const isWordCloud = chartType && (
-          chartType.includes('wordcloud') || 
-          chartType.includes('word-cloud')
-        );
-        
-        try {
-          if (isWordCloud) {
-            // Safe disposal for word cloud
-            instanceRef.current.clear();
-            setTimeout(() => {
-              if (instanceRef.current) {
-                instanceRef.current.dispose();
-                instanceRef.current = null;
-              }
-            }, 50);
-          } else {
-            instanceRef.current.dispose();
-            instanceRef.current = null;
-          }
-        } catch (err) {
-          console.warn('EChartsContainer: Error during cleanup:', err);
-          instanceRef.current = null;
-        }
+        instanceRef.current.dispose();
+        instanceRef.current = null;
       }
     };
-  }, [chartType]);
-
-  const isWordCloud = chartType && (
-    chartType.includes('wordcloud') || 
-    chartType.includes('word-cloud')
-  );
+  }, []);
 
   const containerClasses = [
     'echarts-container',
     isDynamicHeight ? 'dynamic-height' : '',
     requiresGL ? 'echarts-gl' : '',
-    isWordCloud ? 'wordcloud' : '',
     error ? 'has-error' : '',
     loading ? 'is-loading' : '',
     className
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={`chart-container-wrapper ${hasZoom ? 'has-zoom' : ''}`} data-chart-type={chartType}>
+    <div className={`chart-container-wrapper ${hasZoom ? 'has-zoom' : ''}`}>
       <div
         ref={chartRef}
         className={containerClasses}
         style={{
           width,
           height: isDynamicHeight ? '100%' : height,
-          // Ensure word cloud has proper minimum dimensions
-          minHeight: isWordCloud ? '300px' : undefined,
           ...style
         }}
       >
         {loading && (
           <div className="echarts-loading">
             <div className="loading-spinner"></div>
-            <p>Loading {isWordCloud ? 'word cloud' : 'chart'}...</p>
+            <p>Loading chart...</p>
           </div>
         )}
         {error && (

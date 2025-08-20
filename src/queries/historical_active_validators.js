@@ -4,9 +4,8 @@ const metric = {
   description: 'Daily Number of Active Validators',
   chartType: 'area', // Using ECharts area chart
   isTimeSeries: true,
-  enableZoom: false,
   format: 'formatNumber',
-  
+
   // ECharts-compatible field configuration
   xField: 'date',
   yField: 'cnt',

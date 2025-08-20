@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_info_active_ongoing_latest",
+  "query": "SELECT * FROM dbt.api_consensus_info_active_ongoing_latest"
+}

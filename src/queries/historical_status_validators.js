@@ -8,7 +8,7 @@ const metric = {
   format: 'formatNumber',
   
   defaultZoom: {
-    start: 70, 
+    start: 80, 
     end: 100   
   },
   

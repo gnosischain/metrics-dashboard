@@ -1,0 +1,4 @@
+{
+  "id": "fct_execution_transactions_cnt_daily",
+  "query": "SELECT * FROM dbt.api_execution_transactions_cnt_daily"
+}

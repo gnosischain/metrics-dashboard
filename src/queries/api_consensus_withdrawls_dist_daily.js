@@ -1,12 +1,7 @@
-/**
- * Example metric configuration using the new QuantileBandsChart
- * Location: src/queries/consensus/example_quantile_bands.js
- */
-
 const metric = {
-  id: 'example_quantile_bands',
-  name: 'Balance Value Distribution',
-  description: 'Daily Validators balance quantiles',
+  id: 'api_consensus_withdrawls_dist_daily',
+  name: 'Withdrawals Value Distribution',
+  description: 'Daily quantiles values for withdrawals',
   chartType: 'quantileBands', // New chart type
   isTimeSeries: true,
   enableZoom: true,
@@ -47,16 +42,7 @@ const metric = {
   legendPosition: 'top',
   legendScrollable: true,
   
-  // Custom naming functions (optional) - NOTE: These need to be defined as functions, not strings
-  // lineNamer: (lineField) => {
-  //   const nameMap = {
-  //     'q50': 'Median',
-  //     'q25': '25th Percentile',
-  //     'q75': '75th Percentile'
-  //   };
-  //   return nameMap[lineField] || lineField;
-  // },
-  
+
   // Universal watermark configuration
   showWatermark: true,
   watermarkPosition: 'bottom-right',
@@ -70,21 +56,9 @@ const metric = {
   //  max: 'dataMax', // Optional: set maximum value
   //},
 
-  // Example query that returns quantile data
-  query: `
-    SELECT 
-      date,
-      q05,
-      q10, 
-      q25,
-      q50,
-      q75,
-      q90,
-      q95,
-      avg_balance
-    FROM consensus_validators_balances_dist_daily
-    ORDER BY date ASC
-  `
+  
+  // Query to get pre-calculated percentiles
+  query: `SELECT * FROM api_consensus_withdrawls_dist_daily`
 };
 
 export default metric;

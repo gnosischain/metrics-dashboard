@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_withdrawls_dist_daily",
+  "query": "SELECT * FROM api_consensus_withdrawls_dist_daily"
+}

@@ -18,13 +18,12 @@ import { HeatmapChart } from './HeatmapChart';
 import { GraphChart } from './GraphChart';
 import { SunburstChart } from './SunburstChart';
 import { Geo2DMapChart } from './Geo2DMapChart';
+import { WordCloudChart } from './WordCloudChart'; 
 
 // Import QuantileBandsChart - make sure this file exists
 // If this import fails, the chart type won't be registered
 import { QuantileBandsChart } from './QuantileBandsChart';
 
-// Debug: Log to verify import
-console.log('QuantileBandsChart imported:', QuantileBandsChart);
 
 // Export individual chart components
 export {
@@ -39,7 +38,8 @@ export {
   GraphChart,
   SunburstChart,
   Geo2DMapChart,
-  QuantileBandsChart
+  QuantileBandsChart,
+  WordCloudChart
 };
 
 /**
@@ -84,10 +84,13 @@ export const CHART_TYPES = {
   'boxplot-chart': BoxplotChart,
   'heatmap-chart': HeatmapChart,
   'quantile-bands-chart': QuantileBandsChart,
+
+  wordcloud: WordCloudChart,
+  'word-cloud': WordCloudChart,
+  'wordcloud-chart': WordCloudChart,
+  'word-cloud-chart': WordCloudChart,
 };
 
-// Debug: Log available chart types
-console.log('Available chart types:', Object.keys(CHART_TYPES));
 
 /**
  * Get a chart component by type string
@@ -154,7 +157,8 @@ export function getAvailableChartTypes() {
     'graph',
     'sunburst',
     'map',
-    'quantileBands'
+    'quantileBands',
+    'wordcloud'
   ];
 }
 

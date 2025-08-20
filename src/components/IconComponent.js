@@ -207,7 +207,26 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
                 c0-1.103,0.897-2,2-2h3c2.206,0,4-1.794,4-4V8h2V2H19z M12,4h2v2h-2V4z M14,28h-2v-2h2V28z M23,6h-2V4h2V6z" />
             </svg>
             ),
+        'validator': (
+            <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} 
+                viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" 
+                strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 12 15 15 10"></polyline>
+            </svg>
+          ),
 
+        'gauge': (
+            <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize}
+                viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 14a9 9 0 1 0-18 0" />
+              <path d="M12 14l4-4" />
+              <circle cx="12" cy="14" r="2" />
+              <line x1="7" y1="14" x2="7" y2="14" />
+              <line x1="17" y1="14" x2="17" y2="14" />
+            </svg>
+          ),
 
 
     };

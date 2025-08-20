@@ -1,6 +1,6 @@
 const metric = {
   id: 'text_network_methodology_1',
-  name: 'Network Measurement Methodology',
+  name: 'Measurement Methodology',
   description: 'How we measure and analyze network health metrics',
   chartType: 'text',
   content: `
