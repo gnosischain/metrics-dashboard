@@ -33,6 +33,35 @@ const Dashboard = () => {
     }
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+
+  // Indexing alert state
+  const [showIndexingAlert, setShowIndexingAlert] = useState(true);
+  const [indexingMessage, setIndexingMessage] = useState("Data is being indexed. Some metrics may not be fully updated.");
+  
+  // Auto-hide indexing alert after initial load (optional)
+  useEffect(() => {
+    // Hide indexing alert after data loads or after a timeout
+    // You can replace this with actual logic based on your indexing status
+    if (!isLoading && dashboards.length > 0) {
+      // Hide after 5 seconds when data is loaded
+      const timer = setTimeout(() => {
+        setShowIndexingAlert(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, dashboards.length]);
+
+  // Example: Update indexing message based on loading state
+  useEffect(() => {
+    if (isLoading) {
+      setIndexingMessage("Loading dashboard data...");
+    } else if (tabMetrics.length === 0 && activeTab) {
+      setIndexingMessage("Loading metrics...");
+    } else {
+      setIndexingMessage("Data is being indexed. Some metrics may not be fully updated.");
+    }
+  }, [isLoading, tabMetrics.length, activeTab]);
   
   // Toggle dark mode function
   const toggleTheme = () => {
@@ -117,6 +146,7 @@ const Dashboard = () => {
     const loadDashboards = async () => {
       console.log('Dashboard: Starting dashboard loading...');
       setIsLoading(true);
+      setShowIndexingAlert(true); // Show alert while loading
       
       try {
         // Load dashboard configuration
@@ -137,6 +167,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error('Dashboard: Error loading dashboards:', error);
+        setIndexingMessage("Error loading dashboard. Please refresh the page.");
       } finally {
         setIsLoading(false);
       }
@@ -284,7 +315,9 @@ const Dashboard = () => {
       <Header 
         dashboardName={getActiveDashboardName()} 
         isDarkMode={isDarkMode} 
-        toggleTheme={toggleTheme} 
+        toggleTheme={toggleTheme}
+        showIndexingAlert={showIndexingAlert}
+        indexingMessage={indexingMessage}
       />
       
       <div className="dashboard-main">

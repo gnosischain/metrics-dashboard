@@ -352,3 +352,25 @@
     padding: 0.5rem 0.75rem;
   }
 }
+
+/* Prevent width jumps & keep diagrams from overflowing */
+.mermaid-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto; /* side-scroll large graphs instead of reflowing */
+}
+
+/* Make the SVG scale predictably without reflow loops */
+.mermaid-container svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Optional: center diagrams without affecting flow */
+.mermaid-container svg { margin: 0 auto; }
+
+.text-widget .mermaid-container svg * {
+  fill: initial;
+  stroke: initial;
+}

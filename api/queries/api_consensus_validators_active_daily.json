@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_active_daily",
+  "query": "SELECT * FROM dbt.api_consensus_validators_active_daily"
+}

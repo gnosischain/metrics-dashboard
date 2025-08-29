@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_probelab_cl_client_distribution',
-  name: 'Client Distribution',
-  description: 'Daily consensus clients',
+  id: 'api_probelab_clients_quic_daily',
+  name: 'Clients QUIC Support',
+  description: '7DMA distribution',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -17,7 +17,8 @@ const metric = {
   // Field mappings for the bar chart
   xField: 'date',
   yField: 'value',
-  seriesField: 'client',
+  seriesField: 'quic', 
+  labelField: 'client',
 
   // Bar chart styling
   barWidth: 'auto',
@@ -28,8 +29,7 @@ const metric = {
 
   enableFiltering: true, 
 
-
-  query: `SELECT * FROM dbt.probelab_peers_clients_daily ORDER BY date ASC, client ASC`,
+  query: `SELECT * FROM dbt.api_probelab_clients_quic_daily`,
 };
 
 export default metric;

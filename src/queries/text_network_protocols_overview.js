@@ -3,15 +3,11 @@ const metric = {
   name: 'Network Protocol Overview',
   description: 'Understanding discv4 and discv5 protocols',
   chartType: 'text',
-  content: `## Quick mental model of the protocols
-
-Both use a **Kademlia-like DHT** over UDP: your node maintains k-buckets of peers at increasing XOR distances from your ID. Discovery does iterative lookups toward target IDs.
-
-**discv4** keeps it simple: ping/pong to bond; FINDNODE → NEIGHBORS to learn peers. Good for bootstrapping devp2p; minimal metadata.
-
+  content: `
+Both protocols use a **Kademlia-like DHT** over UDP: your node maintains k-buckets of peers at increasing XOR distances from your ID. Discovery does iterative lookups toward target IDs. 
+**discv4** keeps it simple: ping/pong to bond; FINDNODE → NEIGHBORS to learn peers. Good for bootstrapping devp2p; minimal metadata. 
 **discv5** upgrades the wire (challenge-response + session keys), standardizes identity with ENR, lets nodes advertise/seek topics, and returns nodes by distance—which is great for service-specific overlays (beacon attnets, Portal subnets).
 
-## discv4 vs discv5 (at a glance)
 
 | Aspect | discv4 | discv5 |
 |--------|--------|--------|

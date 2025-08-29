@@ -1,10 +1,10 @@
 const metric = {
-  id: 'historical_rwa_prices',
-  name: 'RWA Prices',
-  description: 'Backed Finance backed assets prices',
+  id: 'api_esg_cif_network_vs_countries_daily',
+  name: 'Carbon Intensity Factor Network vs Countries',
+  description: 'Daily Carbon Intensity Factor (CIF) in gCO2e/kWh',
   chartType: 'line',
   isTimeSeries: true,
-  enableZoom: true,
+  enableZoom: false,
   format: 'formatNumber',
   
   // NEW: Default zoom configuration
@@ -15,15 +15,15 @@ const metric = {
   
   // ECharts-compatible field configuration
   xField: 'date',
-  yField: 'price', 
-  seriesField: 'bticker',
+  yField: 'carbon_intensity_gco2_kwh', 
+  seriesField: 'entity_code',
   
   // Optional chart styling
   smooth: true,
   symbolSize: 4,
-  lineWidth: 2,
+  lineWidth: 1,
   
-  query: `SELECT * FROM dbt.rwa_backedfi_prices_1d WHERE date >= DATE '2024-11-01' ORDER BY date ASC, bticker ASC`,
+  query: `SELECT * FROM dbt.api_esg_cif_network_vs_countries_daily`,
 };
 
 export default metric;

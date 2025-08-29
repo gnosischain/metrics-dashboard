@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_apy_dist",
-  "query": "SELECT \n      date,\n      q10,\n      q25,\n      q50,\n      q75,\n      q90\n    FROM int_consensus_validators_apy_dist2\n    ORDER BY date ASC"
+  "query": "SELECT * FROM dbt.api_consensus_validators_apy_dist"
 }

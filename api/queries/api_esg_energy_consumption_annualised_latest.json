@@ -1,0 +1,4 @@
+{
+  "id": "api_esg_energy_consumption_annualised_latest",
+  "query": "SELECT * FROM dbt.api_esg_energy_consumption_annualised_latest"
+}

@@ -1,0 +1,81 @@
+.indexing-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 2rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--warning-bg, rgba(251, 191, 36, 0.1));
+  border: 1px solid var(--warning-border, rgba(251, 191, 36, 0.3));
+  border-radius: 0.375rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.dark-mode .indexing-alert {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.indexing-alert-icon {
+  display: flex;
+  align-items: center;
+  color: var(--warning-color, #F59E0B);
+}
+
+.dark-mode .indexing-alert-icon {
+  color: #FBBF24;
+}
+
+.indexing-alert-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  max-width: 500px;
+}
+
+.dark-mode .indexing-alert-text {
+  color: var(--text-secondary-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .indexing-alert {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .indexing-alert-text {
+    font-size: 0.75rem;
+    max-width: 200px;
+  }
+  
+  .header-logo-section {
+    flex-wrap: wrap;
+  }
+}
+
+/* Animation for alert appearance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulsing animation for the icon (optional) */
+.indexing-alert-icon {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

@@ -1,5 +1,5 @@
 const metric = {
-  id: 'historical_status_validators',
+  id: 'api_consensus_validators_status_daily',
   name: 'Status of Validators',
   description: 'Daily Number of Validators for different statuses',
   chartType: 'bar', 
@@ -26,7 +26,7 @@ const metric = {
 
   showTotal: false, 
   
-  query: `SELECT date, status, cnt FROM dbt.consensus_validators_status_daily WHERE status NOT IN ('active_ongoing', 'withdrawal_done') ORDER BY date, status`,
+  query: `SELECT * FROM dbt.api_consensus_validators_status_daily`,
 };
 
 export default metric;

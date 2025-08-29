@@ -1,5 +1,5 @@
 const metric = {
-  id: 'historical_probelab_cl_client_country_distribution',
+  id: 'api_probelab_clients_country_daily',
   name: 'Country Distribution',
   description: 'Client per country',
   chartType: 'bar', 
@@ -29,7 +29,7 @@ const metric = {
 
   enableFiltering: true, 
 
-  query: `SELECT * FROM dbt.probelab_peers_clients_country_daily ORDER BY date ASC, client ASC, country ASC`,
+  query: `SELECT * FROM dbt.api_probelab_clients_country_daily`,
 };
 
 export default metric;

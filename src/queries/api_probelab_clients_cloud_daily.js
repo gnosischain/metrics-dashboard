@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_probelab_cl_client_version_distribution',
-  name: 'Client Version',
-  description: 'Versions per client distribution',
+  id: 'api_probelab_clients_cloud_daily',
+  name: 'Cloud Distribution',
+  description: 'Clients per cloud provider',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -17,7 +17,7 @@ const metric = {
   // Field mappings for the bar chart
   xField: 'date',
   yField: 'value',
-  seriesField: 'version', 
+  seriesField: 'cloud', 
   labelField: 'client',
 
   // Bar chart styling
@@ -28,8 +28,7 @@ const metric = {
   showTotal: true, 
 
   enableFiltering: true, 
-
-  query: `SELECT * FROM dbt.probelab_peers_clients_version_daily ORDER BY date ASC, client ASC, version ASC`,
+  query: `SELECT * FROM dbt.api_probelab_clients_cloud_daily`,
 };
 
 export default metric;

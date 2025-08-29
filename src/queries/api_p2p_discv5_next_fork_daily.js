@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_probelab_cl_client_quic_distribution',
-  name: 'Clients QUIC Support',
-  description: '7DMA distribution',
+  id: 'api_p2p_discv5_next_fork_daily',
+  name: 'CL Next Forks Distribution',
+  description: 'Distribution for Broadcasted next forks (Consensus Layer)',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -16,9 +16,8 @@ const metric = {
   
   // Field mappings for the bar chart
   xField: 'date',
-  yField: 'value',
-  seriesField: 'quic', 
-  labelField: 'client',
+  yField: 'cnt',
+  seriesField: 'fork', 
 
   // Bar chart styling
   barWidth: 'auto',
@@ -27,9 +26,7 @@ const metric = {
 
   showTotal: true, 
 
-  enableFiltering: true, 
-
-  query: `SELECT * FROM dbt.probelab_peers_clients_quic_daily ORDER BY date ASC, client ASC, quic ASC`,
+  query: `SELECT * FROM dbt.api_p2p_discv5_next_fork_daily`,
 };
 
 export default metric;

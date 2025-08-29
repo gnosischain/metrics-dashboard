@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_cl_next_forks',
-  name: 'CL Next Forks Distribution',
-  description: 'Distribution for Broadcasted next forks across the network (Consensus Layer)',
+  id: 'api_probelab_clients_daily',
+  name: 'Client Distribution',
+  description: 'Daily consensus clients',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -16,8 +16,8 @@ const metric = {
   
   // Field mappings for the bar chart
   xField: 'date',
-  yField: 'cnt',
-  seriesField: 'fork', 
+  yField: 'value',
+  seriesField: 'client',
 
   // Bar chart styling
   barWidth: 'auto',
@@ -26,7 +26,10 @@ const metric = {
 
   showTotal: true, 
 
-  query: `SELECT date, fork, cnt FROM dbt.p2p_peers_cl_fork_daily WHERE label = 'Next Fork' ORDER BY date ASC, fork ASC`,
+  enableFiltering: true, 
+
+
+  query: `SELECT * FROM dbt.api_probelab_clients_daily`,
 };
 
 export default metric;

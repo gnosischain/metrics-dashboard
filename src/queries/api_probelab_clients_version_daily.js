@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_cl_forks',
-  name: 'CL Forks Distribution',
-  description: 'Distribution for forks across the network (Consensus Layer)',
+  id: 'api_probelab_clients_version_daily',
+  name: 'Client Version',
+  description: 'Versions per client distribution',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -16,9 +16,10 @@ const metric = {
   
   // Field mappings for the bar chart
   xField: 'date',
-  yField: 'cnt',
-  seriesField: 'fork', // This enables stacking by fork type
-  
+  yField: 'value',
+  seriesField: 'version', 
+  labelField: 'client',
+
   // Bar chart styling
   barWidth: 'auto',
   barMaxWidth: 50,
@@ -26,7 +27,9 @@ const metric = {
 
   showTotal: true, 
 
-  query: `SELECT date, fork, cnt FROM dbt.p2p_peers_cl_fork_daily WHERE label = 'Current Fork' ORDER BY date ASC, fork ASC`,
+  enableFiltering: true, 
+
+  query: `SELECT * FROM dbt.api_probelab_clients_version_daily`,
 };
 
 export default metric;

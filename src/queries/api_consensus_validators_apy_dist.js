@@ -37,15 +37,7 @@ const metric = {
   
   // Query to get pre-calculated percentiles
   query: `
-    SELECT 
-      date,
-      q10,
-      q25,
-      q50,
-      q75,
-      q90
-    FROM int_consensus_validators_apy_dist2
-    ORDER BY date ASC
+    SELECT * FROM dbt.api_consensus_validators_apy_dist
   `
 };
 

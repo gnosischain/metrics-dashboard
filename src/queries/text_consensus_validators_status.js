@@ -1,6 +1,6 @@
 const metric = {
   id: 'text_consensus_validators_status',
-  name: 'Beacon Chain — Validator Status Lifecycle',
+  name: 'Validator  Lifecycle',
   description: 'A reference table of validator lifecycle states in the Beacon Chain',
   chartType: 'text',
   content: `

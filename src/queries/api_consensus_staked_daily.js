@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_consensus_staked_daily',
-  name: 'Staked mGNO',
-  description: 'Daily amount of staked mGNO',
+  name: 'Staked GNO',
+  description: 'Daily amount of staked GNO',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,

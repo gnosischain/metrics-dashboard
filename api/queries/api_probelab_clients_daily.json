@@ -1,0 +1,4 @@
+{
+  "id": "api_probelab_clients_daily",
+  "query": "SELECT * FROM dbt.api_probelab_clients_daily"
+}

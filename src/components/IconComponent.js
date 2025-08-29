@@ -227,6 +227,103 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
               <line x1="17" y1="14" x2="17" y2="14" />
             </svg>
           ),
+        'circles': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 32 32"
+            fill={color}
+          >
+            <defs>
+              <clipPath id="circles-left-half">
+                <rect x="0" y="0" width="16" height="32" />
+              </clipPath>
+              <clipPath id="circles-right-half">
+                <rect x="16" y="0" width="16" height="32" />
+              </clipPath>
+            </defs>
+
+            {/* Left arc (half-donut) */}
+            <path
+              clipPath="url(#circles-left-half)"
+              fillRule="evenodd"
+              d="
+                M16 4
+                a12 12 0 1 1 0 24
+                a12 12 0 1 1 0-24
+                Z
+                M16 9
+                a7 7 0 1 0 0 14
+                a7 7 0 1 0 0-14
+                Z"
+            />
+
+            {/* Right disk (semicircle) */}
+            <circle cx="16" cy="16" r="6" clipPath="url(#circles-right-half)" />
+          </svg>
+        ),
+        'bot': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Bot"
+          >
+            {/* Antenna */}
+            <path d="M12 2v2.5" />
+            <circle cx="12" cy="1.5" r="1" fill={color} stroke="none" />
+
+            {/* Bigger head */}
+            <rect x="3" y="6" width="18" height="14" rx="5" ry="5" />
+
+            {/* Ears */}
+            <path d="M2 13h1" />
+            <path d="M21 13h1" />
+
+            {/* Larger eyes */}
+            <circle cx="9" cy="13" r="1.5" />
+            <circle cx="15" cy="13" r="1.5" />
+
+            {/* Bigger smile */}
+            <path d="M8 16s2 2.5 4 2.5 4-2.5 4-2.5" />
+          </svg>
+        ),
+        'wallet': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Wallet"
+          >
+            {/* Wallet body */}
+            <rect x="3" y="7" width="18" height="12" rx="3" ry="3" />
+
+            {/* Top slot seam */}
+            <path d="M6 10h9" />
+
+            {/* Side pocket/closure area */}
+            <path d="M15 11h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4z" />
+
+            {/* Button/fastener */}
+            <circle cx="18" cy="14" r="1" />
+          </svg>
+        ),
+
 
 
     };

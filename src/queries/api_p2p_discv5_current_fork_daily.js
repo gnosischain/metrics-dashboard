@@ -1,7 +1,7 @@
 const metric = {
-  id: 'historical_probelab_cl_client_cloud_distribution',
-  name: 'Cloud Distribution',
-  description: 'Clients per cloud provider',
+  id: 'api_p2p_discv5_current_fork_daily',
+  name: 'CL Forks Distribution',
+  description: 'Distribution for forks across the network (Consensus Layer)',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
@@ -16,10 +16,9 @@ const metric = {
   
   // Field mappings for the bar chart
   xField: 'date',
-  yField: 'value',
-  seriesField: 'cloud', 
-  labelField: 'client',
-
+  yField: 'cnt',
+  seriesField: 'fork', // This enables stacking by fork type
+  
   // Bar chart styling
   barWidth: 'auto',
   barMaxWidth: 50,
@@ -27,8 +26,7 @@ const metric = {
 
   showTotal: true, 
 
-  enableFiltering: true, 
-  query: `SELECT * FROM dbt.probelab_peers_clients_cloud_daily ORDER BY date ASC, client ASC, cloud ASC`,
+  query: `SELECT * FROM dbt.api_p2p_discv5_current_fork_daily `,
 };
 
 export default metric;

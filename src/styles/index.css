@@ -23,6 +23,7 @@
 @import './components/_sidebar.css';
 @import './components/_tabs.css';
 @import './components/_tooltips.css';
+@import './components/_indexing-alert.css';
 
 /* Widget styles */
 @import './widgets/_charts.css';

@@ -1,5 +1,5 @@
 const metric = {
-  id: 'historical_active_validators',
+  id: 'api_consensus_validators_active_daily',
   name: 'Active Validators',
   description: 'Daily Number of Active Validators',
   chartType: 'area', // Using ECharts area chart
@@ -16,7 +16,7 @@ const metric = {
   lineWidth: 2,
   areaOpacity: 0.3,
   
-  query: `SELECT date, cnt FROM dbt.consensus_validators_status_daily WHERE status = 'active_ongoing' ORDER BY date`,
+  query: `SELECT * FROM dbt.api_consensus_validators_active_daily`,
 };
 
 export default metric;
