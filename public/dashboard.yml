@@ -191,12 +191,10 @@ Consensus:
           gridRow: 5
           gridColumn: 1 / span 6
           minHeight: 450px
-        - id: int_consensus_entry_queue_daily
-          gridRow: 6
-          gridColumn: 1 / span 6
+        - id: api_consensus_entry_queue_daily
+          gridRow: 5
+          gridColumn: 7 / span 6
           minHeight: 450px
-       
-       
           
        
 
@@ -363,8 +361,22 @@ ESG:
           gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 450px
-    - name: Methodology
+    - name: Breakdown
       order: 2
+      icon: ""
+      iconClass: "search"
+      metrics:
+        - id: api_esg_info_category_daily
+          gridRow: 1
+          gridColumn: 1 / span 8
+          minHeight: 450px
+        - id: api_esg_info_annual_daily
+          gridRow: 2
+          gridColumn: 1 / span 8
+          minHeight: 450px
+          
+    - name: Methodology
+      order: 3
       icon: "📝"
       iconClass: "file-text"
       metrics:
