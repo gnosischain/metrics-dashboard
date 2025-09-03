@@ -1,0 +1,4 @@
+{
+  "id": "api_esg_estimated_nodes_daily",
+  "query": "SELECT * FROM dbt.api_esg_estimated_nodes_daily"
+}

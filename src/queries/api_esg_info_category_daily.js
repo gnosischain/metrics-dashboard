@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_esg_info_category_daily',
   name: 'Daily Estimations by Node Category',
-  description: 'Emissions (kgCO2e), Energy Consumption (kWh), Nodes (count)',
+  description: 'Emissions, Energy Consumption, Nodes',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

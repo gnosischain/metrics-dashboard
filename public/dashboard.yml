@@ -368,12 +368,17 @@ ESG:
       metrics:
         - id: api_esg_info_category_daily
           gridRow: 1
-          gridColumn: 1 / span 8
+          gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_esg_info_annual_daily
-          gridRow: 2
-          gridColumn: 1 / span 8
+          gridRow: 1
+          gridColumn: 7 / span 6
           minHeight: 450px
+        - id: api_esg_estimated_nodes_daily
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+
           
     - name: Methodology
       order: 3
