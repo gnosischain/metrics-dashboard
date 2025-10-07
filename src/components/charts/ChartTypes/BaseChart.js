@@ -117,7 +117,7 @@ export class BaseChart {
       let total = 0;
       
       params.forEach(param => {
-        if (param.value !== null && param.value !== undefined) {
+        if (param.value !== null && param.value !== undefined && param.value !== 0) {
           const seriesName = param.seriesName || 'Value';
           const formattedValue = formatValue(param.value, config.format);
           const color = param.color || '#999';
