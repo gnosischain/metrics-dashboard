@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_p2p_discv4_clients_daily',
-  name: 'EL Client Distribution',
-  description: 'Distribution of block production per client',
+  name: 'DiscV4 Peer Distribution',
+  description: 'Distribution of peers dialable in DiscV4 protocol',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
