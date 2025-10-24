@@ -45,24 +45,83 @@ OnChainActivity:
           gridColumn: 1 / span 12
           minHeight: 500px
     - name: Execution
-      order: 4
+      order: 3
       icon: "🚀"
       iconClass: "zap"
+      metrics:
+        - id: api_execution_transactions_7d
+          gridRow: 1
+          gridColumn: 1 / span 2
+          minHeight: 130px
+        - id: api_execution_transactions_cnt_total_type0
+          gridRow: 1
+          gridColumn: 3 / span 2
+          minHeight: 130px   
+        - id: api_execution_transactions_cnt_total_type1
+          gridRow: 1
+          gridColumn: 5 / span 2
+          minHeight: 130px   
+        - id: api_execution_transactions_cnt_total_type2
+          gridRow: 1
+          gridColumn: 7 / span 2
+          minHeight: 130px   
+        - id: api_execution_transactions_cnt_total_type3
+          gridRow: 1
+          gridColumn: 9 / span 2
+          minHeight: 130px   
+        - id: api_execution_transactions_cnt_total_type4
+          gridRow: 1
+          gridColumn: 11 / span 2
+          minHeight: 130px   
+        - id: api_execution_transactions_active_accounts_by_project_monthly_top5
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_transactions_by_sector_hourly
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_execution_transactions_cnt_daily
+          gridRow: 6
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_transactions_gas_used_daily
+          gridRow: 6
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_execution_state_full_size_daily
+          gridRow: 7
+          gridColumn: 1 / span 6
+          minHeight: 450px
+    - name: Transactions
+      order: 4
+      icon: "⇄" 
+      iconClass: "transaction"
       metrics:
         - id: api_execution_transactions_cnt_daily
           gridRow: 1
           gridColumn: 1 / span 6
           minHeight: 450px
+    - name: Gas Usage
+      order: 5
+      icon: "⛽️"  
+      iconClass: "gas-usage"
+      metrics:
         - id: api_execution_transactions_gas_used_daily
           gridRow: 1
-          gridColumn: 7 / span 6
+          gridColumn: 1 / span 12
           minHeight: 450px
-        - id: api_execution_state_full_size_daily
-          gridRow: 2
-          gridColumn: 1 / span 6
+    - name: Wallets
+      order: 6
+      icon: "👛"
+      iconClass: "wallets"
+      metrics:
+        - id: wallet_activity_overview
+          gridRow: 1
+          gridColumn: 1 / span 12
           minHeight: 450px
     - name: Flows
-      order: 5
+      order: 7
       icon: "🌊"
       iconClass: "flow"
       metrics:

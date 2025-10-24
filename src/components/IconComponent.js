@@ -324,7 +324,36 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'transaction': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Transaction">
+            {/* Left-to-right transfer */}
+            <path d="M3 7h13" />
+            <polyline points="13 3 17 7 13 11" />
+            {/* Right-to-left transfer */}
+            <path d="M21 17H8" />
+            <polyline points="11 21 7 17 11 13" />
+          </svg>
+        ),
 
+        'gas-usage': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Gas usage">
+            {/* Flame */}
+            <path d="M12 2c3 4 6 6.5 6 10a6 6 0 1 1-12 0c0-2.5 1.2-4.3 3-6" />
+            {/* Small gauge tick to suggest “usage” */}
+            <path d="M12 14l2.5-2.5" />
+          </svg>
+        ),
+
+        'wallets': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Wallets">
+            {/* Back wallet */}
+            <rect x="5" y="6" width="14" height="10" rx="3" ry="3" />
+            {/* Front wallet, slightly offset */}
+            <rect x="3" y="8" width="14" height="10" rx="3" ry="3" />
+            {/* Button on front pocket */}
+            <circle cx="13" cy="13" r="1" />
+          </svg>
+        ),
 
     };
     

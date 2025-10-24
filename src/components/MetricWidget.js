@@ -29,8 +29,9 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         valueField,
         enableFiltering = false, 
         enableZoom = false,
-        variant, // New: support for widget variants
-        changeData // New: support for change indicators
+        variant, 
+        changeData,
+        fontSize 
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -51,6 +52,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       enableZoom, 
       variant,
       changeData,
+      fontSize,
       config: metricConfig 
     };
   }, [metricConfig]);
@@ -225,6 +227,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
             changeValue={processChangeData.changeValue}
             changeType={processChangeData.changeType}
             changePeriod={processChangeData.changePeriod}
+            fontSize={widgetConfig.fontSize}
             minimal={true}
           />
         );

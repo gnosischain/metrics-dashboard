@@ -26,7 +26,8 @@ const NumberWidget = ({
   changeValue,
   changeType = 'neutral',
   showChange = false,
-  changePeriod = ''
+  changePeriod = '',
+  fontSize
 }) => {
   // Apply formatting if specified
   const formattedValue = format && formatters[format] 
@@ -111,7 +112,10 @@ const NumberWidget = ({
             {/* Main number */}
             <span 
               className="compact-number-value" 
-              style={{ color: adjustedColor }}
+              style={{ 
+                color: adjustedColor,
+                ...(fontSize && { fontSize })
+              }}
             >
               {formattedValue}
             </span>
@@ -145,7 +149,8 @@ const NumberWidget = ({
       <div 
         className="number-value" 
         style={{ 
-          color: adjustedColor
+          color: adjustedColor,
+          ...(fontSize && { fontSize })
         }}
       >
         {formattedValue}
