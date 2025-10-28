@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_consensus_withdrawal_credentials_freq_daily',
-  name: 'Distict Withdrawal Credentials',
+  name: 'Distinct Withdrawal Credentials',
   description: 'per amout of validators',
   chartType: 'area', 
   isTimeSeries: true,
