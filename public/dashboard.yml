@@ -127,23 +127,59 @@ OnChainActivity:
       icon: ""                
       iconClass: "coins"
       metrics:
-        - { id: api_execution_transactions_fees_native_7d,    gridRow: 1, gridColumn: "1 / span 6",  minHeight: "130px" }
-        - { id: api_execution_transactions_fees_native_total, gridRow: 1, gridColumn: "7 / span 6",  minHeight: "130px" }
-        - { id: api_execution_transactions_fees_native_by_sector_daily,  gridRow: 2, gridColumn: "1 / span 8", minHeight: "420px" }
-        - { id: api_execution_transactions_fees_native_by_project_total, gridRow: 2, gridColumn: "9 / span 4", minHeight: "420px" }
-        - { id: api_execution_transactions_fees_native_by_project_monthly_top5, gridRow: 3, gridColumn: "1 / span 8", minHeight: "420px" }
-        - { id: api_execution_transactions_fees_native_by_sector_hourly,        gridRow: 3, gridColumn: "9 / span 4", minHeight: "420px" }
+        - id: api_execution_transactions_fees_native_7d
+          gridRow: 1
+          gridColumn: "1 / span 6"
+          minHeight: "130px"
+        - id: api_execution_transactions_fees_native_total
+          gridRow: 1
+          gridColumn: "7 / span 6"
+          minHeight: "130px"
+        - id: api_execution_transactions_fees_native_by_sector_daily
+          gridRow: 2 
+          gridColumn: "1 / span 8"
+          minHeight: "420px"
+        - id: api_execution_transactions_fees_native_by_project_total
+          gridRow: 2
+          gridColumn: "9 / span 4"
+          minHeight: "420px"
+        - id: api_execution_transactions_fees_native_by_project_monthly_top5
+          gridRow: 3
+          gridColumn: "1 / span 8"
+          minHeight: "420px"
+        - id: api_execution_transactions_fees_native_by_sector_hourly
+          gridRow: 3
+          gridColumn: "9 / span 4"
+          minHeight: "420px"
     - name: Active Accounts
       order: 5
       icon: ""                
       iconClass: "users"
       metrics:
-        - { id: api_execution_transactions_active_accounts_7d,    gridRow: 1, gridColumn: "1 / span 6",  minHeight: "130px" }
-        - { id: api_execution_transactions_active_accounts_total, gridRow: 1, gridColumn: "7 / span 6",  minHeight: "130px" }
-        - { id: api_execution_transactions_active_accounts_by_sector_daily,  gridRow: 2, gridColumn: "1 / span 8", minHeight: "420px" }
-        - { id: api_execution_transactions_active_accounts_by_project_total, gridRow: 2, gridColumn: "9 / span 4", minHeight: "420px" }
-        - { id: api_execution_transactions_active_accounts_by_project_monthly_top5, gridRow: 3, gridColumn: "1 / span 8", minHeight: "420px" }
-        - { id: api_execution_transactions_active_accounts_by_sector_hourly,        gridRow: 3, gridColumn: "9 / span 4", minHeight: "420px" }
+        - id: api_execution_transactions_active_accounts_7d
+          gridRow: 1
+          gridColumn: "1 / span 6"
+          minHeight: "130px"
+        - id: api_execution_transactions_active_accounts_total
+          gridRow: 1
+          gridColumn: "7 / span 6"
+          minHeight: "130px" 
+        - id: api_execution_transactions_active_accounts_by_sector_daily
+          gridRow: 2
+          gridColumn: "1 / span 8"
+          minHeight: "420px"
+        - id: api_execution_transactions_active_accounts_by_project_total
+          gridRow: 2
+          gridColumn: "9 / span 4"
+          minHeight: "420px"
+        - id: api_execution_transactions_active_accounts_by_project_monthly_top5
+          gridRow: 3
+          gridColumn: "1 / span 8"
+          minHeight: "420px"
+        - id: api_execution_transactions_active_accounts_by_sector_hourly
+          gridRow: 3
+          gridColumn: "9 / span 4"
+          minHeight: "420px"
     - name: Gas Usage
       order: 5
       icon: "⛽️"  
