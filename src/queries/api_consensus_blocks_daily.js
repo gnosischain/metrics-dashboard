@@ -18,10 +18,10 @@ const metric = {
   barOpacity: 0.8,  
   
   defaultZoom: {
-    start: 80, 
+    start: 0, 
     end: 100   
   },
-  
+
   xField: 'date',
   yField: 'value',
   seriesField: 'label',

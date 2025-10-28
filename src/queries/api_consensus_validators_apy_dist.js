@@ -1,7 +1,6 @@
 const metric = {
   id: 'api_consensus_validators_apy_dist',
-  name: 'Staking Rewards Distribution',
-  description: 'Last 30 Days APY Distribution (Boxplot)',
+  name: 'Last 30 Days APY Distribution',
   chartType: 'boxplot', 
   isTimeSeries: false,
   enableZoom: false,
@@ -37,7 +36,7 @@ const metric = {
   
   // Query to get pre-calculated percentiles
   query: `
-    SELECT * FROM dbt.api_consensus_validators_apy_dist
+    SELECT * FROM dbt.api_consensus_validators_apy_dist_last_30_days
   `
 };
 

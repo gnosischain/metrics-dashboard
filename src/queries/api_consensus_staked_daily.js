@@ -4,7 +4,6 @@ const metric = {
   description: 'Daily amount of staked GNO',
   chartType: 'area', 
   isTimeSeries: true,
-  enableZoom: true,
   format: 'formatNumber',
   
   smooth: true,
