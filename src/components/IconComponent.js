@@ -376,6 +376,32 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'blob': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Blob"
+          >
+            {/* Blob outline */}
+            <path
+              d="M6 19c-.8-4.6 3-13 6-13s6.8 8.4 6 13c-.4 2.3-2.2 3-6 3s-5.6-.7-6-3z"
+              fill="none"
+            />
+            {/* Eyes */}
+            <ellipse cx="10" cy="13.2" rx="1" ry="1.6" fill={color} stroke="none" />
+            <ellipse cx="14" cy="13.2" rx="1" ry="1.6" fill={color} stroke="none" />
+          </svg>
+        ),
+
+
     };
     
     // Return the SVG icon if it exists, otherwise fallback

@@ -3,7 +3,6 @@
  * Location: src/components/index.js
  * 
  * This file exports all components to make imports cleaner
- * FIXED: Corrected EChartsContainer import path
  */
 
 import Dashboard from './Dashboard';
@@ -21,7 +20,6 @@ import ExpandButton from './ExpandButton';
 import ChartModal from './ChartModal';
 import TableWidget from './TableWidget';
 
-// ECharts components - FIXED IMPORT PATH
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import { 
   LineChart, 

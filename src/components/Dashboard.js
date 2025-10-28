@@ -35,7 +35,7 @@ const Dashboard = () => {
   });
 
   // Indexing alert state
-  const [showIndexingAlert, setShowIndexingAlert] = useState(true);
+  const [showIndexingAlert, setShowIndexingAlert] = useState(false);
   const [indexingMessage, setIndexingMessage] = useState("Data is being indexed. Some metrics may not be fully updated.");
   
   // Auto-hide indexing alert after initial load (optional)
@@ -110,7 +110,7 @@ const Dashboard = () => {
         mobileExpanded && 
         sidebarRef.current && 
         !sidebarRef.current.contains(event.target) &&
-        !event.target.closest('.sidebar-toggle') // Don't close when clicking the toggle button
+        !event.target.closest('.sidebar-toggle') 
       ) {
         setMobileExpanded(false);
       }
@@ -146,7 +146,7 @@ const Dashboard = () => {
     const loadDashboards = async () => {
       console.log('Dashboard: Starting dashboard loading...');
       setIsLoading(true);
-      setShowIndexingAlert(true); // Show alert while loading
+      setShowIndexingAlert(false); // Show alert while loading
       
       try {
         // Load dashboard configuration
