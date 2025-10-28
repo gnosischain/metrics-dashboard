@@ -258,11 +258,7 @@ Consensus:
           minHeight: 450px
         - id: api_consensus_graffiti_label_daily
           gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_consensus_blob_commitments_daily
-          gridRow: 2
-          gridColumn: 7 / span 6
+          gridColumn: 1 / span 12
           minHeight: 450px
 
     - name: Staking
@@ -347,6 +343,19 @@ Consensus:
         - id: api_consensus_withdrawal_credentials_freq_daily
           gridRow: 6
           gridColumn: 1 / span 6
+          minHeight: 450px
+    - name: Blobs
+      order: 5
+      icon: "🧩"
+      iconClass: "blob"
+      metrics:
+        - id: api_consensus_blob_commitments_daily
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_consensus_zero_blob_commitments_daily
+          gridRow: 1
+          gridColumn: 7 / span 6
           minHeight: 450px
           
        

@@ -7,7 +7,7 @@ const metric = {
   enableZoom: false,
   format: 'formatNumber',
   
-  // NEW: Default zoom configuration
+  //  Default zoom configuration
   defaultZoom: {
     start: 70, // Start at 70% (showing last 30%)
     end: 100   // End at 100%

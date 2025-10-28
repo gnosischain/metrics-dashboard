@@ -2,12 +2,12 @@ const metric = {
   id: 'api_execution_transactions_cnt_daily',
   name: 'EL Transactions Count',
   description: 'Daily count of transactions',
-  chartType: 'area', // Changed from 'd3StackedArea' to 'area'
+  chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',
   
-  // NEW: Default zoom configuration
+  // Default zoom configuration
   defaultZoom: {
     start: 70, // Start at 70% (showing last 30%)
     end: 100   // End at 100%

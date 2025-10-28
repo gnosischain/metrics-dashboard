@@ -2,7 +2,6 @@ const metric = {
   id: 'api_execution_transactions_active_accounts_total',
   name: 'Active Accounts',
   description: 'All-time',
-  format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',

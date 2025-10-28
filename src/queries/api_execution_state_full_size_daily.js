@@ -2,12 +2,12 @@ const metric = {
   id: 'api_execution_state_full_size_daily',
   name: 'EL State Growth',
   description: 'Daily growth of the execution state size (GB)',
-  chartType: 'area', // Changed from 'd3Area' to 'area'
+  chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',
   
-  // NEW: Default zoom configuration
+  // Default zoom configuration
   defaultZoom: {
     start: 70, // Start at 70% (showing last 30%)
     end: 100   // End at 100%

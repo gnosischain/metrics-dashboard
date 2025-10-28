@@ -9,7 +9,6 @@ const metric = {
     start: 90, 
     end: 100   
   },
-  format: 'formatNumber',
   showTotal: true,
   barWidth: 'auto',
   barMaxWidth: 50,

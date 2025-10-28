@@ -2,7 +2,6 @@ const metric = {
   id: 'api_p2p_topology_latest',
   name: 'P2P Geographic Network Topology',
   description: 'Geographic visualization of peer-to-peer network connections',
-  format: 'formatNumber',
   chartType: 'map',
 
   enableFiltering: true,
