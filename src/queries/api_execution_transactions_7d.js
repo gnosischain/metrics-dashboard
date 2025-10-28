@@ -9,7 +9,7 @@ const metric = {
   changeData: {
     enabled: true,
     field: 'change_pct', 
-    period: 'from 7d ago' 
+    period: 'vs prior 7 days' 
   },
   query: `SELECT * FROM dbt.api_execution_transactions_7d`,
 };

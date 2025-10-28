@@ -344,6 +344,27 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'coins': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Stack of coins, outline only for monochrome */}
+            <ellipse cx="8" cy="6" rx="4" ry="2"></ellipse>
+            <path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6"></path>
+            <path d="M4 10v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"></path>
+            <ellipse cx="16" cy="10" rx="4" ry="2"></ellipse>
+            <path d="M12 10v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"></path>
+          </svg>
+        ),
+
+          'users': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Two user silhouettes, outline only for monochrome */}
+            <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        ),
+
         'wallets': (
           <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Wallets">
             {/* Back wallet */}

@@ -1,4 +1,4 @@
 {
   "id": "last_day_country_counts",
-  "query": "SELECT \n                country\n                ,SUM(cnt) AS cnt \n            FROM dbt.p2p_peers_geo_latest\n            GROUP BY 1\n            QUALIFY ROW_NUMBER() OVER (PARTITION BY country ORDER BY cnt DESC) <10"
+  "query": "SELECT \r\n                country\r\n                ,SUM(cnt) AS cnt \r\n            FROM dbt.p2p_peers_geo_latest\r\n            GROUP BY 1\r\n            QUALIFY ROW_NUMBER() OVER (PARTITION BY country ORDER BY cnt DESC) <10"
 }
