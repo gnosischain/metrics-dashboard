@@ -192,7 +192,7 @@ Consensus:
       icon: "📈"
       iconClass: "yield"
       metrics:
-        - id: api_consensus_validators_apy_daily
+        - id: api_consensus_validators_apy_dist_daily
           gridRow: 2
           gridColumn: 1 / span 8
           minHeight: 400px

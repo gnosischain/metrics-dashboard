@@ -1,4 +1,0 @@
-{
-  "id": "api_consensus_deposists_dist_daily",
-  "query": "SELECT * FROM api_consensus_deposits_dist_daily"
-}

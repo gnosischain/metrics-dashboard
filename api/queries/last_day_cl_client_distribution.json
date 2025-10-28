@@ -1,4 +1,0 @@
-{
-  "id": "last_day_cl_client_distribution",
-  "query": "SELECT \n      *\n    FROM \n        dbt.api_p2p_discv5_clients_latest"
-}

@@ -1,4 +1,0 @@
-{
-  "id": "historical_rwa_prices",
-  "query": "SELECT * FROM dbt.rwa_backedfi_prices_1d WHERE date >= DATE '2024-11-01' ORDER BY date ASC, bticker ASC"
-}
