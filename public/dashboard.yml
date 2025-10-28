@@ -266,6 +266,10 @@ Consensus:
           gridRow: 5
           gridColumn: 7 / span 6
           minHeight: 450px
+        - id: api_consensus_withdrawal_credentials_freq_daily
+          gridRow: 6
+          gridColumn: 1 / span 6
+          minHeight: 450px
           
        
 
