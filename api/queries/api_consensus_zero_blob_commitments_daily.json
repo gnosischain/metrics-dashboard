@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_zero_blob_commitments_daily",
+  "query": "SELECT * FROM dbt.api_consensus_zero_blob_commitments_daily"
+}
