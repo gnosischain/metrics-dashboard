@@ -106,48 +106,67 @@ export class BaseChart {
   }
 
   static createTimeSeriesAwareTooltipFormatter(config = {}) {
-    return (params) => {
-      if (!Array.isArray(params)) params = [params];
-      
-      const axisValue = params[0]?.axisValue;
-      const formattedDate = axisValue ? 
-        BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext) : '';
-      
-      let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
-      let total = 0;
-      
-      params.forEach(param => {
-        if (param.value !== null && param.value !== undefined && param.value !== 0) {
-          const seriesName = param.seriesName || 'Value';
-          const formattedValue = formatValue(param.value, config.format);
-          const color = param.color || '#999';
-          
-          tooltip += `<div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; min-width: 150px;">`;
-          tooltip += `<div style="display: flex; align-items: center; flex: 1;">`;
-          tooltip += `<div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${color}; margin-right: 8px; flex-shrink: 0;"></div>`;
-          tooltip += `<span style="margin-right: 16px;">${seriesName}</span>`;
-          tooltip += `</div>`;
-          tooltip += `<span style="font-weight: 600; white-space: nowrap;">${formattedValue}</span>`;
-          tooltip += `</div>`;
-          
-          if (config.showTotal && typeof param.value === 'number') {
-            total += param.value;
-          }
-        }
-      });
-      
-      if (config.showTotal && params.length > 1) {
-        tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.3);">`;
-        tooltip += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
-        tooltip += `<span style="font-weight: 600;">Total</span>`;
-        tooltip += `<span style="font-weight: 600; margin-left: 16px;">${formatValue(total, config.format)}</span>`;
-        tooltip += `</div>`;
-        tooltip += `</div>`;
+  // optional number formatting hook
+  const fmt = (v) => formatValue(v, config.format);
+  // opt-in ordering: 'valueDesc' | 'valueAsc' | 'seriesAsc' | 'seriesDesc'
+  const order = config.tooltipOrder;
+
+  const sorter = (a, b) => {
+    if (order === 'valueDesc') return (Number(b.value) || 0) - (Number(a.value) || 0);
+    if (order === 'valueAsc')  return (Number(a.value) || 0) - (Number(b.value) || 0);
+    if (order === 'seriesAsc') return String(a.seriesName).localeCompare(String(b.seriesName));
+    if (order === 'seriesDesc')return String(b.seriesName).localeCompare(String(a.seriesName));
+    return 0; // keep original stack order when no flag is set
+  };
+
+  return (params) => {
+    if (!Array.isArray(params)) params = [params];
+
+    const axisValue = params[0]?.axisValue;
+    const formattedDate = axisValue
+      ? BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext)
+      : '';
+
+    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
+    let total = 0;
+
+    const items = params
+      .filter(p => p.value !== null && p.value !== undefined && p.value !== 0)
+      .slice(); 
+
+    // apply ordering only if requested
+    if (order) items.sort(sorter);
+
+    items.forEach(p => {
+      const seriesName = p.seriesName || 'Value';
+      const color = p.color || '#999';
+      const formattedValue = fmt(p.value);
+      tooltip += `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0;min-width:150px;">
+          <div style="display:flex;align-items:center;flex:1;">
+            <div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>
+            <span style="margin-right:16px;">${seriesName}</span>
+          </div>
+          <span style="font-weight:600;white-space:nowrap;">${formattedValue}</span>
+        </div>`;
+      if (config.showTotal && typeof p.value === 'number') {
+        total += p.value;
       }
-      
-      return tooltip;
-    };
-  }
+    });
+
+    if (config.showTotal && items.length > 1) {
+      tooltip += `
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;">Total</span>
+            <span style="font-weight:600;margin-left:16px;">${fmt(total)}</span>
+          </div>
+        </div>`;
+    }
+
+    return tooltip;
+  };
+}
 
   static getGridConfig(config = {}) {
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
