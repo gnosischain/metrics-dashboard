@@ -7,4 +7,4 @@ const metric = {
   variant: 'default',
   query: `SELECT * FROM dbt.api_execution_transactions_active_accounts_total`,
 };
-export default metric;
+export default metric; 
