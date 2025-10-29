@@ -1,8 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_fees_native_total',
-  name: 'Fees (Native)',
+  name: 'Transaction Fees',
   description: 'All-time',
-  format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',

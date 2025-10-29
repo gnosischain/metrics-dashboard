@@ -1,8 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_fees_native_7d',
-  name: 'Fees (Native)',
+  name: 'Transaction Fees',
   description: 'Last 7 days',
-  format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',
