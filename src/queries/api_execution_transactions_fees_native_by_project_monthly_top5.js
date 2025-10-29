@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_fees_native_by_project_monthly_top5',
   name: 'Top-5 Projects by Fees',
-  description: 'Monthly fees per project (native)',
+  description: 'Monthly fees per project in xDAI',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,
@@ -16,6 +16,16 @@ const metric = {
   xField: 'date',
   yField: 'value',
   seriesField: 'label',
-  query: `SELECT date, value, project AS label FROM dbt.api_execution_transactions_fees_native_by_project_monthly_top5`,
+  yAxis: {
+    name: 'xDAI',
+    nameLocation: 'middle',
+    nameRotate: 90,
+    nameGap: 60,                 
+    nameTextStyle: { fontWeight: 500 }
+  },
+  grid: {
+    left: 70                     
+  },
+  query: `SELECT * FROM dbt.api_execution_transactions_fees_native_by_project_monthly_top5`,
 };
 export default metric;

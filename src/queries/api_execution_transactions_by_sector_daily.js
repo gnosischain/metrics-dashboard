@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_by_sector_daily',
-  name: 'Transactions by Sector (Daily)',
+  name: 'Transactions by Sector',
   description: 'Daily transactions per sector',
   chartType: 'bar',
   isTimeSeries: true,
@@ -21,6 +21,6 @@ const metric = {
   yField: 'value',
   seriesField: 'label',
   tooltipOrder: 'valueDesc',
-  query: `SELECT date, value, label FROM dbt.api_execution_transactions_by_sector_daily`,
+  query: `SELECT * FROM dbt.api_execution_transactions_by_sector_daily`,
 };
 export default metric;

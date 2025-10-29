@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_sector_daily',
-  name: 'Active Accounts by Sector (Daily)',
+  name: 'Active Accounts by Sector',
   description: 'Daily active accounts per sector',
   chartType: 'bar',
   isTimeSeries: true,
@@ -21,6 +21,6 @@ const metric = {
   yField: 'value',
   seriesField: 'label',
   tooltipOrder: 'valueDesc',
-  query: `SELECT date, value, sector AS label FROM dbt.api_execution_transactions_active_accounts_by_sector_daily`,
+  query: `SELECT * FROM dbt.api_execution_transactions_active_accounts_by_sector_daily`,
 };
 export default metric;

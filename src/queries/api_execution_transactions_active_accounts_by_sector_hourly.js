@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_sector_hourly',
-  name: 'Active Accounts by Sector (Hourly)',
-  description: 'Hourly active accounts per sector',
+  name: 'Active Accounts by Sector',
+  description: 'Hourly active accounts per sector, Last 2 days',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,
@@ -16,6 +16,6 @@ const metric = {
   xField: 'date',
   yField: 'value',
   seriesField: 'label',
-  query: `SELECT date, value, sector AS label FROM dbt.api_execution_transactions_active_accounts_by_sector_hourly`,
+  query: `SELECT * FROM dbt.api_execution_transactions_active_accounts_by_sector_hourly`,
 };
 export default metric;

@@ -87,13 +87,20 @@ export const formatValue = (value, format) => {
   return String(value);
 };
 
+export const formatNumberWithXDAI = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 xDAI';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `${full} xDAI`;
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
   formatDuration,
-  formatValue
+  formatValue,
+  formatNumberWithXDAI,
 };
 
 export default formatters;

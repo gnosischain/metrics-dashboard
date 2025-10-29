@@ -16,6 +16,6 @@ const metric = {
   xField: 'date',
   yField: 'value',
   seriesField: 'label',
-  query: `SELECT date, value, label FROM dbt.api_execution_transactions_by_project_monthly_top5`,
+  query: `SELECT * FROM dbt.api_execution_transactions_by_project_monthly_top5`,
 };
 export default metric;

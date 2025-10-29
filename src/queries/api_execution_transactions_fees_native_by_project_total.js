@@ -1,7 +1,7 @@
-// fees pie
 const metric = {
   id: 'api_execution_transactions_fees_native_by_project_total',
-  name: 'Fees by Project (Total)',
+  name: 'Total Fees by Project',
+  description: 'All Time, in xDAI',
   chartType: 'pie',
   nameField: 'label',         
   valueField: 'value',

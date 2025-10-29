@@ -1,14 +1,13 @@
 const metric = {
   id: 'api_execution_transactions_by_sector_hourly',
   name: 'Transactions per Sector',
-  description: 'Hourly number Transactions per Sector, last 2 days',
+  description: 'Hourly number Transactions per Sector, Last 2 days',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: false,
   format: 'formatNumber',
   showTotal: true, 
   
-  // Bar chart styling
   barWidth: 'auto',
   barMaxWidth: 50,
   borderRadius: [1, 1, 0, 0],

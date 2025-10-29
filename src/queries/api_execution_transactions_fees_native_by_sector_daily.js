@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_fees_native_by_sector_daily',
-  name: 'Fees by Sector (Daily)',
-  description: 'Daily fees per sector (native)',
+  name: 'Fees by Sector',
+  description: 'Daily fees per sector in xDAI',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,
@@ -10,6 +10,7 @@ const metric = {
     end: 100   
   },
   showTotal: true,
+  format: 'formatNumber',
   barWidth: 'auto',
   barMaxWidth: 50,
   borderRadius: [1, 1, 0, 0],
@@ -20,6 +21,16 @@ const metric = {
   yField: 'value',
   seriesField: 'label',
   tooltipOrder: 'valueDesc',
-  query: `SELECT date, value, sector AS label FROM dbt.api_execution_transactions_fees_native_by_sector_daily`,
+  yAxis: {
+    name: 'xDAI',
+    nameLocation: 'middle',
+    nameRotate: 90,
+    nameGap: 60,                 
+    nameTextStyle: { fontWeight: 500 }
+  },
+  grid: {
+    left: 70                     
+  },
+  query: `SELECT * FROM dbt.api_execution_transactions_fees_native_by_sector_daily`,
 };
 export default metric;

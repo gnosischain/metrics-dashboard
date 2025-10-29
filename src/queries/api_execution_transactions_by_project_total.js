@@ -1,10 +1,11 @@
-// transactions pie
 const metric = {
   id: 'api_execution_transactions_by_project_total',
-  name: 'Transactions by Project (Total)',
+  name: 'Total Transactions by Project',
+  description: 'All Time',
   chartType: 'pie',
   nameField: 'label',          
   valueField: 'value',
+  format: 'formatNumber',
   query: `SELECT * FROM dbt.api_execution_transactions_by_project_total`,
 };
 export default metric;
