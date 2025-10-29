@@ -1,6 +1,7 @@
 const metric = {
   id: 'api_consensus_validators_apy_dist',
-  name: 'Last 30 Days APY Distribution',
+  name: 'APY Distribution',
+  description: "Last 30 Days",
   chartType: 'boxplot', 
   isTimeSeries: false,
   enableZoom: false,

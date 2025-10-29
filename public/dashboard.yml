@@ -301,7 +301,7 @@ Consensus:
        
     - name: Validators
       order: 4
-      icon: "📊"
+      icon: "👷"
       iconClass: "validator"
       metrics:
         - id: api_consensus_info_active_ongoing_latest
@@ -316,36 +316,55 @@ Consensus:
           gridRow: 1
           gridColumn: 5 / span 2
           minHeight: 130px
+        - id: api_consensus_validators_active_daily
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_consensus_staked_daily
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_consensus_validators_balances_dist_daily
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 450px
+        - id: api_consensus_withdrawal_credentials_freq_daily
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: 450px
+
+    - name: Queues
+      order: 5
+      icon: "⏱️"
+      iconClass: "stopwatch"
+      metrics:
+        - id: api_consensus_info_active_ongoing_latest
+          gridRow: 1
+          gridColumn: 1 / span 2
+          minHeight: 130px
+        - id: api_consensus_info_deposits_cnt_latest
+          gridRow: 1
+          gridColumn: 3 / span 2
+          minHeight: 130px
+        - id: api_consensus_info_withdrawls_cnt_latest
+          gridRow: 1
+          gridColumn: 5 / span 2
+          minHeight: 130px
         - id: text_consensus_validators_status
-          gridRow: 1 / span 2
+          gridRow: 1 / span 3
           gridColumn: 7 / span 7
-          minHeight: 600px
+          minHeight: 1070px
         - id: api_consensus_validators_status_daily
           gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 450px
-        - id: api_consensus_validators_active_daily
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_consensus_staked_daily
-          gridRow: 3
-          gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_consensus_validators_balances_dist_daily
-          gridRow: 5
-          gridColumn: 1 / span 6
-          minHeight: 450px
         - id: api_consensus_entry_queue_daily
-          gridRow: 5
-          gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_consensus_withdrawal_credentials_freq_daily
-          gridRow: 6
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 450px
+
     - name: Blobs
-      order: 5
+      order: 6
       icon: "🧩"
       iconClass: "blob"
       metrics:

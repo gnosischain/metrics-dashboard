@@ -23,7 +23,7 @@ const metric = {
   ],
   
   // Line configuration - array of field names to draw as lines
-  lines: ['q50'], 
+  lines: ['q50','average'], 
   
   // Visual configuration
   lineOpacity: 0.9,
@@ -58,7 +58,7 @@ const metric = {
 
   // Example query that returns quantile data
   query: `
-    SELECT * FROM api_consensus_validators_apy_dist_daily
+    SELECT * FROM dbt.api_consensus_validators_apy_dist_daily
   `
 };
 
