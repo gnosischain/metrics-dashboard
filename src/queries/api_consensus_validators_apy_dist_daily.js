@@ -49,12 +49,12 @@ const metric = {
   watermarkOpacity: 0.3,
   
 
-  yAxis: {
-    type: 'log',
-    logBase: 10, // Optional: specify the logarithm base (default is 10)
-    min: 'dataMin', // Optional: set minimum value
-    max: 'dataMax', // Optional: set maximum value
-  },
+ // yAxis: {
+  //  type: 'log',
+  //  logBase: 10, // Optional: specify the logarithm base (default is 10)
+  //  min: 'dataMin', // Optional: set minimum value
+  //  max: 'dataMax', // Optional: set maximum value
+  //},
 
   // Example query that returns quantile data
   query: `

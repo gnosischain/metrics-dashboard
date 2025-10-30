@@ -3,7 +3,8 @@ const metric = {
   name: 'Transactions',
   valueField: 'value',
   chartType: 'number',
-  titleFontSize: '1.8rem', 
+  format: null,
+  titleFontSize: '1.5rem', 
   fontSize: '3rem',      
   query: `SELECT CONCAT('+',toString(floor(value/1000000)), 'M') AS value FROM dbt.api_execution_transactions_total`
 };

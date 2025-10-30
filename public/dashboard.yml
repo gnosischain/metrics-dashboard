@@ -4,22 +4,31 @@ Overview:
   icon: "📊"
   iconClass: "chart-line"
   metrics:
-    - id: overview_validators
+    - id: overview_stake_api
       gridRow: 1
       gridColumn: 1 / span 3
-      minHeight: 200px
-    - id: overview_validators
+      minHeight: 180px
+    - id: overview_stake_gno
       gridRow: 1
       gridColumn: 4 / span 3
-      minHeight: 200px
+      minHeight: 180px
     - id: overview_validators
       gridRow: 1
       gridColumn: 7 / span 3
-      minHeight: 200px
-    - id: overview_transactions
+      minHeight: 180px
+    - id: overview_esg
       gridRow: 1
       gridColumn: 10 / span 3
-      minHeight: 200px
+      minHeight: 180px
+
+    - id: overview_active_accounts
+      gridRow: 2
+      gridColumn: 10 / span 3
+      minHeight: 180px
+    - id: overview_transactions
+      gridRow: 3
+      gridColumn: 10 / span 3
+      minHeight: 180px
 
 
 
