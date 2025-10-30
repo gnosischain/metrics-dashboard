@@ -31,7 +31,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         enableZoom = false,
         variant, 
         changeData,
-        fontSize 
+        fontSize,
+        titleFontSize
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -53,6 +54,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       variant,
       changeData,
       fontSize,
+      titleFontSize,
       config: metricConfig 
     };
   }, [metricConfig]);
@@ -281,7 +283,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       headerControls={headerControls}
       expandable={widgetConfig.type === 'chart'}
       isDarkMode={isDarkMode}
-      chartType={widgetConfig.chartType} // Pass chartType for CSS styling
+      chartType={widgetConfig.chartType}
+      titleFontSize={widgetConfig.titleFontSize}
     >
       {renderContent()}
     </Card>

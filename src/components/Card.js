@@ -10,9 +10,10 @@ const Card = forwardRef(({
   expandable = true, 
   isDarkMode = false, 
   chartType,
-  variant, // Add variant prop
+  variant, 
   minimal = false,
-  contentClassName = '' // New prop for custom class on content area
+  contentClassName = '',
+  titleFontSize = null
 }, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -27,7 +28,14 @@ const Card = forwardRef(({
           <div className="minimal-widget-header">
             {(title || subtitle) && (
               <div className="minimal-widget-title">
-                {title && <h3 className="minimal-title">{title}</h3>}
+                {title && (
+                  <h3 
+                    className="minimal-title"
+                    style={titleFontSize ? { fontSize: titleFontSize } : {}}
+                  >
+                    {title}
+                  </h3>
+                )}
                 {subtitle && <div className="minimal-subtitle">{subtitle}</div>}
               </div>
             )}
@@ -44,11 +52,16 @@ const Card = forwardRef(({
       <div 
         ref={ref} 
         className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''}`}
-        data-chart-type={chartType} // Added data attribute for CSS targeting
+        data-chart-type={chartType} 
       >
         <div className="card-header">
           <div className="card-header-text">
-            <h3 className="card-title">{title}</h3>
+            <h3 
+              className="card-title"
+              style={titleFontSize ? { fontSize: titleFontSize } : {}}
+            >
+              {title}
+            </h3>
             {subtitle && <div className="card-subtitle">{subtitle}</div>}
           </div>
           <div className="card-header-controls">
@@ -68,7 +81,8 @@ const Card = forwardRef(({
           subtitle={subtitle} 
           headerControls={headerControls} 
           isDarkMode={isDarkMode}
-          chartType={chartType} // Pass chartType to modal as well
+          chartType={chartType}
+          titleFontSize={titleFontSize}
         >
           {children}
         </ChartModal>
