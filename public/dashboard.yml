@@ -4,10 +4,24 @@ Overview:
   icon: "📊"
   iconClass: "chart-line"
   metrics:
-    - id: under_construction
-      gridRow: 2
-      gridColumn: 1 / span 12
-      minHeight: 500px
+    - id: overview_validators
+      gridRow: 1
+      gridColumn: 1 / span 3
+      minHeight: 200px
+    - id: overview_validators
+      gridRow: 1
+      gridColumn: 4 / span 3
+      minHeight: 200px
+    - id: overview_validators
+      gridRow: 1
+      gridColumn: 7 / span 3
+      minHeight: 200px
+    - id: overview_transactions
+      gridRow: 1
+      gridColumn: 10 / span 3
+      minHeight: 200px
+
+
 
 Financials:
   name: Financials
