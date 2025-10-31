@@ -4,10 +4,6 @@ Overview:
   icon: "📊"
   iconClass: "chart-line"
   metrics:
-    - id: overview_text
-      gridRow: 2
-      gridColumn: 3 / span 7
-      minHeight: 180px
     - id: overview_stake_api
       gridRow: 4
       gridColumn: 2 / span 3
