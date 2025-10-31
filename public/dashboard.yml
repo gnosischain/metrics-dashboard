@@ -4,30 +4,33 @@ Overview:
   icon: "📊"
   iconClass: "chart-line"
   metrics:
+    - id: overview_text
+      gridRow: 2
+      gridColumn: 3 / span 7
+      minHeight: 180px
     - id: overview_stake_api
-      gridRow: 1
-      gridColumn: 1 / span 3
+      gridRow: 4
+      gridColumn: 2 / span 3
       minHeight: 180px
     - id: overview_stake_gno
-      gridRow: 1
-      gridColumn: 4 / span 3
+      gridRow: 4
+      gridColumn: 5 / span 3
       minHeight: 180px
     - id: overview_validators
-      gridRow: 1
-      gridColumn: 7 / span 3
+      gridRow: 4
+      gridColumn: 8 / span 3
       minHeight: 180px
     - id: overview_esg
-      gridRow: 1
-      gridColumn: 10 / span 3
+      gridRow: 5
+      gridColumn: 2 / span 3
       minHeight: 180px
-
     - id: overview_active_accounts
-      gridRow: 2
-      gridColumn: 10 / span 3
+      gridRow: 5
+      gridColumn: 5 / span 3
       minHeight: 180px
     - id: overview_transactions
-      gridRow: 3
-      gridColumn: 10 / span 3
+      gridRow: 5
+      gridColumn: 8 / span 3
       minHeight: 180px
 
 
@@ -124,25 +127,25 @@ OnChainActivity:
         - id: api_execution_transactions_7d
           gridRow: 1
           gridColumn: 1 / span 6  
-          minHeight: "130px"
+          minHeight: "200px"
         - id: api_execution_transactions_total 
-          gridRow: 1
-          gridColumn: 7 / span 6 
-          minHeight: "130px" 
-        - id: api_execution_transactions_by_sector_weekly
           gridRow: 2
-          gridColumn: 1 / span 8
-          minHeight: "420px"
+          gridColumn: 1 / span 6 
+          minHeight: "200px" 
         - id: api_execution_transactions_by_project_ranges_top20
-          gridRow: 2
-          gridColumn: 9 / span 4
-          minHeight: "420px" 
-        - id: api_execution_transactions_by_project_monthly_top5
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: "422px" 
+        - id: api_execution_transactions_by_sector_weekly
           gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: "420px"
+        - id: api_execution_transactions_by_project_monthly_top5
+          gridRow: 4
           gridColumn: 1 / span 6
           minHeight: "420px" 
         - id: api_execution_transactions_by_sector_hourly
-          gridRow: 3
+          gridRow: 4
           gridColumn: 7 / span 6
           minHeight: "420px" 
     - name: Gas & Fees
@@ -153,69 +156,60 @@ OnChainActivity:
         - id: api_execution_transactions_fees_native_7d  
           gridRow: 1
           gridColumn: "1 / span 6" 
-          minHeight: "130px"
+          minHeight: "200px"
         - id: api_execution_transactions_fees_native_total
-          gridRow: 1
-          gridColumn: "7 / span 6"  
-          minHeight: "130px"
-        - id: api_execution_transactions_fees_native_by_sector_weekly             
           gridRow: 2
-          gridColumn: "1 / span 8" 
-          minHeight: "420px"
+          gridColumn: "1 / span 6"  
+          minHeight: "200px"
         - id: api_execution_transactions_fees_native_by_project_ranges_top20
-          gridRow: 2
-          gridColumn: "9 / span 4"
-          minHeight: "420px" 
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 422px
+        - id: api_execution_transactions_fees_native_by_sector_weekly             
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 420px
         - id: api_execution_transactions_fees_native_by_project_monthly_top5  
-          gridRow: 3
-          gridColumn: "1 / span 6"
-          minHeight: "420px"
-        - id: api_execution_transactions_fees_native_by_sector_hourly
-          gridRow: 3
-          gridColumn: "7 / span 6" 
-          minHeight: "420px"
-        - id: api_execution_transactions_gas_used_daily
           gridRow: 4
-          gridColumn: "1 / span 12"
-          minHeight: "420px"
+          gridColumn: 1 / span 6
+          minHeight: 420px
+        - id: api_execution_transactions_fees_native_by_sector_hourly
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 420px
+        - id: api_execution_transactions_gas_used_daily
+          gridRow: 5
+          gridColumn: 1 / span 12
+          minHeight: 420px
     - name: Active Accounts
       order: 5
-      icon: ""                
+      icon: "👥"                
       iconClass: "users"
       metrics:
         - id: api_execution_transactions_active_accounts_7d
           gridRow: 1
-          gridColumn: "1 / span 6"
-          minHeight: "130px"
+          gridColumn: 1 / span 6
+          minHeight: 200px
         - id: api_execution_transactions_active_accounts_total
-          gridRow: 1
-          gridColumn: "7 / span 6"
-          minHeight: "130px" 
-        - id: api_execution_transactions_active_accounts_by_sector_weekly
           gridRow: 2
-          gridColumn: "1 / span 8"
-          minHeight: "420px"
+          gridColumn: 1 / span 6
+          minHeight: 200px
         - id: api_execution_transactions_active_accounts_by_project_ranges_top20
-          gridRow: 2
-          gridColumn: "9 / span 4"
-          minHeight: "420px"
-        - id: api_execution_transactions_active_accounts_by_project_monthly_top5
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 422px
+        - id: api_execution_transactions_active_accounts_by_sector_weekly
           gridRow: 3
-          gridColumn: "1 / span 6"
-          minHeight: "420px"
-        - id: api_execution_transactions_active_accounts_by_sector_hourly
-          gridRow: 3
-          gridColumn: "7 / span 6"
-          minHeight: "420px"
-    - name: Wallets
-      order: 6
-      icon: "👛"
-      iconClass: "wallets"
-      metrics:
-        - id: wallet_activity_overview
-          gridRow: 1
           gridColumn: 1 / span 12
-          minHeight: 450px
+          minHeight: 420px
+        - id: api_execution_transactions_active_accounts_by_project_monthly_top5
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 420px
+        - id: api_execution_transactions_active_accounts_by_sector_hourly
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 420px
     - name: Flows
       order: 7
       icon: "🌊"

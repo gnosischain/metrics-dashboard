@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_consensus_info_apy_latest',
-  name: 'Staking APY',
+  name: 'Staking APY %',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',
