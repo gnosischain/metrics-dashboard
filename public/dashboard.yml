@@ -177,7 +177,7 @@ OnChainActivity:
           gridRow: 4
           gridColumn: 7 / span 6
           minHeight: 420px
-        - id: api_execution_transactions_gas_used_daily
+        - id: api_execution_transactions_gas_used_weekly
           gridRow: 5
           gridColumn: 1 / span 12
           minHeight: 420px
