@@ -4,7 +4,6 @@ const metric = {
   description: 'Representative project examples by sector',
   chartType: 'text',
   content: `
-### Sector Glossary (with Project examples)
 
 | Sector | Project examples (non-exhaustive) |
 |-------|------------------------------------|

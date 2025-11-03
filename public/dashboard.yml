@@ -55,47 +55,47 @@ OnChainActivity:
       metrics:
         - id: api_crawlers_data_distinct_projects_total
           gridRow: 1
-          gridColumn: "1 / span 2"
-          minHeight: "270px"
+          gridColumn: 1 / span 3
+          minHeight: 200px
         - id: api_crawlers_data_distinct_sectors_total
           gridRow: 1
-          gridColumn: "3 / span 2"
-          minHeight: "270px"
+          gridColumn: 4 / span 3
+          minHeight: 200px
         - id: api_execution_transactions_total 
           gridRow: 2
-          gridColumn: "1 / span 2"
-          minHeight: "270px"
+          gridColumn: 1 / span 3
+          minHeight: 200px
         - id: api_execution_transactions_active_accounts_total
           gridRow: 2
-          gridColumn: "3 / span 2"  
-          minHeight: "270px"
+          gridColumn: 4 / span 3 
+          minHeight: 200px
         - id: text_onchain_projects_sectors_overview_info
-          gridRow: "1 / span 2"
-          gridColumn: "5 / span 8"
-          minHeight: "560px"
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 422px
         - id: text_onchain_projects_sectors_glossary
-          gridRow: 4
-          gridColumn: "1 / span 12"
-          minHeight: "1200px"
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 1200px
 
-    - name: RWA
-      order: 1
-      icon: "📈"
-      iconClass: "rwa"
-      metrics:
-        - id: api_execution_rwa_backedfi_prices_daily
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
-    - name: Yields
-      order: 2
-      icon: "📈"
-      iconClass: "yield"
-      metrics:
-        - id: historical_yield_sdai
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
+  #  - name: RWA
+  #    order: 1
+  #    icon: "📈"
+  #    iconClass: "rwa"
+  #    metrics:
+  #      - id: api_execution_rwa_backedfi_prices_daily
+  #        gridRow: 1
+  #        gridColumn: 1 / span 12
+  #        minHeight: 500px
+  #  - name: Yields
+  #    order: 2
+  #    icon: "📈"
+  #    iconClass: "yield"
+  #    metrics:
+  #      - id: historical_yield_sdai
+  #        gridRow: 1
+  #        gridColumn: 1 / span 12
+  #        minHeight: 500px
     - name: Transactions
       order: 3
       icon: "🔁"

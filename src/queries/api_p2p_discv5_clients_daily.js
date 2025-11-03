@@ -17,7 +17,7 @@ const metric = {
   barOpacity: 0.8,  
   
   defaultZoom: {
-    start: 70, 
+    start: 0, 
     end: 100   
   },
   

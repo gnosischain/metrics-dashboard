@@ -18,7 +18,7 @@ const metric = {
 
 
   defaultZoom: {
-    start: 70, 
+    start: 0, 
     end: 100   
   },
   
