@@ -13,8 +13,7 @@ const metric = {
 
 ### Active Account
 
-> Distinct **senders** (\`from_address\`) with **successful** transactions within a time period.  
-Counts unique wallets using a project/network, not number of calls.
+> Distinct **senders** (\`from_address\`) with **successful** transactions within a time period. Counts unique wallets using a project, not number of calls.
 `
 };
 
