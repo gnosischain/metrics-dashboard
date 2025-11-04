@@ -1,0 +1,4 @@
+{
+  "id": "overview_gno_supply_daily",
+  "query": "SELECT * FROM dbt.api_crawlers_data_gno_supply_daily"
+}

@@ -5,42 +5,46 @@ Overview:
   iconClass: "chart-line"
   metrics:
     - id: overview_stake_api
-      gridRow: 4
-      gridColumn: 2 / span 3
-      minHeight: 180px
+      gridRow: 1
+      gridColumn: 1 / span 4
+      minHeight: 130px
     - id: overview_stake_gno
-      gridRow: 4
-      gridColumn: 5 / span 3
-      minHeight: 180px
+      gridRow: 1
+      gridColumn: 5 / span 4
+      minHeight: 130px
     - id: overview_validators
-      gridRow: 4
-      gridColumn: 8 / span 3
-      minHeight: 180px
+      gridRow: 1
+      gridColumn: 9 / span 4
+      minHeight: 130px
     - id: overview_esg
-      gridRow: 5
-      gridColumn: 2 / span 3
-      minHeight: 180px
-    - id: overview_active_accounts
-      gridRow: 5
-      gridColumn: 5 / span 3
-      minHeight: 180px
-    - id: overview_transactions
-      gridRow: 5
-      gridColumn: 8 / span 3
-      minHeight: 180px
-
-
-
-Financials:
-  name: Financials
-  order: 2
-  icon: "💰"
-  iconClass: "dollar-sign"
-  metrics:
-    - id: under_construction
       gridRow: 2
-      gridColumn: 1 / span 12
-      minHeight: 500px
+      gridColumn: 10 / span 3
+      minHeight: 130px
+    - id: overview_active_accounts
+      gridRow: 3
+      gridColumn: 10 / span 3
+      minHeight: 130px
+    - id: overview_transactions
+      gridRow: 4
+      gridColumn: 10 / span 3
+      minHeight: 130px
+    - id: overview_gno_supply_daily
+      gridRow: 2 / span 3
+      gridColumn: 1 / span 9
+      minHeight: 430px
+
+
+
+#Financials:
+#  name: Financials
+#  order: 2
+#  icon: "💰"
+#  iconClass: "dollar-sign"
+#  metrics:
+#    - id: under_construction
+#      gridRow: 2
+#      gridColumn: 1 / span 12
+#      minHeight: 500px
 
 OnChainActivity:
   name: OnChain Activity
@@ -560,21 +564,21 @@ ESG:
           gridColumn: 1 / span 12
           minHeight: 12100px
 
-Circles:
-  name: Circles
-  order: 7
-  icon: "🌱"
-  iconClass: "circles"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "bar-chart-2"
-      metrics:
-        - id: under_construction
-          gridRow: 2
-          gridColumn: 1 / span 12
-          minHeight: 500px
+#Circles:
+#  name: Circles
+#  order: 7
+#  icon: "🌱"
+#  iconClass: "circles"
+#  tabs:
+#    - name: Overview
+#      order: 1
+#      icon: "📊"
+#      iconClass: "bar-chart-2"
+#      metrics:
+#        - id: under_construction
+#          gridRow: 2
+#          gridColumn: 1 / span 12
+#          minHeight: 500px
     #- name: Overview
     #  order: 1
     #  icon: "📊"
@@ -597,34 +601,34 @@ Circles:
     #      gridColumn: 7 / span 2
     #      minHeight: 130px
 
-Labs:
-  name: Labs
-  order: 7
-  icon: "🤖"
-  iconClass: "bot"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "bar-chart-2"
-      metrics:
-        - id: under_construction
-          gridRow: 2
-          gridColumn: 1 / span 12
-          minHeight: 500px
+#Labs:
+#  name: Labs
+#  order: 7
+#  icon: "🤖"
+#  iconClass: "bot"
+#  tabs:
+#    - name: Overview
+#      order: 1
+#      icon: "📊"
+#      iconClass: "bar-chart-2"
+#      metrics:
+#        - id: under_construction
+#          gridRow: 2
+#          gridColumn: 1 / span 12
+#          minHeight: 500px
 
-Pay:
-  name: Pay
-  order: 7
-  icon: "💼"
-  iconClass: "wallet"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "bar-chart-2"
-      metrics:
-        - id: under_construction
-          gridRow: 2
-          gridColumn: 1 / span 12
-          minHeight: 500px
+#Pay:
+#  name: Pay
+#  order: 7
+#  icon: "💼"
+#  iconClass: "wallet"
+#  tabs:
+#    - name: Overview
+#      order: 1
+#      icon: "📊"
+#      iconClass: "bar-chart-2"
+#      metrics:
+#        - id: under_construction
+#          gridRow: 2
+#          gridColumn: 1 / span 12
+#          minHeight: 500px
