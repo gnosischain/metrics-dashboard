@@ -12,7 +12,8 @@ const metric = {
 | **Bridges** | AMB (xDai/Eth), Hop, Across, Connext, Celer, Stargate, Li.Fi, Symbiosis, Socket |
 | **Messaging / Interop** | LayerZero, Hyperlane, Polyhedra/zkBridge, Telepathy, Everclear |
 | **Wallets & AA** | Safe, Ambire, ERC-4337 EntryPoint, Biconomy, Rhinestone |
-| **Payments & Stablecoins** | Monerium (USDe/ISKE), Gnosis Pay, Request Network, USDC/sDAI/xDAI, Sablier |
+| **Stablecoins & Fiat Ramps** | Monerium (USDe/ISKE/blacklist), USDC, sDAI, xDAI, Angle/agEUR, Transmuter |
+| **Payments** | Gnosis Pay (GPay), Request Network (Smart Invoice), Superfluid, Sablier |
 | **Oracles & Data** | Chainlink, Tellor, Pyth, OriginTrail, analytics/indexing helpers |
 | **NFTs & Marketplaces** | OpenSea, Seaport, POAP, Unlock Protocol, ERC-721/1155 contracts |
 | **Gaming** | Dark Forest, Conquest.eth, other game contracts |
