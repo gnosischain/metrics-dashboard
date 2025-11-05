@@ -191,23 +191,23 @@ OnChainActivity:
           gridRow: 4
           gridColumn: 7 / span 6
           minHeight: 420px
-    - name: Flows
-      order: 7
-      icon: "🌊"
-      iconClass: "flow"
-      metrics:
-        - id: erc20_network_transfers
-          gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 500px
-        - id: sankey_transaction_flow
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 500px
-        - id: sankey_gas_flow
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 500px
+   # - name: Flows
+   #   order: 7
+   #   icon: "🌊"
+   #   iconClass: "flow"
+   #   metrics:
+   #     - id: erc20_network_transfers
+   #       gridRow: 1
+   #       gridColumn: 1 / span 12
+   #       minHeight: 500px
+   #     - id: sankey_transaction_flow
+   #       gridRow: 2
+   #       gridColumn: 1 / span 6
+   #       minHeight: 500px
+   #     - id: sankey_gas_flow
+   #       gridRow: 2
+   #       gridColumn: 7 / span 6
+   #       minHeight: 500px
 Consensus:
   name: Consensus
   order: 4
@@ -521,11 +521,11 @@ Bridges:
         - id: api_bridges_sankey_gnosis_out_ranges
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 500px
+          minHeight: 620px
         - id: api_bridges_sankey_gnosis_in_ranges
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 500px
+          minHeight: 620px
 
 ESG:
   name: ESG

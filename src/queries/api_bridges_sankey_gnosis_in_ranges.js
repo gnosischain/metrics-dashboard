@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_bridges_sankey_gnosis_in_ranges',
-  name: 'Bridge Flow (Others → Bridge → Gnosis)',
-  description: 'Select range',
+  name: 'Bridge Flows: Gnosis Inbound',
+  description: 'Total inbound flows by period',
   chartType: 'sankey',
   format: 'formatCurrency',
   enableFiltering: true,
@@ -17,7 +17,7 @@ const metric = {
   },
   query: `
     SELECT range, source, target, value
-    FROM playground_max.api_bridges_sankey_gnosis_in_ranges
+    FROM dbt.api_bridges_sankey_gnosis_in_ranges
   `,
 };
 
