@@ -508,9 +508,28 @@ Network:
           gridColumn: 1 / span 12
           minHeight: 500px
 
+Bridges:
+  name: Bridges
+  order: 6
+  icon: "🌉"
+  iconClass: "bridge"
+  tabs:
+    - name: Overview
+      icon: "📊"
+      iconClass: "chart-line"
+      metrics:
+        - id: api_bridges_sankey_gnosis_out_ranges
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: api_bridges_sankey_gnosis_in_ranges
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 500px
+
 ESG:
   name: ESG
-  order: 6
+  order: 7
   icon: "🌱"
   iconClass: "leaf"
   tabs:
@@ -633,21 +652,3 @@ ESG:
 #          gridColumn: 1 / span 12
 #          minHeight: 500px
 
-Bridges:
-  name: Bridges
-  order: 5
-  icon: "🌉"
-  iconClass: "bridge"
-  tabs:
-    - name: Overview
-      icon: "📊"
-      iconClass: "chart-line"
-      metrics:
-        - id: api_bridges_sankey_gnosis_out_ranges
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 500px
-        - id: api_bridges_sankey_gnosis_in_ranges
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 500px

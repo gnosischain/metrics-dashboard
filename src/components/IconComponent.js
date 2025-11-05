@@ -401,6 +401,67 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'stopwatch': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Stopwatch"
+          >
+            {/* Stem + knob */}
+            <line x1="12" y1="3" x2="12" y2="5" />
+            <rect x="10" y="1" width="4" height="2" rx="0.5" />
+
+            {/* Side buttons */}
+            <path d="M5.5 6.5l2 2" />
+            <path d="M18.5 6.5l-2 2" />
+
+            {/* Body */}
+            <circle cx="12" cy="13" r="8" />
+
+            {/* Hands */}
+            <line x1="12" y1="13" x2="12" y2="8" />     {/* minute hand */}
+            <line x1="12" y1="13" x2="15" y2="15" />     {/* second hand */}
+          </svg>
+        ),
+
+        'bridge': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Bridge"
+          >
+            {/* Pylons */}
+            <path d="M3 18V8" />
+            <path d="M21 18V8" />
+            {/* Deck */}
+            <path d="M3 18h18" />
+            {/* Suspension cables */}
+            <path d="M3 8C6 4 9 4 12 8" />
+            <path d="M12 8C15 4 18 4 21 8" />
+            {/* Hangers */}
+            <path d="M6 18V11" />
+            <path d="M9 18V10" />
+            <path d="M15 18V10" />
+            <path d="M18 18V11" />
+          </svg>
+        ),
+
 
     };
     

@@ -1,0 +1,4 @@
+{
+  "id": "api_bridges_sankey_gnosis_in_ranges",
+  "query": "SELECT range, source, target, value\n    FROM playground_max.api_bridges_sankey_gnosis_in_ranges"
+}
