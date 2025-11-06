@@ -518,6 +518,14 @@ Bridges:
       icon: "📊"
       iconClass: "chart-line"
       metrics:
+        - id: api_bridges_cum_netflow_weekly_by_bridge
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 620px
+    - name: Flows
+      icon: "🌊"
+      iconClass: "flow"
+      metrics:
         - id: api_bridges_sankey_gnosis_out_ranges
           gridRow: 1
           gridColumn: 1 / span 6
