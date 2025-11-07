@@ -1,0 +1,4 @@
+{
+  "id": "api_bridges_kpi_netflow_7d",
+  "query": "SELECT value, prev_value, change_pct\r\n    FROM dbt.api_bridges_kpi_netflow_7d"
+}
