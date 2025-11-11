@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_bridges_sankey_gnosis_in_by_token_7d',
   name: 'Token Flows: Gnosis Inbound',
-  description: 'Inbound Token Flows (last 7 days)',
+  description: 'Inbound Flows by Token(last 7 days)',
   chartType: 'sankey',
   format: 'formatCurrency',
   enableFiltering: true,
