@@ -1,4 +1,3 @@
-// api_bridges__kpi_distinct_bridges_all_time.js
 const metric = {
   id: 'api_bridges_kpi_distinct_bridges_all_time',
   name: 'Distinct Bridges',

@@ -462,6 +462,29 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'token-dot': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Token Flow"
+          >
+            {/* left chevron < */}
+            <polyline points="7 8 3 12 7 16" />
+            {/* token (dot) */}
+            <circle cx="12" cy="12" r="2" fill={color} stroke="none" />
+            {/* right chevron > */}
+            <polyline points="17 8 21 12 17 16" />
+          </svg>
+        ),
+
 
     };
     

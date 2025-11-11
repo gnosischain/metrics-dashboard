@@ -1,4 +1,3 @@
-// api_bridges__kpi_total_volume_all_time.js
 const metric = {
   id: 'api_bridges_kpi_total_volume_all_time',
   name: 'Total Bridged Volume',

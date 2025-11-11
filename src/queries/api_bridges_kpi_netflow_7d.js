@@ -1,4 +1,3 @@
-// api_bridges__kpi_netflow_7d.js
 const metric = {
   id: 'api_bridges_kpi_netflow_7d',
   name: 'Netflow',

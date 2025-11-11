@@ -561,6 +561,19 @@ Bridges:
           gridColumn: 7 / span 6
           minHeight: 620px
 
+    - name: Token Flows
+      icon: "💱"
+      iconClass: "token-dot" 
+      metrics:
+        - id: api_bridges_sankey_gnosis_out_by_token_7d
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 620px
+        - id: api_bridges_sankey_gnosis_in_by_token_7d
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 620px
+
 ESG:
   name: ESG
   order: 7

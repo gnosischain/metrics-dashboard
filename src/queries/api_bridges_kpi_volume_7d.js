@@ -1,4 +1,3 @@
-// api_bridges__kpi_volume_7d.js
 const metric = {
   id: 'api_bridges_kpi_volume_7d',
   name: 'Volume',
