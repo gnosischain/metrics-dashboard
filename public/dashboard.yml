@@ -117,18 +117,19 @@ OnChainActivity:
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
           minHeight: "422px" 
-        - id: api_execution_transactions_by_sector_weekly
-          gridRow: 3
-          gridColumn: 1 / span 12
-          minHeight: "420px"
         - id: api_execution_transactions_by_project_monthly_top5
-          gridRow: 4
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: "420px" 
         - id: api_execution_transactions_by_sector_hourly
-          gridRow: 4
+          gridRow: 3
           gridColumn: 7 / span 6
           minHeight: "420px" 
+        - id: api_execution_transactions_by_sector_weekly
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: "420px"
+      
     - name: Gas & Fees
       order: 4
       icon: "⛽️"
@@ -146,17 +147,17 @@ OnChainActivity:
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
           minHeight: 422px
-        - id: api_execution_transactions_fees_native_by_sector_weekly             
-          gridRow: 3
-          gridColumn: 1 / span 12
-          minHeight: 420px
         - id: api_execution_transactions_fees_native_by_project_monthly_top5  
-          gridRow: 4
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 420px
         - id: api_execution_transactions_fees_native_by_sector_hourly
-          gridRow: 4
+          gridRow: 3
           gridColumn: 7 / span 6
+          minHeight: 420px
+        - id: api_execution_transactions_fees_native_by_sector_weekly             
+          gridRow: 4
+          gridColumn: 1 / span 12
           minHeight: 420px
         - id: api_execution_transactions_gas_used_weekly
           gridRow: 5
@@ -179,18 +180,19 @@ OnChainActivity:
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
           minHeight: 422px
-        - id: api_execution_transactions_active_accounts_by_sector_weekly
-          gridRow: 3
-          gridColumn: 1 / span 12
-          minHeight: 420px
         - id: api_execution_transactions_active_accounts_by_project_monthly_top5
-          gridRow: 4
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 420px
         - id: api_execution_transactions_active_accounts_by_sector_hourly
-          gridRow: 4
+          gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 420px
+        - id: api_execution_transactions_active_accounts_by_sector_weekly
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: 420px
+        
    # - name: Flows
    #   order: 7
    #   icon: "🌊"
@@ -603,7 +605,7 @@ ESG:
           minHeight: 605px
         - id: api_esg_carbon_emissions_daily
           gridRow: 2
-          gridColumn: 1 / span 6
+          gridColumn: 1 / span 12
           minHeight: 450px
     - name: Breakdown
       order: 2
