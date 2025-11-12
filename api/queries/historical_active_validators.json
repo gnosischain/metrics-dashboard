@@ -1,4 +1,0 @@
-{
-  "id": "historical_active_validators",
-  "query": "SELECT date, cnt FROM dbt.consensus_validators_status_daily WHERE status = 'active_ongoing' ORDER BY date"
-}

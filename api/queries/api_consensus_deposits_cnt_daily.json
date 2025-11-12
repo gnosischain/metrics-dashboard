@@ -1,4 +1,0 @@
-{
-  "id": "api_consensus_deposits_cnt_daily",
-  "query": "SELECT * FROM dbt.api_consensus_deposits_cnt_daily"
-}

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_consensus_entry_queue_daily',
   name: 'Validators Entry Queue',
   description: 'Daily average in days',
-  chartType: 'line', 
+  chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',

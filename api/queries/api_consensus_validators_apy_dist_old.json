@@ -1,4 +1,0 @@
-{
-  "id": "api_consensus_validators_apy_dist_old",
-  "query": "SELECT \n      date,\n      apy_p10, \n      apy_p25,\n      apy_median,\n      apy_p75,\n      apy_p90\n    FROM int_consensus_validators_apy_dist\n    ORDER BY date ASC"
-}

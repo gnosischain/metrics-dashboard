@@ -87,13 +87,34 @@ export const formatValue = (value, format) => {
   return String(value);
 };
 
+export const formatNumberWithXDAI = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 xDAI';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `${full} xDAI`;
+};
+
+export const formatNumberWithUSD = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '$0';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `$${full}`;
+};
+
+export const formatNumberWithGNO = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 GNO';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `${full} GNO`;
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
   formatDuration,
-  formatValue
+  formatValue,
+  formatNumberWithXDAI,
+  formatNumberWithUSD,
+  formatNumberWithGNO
 };
 
 export default formatters;

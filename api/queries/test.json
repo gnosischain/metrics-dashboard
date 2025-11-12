@@ -1,4 +1,0 @@
-{
-  "id": "test",
-  "query": "SELECT \n        client,\n        version,\n        value\n      FROM execution_blocks_clients_version_daily\n      WHERE date = today() - INTERVAL 9 DAY \n        AND client != 'Unknown'\n      ORDER BY value DESC"
-}

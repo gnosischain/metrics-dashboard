@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import IconComponent from './IconComponent';
 
 /**
@@ -16,6 +16,17 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
   // Track expanded state for dashboards
   const [expandedDashboards, setExpandedDashboards] = useState({});
   
+  useEffect(() => {
+    // Only initialize if we have dashboards and haven't initialized yet
+    if (dashboards.length > 0 && Object.keys(expandedDashboards).length === 0) {
+      const initialState = {};
+      dashboards.forEach(dashboard => {
+        initialState[dashboard.id] = true;
+      });
+      setExpandedDashboards(initialState);
+    }
+  }, [dashboards, expandedDashboards]);
+
   // Toggle dashboard expansion
   const toggleDashboard = (dashboardId) => {
     setExpandedDashboards(prev => ({

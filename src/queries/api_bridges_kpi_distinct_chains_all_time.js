@@ -1,0 +1,14 @@
+const metric = {
+  id: 'api_bridges_kpi_distinct_chains_all_time',
+  name: 'Distinct Chains',
+  description: 'All time',
+  chartType: 'numberDisplay',
+  variant: 'default',
+  format: 'formatNumber',
+  valueField: 'value',
+  query: `
+    SELECT value
+    FROM dbt.api_bridges_kpi_distinct_chains_all_time
+  `,
+};
+export default metric;

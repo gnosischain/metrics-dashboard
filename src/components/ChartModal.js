@@ -10,7 +10,8 @@ const ChartModal = ({
   headerControls, 
   children, 
   isDarkMode = false,
-  chartType // Added chartType prop to maintain styling in modal
+  chartType,
+  titleFontSize = null 
 }) => {
   const modalContentRef = useRef(null);
 
@@ -47,11 +48,13 @@ const ChartModal = ({
       <div 
         className={`chart-modal ${isDarkMode ? 'dark-mode' : ''}`} 
         onClick={(e) => e.stopPropagation()}
-        data-chart-type={chartType} // Added data attribute for consistent styling
+        data-chart-type={chartType} 
       >
         <div className="chart-modal-header">
           <div className="chart-modal-title">
-            <h2>{title}</h2>
+            <h2 style={titleFontSize ? { fontSize: titleFontSize } : {}}>
+              {title}
+            </h2>
             {subtitle && <div className="chart-modal-subtitle">{subtitle}</div>}
           </div>
           <div className="chart-modal-controls">

@@ -1,0 +1,4 @@
+{
+  "id": "overview_validators",
+  "query": "SELECT CONCAT('+',toString(floor(value/1000)), 'K') AS value  FROM dbt.api_consensus_info_active_ongoing_latest"
+}

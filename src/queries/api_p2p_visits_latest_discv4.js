@@ -5,7 +5,7 @@ const metric = {
   labelField: 'country',
   valueField: 'discv4_total_visits',
   chartType: 'numberDisplay',
-  variant: 'compact', // New: Use compact layout
+  variant: 'compact', 
   changeData: {
     enabled: true,
     field: 'discv4_pct_successful', // Field containing change data

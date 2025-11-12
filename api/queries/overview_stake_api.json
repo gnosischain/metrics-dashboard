@@ -1,0 +1,4 @@
+{
+  "id": "overview_stake_api",
+  "query": "SELECT round(value,2) AS value FROM dbt.api_consensus_info_apy_latest"
+}

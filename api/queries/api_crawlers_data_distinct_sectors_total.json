@@ -1,0 +1,4 @@
+{
+  "id": "api_crawlers_data_distinct_sectors_total",
+  "query": "SELECT value2 FROM dbt.api_crawlers_data_distinct_projects_sectors_totals"
+}

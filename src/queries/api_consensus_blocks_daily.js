@@ -2,7 +2,7 @@ const metric = {
   id: 'api_consensus_blocks_daily',
   name: 'Blocks',
   description: 'Daily number produced/missed blocks',
-  chartType: 'bar', 
+  chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',
@@ -18,10 +18,10 @@ const metric = {
   barOpacity: 0.8,  
   
   defaultZoom: {
-    start: 80, 
+    start: 0, 
     end: 100   
   },
-  
+
   xField: 'date',
   yField: 'value',
   seriesField: 'label',

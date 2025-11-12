@@ -2,7 +2,7 @@ const metric = {
   id: 'api_consensus_validators_active_daily',
   name: 'Active Validators',
   description: 'Daily Number of Active Validators',
-  chartType: 'area', // Using ECharts area chart
+  chartType: 'area', 
   isTimeSeries: true,
   format: 'formatNumber',
 

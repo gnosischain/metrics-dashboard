@@ -1,4 +1,0 @@
-{
-  "id": "historical_el_client_distribution",
-  "query": "SELECT date, client, value AS value FROM dbt.execution_blocks_clients_daily ORDER BY date ASC, client ASC"
-}

@@ -1,11 +1,11 @@
 const metric = {
   id: 'api_consensus_blob_commitments_daily',
-  name: 'Blob Commitments',
+  name: 'Blob Commitments: Count',
   description: 'Daily number blob commitments',
   chartType: 'bar', 
+  format: 'formatNumber',
   isTimeSeries: true,
   enableZoom: true,
-  format: 'formatNumber',
   showTotal: true, 
   
   // Bar chart styling
@@ -18,7 +18,7 @@ const metric = {
   barOpacity: 0.8,  
   
   defaultZoom: {
-    start: 80, 
+    start: 0, 
     end: 100   
   },
   

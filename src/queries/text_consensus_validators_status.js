@@ -21,39 +21,7 @@ const metric = {
 - **Churn Limit**: Maximum number of validators that can be activated per epoch
 - **Slashing**: Penalty for malicious behavior (double voting, surround voting, etc.)
 - **Exit Queue**: Voluntary exits are processed in order, subject to exit churn limit
-- **Withdrawal Delay**: ~27 hours minimum between exit and withdrawal eligibility
-
-### Validator Lifecycle Flow
-\`\`\`
-┌─────────────────┐    ┌───────────────┐    ┌────────────────┐
-│ Deposit 32 mGNO │───▶│ Pending Init. │───▶│ Pending Queued │
-└─────────────────┘    └───────────────┘    │  (churn limit) │
-                                            └────────┬───────┘
-                                                     │        
-                        ┌────────────────────────────┘        
-                        ▼                                     
-        ┌─────────────────────────────┐                       
-        │         Active Ongoing      │                       
-        └─────┬─────────────────┬─────┘                       
-              │                 │                             
-              ▼                 ▼                             
-      ┌───────────────┐   ┌───────────────┐                   
-      │Active Exiting │   │Active Slashed │                   
-      └───────┬───────┘   └──────┬────────┘                   
-              │                  │                            
-              ▼                  ▼                            
-      ┌─────────────┐     ┌─────────────┐                     
-      │Exited       │     │Exited       │                     
-      │Unslashed    │     │Slashed      │                     
-      └─────┬───────┘     └─────┬───────┘                     
-            │                   │                             
-            └─────────┬─────────┘                             
-                      ▼                                       
-                ┌─────────────┐                               
-                │ Withdrawal  │        ┌─────────────────┐    
-                │ Possible    │───────▶│ Withdrawal Done │    
-                └─────────────┘        └─────────────────┘    
-\`\`\`
+- **Withdrawal Delay**: time between exit and withdrawal eligibility
 
 `
 };

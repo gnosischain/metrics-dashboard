@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_transactions_cnt_total_type1",
+  "query": "SELECT value FROM dbt.api_execution_transactions_cnt_total where transaction_type = '1'"
+}

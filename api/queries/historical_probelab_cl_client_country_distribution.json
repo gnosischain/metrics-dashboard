@@ -1,4 +1,0 @@
-{
-  "id": "historical_probelab_cl_client_country_distribution",
-  "query": "SELECT * FROM dbt.probelab_peers_clients_country_daily ORDER BY date ASC, client ASC, country ASC"
-}

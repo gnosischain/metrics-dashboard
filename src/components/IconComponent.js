@@ -324,6 +324,166 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'transaction': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Transaction">
+            {/* Left-to-right transfer */}
+            <path d="M3 7h13" />
+            <polyline points="13 3 17 7 13 11" />
+            {/* Right-to-left transfer */}
+            <path d="M21 17H8" />
+            <polyline points="11 21 7 17 11 13" />
+          </svg>
+        ),
+
+        'gas-usage': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Gas usage">
+            {/* Flame */}
+            <path d="M12 2c3 4 6 6.5 6 10a6 6 0 1 1-12 0c0-2.5 1.2-4.3 3-6" />
+            {/* Small gauge tick to suggest “usage” */}
+            <path d="M12 14l2.5-2.5" />
+          </svg>
+        ),
+
+        'coins': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Stack of coins, outline only for monochrome */}
+            <ellipse cx="8" cy="6" rx="4" ry="2"></ellipse>
+            <path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6"></path>
+            <path d="M4 10v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"></path>
+            <ellipse cx="16" cy="10" rx="4" ry="2"></ellipse>
+            <path d="M12 10v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"></path>
+          </svg>
+        ),
+
+          'users': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Two user silhouettes, outline only for monochrome */}
+            <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        ),
+
+        'wallets': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Wallets">
+            {/* Back wallet */}
+            <rect x="5" y="6" width="14" height="10" rx="3" ry="3" />
+            {/* Front wallet, slightly offset */}
+            <rect x="3" y="8" width="14" height="10" rx="3" ry="3" />
+            {/* Button on front pocket */}
+            <circle cx="13" cy="13" r="1" />
+          </svg>
+        ),
+
+        'blob': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Blob"
+          >
+            {/* Blob outline */}
+            <path
+              d="M6 19c-.8-4.6 3-13 6-13s6.8 8.4 6 13c-.4 2.3-2.2 3-6 3s-5.6-.7-6-3z"
+              fill="none"
+            />
+            {/* Eyes */}
+            <ellipse cx="10" cy="13.2" rx="1" ry="1.6" fill={color} stroke="none" />
+            <ellipse cx="14" cy="13.2" rx="1" ry="1.6" fill={color} stroke="none" />
+          </svg>
+        ),
+
+        'stopwatch': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Stopwatch"
+          >
+            {/* Stem + knob */}
+            <line x1="12" y1="3" x2="12" y2="5" />
+            <rect x="10" y="1" width="4" height="2" rx="0.5" />
+
+            {/* Side buttons */}
+            <path d="M5.5 6.5l2 2" />
+            <path d="M18.5 6.5l-2 2" />
+
+            {/* Body */}
+            <circle cx="12" cy="13" r="8" />
+
+            {/* Hands */}
+            <line x1="12" y1="13" x2="12" y2="8" />     {/* minute hand */}
+            <line x1="12" y1="13" x2="15" y2="15" />     {/* second hand */}
+          </svg>
+        ),
+
+        'bridge': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Bridge"
+          >
+            {/* Pylons */}
+            <path d="M3 18V8" />
+            <path d="M21 18V8" />
+            {/* Deck */}
+            <path d="M3 18h18" />
+            {/* Suspension cables */}
+            <path d="M3 8C6 4 9 4 12 8" />
+            <path d="M12 8C15 4 18 4 21 8" />
+            {/* Hangers */}
+            <path d="M6 18V11" />
+            <path d="M9 18V10" />
+            <path d="M15 18V10" />
+            <path d="M18 18V11" />
+          </svg>
+        ),
+
+        'token-dot': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Token Flow"
+          >
+            {/* left chevron < */}
+            <polyline points="7 8 3 12 7 16" />
+            {/* token (dot) */}
+            <circle cx="12" cy="12" r="2" fill={color} stroke="none" />
+            {/* right chevron > */}
+            <polyline points="17 8 21 12 17 16" />
+          </svg>
+        ),
 
 
     };
