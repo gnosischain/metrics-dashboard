@@ -301,15 +301,11 @@ Consensus:
       metrics:
         - id: api_consensus_info_active_ongoing_latest
           gridRow: 1
-          gridColumn: 1 / span 2
+          gridColumn: 1 / span 4
           minHeight: 130px
-        - id: api_consensus_info_deposits_cnt_latest
+        - id: api_consensus_info_active_stake_latest
           gridRow: 1
-          gridColumn: 3 / span 2
-          minHeight: 130px
-        - id: api_consensus_info_withdrawls_cnt_latest
-          gridRow: 1
-          gridColumn: 5 / span 2
+          gridColumn: 7 / span 4
           minHeight: 130px
         - id: api_consensus_validators_active_daily
           gridRow: 2

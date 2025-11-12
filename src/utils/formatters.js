@@ -99,6 +99,12 @@ export const formatNumberWithUSD = (value) => {
   return `$${full}`;
 };
 
+export const formatNumberWithGNO = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 GNO';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `${full} GNO`;
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
@@ -108,6 +114,7 @@ const formatters = {
   formatValue,
   formatNumberWithXDAI,
   formatNumberWithUSD,
+  formatNumberWithGNO
 };
 
 export default formatters;

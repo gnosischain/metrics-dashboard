@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_info_active_stake_latest",
+  "query": "SELECT * FROM dbt.api_consensus_info_staked_latest"
+}
