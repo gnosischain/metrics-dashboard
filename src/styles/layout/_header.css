@@ -31,7 +31,7 @@
 }
 
 .dashboard-logo {
-  height: 30px;
+  height: 25px;
   object-fit: contain;
   transition: transform var(--transition-base);
 }

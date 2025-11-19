@@ -19,9 +19,13 @@ export const WATERMARK_CONFIG = {
   watermarkOpacity: 0.1, // Subtle
   
   // Path to watermark image - Use the Gnosis logo URLs
+  //watermarkImage: {
+  //  light: 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png',
+  //  dark: 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+ // }
   watermarkImage: {
-    light: 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_Black_RGB.png',
-    dark: 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
+    light: process.env.PUBLIC_URL + '/imgs/favicon_black.png',
+    dark: process.env.PUBLIC_URL + '/imgs/favicon_white.png'
   }
 };
 

@@ -15,6 +15,28 @@ export class SankeyChart extends BaseChart {
     try {
       const processedData = this.processData(data, config);
       
+      // --- Compute a total for this Sankey (matches current filter) ---
+      let totalValue = 0;
+
+      const metricId = String(config?.id || '').toLowerCase();
+      const isOut = metricId.includes('_out_') || metricId.endsWith('_out') || metricId.includes('gnosis_out');
+      const isIn  = metricId.includes('_in_')  || metricId.endsWith('_in')  || metricId.includes('gnosis_in');
+
+      if (Array.isArray(processedData?.links)) {
+        if (isOut) {
+          totalValue = processedData.links
+            .filter(l => String(l.source).toLowerCase() === 'gnosis')
+            .reduce((s, l) => s + Number(l.value || 0), 0);
+        } else if (isIn) {
+          totalValue = processedData.links
+            .filter(l => String(l.target).toLowerCase() === 'gnosis')
+            .reduce((s, l) => s + Number(l.value || 0), 0);
+        } else {
+          // Fallback: sum everything (you can refine if you add other sankey types)
+          totalValue = processedData.links.reduce((s, l) => s + Number(l.value || 0), 0);
+        }
+      }
+
       // Detect and handle cycles
       const cycleInfo = this.detectCycles(processedData.nodes, processedData.links);
       if (cycleInfo.hasCycle && !config.allowCycles) {
@@ -39,15 +61,28 @@ export class SankeyChart extends BaseChart {
       return {
         ...this.getBaseOptions(isDarkMode),
         
-        title: config.title ? {
-          text: config.title,
-          left: 'center',
-          textStyle: {
-            color: isDarkMode ? '#e5e7eb' : '#111827',
-            fontSize: 16
-          }
-        } : undefined,
-        
+        title: (config.title !== undefined || config.showTotal !== false) ? {
+        // title hidden, subtext shown at title position
+        text: '',
+        left: 'center',
+        top: 0,
+        itemGap: 0,
+
+        // title invisible
+        textStyle: { fontSize: 0 },
+
+        // show the total as subtext
+        subtext: config.showTotal === false
+          ? undefined
+          : `Total: ${formatValue(totalValue || 0, (config.format || config.config?.format))}`,
+
+        subtextStyle: {
+          color: isDarkMode ? '#9ca3af' : '#6b7280',   // gray-400 / gray-500
+          fontSize: 16,
+          fontWeight: 400
+        }
+      } : undefined,
+
         series: [{
           type: 'sankey',
           // Layout algorithm: 'none' for manual positioning
