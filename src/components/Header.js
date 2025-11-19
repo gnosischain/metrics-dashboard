@@ -19,9 +19,12 @@ const Header = ({
   indexingMessage = "Data is being indexed. Some metrics may not be fully updated."
 }) => {
   // Different logo URLs for light and dark mode
+  //const logoUrl = isDarkMode 
+  //  ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
+  //  : "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/Black/PNG/Gnosis.png";
   const logoUrl = isDarkMode 
-    ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
-    : "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/Black/PNG/Gnosis.png";
+    ? process.env.PUBLIC_URL + "/imgs/Gnosis_white.png"
+    : process.env.PUBLIC_URL + "/imgs/Gnosis_black.png";
 
   return (
     <header className="dashboard-header">
