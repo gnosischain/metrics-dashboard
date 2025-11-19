@@ -11,7 +11,7 @@ Starting with IPFS, it has expanded to support a growing list of libp2p-powered 
 **Nebula** is a libp2p DHT crawler and monitor developed by ProbeLab. 
 It's designed to assess the liveliness and uptime of peers across various decentralized networks.
 
-> ProbeLab has recently extended its coverage to the Gnosis network, providing weekly **"network health" reports** utilizing Nebula's data. [reports](https://probelab.io/gnosis/dht/)
+> ProbeLab has recently extended its coverage to the Gnosis network, providing weekly **"network health" reports** utilizing Nebula's data. [reports](https://probelab.io/gnosis/)
 `
 
 };
