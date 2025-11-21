@@ -29,26 +29,27 @@
    Sidebar Toggle
    ================== */
 
-.sidebar-toggle {
+/* Toggle sits next to the sidebar (it's a sibling in the DOM) */
+.dashboard-sidebar + .sidebar-toggle {
   position: absolute;
-  top: 0px;
+  top: 8px;
   left: var(--sidebar-width);
-  margin-left: 0;
-  width: 24px;
-  height: 24px;
-  background-color: var(--color-surface);
-  border-radius: 5%;
+
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
   cursor: pointer;
-  z-index: 95;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 0px solid var(--color-border);
-  transition: transform var(--transition-base), 
-              background-color var(--transition-base);
+
+  z-index: 90;
 }
 
+/* When sidebar is collapsed, move toggle to collapsed edge */
 .dashboard-sidebar.collapsed + .sidebar-toggle {
   left: var(--sidebar-width-collapsed);
 }
@@ -245,28 +246,48 @@
     left: 0;
     bottom: 0;
     width: var(--sidebar-width-collapsed);
-    z-index: 95;
+    z-index: 500;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: width var(--transition-slow);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; 
+    height: calc(100dvh - var(--header-height));
   }
-  
-  .dashboard-sidebar:not(.collapsed).mobile-expanded {
+
+  .dashboard-sidebar.collapsed {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* widen drawer whenever mobile-expanded is true */
+  .dashboard-sidebar.mobile-expanded {
     width: var(--sidebar-width);
   }
-  
-  .sidebar-toggle {
-    right: -12px;
-    z-index: 96;
+
+  /* dim/disable content behind drawer */
+  .dashboard-sidebar.mobile-expanded ~ .dashboard-content {
+    pointer-events: none;
+    opacity: 0.25;
   }
-  
-  .dashboard-sidebar.mobile-expanded .sidebar-toggle {
-    right: -12px;
+
+  /* ONE toggle rule only (sibling selector) */
+  .dashboard-sidebar + .sidebar-toggle {
+    position: fixed;
+    top: calc(var(--header-height) + 8px);
+    left: var(--sidebar-width-collapsed);
+    z-index: 510; /* keep it above everything */
   }
-  
+
+  /* move toggle to expanded edge when open */
+  .dashboard-sidebar.mobile-expanded + .sidebar-toggle {
+    left: var(--sidebar-width);
+  }
+
   .tab-item {
-    padding: 6px 12px; /* Adjusted for mobile */
+    padding: 6px 12px;
   }
-  
+
   .dashboard-header.active,
   .tab-item.active {
     background-color: rgba(9, 105, 218, 0.15);

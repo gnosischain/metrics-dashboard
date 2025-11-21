@@ -53,13 +53,8 @@ const MetricGrid = ({ metrics, isDarkMode = false }) => {
 
   const { templateRows } = processGridStructure(metrics);
 
-  // Create grid template with explicit row heights
   const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(12, 1fr)',
-    gridTemplateRows: templateRows.join(' '),
-    gap: '1.5rem',
-    width: '100%'
+  gridTemplateRows: templateRows.join(' ')
   };
 
   return (
