@@ -29,26 +29,27 @@
    Sidebar Toggle
    ================== */
 
-.sidebar-toggle {
+/* Toggle sits next to the sidebar (it's a sibling in the DOM) */
+.dashboard-sidebar + .sidebar-toggle {
   position: absolute;
-  top: 0px;
+  top: 8px;
   left: var(--sidebar-width);
-  margin-left: 0;
-  width: 24px;
-  height: 24px;
-  background-color: var(--color-surface);
-  border-radius: 5%;
+
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
   cursor: pointer;
-  z-index: 95;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 0px solid var(--color-border);
-  transition: transform var(--transition-base), 
-              background-color var(--transition-base);
+
+  z-index: 90;
 }
 
+/* When sidebar is collapsed, move toggle to collapsed edge */
 .dashboard-sidebar.collapsed + .sidebar-toggle {
   left: var(--sidebar-width-collapsed);
 }
@@ -254,13 +255,17 @@
     width: var(--sidebar-width);
   }
   
-  .sidebar-toggle {
-    right: -12px;
+    /* Toggle must be fixed on mobile since sidebar is fixed */
+  .dashboard-sidebar + .sidebar-toggle {
+    position: fixed;
+    top: calc(var(--header-height) + 8px);
+    left: var(--sidebar-width-collapsed);
     z-index: 96;
   }
-  
-  .dashboard-sidebar.mobile-expanded .sidebar-toggle {
-    right: -12px;
+
+  /* When expanded on mobile, move toggle to the expanded edge */
+  .dashboard-sidebar:not(.collapsed) + .sidebar-toggle {
+    left: var(--sidebar-width);
   }
   
   .tab-item {
