@@ -65,6 +65,31 @@
 }
 
 /* ==================
+   Metrics Grid - Responsive
+   ================== */
+
+/* tablets: 6 columns */
+@media (max-width: 1024px) {
+  .metrics-grid-positioned {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* phones: 1 column + stack everything */
+@media (max-width: 640px) {
+  .metrics-grid-positioned {
+    grid-template-columns: 1fr;
+  }
+
+  /* override YAML/inline placement so cards stack */
+  .metrics-grid-positioned .grid-item {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+}
+
+
+/* ==================
    Grid Item Spans
    ================== */
 
