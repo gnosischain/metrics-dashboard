@@ -478,3 +478,25 @@
 .dark-mode .number-display-card {
   border-left-color: rgba(255, 255, 255, 0.2) !important;
 }
+
+/* ==================
+   Mobile height override for number tiles
+   ================== */
+@media (max-width: 640px) {
+  /* Make number tiles not keep desktop minHeight */
+  .grid-item .number-display-card,
+  .grid-item .number-widget,
+  .grid-item .number-widget-compact {
+    height: auto !important;
+    min-height: unset !important;
+  }
+
+  /* If the parent wrapper has inline height/minHeight, override it too */
+  .grid-item:has(.number-display-card),
+  .grid-item:has(.number-widget),
+  .metric-positioned:has(.number-display-card),
+  .metric-positioned:has(.number-widget) {
+    height: auto !important;
+    min-height: 120px !important; /* pick a sensible compact height */
+  }
+}
