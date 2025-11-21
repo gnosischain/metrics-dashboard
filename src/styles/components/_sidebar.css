@@ -249,6 +249,10 @@
     z-index: 500;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: width var(--transition-slow);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; 
+    height: calc(100dvh - var(--header-height));
   }
 
   /* widen drawer whenever mobile-expanded is true */
