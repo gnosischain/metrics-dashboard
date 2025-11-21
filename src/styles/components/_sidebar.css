@@ -255,6 +255,11 @@
     height: calc(100dvh - var(--header-height));
   }
 
+  .dashboard-sidebar.collapsed {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
   /* widen drawer whenever mobile-expanded is true */
   .dashboard-sidebar.mobile-expanded {
     width: var(--sidebar-width);
