@@ -246,13 +246,23 @@
     left: 0;
     bottom: 0;
     width: var(--sidebar-width-collapsed);
-    z-index: 95;
+    z-index: 500;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: width var(--transition-slow);
+  }
+
+    .dashboard-sidebar + .sidebar-toggle {
+    z-index: 510;
   }
   
   .dashboard-sidebar:not(.collapsed).mobile-expanded {
     width: var(--sidebar-width);
+  }
+
+    /* When sidebar is open on mobile, fade/disable content behind it */
+  .dashboard-sidebar.mobile-expanded:not(.collapsed) ~ .dashboard-content {
+    pointer-events: none;
+    opacity: 0.25;
   }
   
     /* Toggle must be fixed on mobile since sidebar is fixed */
