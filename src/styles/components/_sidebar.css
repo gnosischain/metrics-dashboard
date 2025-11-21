@@ -251,37 +251,34 @@
     transition: width var(--transition-slow);
   }
 
-    .dashboard-sidebar + .sidebar-toggle {
-    z-index: 510;
-  }
-  
-  .dashboard-sidebar:not(.collapsed).mobile-expanded {
+  /* widen drawer whenever mobile-expanded is true */
+  .dashboard-sidebar.mobile-expanded {
     width: var(--sidebar-width);
   }
 
-    /* When sidebar is open on mobile, fade/disable content behind it */
-  .dashboard-sidebar.mobile-expanded:not(.collapsed) ~ .dashboard-content {
+  /* dim/disable content behind drawer */
+  .dashboard-sidebar.mobile-expanded ~ .dashboard-content {
     pointer-events: none;
     opacity: 0.25;
   }
-  
-    /* Toggle must be fixed on mobile since sidebar is fixed */
+
+  /* ONE toggle rule only (sibling selector) */
   .dashboard-sidebar + .sidebar-toggle {
     position: fixed;
     top: calc(var(--header-height) + 8px);
     left: var(--sidebar-width-collapsed);
-    z-index: 96;
+    z-index: 510; /* keep it above everything */
   }
 
-  /* When expanded on mobile, move toggle to the expanded edge */
-  .dashboard-sidebar:not(.collapsed) + .sidebar-toggle {
+  /* move toggle to expanded edge when open */
+  .dashboard-sidebar.mobile-expanded + .sidebar-toggle {
     left: var(--sidebar-width);
   }
-  
+
   .tab-item {
-    padding: 6px 12px; /* Adjusted for mobile */
+    padding: 6px 12px;
   }
-  
+
   .dashboard-header.active,
   .tab-item.active {
     background-color: rgba(9, 105, 218, 0.15);
