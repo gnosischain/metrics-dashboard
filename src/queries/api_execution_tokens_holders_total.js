@@ -8,7 +8,7 @@ const metric = {
   variant: 'default',
   enableFiltering: true,
   labelField: 'token',
-  query: `SELECT token, value FROM playground_max.api_execution_tokens_holders_latest_by_token`,
+  query: `SELECT token, value FROM dbt.api_execution_tokens_holders_latest_by_token`,
 };
 export default metric;
 
