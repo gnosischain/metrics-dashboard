@@ -197,6 +197,7 @@ OnChainActivity:
       order: 6
       icon: "🪙"
       iconClass: "coins"
+      globalFilterField: 'token'
       metrics:
         - id: api_execution_tokens_supply_total
           gridRow: 1

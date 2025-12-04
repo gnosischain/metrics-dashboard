@@ -4,7 +4,7 @@ import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
 
-const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '' }) => {
+const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +12,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const [availableLabels, setAvailableLabels] = useState([]);
   
   const isMounted = useRef(true);
+
+  // Determine if we're using global filter or local filter
+  // If hasGlobalFilter is true, we should use global filter (even if value is null yet - it will be set soon)
+  const isUsingGlobalFilter = hasGlobalFilter || (globalSelectedLabel !== null && globalSelectedLabel !== undefined);
+  // Use global filter if provided, otherwise use local state
+  const effectiveSelectedLabel = (hasGlobalFilter && globalSelectedLabel) ? globalSelectedLabel : (isUsingGlobalFilter ? globalSelectedLabel : selectedLabel);
 
   const metricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
 
@@ -85,7 +91,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
           const uniqueLabels = [...new Set(result.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
           setAvailableLabels(uniqueLabels);
           
-          if (!selectedLabel && uniqueLabels.length > 0) {
+          // Only set local selectedLabel if not using global filter
+          if (!hasGlobalFilter && !isUsingGlobalFilter && !selectedLabel && uniqueLabels.length > 0) {
             setSelectedLabel(uniqueLabels[0]);
           }
         }
@@ -100,20 +107,26 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setLoading(false);
       }
     }
-  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
+  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, isUsingGlobalFilter ? null : selectedLabel]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const filteredData = useMemo(() => {
-    if (!data || !widgetConfig.enableFiltering || !selectedLabel) return data;
+    if (!data || !widgetConfig.enableFiltering) return data;
+    
+    // If using global filter but value not set yet, show all data (will filter once value is set)
+    if (hasGlobalFilter && !effectiveSelectedLabel) return data;
+    
+    // If not using global filter and no selected label, show all data
+    if (!effectiveSelectedLabel) return data;
     
     return {
       ...data,
-      data: data.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
+      data: data.data.filter(item => item[widgetConfig.labelField] === effectiveSelectedLabel)
     };
-  }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
+  }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, hasGlobalFilter]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
@@ -266,7 +279,9 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     }
   };
 
-  const headerControls = widgetConfig.enableFiltering && availableLabels.length > 0 ? (
+  // Only show per-metric dropdown if not using global filter
+  // Hide immediately if hasGlobalFilter is true, even before globalSelectedLabel is set
+  const headerControls = !hasGlobalFilter && !isUsingGlobalFilter && widgetConfig.enableFiltering && availableLabels.length > 0 ? (
     <LabelSelector
       labels={availableLabels}
       selectedLabel={selectedLabel}

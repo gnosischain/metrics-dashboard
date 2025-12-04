@@ -16,6 +16,8 @@ const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
+  const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
+  const [tabFilters, setTabFilters] = useState({}); // Store filter state per tab: { tabId: selectedValue }
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
@@ -225,11 +227,15 @@ const Dashboard = () => {
     
     if (activeDashboard && activeTab) {
       const metricsForTab = dashboardsService.getTabMetrics(activeDashboard, activeTab);
+      const tabConfig = dashboardsService.getTab(activeDashboard, activeTab);
       console.log('Dashboard: Retrieved metrics for tab:', metricsForTab);
+      console.log('Dashboard: Retrieved tab config:', tabConfig);
       setTabMetrics(metricsForTab);
+      setActiveTabConfig(tabConfig);
     } else {
       console.log('Dashboard: Clearing metrics');
       setTabMetrics([]);
+      setActiveTabConfig(null);
     }
   }, [activeDashboard, activeTab]);
   
@@ -288,6 +294,19 @@ const Dashboard = () => {
     const dashboard = dashboards.find(d => d.id === activeDashboard);
     return dashboard ? dashboard.name : '';
   };
+
+  // Handle global filter change for a tab
+  const handleGlobalFilterChange = useCallback((selectedValue) => {
+    if (activeTab) {
+      setTabFilters(prev => ({
+        ...prev,
+        [activeTab]: selectedValue
+      }));
+    }
+  }, [activeTab]);
+
+  // Get current global filter value for active tab
+  const currentGlobalFilter = activeTab ? tabFilters[activeTab] || null : null;
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
@@ -358,6 +377,9 @@ const Dashboard = () => {
                 key={`grid-${activeDashboard}-${activeTab}`} 
                 metrics={tabMetrics}
                 isDarkMode={isDarkMode}
+                tabConfig={activeTabConfig}
+                globalFilterValue={currentGlobalFilter}
+                onGlobalFilterChange={handleGlobalFilterChange}
               />
             </div>
           ) : dashboards.length === 0 ? (
