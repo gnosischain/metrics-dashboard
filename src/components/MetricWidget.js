@@ -107,7 +107,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setLoading(false);
       }
     }
-  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, isUsingGlobalFilter ? null : selectedLabel]);
+  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, hasGlobalFilter, isUsingGlobalFilter, selectedLabel]);
 
   useEffect(() => {
     fetchData();
