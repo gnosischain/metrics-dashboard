@@ -198,30 +198,38 @@ OnChainActivity:
       icon: "🪙"
       iconClass: "coins"
       metrics:
-        - id: api_execution_tokens_balance_cohorts_value_daily
+        - id: api_execution_tokens_supply_total
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 600px
-        - id: api_execution_tokens_balance_cohorts_holders_daily
+          minHeight: 180px
+        - id: api_execution_tokens_holders_total
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 600px
+          minHeight: 180px
         - id: api_execution_tokens_supply_daily
           gridRow: 2
           gridColumn: 1 / span 6
-          minHeight: 600px
+          minHeight: 450px
         - id: api_execution_tokens_holders_daily
           gridRow: 2
           gridColumn: 7 / span 6
-          minHeight: 600px
+          minHeight: 450px
         - id: api_execution_tokens_volume_usd_daily
           gridRow: 3
           gridColumn: 1 / span 6
-          minHeight: 600px
+          minHeight: 450px
         - id: api_execution_tokens_active_senders_daily
           gridRow: 3
           gridColumn: 7 / span 6
-          minHeight: 600px
+          minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_value_daily
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_holders_daily
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 450px
         
    # - name: Flows
    #   order: 7

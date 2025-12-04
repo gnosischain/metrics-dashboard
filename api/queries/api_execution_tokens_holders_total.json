@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_tokens_holders_total",
+  "query": "SELECT token, value FROM playground_max.api_execution_tokens_holders_latest_by_token"
+}
