@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_sector_hourly',
-  name: 'Active Accounts by Sector',
+  name: 'Initiator Accounts by Sector',
   description: 'Hourly active accounts per sector, Last 2 days',
   chartType: 'bar',
   isTimeSeries: true,

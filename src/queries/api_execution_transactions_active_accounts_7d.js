@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_7d',
-  name: 'Active Accounts',
+  name: 'Initiator Accounts',
   description: 'Last 7 days',
   format: 'formatNumber',
   valueField: 'value',

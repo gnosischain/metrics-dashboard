@@ -163,7 +163,7 @@ OnChainActivity:
           gridRow: 5
           gridColumn: 1 / span 12
           minHeight: 420px
-    - name: Active Accounts
+    - name: Initiator Accounts
       order: 5
       icon: "👥"                
       iconClass: "users"

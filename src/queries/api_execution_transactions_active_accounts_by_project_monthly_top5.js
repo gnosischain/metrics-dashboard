@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_project_monthly_top5',
-  name: 'Top-5 Projects by Transactions',
-  description: 'Monthly number transactions per project',
+  name: 'Top-5 Projects by Initiator Accounts',
+  description: 'Monthly initiator accounts per project',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: false,
