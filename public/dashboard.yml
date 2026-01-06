@@ -294,6 +294,17 @@ Stablecoins:
           gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 450px
+    
+    - name: Yields & Pools
+      order: 3
+      icon: "📈"
+      iconClass: "yield"
+      globalFilterField: 'token'
+      metrics:
+        - id: api_execution_stablecoins_lending_yields_daily
+          gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 450px
         
    # - name: Flows
    #   order: 7
