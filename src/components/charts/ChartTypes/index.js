@@ -217,5 +217,6 @@ export function validateChartConfig(config) {
   };
 }
 
-// Export the default EChartsContainer
-export { default as EChartsContainer } from './EChartsContainer';
+// NOTE: Do NOT re-export EChartsContainer here to avoid circular dependency.
+// EChartsContainer imports getChartComponent from this file.
+// Import EChartsContainer directly from './EChartsContainer' instead.
