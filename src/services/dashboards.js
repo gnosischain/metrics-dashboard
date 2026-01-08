@@ -117,6 +117,7 @@ class DashboardService {
           order: tab.order || 999,
           icon: tab.icon || '', // Emoji fallback for tab
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
+          globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           metrics: (tab.metrics || []).map(metric => {
             console.log(`DashboardService: Processing tab metric:`, metric);
             
