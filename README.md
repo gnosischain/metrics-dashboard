@@ -49,11 +49,8 @@ This application follows a two-component architecture with server-side caching:
 
 2. Install dependencies (including API dependencies):
    ```bash
-   # Install main project dependencies
-   npm install
-   
-   # Install API dependencies
-   cd api && npm install && cd ..
+   # Install project dependencies
+   pnpm install
    ```
 
 3. Create `.env` file with your configuration:
@@ -64,7 +61,7 @@ This application follows a two-component architecture with server-side caching:
 
 4. Start the development server:
    ```bash
-   npm start
+   pnpm start
    ```
 
 ## Project Structure
