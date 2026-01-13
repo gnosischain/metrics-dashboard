@@ -193,8 +193,29 @@ OnChainActivity:
           gridColumn: 1 / span 12
           minHeight: 420px
 
-    - name: Tokens
-      order: 6
+Tokens:
+  name: Tokens
+  order: 6
+  icon: "🪙"
+  iconClass: "coins"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "chart-line"
+      globalFilterField: 'token_class'
+      metrics:
+        - id: api_execution_tokens_supply_distribution_latest
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_supply_by_sector_latest
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 450px
+    
+    - name: Per-token breakdown
+      order: 2
       icon: "🪙"
       iconClass: "coins"
       globalFilterField: 'token'
@@ -232,76 +253,19 @@ OnChainActivity:
           gridColumn: 7 / span 6
           minHeight: 450px
 
-Stablecoins:
-  name: Stablecoins
+Yields:
+  name: Yields
   order: 7
-  icon: "💵"
-  iconClass: "dollar-sign"
+  icon: "📈"
+  iconClass: "yield"
   tabs:
-    - name: Overview
+    - name: Lending yields
       order: 1
-      icon: "📊"
-      iconClass: "chart-line"
-      metrics:
-        - id: api_execution_stablecoins_supply_total
-          gridRow: 1
-          gridColumn: 1 / span 3
-          minHeight: 130px
-        - id: api_execution_stablecoins_holders_total
-          gridRow: 1
-          gridColumn: 4 / span 3
-          minHeight: 130px
-        - id: api_execution_stablecoins_supply_distribution_latest
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 350px
-        - id: api_execution_stablecoins_supply_by_token_daily
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_supply_by_sector_latest
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
-    
-    - name: Individual Stablecoins
-      order: 2
-      icon: "🪙"
-      iconClass: "coins"
+      icon: "💰"
+      iconClass: "dollar-sign"
       globalFilterField: 'token'
       metrics:
-        - id: api_execution_stablecoins_supply_daily
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_holders_daily
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_volume_usd_daily
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_active_senders_daily
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_balance_cohorts_value_daily
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_stablecoins_balance_cohorts_holders_daily
-          gridRow: 3
-          gridColumn: 7 / span 6
-          minHeight: 450px
-    
-    - name: Yields & Pools
-      order: 3
-      icon: "📈"
-      iconClass: "yield"
-      globalFilterField: 'token'
-      metrics:
-        - id: api_execution_stablecoins_lending_yields_daily
+        - id: api_execution_yields_lending_daily
           gridRow: 1
           gridColumn: 1 / span 12
           minHeight: 450px

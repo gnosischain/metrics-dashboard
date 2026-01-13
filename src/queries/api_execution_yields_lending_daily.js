@@ -1,5 +1,5 @@
 const metric = {
-  id: 'api_execution_stablecoins_lending_yields_daily',
+  id: 'api_execution_yields_lending_daily',
   name: 'Lending Yields',
   description: 'Daily APY across lending protocols',
   chartType: 'line',
@@ -11,8 +11,8 @@ const metric = {
     end: 100,
   },
   xField: 'date',
-  yField: 'apy_daily',
-  seriesField: 'protocol',
+  yField: 'value',
+  seriesField: 'label',
   enableFiltering: true,
   labelField: 'token',
   format: 'formatNumber',
@@ -30,7 +30,7 @@ const metric = {
   grid: {
     left: 70  
   },
-  query: `SELECT * FROM dbt.api_execution_stablecoins_lending_yields_daily`,
+  query: `SELECT date, token, token_class, label, value FROM dbt.api_execution_yields_lending_daily`,
 };
 
 export default metric;

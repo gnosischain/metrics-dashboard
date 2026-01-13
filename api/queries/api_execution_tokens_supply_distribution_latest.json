@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_tokens_supply_distribution_latest",
+  "query": "SELECT token_class, token, value, percentage FROM dbt.api_execution_tokens_supply_distribution_latest"
+}
