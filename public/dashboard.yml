@@ -262,7 +262,7 @@ Yields:
     - name: Lending yields
       order: 1
       icon: "💰"
-      iconClass: "dollar-sign"
+      iconClass: "lending"
       globalFilterField: 'token'
       metrics:
         - id: api_execution_yields_lending_lenders_count_7d

@@ -485,6 +485,33 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'lending': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="Lending"
+          >
+            {/* Bidirectional exchange: lending and borrowing */}
+            {/* Left side: arrow pointing right (deposits/lending out) */}
+            <path d="M3 12h5" />
+            <polyline points="6 9 8 12 6 15" />
+            {/* Center: coin/circle representing the pool */}
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="12" cy="12" r="1.5" fill={color} stroke="none" />
+            {/* Right side: arrow pointing left (borrowing in) */}
+            <path d="M21 12h-5" />
+            <polyline points="18 9 16 12 18 15" />
+          </svg>
+        ),
+
 
     };
     
