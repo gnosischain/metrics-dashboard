@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_yields_lending_daily',
-  name: 'Lending Yields',
-  description: 'Daily APY across lending protocols',
+  name: 'Aave V3 Lending & Borrow APY',
+  description: 'Daily lending and borrow APY',
   chartType: 'line',
   isTimeSeries: true,
   stacked: false,
@@ -12,7 +12,7 @@ const metric = {
   },
   xField: 'date',
   yField: 'value',
-  seriesField: 'label',
+  seriesField: 'apy_type',
   enableFiltering: true,
   labelField: 'token',
   format: 'formatNumber',
@@ -30,7 +30,7 @@ const metric = {
   grid: {
     left: 70  
   },
-  query: `SELECT date, token, token_class, label, value FROM dbt.api_execution_yields_lending_daily`,
+  query: `SELECT * FROM dbt.api_execution_yields_lending_daily`,
 };
 
 export default metric;
