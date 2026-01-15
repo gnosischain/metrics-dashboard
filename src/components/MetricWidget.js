@@ -232,6 +232,51 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     fetchData();
   }, [fetchData]);
 
+  // Extract available labels from filtered data for secondary filters
+  // MUST be before any early returns (Rules of Hooks)
+  const availableSecondaryLabels = useMemo(() => {
+    if (!shouldShowSecondaryFilter || !globallyFilteredData?.data) return availableLabels;
+    
+    // Extract unique labels from globally-filtered data (e.g., pools containing selected token)
+    const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+    return uniqueLabels;
+  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, availableLabels]);
+
+  // Update available labels when globally filtered data changes (for secondary filters)
+  // MUST be before any early returns (Rules of Hooks)
+  useEffect(() => {
+    if (shouldShowSecondaryFilter && globallyFilteredData?.data) {
+      const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+      setAvailableLabels(uniqueLabels);
+      
+      // Auto-select first label if none selected
+      if (!selectedLabel && uniqueLabels.length > 0) {
+        setSelectedLabel(uniqueLabels[0]);
+      }
+    }
+  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, selectedLabel]);
+
+  // Show per-metric dropdown if:
+  // 1. Not using global filter for this field, OR
+  // 2. Using a secondary filter (different field than global filter)
+  const showLocalDropdown = widgetConfig.enableFiltering && 
+    !isGlobalFilterForThisField && 
+    (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
+  
+  const labelsForDropdown = shouldShowSecondaryFilter ? availableSecondaryLabels : availableLabels;
+  // Since showLocalDropdown already checks !isGlobalFilterForThisField, we can always use selectedLabel here
+  const selectedLabelForDropdown = selectedLabel;
+  const onLabelSelect = setSelectedLabel;
+
+  const headerControls = showLocalDropdown ? (
+    <LabelSelector
+      labels={labelsForDropdown}
+      selectedLabel={selectedLabelForDropdown}
+      onSelectLabel={onLabelSelect}
+    />
+  ) : undefined;
+
+  // Early returns must come AFTER all hooks
   if (loading && !data) {
     return (
       <Card 
@@ -321,48 +366,6 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         return <div>Unknown widget type</div>;
     }
   };
-
-  // Extract available labels from filtered data for secondary filters
-  const availableSecondaryLabels = useMemo(() => {
-    if (!shouldShowSecondaryFilter || !globallyFilteredData?.data) return availableLabels;
-    
-    // Extract unique labels from globally-filtered data (e.g., pools containing selected token)
-    const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
-    return uniqueLabels;
-  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, availableLabels]);
-
-  // Update available labels when globally filtered data changes (for secondary filters)
-  useEffect(() => {
-    if (shouldShowSecondaryFilter && globallyFilteredData?.data) {
-      const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
-      setAvailableLabels(uniqueLabels);
-      
-      // Auto-select first label if none selected
-      if (!selectedLabel && uniqueLabels.length > 0) {
-        setSelectedLabel(uniqueLabels[0]);
-      }
-    }
-  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, selectedLabel]);
-
-  // Show per-metric dropdown if:
-  // 1. Not using global filter for this field, OR
-  // 2. Using a secondary filter (different field than global filter)
-  const showLocalDropdown = widgetConfig.enableFiltering && 
-    !isGlobalFilterForThisField && 
-    (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
-  
-  const labelsForDropdown = shouldShowSecondaryFilter ? availableSecondaryLabels : availableLabels;
-  // Since showLocalDropdown already checks !isGlobalFilterForThisField, we can always use selectedLabel here
-  const selectedLabelForDropdown = selectedLabel;
-  const onLabelSelect = setSelectedLabel;
-
-  const headerControls = showLocalDropdown ? (
-    <LabelSelector
-      labels={labelsForDropdown}
-      selectedLabel={selectedLabelForDropdown}
-      onSelectLabel={onLabelSelect}
-    />
-  ) : undefined;
 
   return (
     <Card
