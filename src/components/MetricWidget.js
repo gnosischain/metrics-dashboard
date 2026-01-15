@@ -4,7 +4,7 @@ import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
 
-const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '' }) => {
+const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +12,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const [availableLabels, setAvailableLabels] = useState([]);
   
   const isMounted = useRef(true);
+
+  // Determine if we're using global filter or local filter
+  // If hasGlobalFilter is true, we should use global filter (even if value is null yet - it will be set soon)
+  const isUsingGlobalFilter = hasGlobalFilter || (globalSelectedLabel !== null && globalSelectedLabel !== undefined);
+  // Use global filter if provided, otherwise use local state
+  const effectiveSelectedLabel = (hasGlobalFilter && globalSelectedLabel) ? globalSelectedLabel : (isUsingGlobalFilter ? globalSelectedLabel : selectedLabel);
 
   const metricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
 
@@ -59,6 +65,19 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     };
   }, [metricConfig]);
 
+  // Check if this widget should use global filter for its labelField
+  const isGlobalFilterForThisField = useMemo(() => {
+    return hasGlobalFilter && widgetConfig?.labelField === globalFilterField;
+  }, [hasGlobalFilter, widgetConfig?.labelField, globalFilterField]);
+  
+  // Check if this widget should show a secondary filter (different field than global filter)
+  const shouldShowSecondaryFilter = useMemo(() => {
+    return widgetConfig?.enableFiltering && 
+      globalFilterField && 
+      widgetConfig?.labelField && 
+      widgetConfig.labelField !== globalFilterField;
+  }, [widgetConfig?.enableFiltering, widgetConfig?.labelField, globalFilterField]);
+
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -82,10 +101,13 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setData(result);
         
         if (widgetConfig.enableFiltering && result?.data?.length > 0) {
+          // If this is a secondary filter (different field than global), we'll extract labels later from filtered data
+          // For now, extract from all data (will be updated when global filter is applied)
           const uniqueLabels = [...new Set(result.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
           setAvailableLabels(uniqueLabels);
           
-          if (!selectedLabel && uniqueLabels.length > 0) {
+          // Only set local selectedLabel if not using global filter for this field
+          if (!isGlobalFilterForThisField && !selectedLabel && uniqueLabels.length > 0) {
             setSelectedLabel(uniqueLabels[0]);
           }
         }
@@ -100,20 +122,54 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setLoading(false);
       }
     }
-  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
+  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel, isGlobalFilterForThisField]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const filteredData = useMemo(() => {
-    if (!data || !widgetConfig.enableFiltering || !selectedLabel) return data;
+  // First apply global filter (if applicable)
+  const globallyFilteredData = useMemo(() => {
+    if (!data || !globalFilterField || !globalFilterValue) return data;
     
+    // Filter by global filter field (e.g., token)
     return {
       ...data,
-      data: data.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
+      data: data.data.filter(item => item[globalFilterField] === globalFilterValue)
     };
-  }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel]);
+  }, [data, globalFilterField, globalFilterValue]);
+
+  // Then apply per-chart filter (if applicable)
+  const filteredData = useMemo(() => {
+    if (!widgetConfig.enableFiltering) {
+      // If no filtering enabled, use globally filtered data if available, otherwise raw data
+      return globallyFilteredData || data;
+    }
+    
+    // If this widget uses the global filter field, use global filter value
+    if (isGlobalFilterForThisField) {
+      if (!globalFilterValue) return globallyFilteredData || data;
+      return globallyFilteredData || data;
+    }
+    
+    // If this widget uses a secondary filter (different field), apply that filter
+    if (shouldShowSecondaryFilter) {
+      // Use globally filtered data as base, then apply secondary filter
+      const baseData = globallyFilteredData || data;
+      if (!selectedLabel) return baseData;
+      return {
+        ...baseData,
+        data: baseData.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
+      };
+    }
+    
+    // Fallback: original logic for widgets without global filter
+    if (!effectiveSelectedLabel) return data;
+    return {
+      ...data,
+      data: data.data.filter(item => item[widgetConfig.labelField] === effectiveSelectedLabel)
+    };
+  }, [data, globallyFilteredData, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel, globalFilterValue]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
@@ -176,6 +232,51 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     fetchData();
   }, [fetchData]);
 
+  // Extract available labels from filtered data for secondary filters
+  // MUST be before any early returns (Rules of Hooks)
+  const availableSecondaryLabels = useMemo(() => {
+    if (!shouldShowSecondaryFilter || !globallyFilteredData?.data) return availableLabels;
+    
+    // Extract unique labels from globally-filtered data (e.g., pools containing selected token)
+    const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+    return uniqueLabels;
+  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, availableLabels]);
+
+  // Update available labels when globally filtered data changes (for secondary filters)
+  // MUST be before any early returns (Rules of Hooks)
+  useEffect(() => {
+    if (shouldShowSecondaryFilter && globallyFilteredData?.data) {
+      const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+      setAvailableLabels(uniqueLabels);
+      
+      // Auto-select first label if none selected
+      if (!selectedLabel && uniqueLabels.length > 0) {
+        setSelectedLabel(uniqueLabels[0]);
+      }
+    }
+  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, selectedLabel]);
+
+  // Show per-metric dropdown if:
+  // 1. Not using global filter for this field, OR
+  // 2. Using a secondary filter (different field than global filter)
+  const showLocalDropdown = widgetConfig.enableFiltering && 
+    !isGlobalFilterForThisField && 
+    (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
+  
+  const labelsForDropdown = shouldShowSecondaryFilter ? availableSecondaryLabels : availableLabels;
+  // Since showLocalDropdown already checks !isGlobalFilterForThisField, we can always use selectedLabel here
+  const selectedLabelForDropdown = selectedLabel;
+  const onLabelSelect = setSelectedLabel;
+
+  const headerControls = showLocalDropdown ? (
+    <LabelSelector
+      labels={labelsForDropdown}
+      selectedLabel={selectedLabelForDropdown}
+      onSelectLabel={onLabelSelect}
+    />
+  ) : undefined;
+
+  // Early returns must come AFTER all hooks
   if (loading && !data) {
     return (
       <Card 
@@ -265,14 +366,6 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         return <div>Unknown widget type</div>;
     }
   };
-
-  const headerControls = widgetConfig.enableFiltering && availableLabels.length > 0 ? (
-    <LabelSelector
-      labels={availableLabels}
-      selectedLabel={selectedLabel}
-      onSelectLabel={setSelectedLabel}
-    />
-  ) : undefined;
 
   return (
     <Card

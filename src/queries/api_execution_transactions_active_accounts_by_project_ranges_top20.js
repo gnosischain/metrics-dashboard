@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_project_ranges_top20',
-  name: 'Active Accounts by Project',
+  name: 'Initiator Accounts by Project',
   description: 'Select range',
   chartType: 'pie',
   nameField: 'label',
