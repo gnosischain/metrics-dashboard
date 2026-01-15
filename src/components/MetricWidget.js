@@ -122,7 +122,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setLoading(false);
       }
     }
-  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, hasGlobalFilter, isUsingGlobalFilter, selectedLabel, isGlobalFilterForThisField]);
+  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel, isGlobalFilterForThisField]);
 
   useEffect(() => {
     fetchData();
@@ -169,7 +169,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       ...data,
       data: data.data.filter(item => item[widgetConfig.labelField] === effectiveSelectedLabel)
     };
-  }, [data, globallyFilteredData, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, hasGlobalFilter, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel, globalFilterValue]);
+  }, [data, globallyFilteredData, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel, globalFilterValue]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
