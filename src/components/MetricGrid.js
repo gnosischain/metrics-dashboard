@@ -205,6 +205,8 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
                 hasGlobalFilter={hasGlobalFilter && 
                   metric.enableFiltering && 
                   metric.labelField === tabConfig.globalFilterField}
+                globalFilterField={tabConfig?.globalFilterField}
+                globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
               />
             </div>
           );
