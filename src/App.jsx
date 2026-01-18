@@ -1,4 +1,4 @@
-// App.js - Updated to use new modular CSS structure
+// App.jsx - Updated to use new modular CSS structure
 import React from 'react';
 import { Dashboard } from './components';
 import './styles/index.css'; // Single import for all styles
