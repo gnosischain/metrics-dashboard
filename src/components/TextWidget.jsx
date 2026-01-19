@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Card from './Card';
+import Card from './Card.jsx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';

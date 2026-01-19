@@ -1,6 +1,6 @@
 import React, { useState, forwardRef } from 'react';
-import ExpandButton from './ExpandButton';
-import ChartModal from './ChartModal';
+import ExpandButton from './ExpandButton.jsx';
+import ChartModal from './ChartModal.jsx';
 
 const Card = forwardRef(({ 
   title, 

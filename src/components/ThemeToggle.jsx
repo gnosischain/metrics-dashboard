@@ -1,5 +1,5 @@
 import React from 'react';
-import IconComponent from './IconComponent';
+import IconComponent from './IconComponent.jsx';
 
 /**
  * Enhanced theme toggle component with SVG icons

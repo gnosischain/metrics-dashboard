@@ -10,7 +10,7 @@
 export * from './ChartTypes';
 
 // Explicitly export EChartsContainer for clarity
-export { default as EChartsContainer } from './ChartTypes/EChartsContainer';
+export { default as EChartsContainer } from './ChartTypes/EChartsContainer.jsx';
 
 // Export utility functions from ChartTypes
 export { 
@@ -23,4 +23,4 @@ export {
 } from './ChartTypes';
 
 // Default export EChartsContainer for convenience
-export { default } from './ChartTypes/EChartsContainer';
+export { default } from './ChartTypes/EChartsContainer.jsx';

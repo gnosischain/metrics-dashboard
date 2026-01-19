@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import IconComponent from './IconComponent';
+import IconComponent from './IconComponent.jsx';
 
 /**
  * Hierarchical TabNavigation component for switching between dashboards and tabs

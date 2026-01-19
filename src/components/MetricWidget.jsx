@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
-import LabelSelector from './LabelSelector';
+import LabelSelector from './LabelSelector.jsx';
 import metricsService from '../services/metrics';
 
 const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '' }) => {
