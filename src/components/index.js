@@ -5,22 +5,22 @@
  * This file exports all components to make imports cleaner
  */
 
-import Dashboard from './Dashboard';
-import Header from './Header';
-import TabNavigation from './TabNavigation';
-import MetricGrid from './MetricGrid';
-import MetricWidget from './MetricWidget';
-import Card from './Card';
-import TextWidget from './TextWidget';
-import NumberWidget from './NumberWidget';
-import ThemeToggle from './ThemeToggle';
-import IconComponent from './IconComponent';
-import LabelSelector from './LabelSelector';
-import ExpandButton from './ExpandButton';
-import ChartModal from './ChartModal';
-import TableWidget from './TableWidget';
+import Dashboard from './Dashboard.jsx';
+import Header from './Header.jsx';
+import TabNavigation from './TabNavigation.jsx';
+import MetricGrid from './MetricGrid.jsx';
+import MetricWidget from './MetricWidget.jsx';
+import Card from './Card.jsx';
+import TextWidget from './TextWidget.jsx';
+import NumberWidget from './NumberWidget.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
+import IconComponent from './IconComponent.jsx';
+import LabelSelector from './LabelSelector.jsx';
+import ExpandButton from './ExpandButton.jsx';
+import ChartModal from './ChartModal.jsx';
+import TableWidget from './TableWidget.jsx';
 
-import EChartsContainer from './charts/ChartTypes/EChartsContainer';
+import EChartsContainer from './charts/ChartTypes/EChartsContainer.jsx';
 import { 
   LineChart, 
   AreaChart, 

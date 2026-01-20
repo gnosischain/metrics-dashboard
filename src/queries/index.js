@@ -5,12 +5,14 @@
  * and exports them as an array.
  */
 
-// Use webpack require.context to dynamically import all files in this directory
+// Use Vite's import.meta.glob to dynamically import all files in this directory
 // excluding this index.js file itself
-const requireContext = require.context('./', false, /\.js$/);
-const queryModules = requireContext.keys()
-  .filter(key => key !== './index.js')  // Exclude this file
-  .map(key => requireContext(key).default); // Get the default export from each file
+const modules = import.meta.glob('./*.js', { eager: true });
+
+const queryModules = Object.entries(modules)
+  .filter(([key]) => key !== './index.js')  // Exclude this file
+  .map(([, module]) => module.default)       // Get the default export from each file
+  .filter(Boolean);                          // Filter out any undefined exports
 
 console.log(`Loaded ${queryModules.length} metric queries dynamically`);
 

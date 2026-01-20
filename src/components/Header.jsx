@@ -1,5 +1,5 @@
 import React from 'react';
-import ThemeToggle from './ThemeToggle';
+import ThemeToggle from './ThemeToggle.jsx';
 
 /**
  * Enhanced Header component for the dashboard with logo and indexing status
@@ -23,8 +23,8 @@ const Header = ({
   //  ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
   //  : "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/Black/PNG/Gnosis.png";
   const logoUrl = isDarkMode 
-    ? process.env.PUBLIC_URL + "/imgs/Gnosis_white.png"
-    : process.env.PUBLIC_URL + "/imgs/Gnosis_black.png";
+    ? "/imgs/Gnosis_white.png"
+    : "/imgs/Gnosis_black.png";
 
   return (
     <header className="dashboard-header">

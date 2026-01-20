@@ -4,22 +4,22 @@
 const config = {
   // ClickHouse API configuration (not used directly by frontend)
   clickhouse: {
-    host: process.env.REACT_APP_CLICKHOUSE_HOST,
-    user: process.env.REACT_APP_CLICKHOUSE_USER,
-    password: process.env.REACT_APP_CLICKHOUSE_PASSWORD
+    host: import.meta.env.VITE_CLICKHOUSE_HOST,
+    user: import.meta.env.VITE_CLICKHOUSE_USER,
+    password: import.meta.env.VITE_CLICKHOUSE_PASSWORD
   },
   
   // API proxy configuration
   api: {
     // For Vercel deployment, use relative path to API endpoints
-    url: process.env.REACT_APP_API_URL || '/api',
-    key: process.env.REACT_APP_API_KEY || 'dev-key-12345',
-    useMockData: process.env.REACT_APP_USE_MOCK_DATA === 'true' || process.env.NODE_ENV === 'development'
+    url: import.meta.env.VITE_API_URL || '/api',
+    key: import.meta.env.VITE_API_KEY || 'dev-key-12345',
+    useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true' || import.meta.env.DEV
   },
   
   // Dashboard configuration
   dashboard: {
-    title: process.env.REACT_APP_DASHBOARD_TITLE || 'Gnosis Analytics Dashboard'
+    title: import.meta.env.VITE_DASHBOARD_TITLE || 'Gnosis Analytics Dashboard'
   }
 };
 
@@ -27,7 +27,7 @@ console.log('Configuration loaded:', {
   apiUrl: config.api.url,
   useMockData: config.api.useMockData,
   hasApiKey: !!config.api.key,
-  environment: process.env.NODE_ENV
+  environment: import.meta.env.MODE
 });
   
 export default config;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Header from './Header';
-import TabNavigation from './TabNavigation';
-import MetricGrid from './MetricGrid';
-import IconComponent from './IconComponent';
+import Header from './Header.jsx';
+import TabNavigation from './TabNavigation.jsx';
+import MetricGrid from './MetricGrid.jsx';
+import IconComponent from './IconComponent.jsx';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 

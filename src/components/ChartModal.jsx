@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import ExpandButton from './ExpandButton';
+import ExpandButton from './ExpandButton.jsx';
 
 const ChartModal = ({ 
   isOpen, 

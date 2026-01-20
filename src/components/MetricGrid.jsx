@@ -1,5 +1,5 @@
 import React from 'react';
-import MetricWidget from './MetricWidget';
+import MetricWidget from './MetricWidget.jsx';
 
 /**
  * Enhanced MetricGrid component with proper fixed row heights
