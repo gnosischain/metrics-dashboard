@@ -95,7 +95,16 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         throw new Error('Metrics service is not properly initialized');
       }
       
-      const result = await metricsService.getMetricData(metricId);
+      // Build params for server-side filtering.
+      // Let server use its default date range (365 days) for full data.
+      // Server-side global filter reduces data transfer significantly.
+      const params = {};
+      if (globalFilterField && globalFilterValue) {
+        params.filterField = globalFilterField;
+        params.filterValue = globalFilterValue;
+      }
+
+      const result = await metricsService.getMetricData(metricId, params);
       
       if (isMounted.current) {
         setData(result);
@@ -122,54 +131,52 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         setLoading(false);
       }
     }
-  }, [metricId, widgetConfig.enableFiltering, widgetConfig.labelField, selectedLabel, isGlobalFilterForThisField]);
+  // Note: selectedLabel is intentionally excluded from dependencies.
+  // Local filter changes should NOT trigger refetches - filtering is done client-side.
+  // Only metricId and global filter changes should trigger API calls.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    metricId,
+    globalFilterField,
+    globalFilterValue
+  ]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // First apply global filter (if applicable)
-  const globallyFilteredData = useMemo(() => {
-    if (!data || !globalFilterField || !globalFilterValue) return data;
-    
-    // Filter by global filter field (e.g., token)
-    return {
-      ...data,
-      data: data.data.filter(item => item[globalFilterField] === globalFilterValue)
-    };
-  }, [data, globalFilterField, globalFilterValue]);
-
-  // Then apply per-chart filter (if applicable)
+  // Apply per-chart filter (secondary filter) if applicable.
+  // Note: Global filter is already applied server-side, so data is pre-filtered by token.
+  // We only need to apply secondary filtering (e.g., by pool) client-side.
   const filteredData = useMemo(() => {
+    if (!data?.data) return data;
+    
+    // If no filtering enabled, return data as-is (already filtered by server)
     if (!widgetConfig.enableFiltering) {
-      // If no filtering enabled, use globally filtered data if available, otherwise raw data
-      return globallyFilteredData || data;
+      return data;
     }
     
-    // If this widget uses the global filter field, use global filter value
+    // If this widget uses the global filter field, data is already filtered by server
     if (isGlobalFilterForThisField) {
-      if (!globalFilterValue) return globallyFilteredData || data;
-      return globallyFilteredData || data;
+      return data;
     }
     
-    // If this widget uses a secondary filter (different field), apply that filter
+    // If this widget uses a secondary filter (different field), apply that filter client-side
     if (shouldShowSecondaryFilter) {
-      // Use globally filtered data as base, then apply secondary filter
-      const baseData = globallyFilteredData || data;
-      if (!selectedLabel) return baseData;
+      if (!selectedLabel) return data;
       return {
-        ...baseData,
-        data: baseData.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
+        ...data,
+        data: data.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
       };
     }
     
-    // Fallback: original logic for widgets without global filter
+    // Fallback: original logic for widgets without global filter (local filter only)
     if (!effectiveSelectedLabel) return data;
     return {
       ...data,
       data: data.data.filter(item => item[widgetConfig.labelField] === effectiveSelectedLabel)
     };
-  }, [data, globallyFilteredData, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel, globalFilterValue]);
+  }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
@@ -232,29 +239,35 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     fetchData();
   }, [fetchData]);
 
-  // Extract available labels from filtered data for secondary filters
+  // Extract available labels from data for secondary filters
+  // Data is already filtered by global filter (server-side), so we extract secondary options from it
   // MUST be before any early returns (Rules of Hooks)
   const availableSecondaryLabels = useMemo(() => {
-    if (!shouldShowSecondaryFilter || !globallyFilteredData?.data) return availableLabels;
+    if (!shouldShowSecondaryFilter || !data?.data) return availableLabels;
     
-    // Extract unique labels from globally-filtered data (e.g., pools containing selected token)
-    const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+    // Extract unique labels from server-filtered data (e.g., pools containing selected token)
+    const uniqueLabels = [...new Set(data.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
     return uniqueLabels;
-  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, availableLabels]);
+  }, [shouldShowSecondaryFilter, data, widgetConfig.labelField, availableLabels]);
 
-  // Update available labels when globally filtered data changes (for secondary filters)
+  // Update available labels when data changes (for secondary filters)
+  // Also handles Issue 5: reset selectedLabel if it's no longer valid after global filter change
   // MUST be before any early returns (Rules of Hooks)
   useEffect(() => {
-    if (shouldShowSecondaryFilter && globallyFilteredData?.data) {
-      const uniqueLabels = [...new Set(globallyFilteredData.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
+    if (shouldShowSecondaryFilter && data?.data) {
+      const uniqueLabels = [...new Set(data.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
       setAvailableLabels(uniqueLabels);
       
+      // Reset selectedLabel if it's no longer valid (Issue 5 fix)
+      if (selectedLabel && !uniqueLabels.includes(selectedLabel)) {
+        setSelectedLabel(uniqueLabels[0] || '');
+      }
       // Auto-select first label if none selected
-      if (!selectedLabel && uniqueLabels.length > 0) {
+      else if (!selectedLabel && uniqueLabels.length > 0) {
         setSelectedLabel(uniqueLabels[0]);
       }
     }
-  }, [shouldShowSecondaryFilter, globallyFilteredData, widgetConfig.labelField, selectedLabel]);
+  }, [shouldShowSecondaryFilter, data, widgetConfig.labelField, selectedLabel]);
 
   // Show per-metric dropdown if:
   // 1. Not using global filter for this field, OR
@@ -379,6 +392,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       chartType={widgetConfig.chartType}
       titleFontSize={widgetConfig.titleFontSize}
     >
+      {/* Loading overlay shown during refetch (when we have data but are loading new data) */}
+      {loading && data && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       {renderContent()}
     </Card>
   );

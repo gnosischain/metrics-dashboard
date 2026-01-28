@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import MetricWidget from './MetricWidget';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
+import { getDateRange } from '../utils';
 
 /**
  * Enhanced MetricGrid component with proper fixed row heights and global filter support
@@ -16,6 +17,12 @@ import metricsService from '../services/metrics';
 const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilterValue = null, onGlobalFilterChange = null }) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
+  const globalFilterValueRef = useRef(globalFilterValue);
+
+  // Keep a ref of the latest global filter value to avoid stale-closure overwrites
+  useEffect(() => {
+    globalFilterValueRef.current = globalFilterValue;
+  }, [globalFilterValue]);
   // Process metrics to determine grid structure and row heights
   const processGridStructure = (metrics) => {
     let maxRow = 1;
@@ -61,13 +68,24 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   // Check if this tab has a global filter
   const hasGlobalFilter = tabConfig?.globalFilterField && onGlobalFilterChange;
 
-  // Get metrics that should use the global filter
+  // Get metrics that can provide global filter options
+  // Priority: 1) Metrics with explicit globalFilterField config matching tab's globalFilterField
+  //           2) Metrics where labelField matches globalFilterField (backwards compatible)
+  //           3) Metrics with enableFiltering that have globalFilterField in their data (fallback)
   const metricsForGlobalFilter = useMemo(() => {
     if (!hasGlobalFilter) return [];
-    return metrics.filter(metric => 
-      metric.enableFiltering && 
-      metric.labelField === tabConfig.globalFilterField
-    );
+    const globalField = tabConfig.globalFilterField;
+    
+    // First try: metrics with explicit globalFilterField config
+    const explicitMatch = metrics.filter(m => m.globalFilterField === globalField);
+    if (explicitMatch.length > 0) return explicitMatch;
+    
+    // Second try: metrics where labelField matches (backwards compatible)
+    const labelFieldMatch = metrics.filter(m => m.enableFiltering && m.labelField === globalField);
+    if (labelFieldMatch.length > 0) return labelFieldMatch;
+    
+    // Fallback: any filterable metric (may have the field in data even if labelField differs)
+    return metrics.filter(m => m.enableFiltering);
   }, [metrics, hasGlobalFilter, tabConfig?.globalFilterField]);
 
   // Get a single metric to use for fetching filter options (prefer "total" metrics as they're usually smaller)
@@ -89,7 +107,8 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
       setLoadingGlobalFilter(true);
       try {
         // Fetch from just one metric - much faster! All metrics should have the same tokens anyway
-        const result = await metricsService.getMetricData(metricForOptions.id);
+        const { from, to } = getDateRange('90d');
+        const result = await metricsService.getMetricData(metricForOptions.id, { from, to });
         
         // Extract unique values
         const allValues = new Set();
@@ -108,7 +127,9 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
 
         // If no filter value is set and we have options, set the first one
         // This only runs when options are first loaded, not on every filter change
-        if (sortedOptions.length > 0 && onGlobalFilterChange && !globalFilterValue) {
+        // Use ref so we don't overwrite a user selection made while options were loading.
+        const latestValue = globalFilterValueRef.current;
+        if (sortedOptions.length > 0 && onGlobalFilterChange && !latestValue) {
           onGlobalFilterChange(sortedOptions[0]);
         }
       } catch (error) {
