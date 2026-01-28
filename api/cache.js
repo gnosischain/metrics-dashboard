@@ -35,11 +35,15 @@ class CacheManager {
 
   /**
    * Get the cache file path for a specific metric
-   * @param {string} metricId - Metric identifier
+   * @param {string} metricId - Metric identifier (or composite cache key)
    * @returns {string} Full path to the cache file
    */
   getCacheFilePath(metricId) {
-    return path.join(this.cacheDir, `${metricId}.json`);
+    // Allow composite cache keys while keeping backwards compatibility:
+    // - If metricId is a plain ID (existing behavior), filename stays "<metricId>.json"
+    // - If metricId includes special characters, encode it to a filesystem-safe name.
+    const safeName = encodeURIComponent(metricId).replace(/%/g, '_');
+    return path.join(this.cacheDir, `${safeName}.json`);
   }
 
   /**

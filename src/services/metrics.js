@@ -27,11 +27,27 @@ class MetricsService {
   /**
    * Get metric data from the API
    * @param {string} metricId - The metric ID
+   * @param {Object} params - Optional query params (from/to/filterField/filterValue, etc.)
    * @returns {Promise<Object>} The metric data
    */
-  async getMetricData(metricId) {
+  async getMetricData(metricId, params = {}) {
+    const normalizedParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+
+    // Backwards-compatible cache key:
+    // - Without params: key is metricId (existing behavior)
+    // - With params: include them so different ranges/filters don't collide
+    const cacheKey =
+      Object.keys(normalizedParams).length === 0
+        ? metricId
+        : `${metricId}|${Object.entries(normalizedParams)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => `${k}=${String(v)}`)
+            .join('&')}`;
+
     // Check cache first
-    const cached = this.cache.get(metricId);
+    const cached = this.cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       return cached.data;
     }
@@ -47,7 +63,7 @@ class MetricsService {
         };
         
         // Cache the result
-        this.cache.set(metricId, {
+        this.cache.set(cacheKey, {
           data: data,
           timestamp: Date.now()
         });
@@ -56,7 +72,7 @@ class MetricsService {
       }
       
       // For other widgets, fetch from API
-      const response = await api.get(`/metrics/${metricId}`);
+      const response = await api.get(`/metrics/${metricId}`, normalizedParams);
 
       // The API returns the data directly for a specific metric
       const data = {
@@ -64,7 +80,7 @@ class MetricsService {
       };
 
       // Cache the result
-      this.cache.set(metricId, {
+      this.cache.set(cacheKey, {
         data: data,
         timestamp: Date.now()
       });
