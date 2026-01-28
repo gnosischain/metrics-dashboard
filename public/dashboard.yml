@@ -285,6 +285,29 @@ Yields:
           gridRow: 4
           gridColumn: 1 / span 12
           minHeight: 450px
+
+    - name: Pool Yields
+      order: 2
+      icon: "📊"
+      iconClass: "pool"
+      globalFilterField: 'token'
+      metrics:
+        - id: api_execution_yields_pools_tvl_latest
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 200px
+        - id: api_execution_yields_pools_fees_7d
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 200px
+        - id: api_execution_yields_pools_tvl_by_pool_latest
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 422px
+        - id: api_execution_yields_pools_fee_apr_7d_daily
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 450px
         
    # - name: Flows
    #   order: 7
