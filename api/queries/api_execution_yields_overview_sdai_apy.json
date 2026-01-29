@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_overview_sdai_apy",
+  "query": "SELECT value, change_pct FROM dbt.api_execution_yields_overview_sdai_apy"
+}

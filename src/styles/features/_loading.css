@@ -4,6 +4,32 @@
  */
 
 /* ==================
+   Loading Overlay (for refetch states)
+   ================== */
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: var(--border-radius-lg);
+}
+
+.dark-mode .loading-overlay {
+  background: rgba(13, 17, 23, 0.75);
+}
+
+.loading-overlay .loading-spinner {
+  margin-bottom: 0;
+}
+
+/* ==================
    Loading Spinner
    ================== */
 

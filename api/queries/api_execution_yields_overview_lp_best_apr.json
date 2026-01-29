@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_overview_lp_best_apr",
+  "query": "SELECT value, change_pct, label FROM dbt.api_execution_yields_overview_lp_best_apr"
+}

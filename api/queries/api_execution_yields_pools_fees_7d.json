@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_pools_fees_7d",
+  "query": "SELECT token, value, change_pct FROM dbt.api_execution_yields_pools_fees_7d"
+}
