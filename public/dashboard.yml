@@ -259,8 +259,45 @@ Yields:
   icon: "📈"
   iconClass: "yield"
   tabs:
-    - name: Lending yields
+    - name: Overview
       order: 1
+      icon: "📊"
+      iconClass: "chart-line"
+      metrics:
+        # Row 1: LP TVL | Best Lending APY | sDAI APY
+        - id: api_execution_yields_overview_lp_tvl
+          gridRow: 1
+          gridColumn: 1 / span 4
+          minHeight: 160px
+        - id: api_execution_yields_overview_lending_lenders
+          gridRow: 1
+          gridColumn: 5 / span 4
+          minHeight: 160px
+        - id: api_execution_yields_overview_sdai_supply
+          gridRow: 1
+          gridColumn: 9 / span 4
+          minHeight: 160px
+        # Row 2: Best LP APR | Total Lenders | sDAI Supply
+        - id: api_execution_yields_overview_lending_best_apy
+          gridRow: 2
+          gridColumn: 5 / span 4
+          minHeight: 160px
+        - id: api_execution_yields_overview_lp_best_apr
+          gridRow: 2
+          gridColumn: 1 / span 4
+          minHeight: 160px
+        - id: api_execution_yields_overview_sdai_apy
+          gridRow: 2
+          gridColumn: 9 / span 4
+          minHeight: 160px
+        # Row 3: Opportunities Table
+        - id: api_execution_yields_opportunities_latest
+          gridRow: 3
+          gridColumn: 1 / span 12
+          minHeight: 450px
+
+    - name: Lending yields
+      order: 2
       icon: "💰"
       iconClass: "lending"
       globalFilterField: 'token'
@@ -287,7 +324,7 @@ Yields:
           minHeight: 450px
 
     - name: Pool Yields
-      order: 2
+      order: 3
       icon: "📊"
       iconClass: "pool"
       globalFilterField: 'token'

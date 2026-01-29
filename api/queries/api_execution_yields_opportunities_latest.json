@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_opportunities_latest",
+  "query": "SELECT type, name, yield_pct, borrow_apy, tvl, protocol FROM dbt.api_execution_yields_opportunities_latest"
+}
