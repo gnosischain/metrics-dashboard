@@ -10,7 +10,7 @@ const metric = {
     layout: 'fitColumns',
     pagination: true,
     paginationSize: 10,
-    paginationSizeSelector: [],
+    paginationSizeSelector: false,
     responsiveLayout: 'collapse',
     height: '100%',
     movableColumns: false,
