@@ -86,6 +86,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   }, []);
 
   const fetchData = useCallback(async () => {
+    // If this widget uses global filter but the value isn't set yet, skip fetch.
+    // The fetch will trigger once globalFilterValue is set.
+    if (hasGlobalFilter && !globalFilterValue) {
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -138,7 +144,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   }, [
     metricId,
     globalFilterField,
-    globalFilterValue
+    globalFilterValue,
+    hasGlobalFilter
   ]);
 
   useEffect(() => {
