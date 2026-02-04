@@ -1,14 +1,15 @@
 const metric = {
   id: 'api_execution_tokens_supply_distribution_latest',
   name: 'Supply Distribution',
-  description: 'Token supply distribution by token',
+  description: 'Token supply distribution by token (USD value)',
   chartType: 'pie',
   enableFiltering: true,
   labelField: 'token_class',
   nameField: 'token',
-  valueField: 'value',
+  valueField: 'value_usd',
+  format: 'formatCurrency',
   useAbbreviatedLabels: true,
-  query: `SELECT token_class, token, value, percentage FROM dbt.api_execution_tokens_supply_distribution_latest`,
+  query: `SELECT token_class, token, value_usd, percentage FROM dbt.api_execution_tokens_supply_distribution_latest`,
 };
 
 export default metric;
