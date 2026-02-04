@@ -18,6 +18,10 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
   const globalFilterValueRef = useRef(globalFilterValue);
+  
+  // Unit toggle state (Native/USD)
+  const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
+  const hasUnitToggle = tabConfig?.unitToggle === true;
 
   // Keep a ref of the latest global filter value to avoid stale-closure overwrites
   useEffect(() => {
@@ -161,29 +165,53 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   return (
     <div className="metrics-grid-container">
       {/* Global filter dropdown - show immediately if tab has globalFilterField, even while loading */}
-      {hasGlobalFilter && (
+      {(hasGlobalFilter || hasUnitToggle) && (
         <div className="global-filter-container">
           <div className="global-filter-content">
-            <label className="global-filter-label" htmlFor="global-filter-select">
-              Filter by {getFilterFieldLabel(tabConfig.globalFilterField)}:
-            </label>
-            <div className="global-filter-selector">
-              {loadingGlobalFilter ? (
-                <div className="global-filter-loading">
-                  <div className="loading-spinner" style={{ width: '16px', height: '16px', margin: 0 }}></div>
+            {hasGlobalFilter && (
+              <>
+                <label className="global-filter-label" htmlFor="global-filter-select">
+                  Filter by {getFilterFieldLabel(tabConfig.globalFilterField)}:
+                </label>
+                <div className="global-filter-selector">
+                  {loadingGlobalFilter ? (
+                    <div className="global-filter-loading">
+                      <div className="loading-spinner" style={{ width: '16px', height: '16px', margin: 0 }}></div>
+                    </div>
+                  ) : globalFilterOptions.length > 0 ? (
+                    <LabelSelector
+                      labels={globalFilterOptions}
+                      selectedLabel={globalFilterValue || globalFilterOptions[0] || ''}
+                      onSelectLabel={onGlobalFilterChange}
+                      labelField={tabConfig.globalFilterField}
+                      idPrefix="global-filter"
+                    />
+                  ) : (
+                    <div className="global-filter-error">No options available</div>
+                  )}
                 </div>
-              ) : globalFilterOptions.length > 0 ? (
-                <LabelSelector
-                  labels={globalFilterOptions}
-                  selectedLabel={globalFilterValue || globalFilterOptions[0] || ''}
-                  onSelectLabel={onGlobalFilterChange}
-                  labelField={tabConfig.globalFilterField}
-                  idPrefix="global-filter"
-                />
-              ) : (
-                <div className="global-filter-error">No options available</div>
-              )}
-            </div>
+              </>
+            )}
+            
+            {/* Unit toggle (Native/USD) */}
+            {hasUnitToggle && (
+              <div className="unit-toggle-container">
+                <div className="unit-toggle-buttons">
+                  <button
+                    className={`unit-toggle-btn ${selectedUnit === 'native' ? 'active' : ''}`}
+                    onClick={() => setSelectedUnit('native')}
+                  >
+                    Native
+                  </button>
+                  <button
+                    className={`unit-toggle-btn ${selectedUnit === 'usd' ? 'active' : ''}`}
+                    onClick={() => setSelectedUnit('usd')}
+                  >
+                    USD
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -228,6 +256,7 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
                   metric.labelField === tabConfig.globalFilterField}
                 globalFilterField={tabConfig?.globalFilterField}
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
+                selectedUnit={hasUnitToggle ? selectedUnit : null}
               />
             </div>
           );

@@ -4,7 +4,7 @@ import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import metricsService from '../services/metrics';
 
-const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null }) => {
+const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,6 +64,38 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       config: metricConfig 
     };
   }, [metricConfig]);
+
+  // Determine effective yField and format based on unit toggle
+  // If the metric has unitFields config and a unit is selected, use those settings
+  const effectiveUnitConfig = useMemo(() => {
+    const unitFields = metricConfig?.unitFields;
+    
+    // If no unit toggle or metric doesn't support it, return defaults
+    if (!selectedUnit || !unitFields) {
+      return {
+        yField: metricConfig?.yField || 'value',
+        valueField: metricConfig?.valueField || 'value',
+        format: metricConfig?.format || 'formatNumber'
+      };
+    }
+    
+    // Get config for the selected unit
+    const unitConfig = unitFields[selectedUnit];
+    if (unitConfig) {
+      return {
+        yField: unitConfig.field || metricConfig?.yField || 'value',
+        valueField: unitConfig.field || metricConfig?.valueField || 'value',
+        format: unitConfig.format || metricConfig?.format || 'formatNumber'
+      };
+    }
+    
+    // Fallback to defaults
+    return {
+      yField: metricConfig?.yField || 'value',
+      valueField: metricConfig?.valueField || 'value',
+      format: metricConfig?.format || 'formatNumber'
+    };
+  }, [selectedUnit, metricConfig]);
 
   // Check if this widget should use global filter for its labelField
   const isGlobalFilterForThisField = useMemo(() => {
@@ -337,11 +369,11 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         return <TextWidget content={data?.content || 'No content available'} minimal={true} />;
       
       case 'number':
-        const value = filteredData?.data?.[0]?.[widgetConfig.valueField || 'value'] || 0;
+        const value = filteredData?.data?.[0]?.[effectiveUnitConfig.valueField] || 0;
         return (
           <NumberWidget
             value={value}
-            format={widgetConfig.format}
+            format={effectiveUnitConfig.format}
             color={widgetConfig.color}
             label={undefined} // Never pass label in compact mode - title is shown in header
             isDarkMode={isDarkMode}
@@ -373,6 +405,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
             chartType={widgetConfig.chartType}
             config={{
               ...widgetConfig.config,
+              yField: effectiveUnitConfig.yField,
+              format: effectiveUnitConfig.format,
               enableZoom: widgetConfig.enableZoom
             }}
             isDarkMode={isDarkMode}

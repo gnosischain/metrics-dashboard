@@ -118,6 +118,8 @@ class DashboardService {
           icon: tab.icon || '', // Emoji fallback for tab
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
+          unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
+          defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           metrics: (tab.metrics || []).map(metric => {
             console.log(`DashboardService: Processing tab metric:`, metric);
             
