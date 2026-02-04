@@ -1,21 +1,19 @@
 const metric = {
-  id: 'api_execution_tokens_balance_cohorts_value_daily',
-  name: 'Token Balance Cohorts (Value)',
-  description:
-    'Distribution of token balances across value buckets over time (per token).',
+  id: 'api_execution_tokens_volume_daily',
+  name: 'Token Transfer Volume',
+  description: 'Daily transfer volume per token.',
   chartType: 'area',
   isTimeSeries: true,
-  stacked: true,
+  stacked: false,
   enableZoom: true,
   defaultZoom: {
-    start: 90,
+    start: 80,
     end: 100,
   },
   xField: 'date',
-  yField: 'value_native',          
-  seriesField: 'label',     
+  yField: 'value_native',
   enableFiltering: true,
-  labelField: 'token',      
+  labelField: 'token',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
 
@@ -29,10 +27,9 @@ const metric = {
     SELECT
       date,
       token,
-      label,
       value_native,
       value_usd
-    FROM dbt.api_execution_tokens_balance_cohorts_value_daily
+    FROM dbt.api_execution_tokens_volume_daily
   `,
 };
 

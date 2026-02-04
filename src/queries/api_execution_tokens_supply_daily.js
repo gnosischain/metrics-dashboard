@@ -11,7 +11,7 @@ const metric = {
     end: 100,
   },
   xField: 'date',
-  yField: 'value',
+  yField: 'value_native',
   // We use labelField so the generic dropdown component
   // lets you pick the token
   enableFiltering: true,
@@ -19,11 +19,18 @@ const metric = {
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
 
+  // Unit toggle support (Native/USD)
+  unitFields: {
+    native: { field: 'value_native', format: 'formatNumber' },
+    usd: { field: 'value_usd', format: 'formatCurrency' }
+  },
+
   query: `
     SELECT
       date,
       token,
-      value
+      value_native,
+      value_usd
     FROM dbt.api_execution_tokens_supply_daily
   `,
 };
