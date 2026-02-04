@@ -208,11 +208,15 @@ Tokens:
         - id: api_execution_tokens_supply_distribution_latest
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 450px
+          minHeight: 300px
         - id: api_execution_tokens_supply_by_sector_latest
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 450px
+          minHeight: 300px
+        - id: api_execution_tokens_supply_by_class_daily
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 400px
     
     - name: Per-token breakdown
       order: 2
