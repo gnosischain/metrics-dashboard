@@ -99,6 +99,21 @@ export const formatNumberWithUSD = (value) => {
   return `$${full}`;
 };
 
+/**
+ * Format a number as currency (USD) with proper separators and 2 decimal places
+ * @param {number} value - The value to format
+ * @returns {string} Formatted currency
+ */
+export const formatCurrency = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '$0.00';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(value));
+};
+
 export const formatNumberWithGNO = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '0 GNO';
   const full = new Intl.NumberFormat('en-US').format(Number(value));
@@ -114,7 +129,8 @@ const formatters = {
   formatValue,
   formatNumberWithXDAI,
   formatNumberWithUSD,
-  formatNumberWithGNO
+  formatNumberWithGNO,
+  formatCurrency
 };
 
 export default formatters;
