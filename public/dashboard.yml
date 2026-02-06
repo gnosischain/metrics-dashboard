@@ -232,8 +232,12 @@ Tokens:
       metrics:
         - id: global_filter
           gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 60px
+          gridColumn: 1 / span 6
+          minHeight: 90px
+        - id: api_execution_tokens_count_total
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 90px
         - id: api_execution_tokens_supply_total
           gridRow: 2
           gridColumn: 1 / span 6
@@ -299,7 +303,7 @@ Tokens:
 #      metrics:
 #        - id: global_filter
 #          gridRow: 1
-#          gridColumn: 1 / span 6
+#          gridColumn: 1 / span 12
 #          minHeight: 60px
 #        - id: api_execution_yields_lending_lenders_count_7d
 #          gridRow: 2
