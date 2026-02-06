@@ -204,6 +204,7 @@ Tokens:
       icon: "📊"
       iconClass: "chart-line"
       globalFilterField: 'token_class'
+      globalFilterLabel: 'Token Class'
       metrics:
         - id: global_filter
           gridRow: 1

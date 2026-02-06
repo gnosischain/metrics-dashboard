@@ -26,7 +26,7 @@ const GlobalFilterWidget = ({
   onUnitChange,
 }) => {
   const fieldName = tabConfig?.globalFilterField || '';
-  const label = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+  const label = tabConfig?.globalFilterLabel || (fieldName.charAt(0).toUpperCase() + fieldName.slice(1));
 
   return (
     <div className="global-filter-widget">
