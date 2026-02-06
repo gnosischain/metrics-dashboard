@@ -85,12 +85,13 @@ class DashboardService {
         metrics: dashboardConfig.metrics.map(metric => {
           console.log(`DashboardService: Processing metric:`, metric);
           
-          // Get base metric config
+          // Get base metric config (may be undefined for pseudo-metrics like global_filter)
           const metricConfig = metricsService.getMetricConfig(metric.id);
           
           // Return metric with grid positioning properties
           return {
             ...metricConfig,
+            id: metric.id,
             gridRow: metric.gridRow,
             gridColumn: metric.gridColumn,
             minHeight: metric.minHeight
@@ -123,12 +124,13 @@ class DashboardService {
           metrics: (tab.metrics || []).map(metric => {
             console.log(`DashboardService: Processing tab metric:`, metric);
             
-            // Get base metric config
+            // Get base metric config (may be undefined for pseudo-metrics like global_filter)
             const metricConfig = metricsService.getMetricConfig(metric.id);
             
             // Return metric with grid positioning properties
             return {
               ...metricConfig,
+              id: metric.id,
               gridRow: metric.gridRow,
               gridColumn: metric.gridColumn,
               minHeight: metric.minHeight

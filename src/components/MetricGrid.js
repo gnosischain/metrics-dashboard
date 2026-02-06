@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import MetricWidget from './MetricWidget';
-import LabelSelector from './LabelSelector';
+import GlobalFilterWidget from './GlobalFilterWidget';
 import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
 
 /**
- * Enhanced MetricGrid component with proper fixed row heights and global filter support
+ * Enhanced MetricGrid component with proper fixed row heights and global filter support.
+ *
+ * The global filter is rendered as a positioned grid item via a `global_filter`
+ * pseudo-metric in dashboard.yml, allowing full control over its size and
+ * location alongside other metric widgets.
+ *
  * @param {Object} props - Component props
  * @param {Array} props.metrics - Array of metric configurations
  * @param {boolean} props.isDarkMode - Whether dark mode is active
@@ -27,6 +32,7 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   useEffect(() => {
     globalFilterValueRef.current = globalFilterValue;
   }, [globalFilterValue]);
+
   // Process metrics to determine grid structure and row heights
   const processGridStructure = (metrics) => {
     let maxRow = 1;
@@ -72,6 +78,9 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   // Check if this tab has a global filter
   const hasGlobalFilter = tabConfig?.globalFilterField && onGlobalFilterChange;
 
+  // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
+  const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);
+
   // Get metrics that can provide global filter options
   // Priority: 1) Metrics with explicit globalFilterField config matching tab's globalFilterField
   //           2) Metrics where labelField matches globalFilterField (backwards compatible)
@@ -81,16 +90,16 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
     const globalField = tabConfig.globalFilterField;
     
     // First try: metrics with explicit globalFilterField config
-    const explicitMatch = metrics.filter(m => m.globalFilterField === globalField);
+    const explicitMatch = realMetrics.filter(m => m.globalFilterField === globalField);
     if (explicitMatch.length > 0) return explicitMatch;
     
     // Second try: metrics where labelField matches (backwards compatible)
-    const labelFieldMatch = metrics.filter(m => m.enableFiltering && m.labelField === globalField);
+    const labelFieldMatch = realMetrics.filter(m => m.enableFiltering && m.labelField === globalField);
     if (labelFieldMatch.length > 0) return labelFieldMatch;
     
     // Fallback: any filterable metric (may have the field in data even if labelField differs)
-    return metrics.filter(m => m.enableFiltering);
-  }, [metrics, hasGlobalFilter, tabConfig?.globalFilterField]);
+    return realMetrics.filter(m => m.enableFiltering);
+  }, [realMetrics, hasGlobalFilter, tabConfig?.globalFilterField]);
 
   // Get a single metric to use for fetching filter options (prefer "total" metrics as they're usually smaller)
   const metricForOptions = useMemo(() => {
@@ -155,66 +164,8 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
     gridTemplateRows: templateRows.join(' ')
   };
 
-  // Capitalize and format the filter field name for display
-  const getFilterFieldLabel = (fieldName) => {
-    if (!fieldName) return '';
-    // Convert 'token' to 'Token', 'project' to 'Project', etc.
-    return fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-  };
-
   return (
     <div className="metrics-grid-container">
-      {/* Global filter dropdown - show immediately if tab has globalFilterField, even while loading */}
-      {(hasGlobalFilter || hasUnitToggle) && (
-        <div className="global-filter-container">
-          <div className="global-filter-content">
-            {hasGlobalFilter && (
-              <>
-                <label className="global-filter-label" htmlFor="global-filter-select">
-                  {getFilterFieldLabel(tabConfig.globalFilterField)}:
-                </label>
-                <div className="global-filter-selector">
-                  {loadingGlobalFilter ? (
-                    <div className="global-filter-loading">
-                      <div className="loading-spinner" style={{ width: '16px', height: '16px', margin: 0 }}></div>
-                    </div>
-                  ) : globalFilterOptions.length > 0 ? (
-                    <LabelSelector
-                      labels={globalFilterOptions}
-                      selectedLabel={globalFilterValue || globalFilterOptions[0] || ''}
-                      onSelectLabel={onGlobalFilterChange}
-                      labelField={tabConfig.globalFilterField}
-                      idPrefix="global-filter"
-                    />
-                  ) : (
-                    <div className="global-filter-error">No options available</div>
-                  )}
-                </div>
-              </>
-            )}
-            
-            {/* Unit toggle (Native/USD) */}
-            {hasUnitToggle && (
-              <div className="unit-toggle-container">
-                <div className="unit-toggle-buttons">
-                  <button
-                    className={`unit-toggle-btn ${selectedUnit === 'native' ? 'active' : ''}`}
-                    onClick={() => setSelectedUnit('native')}
-                  >
-                    Native
-                  </button>
-                  <button
-                    className={`unit-toggle-btn ${selectedUnit === 'usd' ? 'active' : ''}`}
-                    onClick={() => setSelectedUnit('usd')}
-                  >
-                    USD
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
       <div className="metrics-grid-positioned" style={gridStyle}>
         {metrics.map(metric => {
           // Create inline style for grid positioning
@@ -232,6 +183,28 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
           // For multi-row spans, apply height directly to the element
           if (metric.gridRow && metric.gridRow.toString().includes('span') && metric.minHeight) {
             metricStyle.height = metric.minHeight;
+          }
+
+          // Render the in-grid global filter widget
+          if (metric.id === 'global_filter') {
+            return (
+              <div
+                key={metric.id}
+                className="grid-item"
+                style={metricStyle}
+              >
+                <GlobalFilterWidget
+                  tabConfig={tabConfig}
+                  globalFilterOptions={globalFilterOptions}
+                  globalFilterValue={globalFilterValue}
+                  onGlobalFilterChange={onGlobalFilterChange}
+                  loadingGlobalFilter={loadingGlobalFilter}
+                  hasUnitToggle={hasUnitToggle}
+                  selectedUnit={selectedUnit}
+                  onUnitChange={setSelectedUnit}
+                />
+              </div>
+            );
           }
           
           return (

@@ -205,16 +205,20 @@ Tokens:
       iconClass: "chart-line"
       globalFilterField: 'token_class'
       metrics:
-        - id: api_execution_tokens_supply_distribution_latest
+        - id: global_filter
           gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 60px
+        - id: api_execution_tokens_supply_distribution_latest
+          gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 300px
         - id: api_execution_tokens_supply_by_sector_latest
-          gridRow: 1
+          gridRow: 2
           gridColumn: 7 / span 6
           minHeight: 300px
         - id: api_execution_tokens_supply_by_class_daily
-          gridRow: 2
+          gridRow: 3
           gridColumn: 1 / span 12
           minHeight: 400px
     
@@ -226,36 +230,40 @@ Tokens:
       unitToggle: true
       defaultUnit: 'native'
       metrics:
-        - id: api_execution_tokens_supply_total
+        - id: global_filter
           gridRow: 1
+          gridColumn: 1 / span 12
+          minHeight: 60px
+        - id: api_execution_tokens_supply_total
+          gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 180px
         - id: api_execution_tokens_holders_total
-          gridRow: 1
+          gridRow: 2
           gridColumn: 7 / span 6
           minHeight: 180px
         - id: api_execution_tokens_supply_daily
-          gridRow: 2
+          gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_execution_tokens_holders_daily
-          gridRow: 2
+          gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 450px
         - id: api_execution_tokens_volume_daily
-          gridRow: 3
+          gridRow: 4
           gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_execution_tokens_active_senders_daily
-          gridRow: 3
+          gridRow: 4
           gridColumn: 7 / span 6
           minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_value_daily
-          gridRow: 4
+          gridRow: 5
           gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_holders_daily
-          gridRow: 4
+          gridRow: 5
           gridColumn: 7 / span 6
           minHeight: 450px
 
@@ -289,24 +297,28 @@ Tokens:
 #      iconClass: "lending"
 #      globalFilterField: 'token'
 #      metrics:
-#        - id: api_execution_yields_lending_lenders_count_7d
+#        - id: global_filter
 #          gridRow: 1
+#          gridColumn: 1 / span 6
+#          minHeight: 60px
+#        - id: api_execution_yields_lending_lenders_count_7d
+#          gridRow: 2
 #          gridColumn: 1 / span 6
 #          minHeight: 200px
 #        - id: api_execution_yields_lending_borrowers_count_7d
-#          gridRow: 1
+#          gridRow: 2
 #          gridColumn: 7 / span 6
 #          minHeight: 200px
 #          - id: api_execution_yields_lending_daily
-#          gridRow: 2
-#          gridColumn: 1 / span 12
-#          minHeight: 450px
-#        - id: api_execution_yields_lending_activity_counts_weekly
 #          gridRow: 3
 #          gridColumn: 1 / span 12
 #          minHeight: 450px
-#        - id: api_execution_yields_lending_activity_volumes_weekly
+#        - id: api_execution_yields_lending_activity_counts_weekly
 #          gridRow: 4
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
+#        - id: api_execution_yields_lending_activity_volumes_weekly
+#          gridRow: 5
 #          gridColumn: 1 / span 12
 #          minHeight: 450px
 
@@ -316,20 +328,24 @@ Tokens:
 #      iconClass: "pool"
 #      globalFilterField: 'token'
 #      metrics:
-#        - id: api_execution_yields_pools_tvl_latest
+#        - id: global_filter
 #          gridRow: 1
 #          gridColumn: 1 / span 6
-#          minHeight: 200px
-#        - id: api_execution_yields_pools_fees_7d
+#          minHeight: 60px
+#        - id: api_execution_yields_pools_tvl_latest
 #          gridRow: 2
 #          gridColumn: 1 / span 6
 #          minHeight: 200px
+#        - id: api_execution_yields_pools_fees_7d
+#          gridRow: 3
+#          gridColumn: 1 / span 6
+#          minHeight: 200px
 #        - id: api_execution_yields_pools_tvl_by_pool_latest
-#          gridRow: 1 / span 2
+#          gridRow: 2 / span 2
 #          gridColumn: 7 / span 6
 #          minHeight: 422px
 #        - id: api_execution_yields_pools_fee_apr_7d_daily
-#          gridRow: 3
+#          gridRow: 4
 #          gridColumn: 1 / span 12
 #          minHeight: 450px
         
