@@ -7,10 +7,6 @@ const metric = {
   isTimeSeries: true,
   stacked: true,
   enableZoom: true,
-  defaultZoom: {
-    start: 90,
-    end: 100,
-  },
   xField: 'date',
   yField: 'value_native',          
   seriesField: 'label',     

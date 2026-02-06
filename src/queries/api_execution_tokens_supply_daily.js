@@ -2,14 +2,10 @@ const metric = {
   id: 'api_execution_tokens_supply_daily',
   name: 'Token Supply',
   description: 'Daily circulating supply per token (excluding burn address).',
-  chartType: 'line',
+  chartType: 'area',
   isTimeSeries: true,
   stacked: false,
   enableZoom: true,
-  defaultZoom: {
-    start: 80,
-    end: 100,
-  },
   xField: 'date',
   yField: 'value_native',
   // We use labelField so the generic dropdown component

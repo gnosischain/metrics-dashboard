@@ -171,7 +171,7 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
             {hasGlobalFilter && (
               <>
                 <label className="global-filter-label" htmlFor="global-filter-select">
-                  Filter by {getFilterFieldLabel(tabConfig.globalFilterField)}:
+                  {getFilterFieldLabel(tabConfig.globalFilterField)}:
                 </label>
                 <div className="global-filter-selector">
                   {loadingGlobalFilter ? (
