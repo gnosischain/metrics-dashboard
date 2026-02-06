@@ -207,7 +207,7 @@ Tokens:
       metrics:
         - id: global_filter
           gridRow: 1
-          gridColumn: 1 / span 6
+          gridColumn: 1 / span 12
           minHeight: 60px
         - id: api_execution_tokens_supply_distribution_latest
           gridRow: 2

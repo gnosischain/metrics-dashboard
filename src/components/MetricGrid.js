@@ -190,7 +190,7 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
             return (
               <div
                 key={metric.id}
-                className="grid-item"
+                className="grid-item grid-item-filter"
                 style={metricStyle}
               >
                 <GlobalFilterWidget

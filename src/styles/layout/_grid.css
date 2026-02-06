@@ -64,6 +64,11 @@
   min-width: 0;
 }
 
+/* Allow the filter widget's dropdown to overflow its grid cell */
+.metrics-grid-positioned .grid-item-filter {
+  overflow: visible;
+}
+
 /* ==================
    Metrics Grid - Responsive
    ================== */
