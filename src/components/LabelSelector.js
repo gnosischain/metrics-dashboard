@@ -127,6 +127,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
             ref={listRef}
             className="custom-dropdown-list"
             role="listbox"
+            tabIndex={-1}
             aria-activedescendant={
               focusedIndex >= 0 ? `${selectId}-option-${focusedIndex}` : undefined
             }
