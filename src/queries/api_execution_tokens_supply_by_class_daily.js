@@ -17,6 +17,7 @@ const metric = {
   labelField: 'token_class',   
   format: 'formatCurrency',
   tooltipOrder: 'valueDesc',
+  showTotal: true,
 
   query: `
     SELECT
