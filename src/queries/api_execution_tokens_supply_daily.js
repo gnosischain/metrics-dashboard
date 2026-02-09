@@ -1,21 +1,17 @@
 const metric = {
   id: 'api_execution_tokens_supply_daily',
   name: 'Token Supply',
-  description: 'Daily circulating supply per token (excluding burn address).',
+  description: 'Daily total supply per token.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: false,
   enableZoom: true,
   xField: 'date',
   yField: 'value_native',
-  // We use labelField so the generic dropdown component
-  // lets you pick the token
   enableFiltering: true,
   labelField: 'token',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
-
-  // Unit toggle support (Native/USD)
   unitFields: {
     native: { field: 'value_native', format: 'formatNumber' },
     usd: { field: 'value_usd', format: 'formatCurrency' }
