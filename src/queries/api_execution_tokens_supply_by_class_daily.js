@@ -1,10 +1,10 @@
 const metric = {
   id: 'api_execution_tokens_supply_by_class_daily',
-  name: 'Token Supply Over Time',
-  description: 'Daily token supply (market cap) by token within class.',
-  chartType: 'line',
+  name: 'Token Market Cap',
+  description: 'Daily token supply in USD (market cap) by token within class.',
+  chartType: 'area',
   isTimeSeries: true,
-  stacked: false,
+  stacked: true,
   enableZoom: true,
   defaultZoom: {
     start: 80,
@@ -25,6 +25,7 @@ const metric = {
       token_class,
       value_usd
     FROM dbt.api_execution_tokens_supply_daily
+    WHERE token NOT IN ('WxDAI', 'sDAI')
   `,
 };
 
