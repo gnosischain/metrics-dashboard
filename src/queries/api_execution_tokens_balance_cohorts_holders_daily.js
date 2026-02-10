@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_tokens_balance_cohorts_holders_daily',
   name: 'Token Balance Cohorts (Holders)',
   description:
-    'Number of holders by USD balance cohort',
+    'Number of holders by USD balance cohort per token',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,
