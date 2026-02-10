@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import { getChartComponent } from './index';
+import { getChartComponent } from './chartRegistry';
 import { addWatermark } from '../../../utils/echarts/chartUtils';
 
 const EChartsContainer = ({ 
