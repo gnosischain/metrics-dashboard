@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_tokens_balance_cohorts_value_daily',
   name: 'Token Balance Cohorts (Value)',
   description:
-    'Distribution of token balances across value buckets over time (per token).',
+    'Value held by USD balance cohort',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_tokens_active_senders_daily',
-  name: 'Token Active Senders',
-  description: 'Number of distinct sending addresses per token per day.',
+  name: 'Unique Senders',
+  description: 'Daily number of distinct sending addresses per token',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: false,

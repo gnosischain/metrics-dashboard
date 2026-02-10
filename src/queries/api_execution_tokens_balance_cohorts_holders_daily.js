@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_tokens_balance_cohorts_holders_daily',
   name: 'Token Balance Cohorts (Holders)',
   description:
-    'Number of holders per USD balance bucket over time (per token).',
+    'Number of holders by USD balance cohort',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_tokens_supply_daily',
-  name: 'Token Supply',
-  description: 'Daily total supply per token.',
+  name: 'Supply',
+  description: 'Daily total supply per token',
   chartType: 'area',
   isTimeSeries: true,
   stacked: false,

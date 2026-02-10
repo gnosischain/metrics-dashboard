@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_tokens_holders_daily',
-  name: 'Token Holders',
-  description: 'Number of addresses with non-zero balance per token over time.',
+  name: 'Holders',
+  description: 'Daily number ofaddresses with non-zero balance per token',
   chartType: 'area',
   isTimeSeries: true,
   stacked: false,

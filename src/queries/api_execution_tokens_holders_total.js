@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_tokens_holders_total',
-  name: 'Latest Token Holders',
+  name: 'Total Holders',
   description: 'Per token',
   format: 'formatNumber',
   valueField: 'value',

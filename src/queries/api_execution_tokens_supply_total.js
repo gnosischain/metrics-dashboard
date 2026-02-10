@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_tokens_supply_total',
-  name: 'Latest Token Supply',
+  name: 'Total Supply',
   description: 'Per token',
   format: 'formatNumber',
   valueField: 'value_native',

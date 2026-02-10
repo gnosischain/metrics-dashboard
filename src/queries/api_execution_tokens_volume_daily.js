@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_tokens_volume_daily',
-  name: 'Token Transfer Volume',
-  description: 'Daily transfer volume per token.',
+  name: 'Transfer Volume',
+  description: 'Daily transfer volume per token',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: false,
