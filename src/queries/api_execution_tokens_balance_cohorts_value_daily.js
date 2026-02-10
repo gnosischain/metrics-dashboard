@@ -3,7 +3,7 @@ const metric = {
   name: 'Token Balance Cohorts (Value)',
   description:
     'Value held by USD balance cohort per token',
-  chartType: 'area',
+  chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
   enableZoom: true,

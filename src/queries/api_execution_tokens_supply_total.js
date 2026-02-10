@@ -15,7 +15,11 @@ const metric = {
     usd: { field: 'value_usd', format: 'formatCurrency' }
   },
 
-  query: `SELECT token, value_native, value_usd FROM dbt.api_execution_tokens_supply_latest_by_token`,
+  query: `SELECT 
+      token, 
+      ROUND(value_native,0) AS value_native,
+      ROUND(value_usd,0) AS value_usd
+    FROM dbt.api_execution_tokens_supply_latest_by_token`,
 };
 export default metric;
 
