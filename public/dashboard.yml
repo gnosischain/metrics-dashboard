@@ -233,20 +233,20 @@ Tokens:
       metrics:
         - id: global_filter
           gridRow: 1
-          gridColumn: 1 / span 6
+          gridColumn: 1 / span 5
           minHeight: 90px
-        - id: api_execution_tokens_count_total
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 90px
+       # - id: api_execution_tokens_count_total
+       #   gridRow: 1
+       #   gridColumn: 7 / span 6
+       #   minHeight: 90px
         - id: api_execution_tokens_supply_total
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 180px
+          gridRow: 1
+          gridColumn: 6 / span 4
+          minHeight: 90px
         - id: api_execution_tokens_holders_total
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 180px
+          gridRow: 1
+          gridColumn: 10 / span 3
+          minHeight: 90px
         - id: api_execution_tokens_supply_daily
           gridRow: 3
           gridColumn: 1 / span 6
@@ -569,11 +569,11 @@ Network:
         - id: api_p2p_topology_latest
           gridRow: 2
           gridColumn: 1 / span 8
-          minHeight: 460px
+          minHeight: 490px
         - id: text_network_overview
           gridRow: 2
           gridColumn: 9 / span 4
-          minHeight: 460px
+          minHeight: 490px
         
     - name: Clients
       order: 2
