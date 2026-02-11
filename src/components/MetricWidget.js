@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
+import InfoPopover from './InfoPopover';
 import metricsService from '../services/metrics';
 
 const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
@@ -29,6 +30,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         chartType = 'line', 
         name, 
         description, 
+        metricDescription,
         format, 
         color, 
         labelField,
@@ -51,6 +53,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       chartType, 
       title: name, 
       description, 
+      metricDescription,
       format, 
       color, 
       labelField, 
@@ -326,12 +329,21 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const selectedLabelForDropdown = selectedLabel;
   const onLabelSelect = setSelectedLabel;
 
-  const headerControls = showLocalDropdown ? (
-    <LabelSelector
-      labels={labelsForDropdown}
-      selectedLabel={selectedLabelForDropdown}
-      onSelectLabel={onLabelSelect}
-    />
+  const showInfoPopover = Boolean(widgetConfig.metricDescription);
+
+  const headerControls = (showLocalDropdown || showInfoPopover) ? (
+    <>
+      {showLocalDropdown && (
+        <LabelSelector
+          labels={labelsForDropdown}
+          selectedLabel={selectedLabelForDropdown}
+          onSelectLabel={onLabelSelect}
+        />
+      )}
+      {showInfoPopover && (
+        <InfoPopover text={widgetConfig.metricDescription} />
+      )}
+    </>
   ) : undefined;
 
   // Early returns must come AFTER all hooks

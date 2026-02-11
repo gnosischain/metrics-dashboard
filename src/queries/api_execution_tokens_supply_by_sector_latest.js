@@ -2,6 +2,8 @@ const metric = {
   id: 'api_execution_tokens_supply_by_sector_latest',
   name: 'Supply by Sector',
   description: 'Token supply distribution by sector in USD',
+  metricDescription: `Longer explanation here
+  Second line OK`,
   chartType: 'pie',
   enableFiltering: true,
   labelField: 'token_class',
