@@ -208,20 +208,20 @@ Tokens:
       metrics:
         - id: global_filter
           gridRow: 1
-          gridColumn: 1 / span 12
+          gridColumn: 5 / span 8
           minHeight: 60px
         - id: api_execution_tokens_supply_distribution_latest
-          gridRow: 2
-          gridColumn: 1 / span 6
+          gridRow: 1 / span 2
+          gridColumn: 1 / span 4
           minHeight: 300px
         - id: api_execution_tokens_supply_by_sector_latest
-          gridRow: 2
-          gridColumn: 7 / span 6
+          gridRow: 3
+          gridColumn: 1 / span 4
           minHeight: 300px
         - id: api_execution_tokens_supply_by_class_daily
-          gridRow: 3
-          gridColumn: 1 / span 12
-          minHeight: 400px
+          gridRow: 2 / span 2
+          gridColumn: 5 / span 8
+          minHeight: 540px
     
     - name: Per-token breakdown
       order: 2
