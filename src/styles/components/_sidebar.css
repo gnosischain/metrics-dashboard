@@ -80,8 +80,17 @@
 }
 
 .tab-navigation.collapsed .dashboard-icon {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
+}
+
+.tab-navigation.collapsed .dashboard-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-navigation.collapsed .dashboard-icon span {
+  font-size: 0.9rem;
 }
 
 /* ==================

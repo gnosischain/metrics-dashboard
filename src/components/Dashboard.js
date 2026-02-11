@@ -162,10 +162,30 @@ const Dashboard = () => {
         
         setDashboards(allDashboards);
         
-        // Set first dashboard as active if no active dashboard
+        // Set initial dashboard from URL if provided
         if (!activeDashboard && allDashboards.length > 0) {
-          console.log('Dashboard: Setting first dashboard as active:', allDashboards[0].id);
-          setActiveDashboard(allDashboards[0].id);
+          const params = new URLSearchParams(window.location.search);
+          const dashboardParam = params.get('dashboard');
+          const tabParam = params.get('tab');
+          const matchedDashboard = allDashboards.find(d => d.id === dashboardParam);
+
+          if (matchedDashboard) {
+            console.log('Dashboard: Using dashboard from URL:', matchedDashboard.id);
+            setActiveDashboard(matchedDashboard.id);
+
+            const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
+            const matchedTab = tabParam && dashboardTabs.some(t => t.id === tabParam)
+              ? tabParam
+              : (dashboardTabs[0]?.id || '');
+
+            if (matchedTab) {
+              console.log('Dashboard: Using tab from URL:', matchedTab);
+              setActiveTab(matchedTab);
+            }
+          } else {
+            console.log('Dashboard: Setting first dashboard as active:', allDashboards[0].id);
+            setActiveDashboard(allDashboards[0].id);
+          }
         }
       } catch (error) {
         console.error('Dashboard: Error loading dashboards:', error);
@@ -177,6 +197,20 @@ const Dashboard = () => {
     
     loadDashboards();
   }, [activeDashboard]);
+
+  // Keep URL in sync with navigation state
+  useEffect(() => {
+    if (!activeDashboard) return;
+    const params = new URLSearchParams(window.location.search);
+    params.set('dashboard', activeDashboard);
+    if (activeTab) {
+      params.set('tab', activeTab);
+    } else {
+      params.delete('tab');
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [activeDashboard, activeTab]);
   
   // Update tabs when active dashboard changes
   useEffect(() => {
