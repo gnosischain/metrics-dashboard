@@ -9,7 +9,7 @@ const metric = {
   valueField: 'value_usd',
   format: 'formatCurrency',
   useAbbreviatedLabels: true,
-  query: `SELECT token_class, label, value_usd, percentage FROM playground_max.api_execution_tokens_supply_by_sector_latest`,
+  query: `SELECT token_class, label, value_usd, percentage FROM dbt.api_execution_tokens_supply_by_sector_latest`,
 };
 
 export default metric;
