@@ -33,7 +33,7 @@ export class BaseChart {
     };
 
     if (type === 'value') {
-      baseConfig.axisLabel.formatter = (value) => formatValue(value, config.format);
+      baseConfig.axisLabel.formatter = (value) => BaseChart.formatAxisValue(value, config);
     } else if (type === 'category') {
       baseConfig.axisLabel.formatter = (value) => 
         BaseChart.formatTimeSeriesLabel(value, config.timeContext);
@@ -41,6 +41,64 @@ export class BaseChart {
 
     const axisOverrides = (type === 'value') ? config.yAxis : config.xAxis;
     return { ...baseConfig, ...(axisOverrides || {}) };
+  }
+
+  static formatAxisValue(value, config = {}) {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '0';
+    }
+
+    const format = config.axisLabelFormat || config.format;
+    const abs = Math.abs(Number(value));
+    const threshold = Number.isFinite(config.axisCompactThreshold)
+      ? config.axisCompactThreshold
+      : 1000;
+
+    if (abs < threshold) {
+      return formatValue(value, format);
+    }
+
+    const { prefix, suffix } = BaseChart.getAxisAffixes(format, value);
+    return `${prefix}${BaseChart.formatCompactNumber(value)}${suffix}`;
+  }
+
+  static getAxisAffixes(format, value) {
+    const sign = Number(value) < 0 ? '-' : '';
+
+    if (format === 'formatCurrency' || format === 'formatNumberWithUSD') {
+      return { prefix: `${sign}$`, suffix: '' };
+    }
+    if (format === 'formatNumberWithXDAI') {
+      return { prefix: sign, suffix: ' xDAI' };
+    }
+    if (format === 'formatNumberWithGNO') {
+      return { prefix: sign, suffix: ' GNO' };
+    }
+
+    return { prefix: sign, suffix: '' };
+  }
+
+  static formatCompactNumber(value) {
+    const abs = Math.abs(Number(value));
+    if (!Number.isFinite(abs)) return '0';
+
+    let scaled = abs;
+    let suffix = '';
+
+    if (abs >= 1000000000) {
+      scaled = abs / 1000000000;
+      suffix = 'B';
+    } else if (abs >= 1000000) {
+      scaled = abs / 1000000;
+      suffix = 'M';
+    } else if (abs >= 1000) {
+      scaled = abs / 1000;
+      suffix = 'K';
+    }
+
+    const digits = scaled >= 10 ? 0 : 1;
+    const rounded = scaled.toFixed(digits).replace(/\.0$/, '');
+    return `${rounded}${suffix}`;
   }
 
   static analyzeTimeGranularity(categories) {

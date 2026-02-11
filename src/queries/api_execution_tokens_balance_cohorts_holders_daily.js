@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_tokens_balance_cohorts_holders_daily',
   name: 'Token Balance Cohorts (Holders)',
   description:
-    'Number of holders by USD balance cohort per token',
+    'Number of holders by balance cohort per token',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
@@ -12,14 +12,16 @@ const metric = {
   seriesField: 'label',     
   enableFiltering: true,
   labelField: 'token',      
+  unitFilterField: 'cohort_unit',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
   query: `
     SELECT
       date,
-      token,
-      label,
-      value
+      token,   
+      cohort_unit,
+      label,   
+      value  
     FROM dbt.api_execution_tokens_balance_cohorts_holders_daily
   `,
 };

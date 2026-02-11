@@ -141,6 +141,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         params.filterField = globalFilterField;
         params.filterValue = globalFilterValue;
       }
+      if (selectedUnit && metricConfig?.unitFilterField) {
+        params.filterField2 = metricConfig.unitFilterField;
+        params.filterValue2 = selectedUnit;
+      }
 
       const result = await metricsService.getMetricData(metricId, params);
       
@@ -177,7 +181,9 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     metricId,
     globalFilterField,
     globalFilterValue,
-    hasGlobalFilter
+    hasGlobalFilter,
+    selectedUnit,
+    metricConfig?.unitFilterField
   ]);
 
   useEffect(() => {

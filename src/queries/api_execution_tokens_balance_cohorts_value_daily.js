@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_tokens_balance_cohorts_value_daily',
   name: 'Token Balance Cohorts (Value)',
   description:
-    'Value held by USD balance cohort per token',
+    'Value held by balance cohort per token',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
@@ -12,6 +12,7 @@ const metric = {
   seriesField: 'label',     
   enableFiltering: true,
   labelField: 'token',      
+  unitFilterField: 'cohort_unit',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
 
@@ -24,8 +25,9 @@ const metric = {
   query: `
     SELECT
       date,
-      token,
-      label,
+      token,   
+      cohort_unit,
+      label,   
       value_native,
       value_usd
     FROM dbt.api_execution_tokens_balance_cohorts_value_daily

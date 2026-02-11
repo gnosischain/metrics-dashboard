@@ -1,4 +1,4 @@
 {
   "id": "api_execution_tokens_balance_cohorts_value_daily",
-  "query": "SELECT\n      date,\n      token,\n      label,\n      value_native,\n      value_usd\n    FROM dbt.api_execution_tokens_balance_cohorts_value_daily"
+  "query": "SELECT\n      date,\n      token,   \n      cohort_unit,\n      label,   \n      value_native,\n      value_usd\n    FROM dbt.api_execution_tokens_balance_cohorts_value_daily"
 }

@@ -170,11 +170,12 @@ To deploy this dashboard, you'll need:
    - Go to your project in the Vercel dashboard
    - Navigate to Settings > Environment Variables
    - Add the following environment variables:
-     - `CLICKHOUSE_HOST`: Your ClickHouse host URL
-     - `CLICKHOUSE_USER`: ClickHouse username
-     - `CLICKHOUSE_PASSWORD`: ClickHouse password
-     - `CLICKHOUSE_DATABASE` (optional): Database name 
-     - `API_KEY`: A secure key for API authentication
+    - `CLICKHOUSE_HOST`: Your ClickHouse host URL
+    - `CLICKHOUSE_USER`: ClickHouse username
+    - `CLICKHOUSE_PASSWORD`: ClickHouse password
+    - `CLICKHOUSE_DATABASE` (optional): Database name 
+    - `CLICKHOUSE_DBT_SCHEMA` (optional): dbt schema prefix used to rewrite `dbt.` in queries (default: `dbt`)
+    - `API_KEY`: A secure key for API authentication
      - `REACT_APP_API_URL`: `/api` (relative path)
      - `REACT_APP_API_KEY`: Same value as `API_KEY`
      - `REACT_APP_DASHBOARD_TITLE` (optional): Custom dashboard title

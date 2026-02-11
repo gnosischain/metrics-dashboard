@@ -251,26 +251,27 @@ Tokens:
           gridRow: 3
           gridColumn: 1 / span 6
           minHeight: 450px
-        - id: api_execution_tokens_holders_daily
+        - id: api_execution_tokens_volume_daily
           gridRow: 3
           gridColumn: 7 / span 6
           minHeight: 450px
-        - id: api_execution_tokens_volume_daily
-          gridRow: 4
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_tokens_active_senders_daily
-          gridRow: 4
-          gridColumn: 7 / span 6
-          minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_value_daily
-          gridRow: 5
+          gridRow: 4
           gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_holders_daily
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_holders_daily
+          gridRow: 5
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_active_senders_daily
           gridRow: 5
           gridColumn: 7 / span 6
           minHeight: 450px
+        
 
 #Yields:
 #  name: Yields
@@ -714,11 +715,11 @@ Bridges:
         - id: api_bridges_sankey_gnosis_out_ranges
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 620px
+          minHeight: 625px
         - id: api_bridges_sankey_gnosis_in_ranges
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 620px
+          minHeight: 625px
 
     - name: Token Flows
       icon: "💱"
@@ -727,11 +728,11 @@ Bridges:
         - id: api_bridges_sankey_gnosis_out_by_token_7d
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 620px
+          minHeight: 420px
         - id: api_bridges_sankey_gnosis_in_by_token_7d
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 620px
+          minHeight: 420px
         - id: api_bridges_token_netflow_daily_by_bridge
           gridRow: 2
           gridColumn: 1 / span 12

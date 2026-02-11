@@ -179,10 +179,13 @@ module.exports = async (req, res) => {
     // Optional, backwards-compatible query params:
     // - from/to: override date placeholders if provided (default behavior unchanged if omitted)
     // - filterField/filterValue: apply server-side filtering by wrapping the metric query
+    // - filterField2/filterValue2: optional second filter (ANDed with the first)
     const requestFrom = typeof req.query.from === 'string' ? req.query.from : null;
     const requestTo = typeof req.query.to === 'string' ? req.query.to : null;
     const requestFilterField = typeof req.query.filterField === 'string' ? req.query.filterField : null;
     const requestFilterValue = typeof req.query.filterValue === 'string' ? req.query.filterValue : null;
+    const requestFilterField2 = typeof req.query.filterField2 === 'string' ? req.query.filterField2 : null;
+    const requestFilterValue2 = typeof req.query.filterValue2 === 'string' ? req.query.filterValue2 : null;
     
     // Force cache refresh if explicitly requested
     if (req.query.refreshCache === 'true') {
@@ -200,7 +203,9 @@ module.exports = async (req, res) => {
         from: requestFrom,
         to: requestTo,
         filterField: requestFilterField,
-        filterValue: requestFilterValue
+        filterValue: requestFilterValue,
+        filterField2: requestFilterField2,
+        filterValue2: requestFilterValue2
       });
       return res.status(200).json(metricData);
     } 
@@ -243,7 +248,7 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
   console.log(`Fetching data for metric: ${metricId}`);
   console.log(`Query: ${query.substring(0, 100)}...`);
 
-  const { from: fromParam, to: toParam, filterField, filterValue } = opts;
+  const { from: fromParam, to: toParam, filterField, filterValue, filterField2, filterValue2 } = opts;
 
   const isIsoDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
   const isSafeIdentifier = (s) => typeof s === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(s);
@@ -251,15 +256,17 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
 
   const effectiveFromToProvided = isIsoDate(fromParam) && isIsoDate(toParam);
   const effectiveFilterProvided = isSafeIdentifier(filterField) && typeof filterValue === 'string' && filterValue.length > 0;
+  const effectiveFilter2Provided = isSafeIdentifier(filterField2) && typeof filterValue2 === 'string' && filterValue2.length > 0;
 
   // Backwards-compatible cache key:
   // - If no extra params are provided, keep the original metricId cache key.
   // - If params are provided, include them so cached results don't mix.
   const cacheKey = (() => {
-    if (!effectiveFromToProvided && !effectiveFilterProvided) return metricId;
+    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided) return metricId;
     const parts = [metricId];
     if (effectiveFromToProvided) parts.push(`from=${fromParam}`, `to=${toParam}`);
     if (effectiveFilterProvided) parts.push(`filterField=${filterField}`, `filterValue=${filterValue}`);
+    if (effectiveFilter2Provided) parts.push(`filterField2=${filterField2}`, `filterValue2=${filterValue2}`);
     return parts.join('|');
   })();
   
@@ -302,16 +309,26 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
 
     // Optionally apply server-side filtering by wrapping the query.
     // This is intentionally opt-in and guarded for backward compatibility.
-    if (effectiveFilterProvided) {
+    if (effectiveFilterProvided || effectiveFilter2Provided) {
       // Heuristic guard: only apply if the query text mentions the filter field at all
       // (prevents obvious "Unknown identifier" cases).
-      const mentionsField = processedQuery.toLowerCase().includes(filterField.toLowerCase());
-      if (mentionsField) {
-        const valueEscaped = escapeSqlString(filterValue);
+      const lowerQuery = processedQuery.toLowerCase();
+      const mentionsField = effectiveFilterProvided && lowerQuery.includes(filterField.toLowerCase());
+      const mentionsField2 = effectiveFilter2Provided && lowerQuery.includes(filterField2.toLowerCase());
 
+      const conditions = [];
+      if (effectiveFilterProvided && mentionsField) {
+        const valueEscaped = escapeSqlString(filterValue);
+        conditions.push(`${filterField} = '${valueEscaped}'`);
+      }
+      if (effectiveFilter2Provided && mentionsField2) {
+        const valueEscaped2 = escapeSqlString(filterValue2);
+        conditions.push(`${filterField2} = '${valueEscaped2}'`);
+      }
+
+      if (conditions.length > 0) {
         // Preserve ORDER BY (and any trailing LIMIT) by hoisting it to the outer query.
-        const lowerQ = processedQuery.toLowerCase();
-        const orderByIdx = lowerQ.lastIndexOf('order by');
+        const orderByIdx = lowerQuery.lastIndexOf('order by');
         const innerQuery = orderByIdx >= 0 ? processedQuery.slice(0, orderByIdx) : processedQuery;
         const orderByClause = orderByIdx >= 0 ? processedQuery.slice(orderByIdx) : '';
 
@@ -320,7 +337,7 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
           FROM (
             ${innerQuery}
           )
-          WHERE ${filterField} = '${valueEscaped}'
+          WHERE ${conditions.join(' AND ')}
           ${orderByClause}
         `;
       }
@@ -335,7 +352,7 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
     } catch (error) {
       // Backwards-compatible fallback: if the filtered query fails, retry without the filter.
       // This avoids breaking metrics that don't actually include the requested filter field.
-      if (effectiveFilterProvided) {
+      if (effectiveFilterProvided || effectiveFilter2Provided) {
         console.warn(`Filtered query failed for ${metricId}; retrying without filter. Error:`, error?.message || error);
         const fallbackQuery = query.replace(/\{from\}/g, fromStr).replace(/\{to\}/g, toStr);
         rawData = await cronManager.executeClickHouseQuery(fallbackQuery);

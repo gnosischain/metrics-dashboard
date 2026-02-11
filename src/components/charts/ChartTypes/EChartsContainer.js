@@ -24,6 +24,7 @@ const EChartsContainer = ({
   const [chartOptions, setChartOptions] = useState(null);
   const [hasZoom, setHasZoom] = useState(false);
   const [requiresGL, setRequiresGL] = useState(false);
+  const [containerSize, setContainerSize] = useState({ width: undefined, height: undefined });
 
   console.log(`EChartsContainer: Rendering with chartType=${chartType}, dataLength=${data?.length}, isDarkMode=${isDarkMode}`);
 
@@ -52,6 +53,41 @@ const EChartsContainer = ({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Track container size for layout-sensitive charts (e.g., Sankey auto-fit)
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    const node = chartRef.current;
+
+    const updateSize = () => {
+      const rect = node.getBoundingClientRect();
+      const next = {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height)
+      };
+
+      if (!next.width || !next.height) return;
+
+      setContainerSize(prev => {
+        if (prev.width === next.width && prev.height === next.height) {
+          return prev;
+        }
+        return next;
+      });
+    };
+
+    updateSize();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => updateSize());
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
   }, []);
 
   // Generate chart options
@@ -85,7 +121,9 @@ const EChartsContainer = ({
         const mergedConfig = {
           ...config,
           cardSize,
-          isDynamicHeight
+          isDynamicHeight,
+          containerHeight: containerSize.height,
+          containerWidth: containerSize.width
         };
 
         console.log(`EChartsContainer: Generating options with config:`, mergedConfig);
@@ -130,7 +168,19 @@ const EChartsContainer = ({
     };
 
     generateOptions();
-  }, [data, chartType, config, isDarkMode, cardSize, isDynamicHeight, glLoaded, showWatermark, requiresGL]);
+  }, [
+    data,
+    chartType,
+    config,
+    isDarkMode,
+    cardSize,
+    isDynamicHeight,
+    glLoaded,
+    showWatermark,
+    requiresGL,
+    containerSize.width,
+    containerSize.height
+  ]);
 
   // Initialize/update chart
   useEffect(() => {
@@ -226,6 +276,13 @@ const EChartsContainer = ({
       });
     }
   }, [isDarkMode, chartOptions, loading, requiresGL, chartType]);
+
+  // Ensure chart resizes when container size changes (e.g., auto-fit layouts)
+  useEffect(() => {
+    if (instanceRef.current) {
+      instanceRef.current.resize();
+    }
+  }, [containerSize.width, containerSize.height]);
 
   // Cleanup
   useEffect(() => {
