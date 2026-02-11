@@ -37,6 +37,9 @@ export class PieChart extends BaseChart {
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
           formatter: (params) => {
+            if (config.pieLabelValue === false) {
+              return params.name;
+            }
             if (config.useAbbreviatedLabels) {
               const formattedValue = formatValue(params.value, config.format);
               return `${params.name}: ${formattedValue}`;
