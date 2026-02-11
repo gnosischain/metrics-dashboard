@@ -9,6 +9,7 @@ const metric = {
   valueField: 'value_usd',
   format: 'formatCurrency',
   useAbbreviatedLabels: true,
+  pieLabelValue: false,
   query: `SELECT token_class, token, value_usd, percentage FROM dbt.api_execution_tokens_supply_distribution_latest`,
 };
 
