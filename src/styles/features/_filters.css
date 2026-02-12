@@ -145,6 +145,10 @@
   background-color: rgba(9, 105, 218, 0.1);
 }
 
+.custom-dropdown-item:hover {
+  background-color: rgba(9, 105, 218, 0.1);
+}
+
 .custom-dropdown-item.selected {
   font-weight: var(--font-weight-semibold);
   color: var(--primary-blue);

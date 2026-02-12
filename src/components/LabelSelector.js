@@ -17,6 +17,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const containerRef = useRef(null);
   const listRef = useRef(null);
+  const lastInteractionRef = useRef('pointer');
 
   const selectedIndex = labels ? labels.indexOf(selectedLabel) : -1;
 
@@ -41,6 +42,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   // Scroll focused item into view
   useEffect(() => {
     if (!isOpen || focusedIndex < 0 || !listRef.current) return;
+    if (lastInteractionRef.current !== 'keyboard') return;
     const item = listRef.current.children[focusedIndex];
     if (item) {
       item.scrollIntoView({ block: 'nearest' });
@@ -55,6 +57,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
     if (isOpen) {
       close();
     } else {
+      lastInteractionRef.current = 'pointer';
       setIsOpen(true);
       // Pre-focus the currently selected item
       setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
@@ -62,6 +65,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   };
 
   const selectItem = (label) => {
+    lastInteractionRef.current = 'pointer';
     onSelectLabel(label);
     close();
   };
@@ -78,15 +82,18 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
+        lastInteractionRef.current = 'keyboard';
         setFocusedIndex(prev => (prev < labels.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
         e.preventDefault();
+        lastInteractionRef.current = 'keyboard';
         setFocusedIndex(prev => (prev > 0 ? prev - 1 : prev));
         break;
       case 'Enter':
       case ' ':
         e.preventDefault();
+        lastInteractionRef.current = 'keyboard';
         if (focusedIndex >= 0 && focusedIndex < labels.length) {
           selectItem(labels[focusedIndex]);
         }
@@ -144,7 +151,6 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
                   (index === focusedIndex ? ' focused' : '')
                 }
                 onClick={() => selectItem(label)}
-                onMouseEnter={() => setFocusedIndex(index)}
               >
                 {label}
               </li>
