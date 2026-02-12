@@ -247,30 +247,30 @@ Tokens:
           gridRow: 1
           gridColumn: 10 / span 3
           minHeight: 90px
-        - id: api_execution_tokens_supply_daily
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_tokens_volume_daily
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
+       # - id: api_execution_tokens_supply_daily
+       #   gridRow: 2
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_value_daily
-          gridRow: 3
+          gridRow: 2
           gridColumn: 1 / span 6
           minHeight: 450px
         - id: api_execution_tokens_balance_cohorts_holders_daily
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+       # - id: api_execution_tokens_holders_daily
+       #   gridRow: 4
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
+        - id: api_execution_tokens_volume_daily
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 350px
+        - id: api_execution_tokens_active_senders_daily
           gridRow: 3
           gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_execution_tokens_holders_daily
-          gridRow: 4
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_tokens_active_senders_daily
-          gridRow: 4
-          gridColumn: 7 / span 6
-          minHeight: 450px
+          minHeight: 350px
         
 
 #Yields:
