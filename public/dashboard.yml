@@ -163,7 +163,7 @@ OnChainActivity:
           gridRow: 5
           gridColumn: 1 / span 12
           minHeight: 420px
-    - name: Active Accounts
+    - name: Initiator Accounts
       order: 5
       icon: "👥"                
       iconClass: "users"
@@ -192,6 +192,168 @@ OnChainActivity:
           gridRow: 4
           gridColumn: 1 / span 12
           minHeight: 420px
+
+Tokens:
+  name: Tokens
+  order: 6
+  icon: "🪙"
+  iconClass: "coins"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "chart-line"
+      globalFilterField: 'token_class'
+      globalFilterLabel: 'Token Class'
+      metrics:
+        - id: global_filter
+          gridRow: 1
+          gridColumn: 5 / span 8
+          minHeight: 60px
+        - id: api_execution_tokens_supply_distribution_latest
+          gridRow: 1 / span 2
+          gridColumn: 1 / span 4
+          minHeight: 300px
+        - id: api_execution_tokens_supply_by_sector_latest
+          gridRow: 3
+          gridColumn: 1 / span 4
+          minHeight: 300px
+        - id: api_execution_tokens_supply_by_class_daily
+          gridRow: 2 / span 2
+          gridColumn: 5 / span 8
+          minHeight: 540px
+    
+    - name: Per-token breakdown
+      order: 2
+      icon: "🪙"
+      iconClass: "coins"
+      globalFilterField: 'token'
+      unitToggle: true
+      defaultUnit: 'native'
+      metrics:
+        - id: global_filter
+          gridRow: 1
+          gridColumn: 1 / span 5
+          minHeight: 90px
+       # - id: api_execution_tokens_count_total
+       #   gridRow: 1
+       #   gridColumn: 7 / span 6
+       #   minHeight: 90px
+        - id: api_execution_tokens_supply_total
+          gridRow: 1
+          gridColumn: 6 / span 4
+          minHeight: 90px
+        - id: api_execution_tokens_holders_total
+          gridRow: 1
+          gridColumn: 10 / span 3
+          minHeight: 90px
+       # - id: api_execution_tokens_supply_daily
+       #   gridRow: 2
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_value_daily
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_holders_daily
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+       # - id: api_execution_tokens_holders_daily
+       #   gridRow: 4
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
+        - id: api_execution_tokens_volume_daily
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 350px
+        - id: api_execution_tokens_active_senders_daily
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 350px
+        
+
+#Yields:
+#  name: Yields
+#  order: 7
+#  icon: "📈"
+#  iconClass: "yield"
+#  tabs:
+#    - name: Overview
+#      order: 1
+#      icon: "📊"
+#      iconClass: "chart-line"
+#      metrics:
+#        - id: api_execution_yields_overview_lp_tvl
+#          gridRow: 1
+#          gridColumn: 1 / span 4
+#          minHeight: 160px
+#        - id: api_execution_yields_overview_lending_best_apy
+#          gridRow: 2
+#          gridColumn: 5 / span 4
+#          minHeight: 160px
+#        - id: api_execution_yields_opportunities_latest
+#          gridRow: 3
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
+
+#    - name: Lending yields
+#      order: 2
+#      icon: "💰"
+#      iconClass: "lending"
+#      globalFilterField: 'token'
+#      metrics:
+#        - id: global_filter
+#          gridRow: 1
+#          gridColumn: 1 / span 12
+#          minHeight: 60px
+#        - id: api_execution_yields_lending_lenders_count_7d
+#          gridRow: 2
+#          gridColumn: 1 / span 6
+#          minHeight: 200px
+#        - id: api_execution_yields_lending_borrowers_count_7d
+#          gridRow: 2
+#          gridColumn: 7 / span 6
+#          minHeight: 200px
+#          - id: api_execution_yields_lending_daily
+#          gridRow: 3
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
+#        - id: api_execution_yields_lending_activity_counts_weekly
+#          gridRow: 4
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
+#        - id: api_execution_yields_lending_activity_volumes_weekly
+#          gridRow: 5
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
+
+#    - name: Pool Yields
+#      order: 3
+#      icon: "📊"
+#      iconClass: "pool"
+#      globalFilterField: 'token'
+#      metrics:
+#        - id: global_filter
+#          gridRow: 1
+#          gridColumn: 1 / span 6
+#          minHeight: 60px
+#        - id: api_execution_yields_pools_tvl_latest
+#          gridRow: 2
+#          gridColumn: 1 / span 6
+#          minHeight: 200px
+#        - id: api_execution_yields_pools_fees_7d
+#          gridRow: 3
+#          gridColumn: 1 / span 6
+#          minHeight: 200px
+#        - id: api_execution_yields_pools_tvl_by_pool_latest
+#          gridRow: 2 / span 2
+#          gridColumn: 7 / span 6
+#          minHeight: 422px
+#        - id: api_execution_yields_pools_fee_apr_7d_daily
+#          gridRow: 4
+#          gridColumn: 1 / span 12
+#          minHeight: 450px
         
    # - name: Flows
    #   order: 7
@@ -273,7 +435,7 @@ Consensus:
           gridRow: 1
           gridColumn: 7 / span 3
           minHeight: 130px
-        - id: api_consensus_info_withdrawls_cnt_latest
+        - id: api_consensus_info_staked_latest
           gridRow: 1
           gridColumn: 10 / span 3
           minHeight: 130px
@@ -408,11 +570,11 @@ Network:
         - id: api_p2p_topology_latest
           gridRow: 2
           gridColumn: 1 / span 8
-          minHeight: 460px
+          minHeight: 490px
         - id: text_network_overview
           gridRow: 2
           gridColumn: 9 / span 4
-          minHeight: 460px
+          minHeight: 490px
         
     - name: Clients
       order: 2
@@ -553,11 +715,11 @@ Bridges:
         - id: api_bridges_sankey_gnosis_out_ranges
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 620px
+          minHeight: 625px
         - id: api_bridges_sankey_gnosis_in_ranges
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 620px
+          minHeight: 625px
 
     - name: Token Flows
       icon: "💱"
@@ -566,11 +728,11 @@ Bridges:
         - id: api_bridges_sankey_gnosis_out_by_token_7d
           gridRow: 1
           gridColumn: 1 / span 6
-          minHeight: 620px
+          minHeight: 420px
         - id: api_bridges_sankey_gnosis_in_by_token_7d
           gridRow: 1
           gridColumn: 7 / span 6
-          minHeight: 620px
+          minHeight: 420px
         - id: api_bridges_token_netflow_daily_by_bridge
           gridRow: 2
           gridColumn: 1 / span 12

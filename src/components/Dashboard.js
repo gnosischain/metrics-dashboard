@@ -16,6 +16,8 @@ const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
+  const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
+  const [tabFilters, setTabFilters] = useState({}); // Store filter state per tab: { tabId: selectedValue }
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
@@ -160,10 +162,30 @@ const Dashboard = () => {
         
         setDashboards(allDashboards);
         
-        // Set first dashboard as active if no active dashboard
+        // Set initial dashboard from URL if provided
         if (!activeDashboard && allDashboards.length > 0) {
-          console.log('Dashboard: Setting first dashboard as active:', allDashboards[0].id);
-          setActiveDashboard(allDashboards[0].id);
+          const params = new URLSearchParams(window.location.search);
+          const dashboardParam = params.get('dashboard');
+          const tabParam = params.get('tab');
+          const matchedDashboard = allDashboards.find(d => d.id === dashboardParam);
+
+          if (matchedDashboard) {
+            console.log('Dashboard: Using dashboard from URL:', matchedDashboard.id);
+            setActiveDashboard(matchedDashboard.id);
+
+            const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
+            const matchedTab = tabParam && dashboardTabs.some(t => t.id === tabParam)
+              ? tabParam
+              : (dashboardTabs[0]?.id || '');
+
+            if (matchedTab) {
+              console.log('Dashboard: Using tab from URL:', matchedTab);
+              setActiveTab(matchedTab);
+            }
+          } else {
+            console.log('Dashboard: Setting first dashboard as active:', allDashboards[0].id);
+            setActiveDashboard(allDashboards[0].id);
+          }
         }
       } catch (error) {
         console.error('Dashboard: Error loading dashboards:', error);
@@ -175,6 +197,20 @@ const Dashboard = () => {
     
     loadDashboards();
   }, [activeDashboard]);
+
+  // Keep URL in sync with navigation state
+  useEffect(() => {
+    if (!activeDashboard) return;
+    const params = new URLSearchParams(window.location.search);
+    params.set('dashboard', activeDashboard);
+    if (activeTab) {
+      params.set('tab', activeTab);
+    } else {
+      params.delete('tab');
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [activeDashboard, activeTab]);
   
   // Update tabs when active dashboard changes
   useEffect(() => {
@@ -225,11 +261,15 @@ const Dashboard = () => {
     
     if (activeDashboard && activeTab) {
       const metricsForTab = dashboardsService.getTabMetrics(activeDashboard, activeTab);
+      const tabConfig = dashboardsService.getTab(activeDashboard, activeTab);
       console.log('Dashboard: Retrieved metrics for tab:', metricsForTab);
+      console.log('Dashboard: Retrieved tab config:', tabConfig);
       setTabMetrics(metricsForTab);
+      setActiveTabConfig(tabConfig);
     } else {
       console.log('Dashboard: Clearing metrics');
       setTabMetrics([]);
+      setActiveTabConfig(null);
     }
   }, [activeDashboard, activeTab]);
   
@@ -288,6 +328,19 @@ const Dashboard = () => {
     const dashboard = dashboards.find(d => d.id === activeDashboard);
     return dashboard ? dashboard.name : '';
   };
+
+  // Handle global filter change for a tab
+  const handleGlobalFilterChange = useCallback((selectedValue) => {
+    if (activeTab) {
+      setTabFilters(prev => ({
+        ...prev,
+        [activeTab]: selectedValue
+      }));
+    }
+  }, [activeTab]);
+
+  // Get current global filter value for active tab
+  const currentGlobalFilter = activeTab ? tabFilters[activeTab] || null : null;
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
@@ -358,6 +411,9 @@ const Dashboard = () => {
                 key={`grid-${activeDashboard}-${activeTab}`} 
                 metrics={tabMetrics}
                 isDarkMode={isDarkMode}
+                tabConfig={activeTabConfig}
+                globalFilterValue={currentGlobalFilter}
+                onGlobalFilterChange={handleGlobalFilterChange}
               />
             </div>
           ) : dashboards.length === 0 ? (

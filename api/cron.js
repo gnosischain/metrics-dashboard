@@ -3,6 +3,31 @@ const path = require('path');
 const axios = require('axios');
 const cacheManager = require('./cache');
 
+function resolveDbtSchema() {
+  const rawSchema = process.env.CLICKHOUSE_DBT_SCHEMA;
+  const schema = (rawSchema ?? 'dbt').trim();
+  const isValid = schema !== '' && /^[A-Za-z0-9_]+$/.test(schema);
+
+  if (!isValid) {
+    if (rawSchema !== undefined) {
+      console.warn(
+        `Invalid CLICKHOUSE_DBT_SCHEMA "${rawSchema}". Falling back to "dbt".`
+      );
+    }
+    return 'dbt';
+  }
+
+  return schema;
+}
+
+function applyDbtSchema(query) {
+  const schema = resolveDbtSchema();
+  if (schema === 'dbt') {
+    return query;
+  }
+  return query.replace(/\bdbt\./gi, `${schema}.`);
+}
+
 /**
  * Simple cron-like functionality for refreshing the cache daily
  */
@@ -35,6 +60,10 @@ class CronManager {
     }
       
     console.log(`Cron initialized with refresh interval: ${this.refreshInterval / (60 * 60 * 1000)} hours`);
+  }
+
+  getDbtSchema() {
+    return resolveDbtSchema();
   }
 
   /**
@@ -159,6 +188,9 @@ class CronManager {
         ? clickhouseHost 
         : `https://${clickhouseHost}:${clickhousePort}`;
       
+      // Apply dbt schema override if configured
+      const finalQuery = applyDbtSchema(query);
+
       // Execute the actual query
       console.log(`Executing ClickHouse query to ${url}`);
       const response = await axios({
@@ -169,7 +201,7 @@ class CronManager {
           password: clickhousePassword
         },
         params: {
-          query,
+          query: finalQuery,
           database: clickhouseDatabase,
           default_format: 'JSONEachRow'
         },

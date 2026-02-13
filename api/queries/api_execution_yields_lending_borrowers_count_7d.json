@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_lending_borrowers_count_7d",
+  "query": "SELECT * FROM dbt.api_execution_yields_lending_borrowers_count_7d"
+}

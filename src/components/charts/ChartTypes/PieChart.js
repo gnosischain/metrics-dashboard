@@ -36,9 +36,18 @@ export class PieChart extends BaseChart {
         },
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
-          formatter: config.showPercentage 
-            ? '{b}: {d}%' 
-            : '{b}: {c}'
+          formatter: (params) => {
+            if (config.pieLabelValue === false) {
+              return params.name;
+            }
+            if (config.useAbbreviatedLabels) {
+              const formattedValue = formatValue(params.value, config.format);
+              return `${params.name}: ${formattedValue}`;
+            }
+            return config.showPercentage 
+              ? `${params.name}: ${params.percent}%` 
+              : `${params.name}: ${params.value}`;
+          }
         },
         labelLine: {
           lineStyle: {

@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_active_accounts_by_project_total',
-  name: 'Total Active Accounts by Project',
+  name: 'Total Initiator Accounts by Project',
   description: 'All Time',
   chartType: 'pie',
   nameField: 'label',          

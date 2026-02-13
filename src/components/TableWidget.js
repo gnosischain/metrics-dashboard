@@ -321,7 +321,7 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       
       pagination: config.pagination !== false ? (data && data.length > 0 ? true : false) : false,
       paginationSize: config.paginationSize || 5, // Default to smaller page size
-      paginationSizeSelector: config.paginationSizeSelector || [3, 5, 10, 20],
+      paginationSizeSelector: config.paginationSizeSelector !== undefined ? config.paginationSizeSelector : [3, 5, 10, 20],
       paginationButtonCount: config.paginationButtonCount || 5,
       paginationInitialPage: 1, // Always start on page 1
       paginationCounter: config.paginationCounter || "rows", // Show row counter

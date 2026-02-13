@@ -66,7 +66,8 @@ module.exports = async (req, res) => {
       },
       configuration: {
         useMockData: process.env.USE_MOCK_DATA === 'true',
-        clickhouseConfigured: !!process.env.CLICKHOUSE_HOST
+        clickhouseConfigured: !!process.env.CLICKHOUSE_HOST,
+        dbtSchema: cronManager.getDbtSchema()
       }
     });
   } catch (error) {

@@ -14,7 +14,14 @@ const config = {
     // For Vercel deployment, use relative path to API endpoints
     url: process.env.REACT_APP_API_URL || '/api',
     key: process.env.REACT_APP_API_KEY || 'dev-key-12345',
-    useMockData: process.env.REACT_APP_USE_MOCK_DATA === 'true' || process.env.NODE_ENV === 'development'
+    // Allow explicit override in dev; default to mock only if env var is unset
+    useMockData: (() => {
+      const flag = process.env.REACT_APP_USE_MOCK_DATA;
+      if (flag !== undefined) {
+        return flag === 'true';
+      }
+      return process.env.NODE_ENV === 'development';
+    })()
   },
   
   // Dashboard configuration

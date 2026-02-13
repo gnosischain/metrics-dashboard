@@ -13,7 +13,8 @@ const metric = {
     nodeWidth: 16,
     nodeGap: 12,
     orient: 'horizontal',
-    showNodeTotals: true
+    showNodeTotals: false,
+    top: 28 
   },
   query: `
     SELECT range, source, target, value

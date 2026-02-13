@@ -33,7 +33,7 @@ export class BaseChart {
     };
 
     if (type === 'value') {
-      baseConfig.axisLabel.formatter = (value) => formatValue(value, config.format);
+      baseConfig.axisLabel.formatter = (value) => BaseChart.formatAxisValue(value, config);
     } else if (type === 'category') {
       baseConfig.axisLabel.formatter = (value) => 
         BaseChart.formatTimeSeriesLabel(value, config.timeContext);
@@ -41,6 +41,64 @@ export class BaseChart {
 
     const axisOverrides = (type === 'value') ? config.yAxis : config.xAxis;
     return { ...baseConfig, ...(axisOverrides || {}) };
+  }
+
+  static formatAxisValue(value, config = {}) {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '0';
+    }
+
+    const format = config.axisLabelFormat || config.format;
+    const abs = Math.abs(Number(value));
+    const threshold = Number.isFinite(config.axisCompactThreshold)
+      ? config.axisCompactThreshold
+      : 1000;
+
+    if (abs < threshold) {
+      return formatValue(value, format);
+    }
+
+    const { prefix, suffix } = BaseChart.getAxisAffixes(format, value);
+    return `${prefix}${BaseChart.formatCompactNumber(value)}${suffix}`;
+  }
+
+  static getAxisAffixes(format, value) {
+    const sign = Number(value) < 0 ? '-' : '';
+
+    if (format === 'formatCurrency' || format === 'formatNumberWithUSD') {
+      return { prefix: `${sign}$`, suffix: '' };
+    }
+    if (format === 'formatNumberWithXDAI') {
+      return { prefix: sign, suffix: ' xDAI' };
+    }
+    if (format === 'formatNumberWithGNO') {
+      return { prefix: sign, suffix: ' GNO' };
+    }
+
+    return { prefix: sign, suffix: '' };
+  }
+
+  static formatCompactNumber(value) {
+    const abs = Math.abs(Number(value));
+    if (!Number.isFinite(abs)) return '0';
+
+    let scaled = abs;
+    let suffix = '';
+
+    if (abs >= 1000000000) {
+      scaled = abs / 1000000000;
+      suffix = 'B';
+    } else if (abs >= 1000000) {
+      scaled = abs / 1000000;
+      suffix = 'M';
+    } else if (abs >= 1000) {
+      scaled = abs / 1000;
+      suffix = 'K';
+    }
+
+    const digits = scaled >= 10 ? 0 : 1;
+    const rounded = scaled.toFixed(digits).replace(/\.0$/, '');
+    return `${rounded}${suffix}`;
   }
 
   static analyzeTimeGranularity(categories) {
@@ -110,6 +168,14 @@ export class BaseChart {
   const fmt = (v) => formatValue(v, config.format);
   // opt-in ordering: 'valueDesc' | 'valueAsc' | 'seriesAsc' | 'seriesDesc'
   const order = config.tooltipOrder;
+  const getColumnCount = (count) => {
+    if (Number.isFinite(config.tooltipColumns)) {
+      return Math.max(1, Math.floor(config.tooltipColumns));
+    }
+    if (count > 20) return 3;
+    if (count > 10) return 2;
+    return 1;
+  };
 
   const sorter = (a, b) => {
     if (order === 'valueDesc') return (Number(b.value) || 0) - (Number(a.value) || 0);
@@ -137,22 +203,45 @@ export class BaseChart {
     // apply ordering only if requested
     if (order) items.sort(sorter);
 
-    items.forEach(p => {
+    const rowHtml = items.map(p => {
       const seriesName = p.seriesName || 'Value';
       const color = p.color || '#999';
       const formattedValue = fmt(p.value);
-      tooltip += `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0;min-width:150px;">
-          <div style="display:flex;align-items:center;flex:1;">
-            <div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>
-            <span style="margin-right:16px;">${seriesName}</span>
-          </div>
-          <span style="font-weight:600;white-space:nowrap;">${formattedValue}</span>
-        </div>`;
       if (config.showTotal && typeof p.value === 'number') {
         total += p.value;
       }
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div style="display:flex;align-items:center;flex:1;min-width:0;">
+            <div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>
+            <span style="margin-right:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${seriesName}</span>
+          </div>
+          <span style="font-weight:600;white-space:nowrap;">${formattedValue}</span>
+        </div>`;
     });
+
+    if (rowHtml.length > 0) {
+      const columnCount = getColumnCount(rowHtml.length);
+      const itemsPerColumn = Math.ceil(rowHtml.length / columnCount);
+      const columns = [];
+
+      for (let i = 0; i < columnCount; i++) {
+        const start = i * itemsPerColumn;
+        const end = start + itemsPerColumn;
+        const columnRows = rowHtml.slice(start, end);
+        if (columnRows.length === 0) continue;
+        columns.push(`
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:150px;">
+            ${columnRows.join('')}
+          </div>
+        `);
+      }
+
+      tooltip += `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${columns.join('')}
+        </div>`;
+    }
 
     if (config.showTotal && items.length > 1) {
       tooltip += `

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_tokens_count_total",
+  "query": "SELECT COUNT(*) as value FROM dbt.api_execution_tokens_holders_latest_by_token"
+}

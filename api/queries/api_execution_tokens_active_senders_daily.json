@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_tokens_active_senders_daily",
+  "query": "SELECT\n      date,\n      token,\n      value\n    FROM dbt.api_execution_tokens_active_senders_daily"
+}
