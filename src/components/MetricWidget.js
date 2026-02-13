@@ -68,6 +68,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     };
   }, [metricConfig]);
 
+  const resolveFormat = useCallback((preferred, fallback) => {
+    return preferred === undefined ? fallback : preferred;
+  }, []);
+
   // Determine effective yField and format based on unit toggle
   // If the metric has unitFields config and a unit is selected, use those settings
   const effectiveUnitConfig = useMemo(() => {
@@ -78,7 +82,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       return {
         yField: metricConfig?.yField || 'value',
         valueField: metricConfig?.valueField || 'value',
-        format: metricConfig?.format || 'formatNumber'
+        // Preserve explicit null to disable formatting.
+        format: resolveFormat(metricConfig?.format, 'formatNumber')
       };
     }
     
@@ -88,7 +93,11 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       return {
         yField: unitConfig.field || metricConfig?.yField || 'value',
         valueField: unitConfig.field || metricConfig?.valueField || 'value',
-        format: unitConfig.format || metricConfig?.format || 'formatNumber'
+        // Preserve explicit null to disable formatting.
+        format: resolveFormat(
+          unitConfig.format,
+          resolveFormat(metricConfig?.format, 'formatNumber')
+        )
       };
     }
     
@@ -96,9 +105,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     return {
       yField: metricConfig?.yField || 'value',
       valueField: metricConfig?.valueField || 'value',
-      format: metricConfig?.format || 'formatNumber'
+      // Preserve explicit null to disable formatting.
+      format: resolveFormat(metricConfig?.format, 'formatNumber')
     };
-  }, [selectedUnit, metricConfig]);
+  }, [selectedUnit, metricConfig, resolveFormat]);
 
   // Check if this widget should use global filter for its labelField
   const isGlobalFilterForThisField = useMemo(() => {
