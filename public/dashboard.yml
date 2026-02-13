@@ -938,37 +938,37 @@ GnosisPay:
           gridRow: 2
           gridColumn: 7 / span 6
           minHeight: 450px
-#    - name: Balances
-#      order: 4
-#      icon: "💰"
-#      iconClass: "wallet"
-#      metrics:
-#        - id: api_execution_gpay_total_balance
-#          gridRow: 1
-#          gridColumn: 1 / span 6
-#          minHeight: 130px
-#        - id: api_execution_gpay_owner_total_balance
-#          gridRow: 1
-#          gridColumn: 7 / span 6
-#          minHeight: 130px
-#        - id: api_execution_gpay_balances_by_token_daily
-#          gridRow: 2
-#          gridColumn: 1 / span 6
-#          minHeight: 450px
-#        - id: api_execution_gpay_owner_balances_by_token_daily
-#          gridRow: 2
-#          gridColumn: 7 / span 6
-#          minHeight: 450px
-#        - id: api_execution_gpay_gno_balance_daily
-#          gridRow: 3
-#          gridColumn: 1 / span 12
-#          minHeight: 450px
-#        - id: api_execution_gpay_balance_cohorts_holders_daily
-#          gridRow: 4
-#          gridColumn: 1 / span 6
-#          minHeight: 450px
-#        - id: api_execution_gpay_balance_cohorts_value_daily
-#          gridRow: 4
-#          gridColumn: 7 / span 6
-#          minHeight: 450px
+    - name: Balances
+      order: 4
+      icon: "💰"
+      iconClass: "wallet"
+      metrics:
+        - id: api_execution_gpay_total_balance
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_owner_total_balance
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_gno_balance_daily
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 322px
+        - id: api_execution_gpay_balances_by_token_daily
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_owner_balances_by_token_daily
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_balance_cohorts_holders_daily
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_balance_cohorts_value_daily
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 450px
 

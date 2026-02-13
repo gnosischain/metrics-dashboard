@@ -1,0 +1,20 @@
+const metric = {
+  id: 'api_execution_gpay_payments_by_token_weekly',
+  name: 'Payments',
+  description: 'Weekly payment count',
+  chartType: 'bar',
+  isTimeSeries: true,
+  stacked: true,
+  enableZoom: true,
+  format: 'formatNumber',
+  showTotal: true,
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'label',
+  tooltipOrder: 'valueDesc',
+  query: `
+    SELECT date, label, value
+    FROM dbt.api_execution_gpay_payments_by_token_weekly
+  `,
+};
+export default metric;
