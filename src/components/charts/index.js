@@ -22,5 +22,5 @@ export {
   CHART_TYPES 
 } from './ChartTypes';
 
-// Default export the entire ChartTypes module for convenience
-export { default } from './ChartTypes';
+// Default export EChartsContainer for convenience
+export { default } from './ChartTypes/EChartsContainer';
