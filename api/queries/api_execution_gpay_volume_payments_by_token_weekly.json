@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_volume_payments_by_token_weekly",
+  "query": "SELECT date, label, value\n    FROM dbt.api_execution_gpay_volume_payments_by_token_weekly"
+}
