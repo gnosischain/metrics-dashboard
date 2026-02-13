@@ -15,6 +15,7 @@ const metric = {
   unitFilterField: 'cohort_unit',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
+  showTotal: true,
   query: `
     SELECT
       date,

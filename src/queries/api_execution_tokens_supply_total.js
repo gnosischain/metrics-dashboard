@@ -12,7 +12,7 @@ const metric = {
   // Unit toggle support (Native/USD)
   unitFields: {
     native: { field: 'value_native', format: 'formatNumber' },
-    usd: { field: 'value_usd', format: 'formatCurrency' }
+    usd: { field: 'value_usd', format: 'formatNumberWithUSD' }
   },
 
   query: `SELECT 

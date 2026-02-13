@@ -435,7 +435,7 @@ Consensus:
           gridRow: 1
           gridColumn: 7 / span 3
           minHeight: 130px
-        - id: api_consensus_info_withdrawls_cnt_latest
+        - id: api_consensus_info_staked_latest
           gridRow: 1
           gridColumn: 10 / span 3
           minHeight: 130px
