@@ -172,8 +172,8 @@ export const addWatermark = (options, config = {}) => {
       opacity: finalConfig.watermarkOpacity
     },
     right: 10,
-    // Position at the same level as the zoom slider
-    bottom: config.hasZoom ? 15 : 10  // Same height as zoom slider when present
+    // Keep watermark above simplified zoom slider to avoid collisions.
+    bottom: config.hasZoom ? 28 : 10
   };
 
   // Add graphic to options

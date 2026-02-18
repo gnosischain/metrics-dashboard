@@ -1,6 +1,125 @@
 import { formatValue } from '../../../utils';
 
 export class BaseChart {
+  static isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  static deepMerge(base, override) {
+    if (!override) return base;
+
+    const output = { ...base };
+
+    Object.entries(override).forEach(([key, value]) => {
+      if (BaseChart.isPlainObject(value) && BaseChart.isPlainObject(base?.[key])) {
+        output[key] = BaseChart.deepMerge(base[key], value);
+      } else {
+        output[key] = value;
+      }
+    });
+
+    return output;
+  }
+
+  static parseDateValue(value) {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value) || Math.abs(value) < 1000000000) {
+        return null;
+      }
+
+      const numericValue = Math.abs(value) < 1000000000000 ? value * 1000 : value;
+      const numericDate = new Date(numericValue);
+      return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    let normalized = value.trim();
+    if (!normalized) return null;
+
+    if (/^\d{10}(\d{3})?$/.test(normalized)) {
+      const numericValue =
+        normalized.length === 10 ? Number(normalized) * 1000 : Number(normalized);
+      const numericDate = new Date(numericValue);
+      return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+    }
+
+    if (/^\d{4}-\d{2}$/.test(normalized)) {
+      normalized = `${normalized}-01T00:00:00Z`;
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      normalized = `${normalized}T00:00:00Z`;
+    } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(normalized)) {
+      normalized = normalized.includes(' ') ? normalized.replace(' ', 'T') : normalized;
+    } else {
+      return null;
+    }
+
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  static formatDateByGranularity(date, granularity, forTooltip = false) {
+    const sharedOptions = { timeZone: 'UTC' };
+
+    if (granularity === 'sub-daily' || granularity === 'hourly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        day: 'numeric',
+        ...(forTooltip ? { year: 'numeric' } : {}),
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(date);
+    }
+
+    if (granularity === 'daily' || granularity === 'weekly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        day: 'numeric',
+        ...(forTooltip ? { year: 'numeric' } : {})
+      }).format(date);
+    }
+
+    if (granularity === 'monthly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    if (granularity === 'yearly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        year: 'numeric'
+      }).format(date);
+    }
+
+    return forTooltip
+      ? new Intl.DateTimeFormat('en-US', {
+          ...sharedOptions,
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).format(date)
+      : new Intl.DateTimeFormat('en-US', {
+          ...sharedOptions,
+          month: 'short',
+          day: 'numeric'
+        }).format(date);
+  }
+
   static getBaseOptions(isDarkMode) {
     return {
       backgroundColor: 'transparent',
@@ -17,14 +136,24 @@ export class BaseChart {
   static getAxisConfig(isDarkMode, type = 'category', config = {}) {
     const baseConfig = {
       axisLine: {
+        show: true,
         lineStyle: {
           color: isDarkMode ? '#4b5563' : '#d1d5db'
         }
       },
+      axisTick: {
+        show: true,
+        alignWithLabel: type === 'category'
+      },
       axisLabel: {
-        color: isDarkMode ? '#9ca3af' : '#6b7280'
+        show: true,
+        color: isDarkMode ? '#9ca3af' : '#6b7280',
+        hideOverlap: true,
+        showMinLabel: true,
+        showMaxLabel: true
       },
       splitLine: {
+        show: type === 'value',
         lineStyle: {
           color: isDarkMode ? '#374151' : '#f3f4f6',
           type: 'dashed'
@@ -35,12 +164,12 @@ export class BaseChart {
     if (type === 'value') {
       baseConfig.axisLabel.formatter = (value) => BaseChart.formatAxisValue(value, config);
     } else if (type === 'category') {
-      baseConfig.axisLabel.formatter = (value) => 
+      baseConfig.axisLabel.formatter = (value) =>
         BaseChart.formatTimeSeriesLabel(value, config.timeContext);
     }
 
-    const axisOverrides = (type === 'value') ? config.yAxis : config.xAxis;
-    return { ...baseConfig, ...(axisOverrides || {}) };
+    const axisOverrides = type === 'value' ? config.yAxis : config.xAxis;
+    return BaseChart.deepMerge(baseConfig, axisOverrides || {});
   }
 
   static formatAxisValue(value, config = {}) {
@@ -102,65 +231,94 @@ export class BaseChart {
   }
 
   static analyzeTimeGranularity(categories) {
-    if (!categories || categories.length < 2) {
-      return { granularity: 'unknown', shouldRemoveTime: false };
+    if (!categories || categories.length === 0) {
+      return { granularity: 'unknown', shouldRemoveTime: false, isTimeSeries: false };
     }
 
-    const sampleSize = Math.min(10, categories.length);
-    const timeFormats = [];
-    
-    for (let i = 0; i < sampleSize; i++) {
-      const timeStr = String(categories[i]);
-      
-      if (timeStr.match(/\d{4}-\d{2}-\d{2}/)) {
-        if (timeStr.includes(' ')) {
-          const timePart = timeStr.split(' ')[1];
-          if (timePart) {
-            timeFormats.push(timePart);
-          }
-        } else {
-          timeFormats.push('date-only');
+    const sample = categories.slice(0, 30);
+    const parsedDates = [];
+    let hasExplicitTime = false;
+
+    sample.forEach((value) => {
+      if (typeof value === 'string') {
+        const normalized = value.trim();
+        if (/\d{2}:\d{2}(:\d{2})?/.test(normalized)) {
+          hasExplicitTime = true;
         }
+      }
+
+      const parsed = BaseChart.parseDateValue(value);
+      if (parsed) {
+        parsedDates.push(parsed);
+      }
+    });
+
+    if (parsedDates.length < 2) {
+      if (parsedDates.length === 1) {
+        const singleGranularity = hasExplicitTime ? 'sub-daily' : 'daily';
+        return {
+          granularity: singleGranularity,
+          shouldRemoveTime: !hasExplicitTime,
+          isTimeSeries: true
+        };
+      }
+
+      return { granularity: 'unknown', shouldRemoveTime: false, isTimeSeries: false };
+    }
+
+    const timestamps = [...new Set(parsedDates.map((date) => date.getTime()))].sort((a, b) => a - b);
+    let minStep = Infinity;
+
+    for (let i = 1; i < timestamps.length; i++) {
+      const diff = timestamps[i] - timestamps[i - 1];
+      if (diff > 0 && diff < minStep) {
+        minStep = diff;
       }
     }
 
-    if (timeFormats.length === 0) {
-      return { granularity: 'unknown', shouldRemoveTime: false };
+    if (!Number.isFinite(minStep)) {
+      minStep = 24 * 60 * 60 * 1000;
     }
 
-    const hasDateOnly = timeFormats.includes('date-only');
-    const hasZeroTime = timeFormats.some(t => t === '00:00:00');
-    const hasNonZeroTime = timeFormats.some(t => t !== '00:00:00' && t !== 'date-only');
-    
-    if (hasNonZeroTime) {
-      return { granularity: 'sub-daily', shouldRemoveTime: false };
-    }
-    
-    if (hasDateOnly || (hasZeroTime && !hasNonZeroTime)) {
-      return { granularity: 'daily', shouldRemoveTime: true };
+    const HOUR = 60 * 60 * 1000;
+    const DAY = 24 * HOUR;
+    const MONTH_APPROX = 28 * DAY;
+    const YEAR_APPROX = 365 * DAY;
+
+    let granularity = 'daily';
+    if (minStep < DAY || hasExplicitTime) {
+      granularity = 'sub-daily';
+    } else if (minStep >= YEAR_APPROX - 30 * DAY) {
+      granularity = 'yearly';
+    } else if (minStep >= MONTH_APPROX) {
+      granularity = 'monthly';
+    } else if (minStep >= 6 * DAY) {
+      granularity = 'weekly';
     }
 
-    return { granularity: 'unknown', shouldRemoveTime: false };
+    return {
+      granularity,
+      shouldRemoveTime: granularity !== 'sub-daily' && granularity !== 'hourly',
+      isTimeSeries: true
+    };
   }
 
   static formatTimeSeriesLabel(value, context = {}) {
-    if (typeof value !== 'string') {
+    const date = BaseChart.parseDateValue(value);
+    if (!date) {
       return value;
     }
 
-    if (context.shouldRemoveTime === false) {
-      return value;
-    }
-
-    if (context.shouldRemoveTime === true || value.includes(' 00:00:00')) {
-      return value.split(' ')[0];
-    }
-
-    return value;
+    const granularity = context.granularity || 'unknown';
+    return BaseChart.formatDateByGranularity(date, granularity, false);
   }
 
   static formatTimeSeriesInTooltip(dateValue, context = {}) {
-    return this.formatTimeSeriesLabel(dateValue, context);
+    const parsed = BaseChart.parseDateValue(dateValue);
+    if (!parsed) return dateValue;
+
+    const granularity = context.granularity || 'unknown';
+    return BaseChart.formatDateByGranularity(parsed, granularity, true);
   }
 
   static createTimeSeriesAwareTooltipFormatter(config = {}) {
@@ -260,22 +418,21 @@ export class BaseChart {
   static getGridConfig(config = {}) {
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
+    const hasZoom = config.dataZoom || config.enableZoom;
     
     let bottomMargin, topMargin;
     
     if (isDynamicHeight) {
-      if (config.dataZoom || config.enableZoom) {
-        // *** FIX: Reduced bottom margin to bring zoom slider closer to the chart ***
-        bottomMargin = '30px'; 
+      if (hasZoom) {
+        bottomMargin = isSmallCard ? '44px' : '52px';
         topMargin = isSmallCard ? '5%' : '8%';
       } else {
         bottomMargin = '20px';
         topMargin = isSmallCard ? '5%' : '8%';
       }
     } else {
-      if (config.dataZoom || config.enableZoom) {
-        // *** FIX: Reduced percentage for fixed-height charts as well ***
-        bottomMargin = '12%'; 
+      if (hasZoom) {
+        bottomMargin = isSmallCard ? '48px' : '56px';
         topMargin = isSmallCard ? '8%' : '10%';
       } else {
         bottomMargin = isSmallCard ? '8%' : '3%';
@@ -355,11 +512,18 @@ export class BaseChart {
           type: 'slider',
           xAxisIndex: [0],
           filterMode: 'filter',
-          bottom: isDynamicHeight ? 5 : (isSmallCard ? 12 : 10),
-          height: isSmallCard ? 18 : 20,
+          bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
+          height: isSmallCard ? 10 : 12,
+          showDetail: false,
+          showDataShadow: false,
+          brushSelect: false,
+          borderColor: 'transparent',
+          backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+          fillerColor: config.isDarkMode ? 'rgba(88, 166, 255, 0.28)' : 'rgba(9, 105, 218, 0.22)',
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
           },
+          handleSize: '95%',
           handleStyle: {
             color: config.isDarkMode ? '#58A6FF' : '#0969DA',
             borderColor: config.isDarkMode ? '#58A6FF' : '#0969DA'
@@ -368,8 +532,8 @@ export class BaseChart {
             color: config.isDarkMode ? '#9ca3af' : '#6b7280'
           },
           dataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#4b5563' : '#d1d5db' },
-            areaStyle: { color: config.isDarkMode ? '#374151' : '#f3f4f6' }
+            lineStyle: { color: config.isDarkMode ? '#4b5563' : '#d1d5db', opacity: 0.2 },
+            areaStyle: { color: config.isDarkMode ? '#374151' : '#f3f4f6', opacity: 0.2 }
           },
           selectedDataBackground: {
             lineStyle: { color: config.isDarkMode ? '#58A6FF' : '#0969DA' },
@@ -380,9 +544,9 @@ export class BaseChart {
     };
 
     if (config.defaultZoom) {
-      dataZoomConfig.dataZoom.forEach(zoom => {
-        zoom.start = config.defaultZoom.start || 0;
-        zoom.end = config.defaultZoom.end || 100;
+      dataZoomConfig.dataZoom.forEach((zoom) => {
+        zoom.start = config.defaultZoom.start ?? 0;
+        zoom.end = config.defaultZoom.end ?? 100;
       });
     }
 

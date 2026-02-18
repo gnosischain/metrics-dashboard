@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
   const [tabFilters, setTabFilters] = useState({}); // Store filter state per tab: { tabId: selectedValue }
   const [isLoading, setIsLoading] = useState(true);
+  const [configLoaded, setConfigLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
     return window.innerWidth <= 768;
@@ -148,6 +149,7 @@ const Dashboard = () => {
     const loadDashboards = async () => {
       console.log('Dashboard: Starting dashboard loading...');
       setIsLoading(true);
+      setConfigLoaded(false);
       setShowIndexingAlert(false); // Show alert while loading
       
       try {
@@ -163,7 +165,7 @@ const Dashboard = () => {
         setDashboards(allDashboards);
         
         // Set initial dashboard from URL if provided
-        if (!activeDashboard && allDashboards.length > 0) {
+        if (allDashboards.length > 0) {
           const params = new URLSearchParams(window.location.search);
           const dashboardParam = params.get('dashboard');
           const tabParam = params.get('tab');
@@ -192,11 +194,12 @@ const Dashboard = () => {
         setIndexingMessage("Error loading dashboard. Please refresh the page.");
       } finally {
         setIsLoading(false);
+        setConfigLoaded(true);
       }
     };
     
     loadDashboards();
-  }, [activeDashboard]);
+  }, []);
 
   // Keep URL in sync with navigation state
   useEffect(() => {
@@ -403,8 +406,8 @@ const Dashboard = () => {
         </div>
         
         <div className="dashboard-content">
-          {isLoading ? (
-            <div className="loading-indicator">Loading dashboard...</div>
+          {!configLoaded ? (
+            <div className="loading-indicator">Initializing dashboard...</div>
           ) : activeDashboard && activeTab ? (
             <div className="tab-content">
               <MetricGrid 

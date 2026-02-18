@@ -38,6 +38,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         enableFiltering = false, 
         enableZoom = false,
         variant, 
+        cardVariant,
         changeData,
         fontSize,
         titleFontSize
@@ -48,6 +49,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
     if (chartType === 'table') widgetType = 'table';
     
+    const resolvedCardVariant = chartType === 'numberDisplay'
+      ? (cardVariant || 'outline')
+      : (cardVariant || 'default');
+
     return { 
       type: widgetType, 
       chartType, 
@@ -61,6 +66,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       enableFiltering, 
       enableZoom, 
       variant,
+      cardVariant: resolvedCardVariant,
       changeData,
       fontSize,
       titleFontSize,
@@ -460,6 +466,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       isDarkMode={isDarkMode}
       chartType={widgetConfig.chartType}
       titleFontSize={widgetConfig.titleFontSize}
+      cardVariant={widgetConfig.cardVariant}
     >
       {/* Loading overlay shown during refetch (when we have data but are loading new data) */}
       {loading && data && (

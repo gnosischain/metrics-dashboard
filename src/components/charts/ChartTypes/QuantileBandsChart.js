@@ -239,9 +239,20 @@ export class QuantileBandsChart extends BaseChart {
       config.lines.forEach(line => requiredFields.add(line));
     }
     
+    const normalizeQuantileValue = (value) => {
+      if (value === null || value === undefined || value === '') {
+        return null;
+      }
+      if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+      }
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
     // Process data for each required field
     requiredFields.forEach(field => {
-      processedData[field] = data.map(item => item[field] || null);
+      processedData[field] = data.map(item => normalizeQuantileValue(item[field]));
     });
     
     return { processedData, xAxisData };
