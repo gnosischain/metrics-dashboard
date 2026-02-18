@@ -109,7 +109,7 @@
   
   .dark-mode .card-header {
     border-bottom: 1px solid var(--color-border);
-    background-color: rgba(22, 27, 34, 0.8);
+    background-color: transparent;
   }
   
   .dark-mode .card-title {
