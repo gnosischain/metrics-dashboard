@@ -76,7 +76,7 @@ OnChainActivity:
         - id: text_onchain_projects_sectors_overview_info
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 422px
+          minHeight: 412px
         - id: text_onchain_projects_sectors_glossary
           gridRow: 3
           gridColumn: 1 / span 12
@@ -116,7 +116,7 @@ OnChainActivity:
         - id: api_execution_transactions_by_project_ranges_top20
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: "422px" 
+          minHeight: "412px" 
         - id: api_execution_transactions_by_project_monthly_top5
           gridRow: 3
           gridColumn: 1 / span 6
@@ -146,7 +146,7 @@ OnChainActivity:
         - id: api_execution_transactions_fees_native_by_project_ranges_top20
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 422px
+          minHeight: 412px
         - id: api_execution_transactions_fees_native_by_project_monthly_top5  
           gridRow: 3
           gridColumn: 1 / span 6
@@ -179,7 +179,7 @@ OnChainActivity:
         - id: api_execution_transactions_active_accounts_by_project_ranges_top20
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 422px
+          minHeight: 412px
         - id: api_execution_transactions_active_accounts_by_project_monthly_top5
           gridRow: 3
           gridColumn: 1 / span 6
@@ -213,15 +213,15 @@ Tokens:
         - id: api_execution_tokens_supply_distribution_latest
           gridRow: 1 / span 2
           gridColumn: 1 / span 4
-          minHeight: 300px
+          minHeight: 315px
         - id: api_execution_tokens_supply_by_sector_latest
           gridRow: 3
           gridColumn: 1 / span 4
-          minHeight: 300px
+          minHeight: 315px
         - id: api_execution_tokens_supply_by_class_daily
           gridRow: 2 / span 2
           gridColumn: 5 / span 8
-          minHeight: 540px
+          minHeight: 570px
     
     - name: Per-token breakdown
       order: 2
@@ -394,11 +394,11 @@ Consensus:
         - id: api_consensus_graffiti
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 605px
+          minHeight: 602px
         - id: api_consensus_credentials_latest
           gridRow: 2
           gridColumn: 1 / span 6
-          minHeight: 450px
+          minHeight: 460px
        
     - name: Performace
       order: 2
@@ -463,7 +463,7 @@ Consensus:
       metrics:
         - id: api_consensus_info_active_ongoing_latest
           gridRow: 1
-          gridColumn: 1 / span 4
+          gridColumn: 3 / span 4
           minHeight: 130px
         - id: api_consensus_info_active_stake_latest
           gridRow: 1
@@ -588,7 +588,7 @@ Network:
         - id: text_network_clients
           gridRow: 1 / span 2
           gridColumn: 6 / span 7
-          minHeight: 725px
+          minHeight: 712px
         - id: api_p2p_discv5_clients_latest
           gridRow: 2
           gridColumn: 1 / span 5
@@ -618,7 +618,7 @@ Network:
         - id: text_gnosis_chain_history
           gridRow: 1 / span 2
           gridColumn: 7/ span 6
-          minHeight: 825px
+          minHeight: 812px
         - id: text_gnosis_chain_forks_history
           gridRow: 3
           gridColumn: 1 / span 12
@@ -707,7 +707,7 @@ Bridges:
         - id: api_bridges_cum_netflow_weekly_by_bridge
           gridRow: 2 / span 3
           gridColumn: 1 / span 8
-          minHeight: 475px
+          minHeight: 450px
     - name: Flows
       icon: "🌊"
       iconClass: "flow"
@@ -760,11 +760,11 @@ ESG:
         - id: api_esg_cif_network_vs_countries_daily
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 605px
+          minHeight: 602px
         - id: api_esg_carbon_emissions_daily
           gridRow: 2
           gridColumn: 1 / span 6
-          minHeight: 450px
+          minHeight: 460px
     - name: Breakdown
       order: 2
       icon: ""
@@ -954,7 +954,7 @@ GnosisPay:
         - id: api_execution_gpay_gno_balance_daily
           gridRow: 1 / span 2
           gridColumn: 7 / span 6
-          minHeight: 322px
+          minHeight: 312px
         - id: api_execution_gpay_balances_by_token_daily
           gridRow: 3
           gridColumn: 1 / span 6
