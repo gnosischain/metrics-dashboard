@@ -1,0 +1,147 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: activity
+    metrics:
+      - id: api_consensus_info_active_ongoing_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 130px
+      - id: api_consensus_info_staked_latest
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 130px
+      - id: api_consensus_graffiti
+        gridRow: 1 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 602px
+      - id: api_consensus_credentials_latest
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 460px
+  - name: Performace
+    order: 2
+    icon: ↔️
+    iconClass: gauge
+    metrics:
+      - id: api_consensus_blocks_daily
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_attestations_daily
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_consensus_graffiti_label_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+  - name: Staking
+    order: 3
+    icon: 📈
+    iconClass: yield
+    metrics:
+      - id: api_consensus_info_apy_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 130px
+      - id: api_consensus_info_deposits_cnt_latest
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 130px
+      - id: api_consensus_info_withdrawls_cnt_latest
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 130px
+      - id: api_consensus_info_staked_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 130px
+      - id: api_consensus_validators_apy_dist_daily
+        gridRow: 2
+        gridColumn: 1 / span 9
+        minHeight: 400px
+      - id: api_consensus_validators_apy_dist
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 450px
+      - id: api_consensus_deposits_withdrawls_cnt_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_deposits_withdrawls_volume_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+  - name: Validators
+    order: 4
+    icon: 👷
+    iconClass: validator
+    metrics:
+      - id: api_consensus_info_active_ongoing_latest
+        gridRow: 1
+        gridColumn: 3 / span 4
+        minHeight: 130px
+      - id: api_consensus_info_active_stake_latest
+        gridRow: 1
+        gridColumn: 7 / span 4
+        minHeight: 130px
+      - id: api_consensus_validators_active_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_staked_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_consensus_validators_balances_dist_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_consensus_withdrawal_credentials_freq_daily
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 450px
+  - name: Queues
+    order: 5
+    icon: ⏱️
+    iconClass: stopwatch
+    metrics:
+      - id: api_consensus_info_active_ongoing_latest
+        gridRow: 1
+        gridColumn: 1 / span 2
+        minHeight: 130px
+      - id: api_consensus_info_deposits_cnt_latest
+        gridRow: 1
+        gridColumn: 3 / span 2
+        minHeight: 130px
+      - id: api_consensus_info_withdrawls_cnt_latest
+        gridRow: 1
+        gridColumn: 5 / span 2
+        minHeight: 130px
+      - id: text_consensus_validators_status
+        gridRow: 1 / span 3
+        gridColumn: 7 / span 7
+        minHeight: 1070px
+      - id: api_consensus_validators_status_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_entry_queue_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+  - name: Blobs
+    order: 6
+    icon: 🧩
+    iconClass: blob
+    metrics:
+      - id: api_consensus_blob_commitments_daily
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_zero_blob_commitments_daily
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px

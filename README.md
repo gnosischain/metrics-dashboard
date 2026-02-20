@@ -77,6 +77,8 @@ This application follows a two-component architecture with server-side caching:
 │   ├── package.json            # API dependencies
 │   └── queries/                # Query definitions as JSON
 ├── public/                     # Static assets
+│   ├── dashboard.yml           # Main sector index (order + icons + source)
+│   └── dashboards/             # Per-sector layouts (metrics/tabs)
 ├── scripts/
 │   └── export-queries.js       # Script to export queries from frontend to API
 ├── src/
@@ -97,6 +99,40 @@ This application follows a two-component architecture with server-side caching:
 │   └── styles.css              # Application styles
 └── vercel.json                 # Vercel deployment configuration
 ```
+
+## Dashboard Configuration
+
+The dashboard config is split into:
+
+1. `public/dashboard.yml` for sector metadata and ordering.
+2. `public/dashboards/<sector>.yml` for each sector layout (`metrics` or `tabs`).
+
+Main file example:
+
+```yaml
+Overview:
+  name: Overview
+  order: 1
+  icon: "📊"
+  iconClass: "chart-line"
+  source: /dashboards/overview.yml
+```
+
+Sector file example:
+
+```yaml
+metrics:
+  - id: overview_stake_api
+    gridRow: 1
+    gridColumn: 1 / span 3
+    minHeight: 130px
+```
+
+How to add a new sector:
+
+1. Create `public/dashboards/<new-sector>.yml` with `metrics` or `tabs`.
+2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
+3. Start the app and verify the new sector appears in navigation.
 
 ## Caching System
 

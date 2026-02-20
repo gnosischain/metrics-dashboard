@@ -1,0 +1,126 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: activity
+    metrics:
+      - id: api_p2p_clients_latest_discv4
+        gridRow: 1
+        gridColumn: 1 / span 2
+        minHeight: 130px
+      - id: api_p2p_visits_latest_discv4
+        gridRow: 1
+        gridColumn: 3 / span 2
+        minHeight: 130px
+      - id: api_p2p_crawls_latest_discv4
+        gridRow: 1
+        gridColumn: 5 / span 2
+        minHeight: 130px
+      - id: api_p2p_clients_latest_discv5
+        gridRow: 1
+        gridColumn: 7 / span 2
+        minHeight: 130px
+      - id: api_p2p_visits_latest_discv5
+        gridRow: 1
+        gridColumn: 9 / span 2
+        minHeight: 130px
+      - id: api_p2p_crawls_latest_discv5
+        gridRow: 1
+        gridColumn: 11 / span 2
+        minHeight: 130px
+      - id: api_p2p_topology_latest
+        gridRow: 2
+        gridColumn: 1 / span 8
+        minHeight: 490px
+      - id: text_network_overview
+        gridRow: 2
+        gridColumn: 9 / span 4
+        minHeight: 490px
+  - name: Clients
+    order: 2
+    icon: 💻
+    iconClass: monitor
+    metrics:
+      - id: api_p2p_discv4_clients_latest
+        gridRow: 1
+        gridColumn: 1 / span 5
+        minHeight: 350px
+      - id: text_network_clients
+        gridRow: 1 / span 2
+        gridColumn: 6 / span 7
+        minHeight: 712px
+      - id: api_p2p_discv5_clients_latest
+        gridRow: 2
+        gridColumn: 1 / span 5
+        minHeight: 350px
+      - id: api_p2p_discv4_clients_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_p2p_discv5_clients_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+  - name: Forks
+    order: 3
+    icon: 🗺️
+    iconClass: fork
+    metrics:
+      - id: api_p2p_discv5_current_fork_daily
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 400px
+      - id: api_p2p_discv5_next_fork_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 400px
+      - id: text_gnosis_chain_history
+        gridRow: 1 / span 2
+        gridColumn: 7/ span 6
+        minHeight: 812px
+      - id: text_gnosis_chain_forks_history
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 1060px
+  - name: Methodology
+    order: 4
+    icon: 📝
+    iconClass: file-text
+    metrics:
+      - id: text_network_protocols_overview
+        gridRow: 1 / span 1
+        gridColumn: 1 / span 12
+        minHeight: 800px
+      - id: text_network_methodology
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 4300px
+  - name: Probelab
+    order: 5
+    icon: 🔬
+    iconClass: search
+    metrics:
+      - id: text_probelab
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_probelab_clients_daily
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: api_probelab_clients_version_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_probelab_clients_quic_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: api_probelab_clients_cloud_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: api_probelab_clients_country_daily
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 500px
