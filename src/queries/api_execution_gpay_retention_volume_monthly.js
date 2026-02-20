@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_gpay_retention_volume_monthly',
   name: 'Volume by Cohort',
   description: 'Monthly payment volume (USD) by activation cohort',
+  metricDescription: 'Monthly payment volume (USD) by activation cohort. Shows how spending retention evolves after first activation month.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_gpay_balance_cohorts_holders_daily',
   name: 'Holders by Balance Cohort',
   description: 'Daily wallet count by USD balance cohort',
+  metricDescription: 'Daily Gnosis Pay wallet counts by USD balance bucket. Cohorts show distribution shifts across low- and high-balance users.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

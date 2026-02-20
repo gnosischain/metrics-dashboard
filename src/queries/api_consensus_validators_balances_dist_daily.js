@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_validators_balances_dist_daily',
   name: 'Balance Value Distribution',
   description: 'Daily Validators balance quantiles',
+  metricDescription: 'Daily validator effective-balance quantiles. Bands reveal concentration and spread across the validator set.',
   chartType: 'quantileBands', 
   isTimeSeries: true,
   enableZoom: true,

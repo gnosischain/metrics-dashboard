@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_fees_native_by_sector_weekly',
   name: 'Fees by Sector',
   description: 'Weekly fees per sector in xDAI',
+  metricDescription: 'Weekly transaction fees in xDAI by sector. Highlights sustained fee contribution by sector.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

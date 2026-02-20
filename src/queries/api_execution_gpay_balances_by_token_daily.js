@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_gpay_balances_by_token_daily',
   name: 'Wallet Balance',
   description: 'Daily wallet balance',
+  metricDescription: 'Daily wallet balances in USD split by token (EURe, GBPe, USDC.e). Stacked total equals tracked stablecoin wallet balance.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_gpay_cashback_weekly',
   name: 'Weekly Cashback',
   description: 'Cashback distributed per week',
+  metricDescription: 'Weekly cashback distributed, with unit toggle (native token or USD). Use this for period-over-period incentive pacing.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

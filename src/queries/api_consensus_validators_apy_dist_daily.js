@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_validators_apy_dist_daily',
   name: 'Validators APY Distribution',
   description: 'Daily Annual Percentage Yield quantiles. Consensus Rewards',
+  metricDescription: 'Daily APY quantiles for validator rewards. Shaded bands show dispersion while the median tracks central reward performance.',
   chartType: 'quantileBands', 
   isTimeSeries: true,
   enableZoom: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_esg_estimated_nodes_daily',
   name: 'Nodes Estimations',
   description: 'Daily estimations of nodes in network',
+  metricDescription: 'Estimated network node count per day with uncertainty bands. Estimation uses crawler-observed peers and statistical correction.',
   chartType: 'quantileBands', 
   isTimeSeries: true,
   enableZoom: true,

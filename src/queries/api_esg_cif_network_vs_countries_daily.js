@@ -2,6 +2,7 @@ const metric = {
   id: 'api_esg_cif_network_vs_countries_daily',
   name: 'Carbon Intensity Factor Network vs Countries',
   description: 'Daily Carbon Intensity Factor (CIF) in gCO2e/kWh',
+  metricDescription: 'Compares Gnosis network carbon intensity (gCO2e/kWh) against selected country benchmarks. Values reflect electricity-mix assumptions, not direct metering.',
   chartType: 'line',
   isTimeSeries: true,
   enableZoom: false,

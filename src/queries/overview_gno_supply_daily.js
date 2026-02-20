@@ -1,6 +1,7 @@
 const metric = {
   id: 'overview_gno_supply_daily',
   name: 'GNO Supply Distribution',
+  metricDescription: 'Daily GNO supply components by source category. Stacked view shows how each source contributes to total circulating supply.',
   titleFontSize: '1.3rem', 
   chartType: 'area', 
   isTimeSeries: true,

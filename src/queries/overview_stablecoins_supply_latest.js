@@ -1,6 +1,7 @@
 const metric = {
   id: 'overview_stablecoins_supply_latest',
   name: 'Stablecoin Supply',
+  metricDescription: 'Latest stablecoin supply split in USD (excluding sDAI and WxDAI). Pie shares are relative to the filtered stablecoin set.',
   chartType: 'pie',
   nameField: 'token',
   valueField: 'value_usd',

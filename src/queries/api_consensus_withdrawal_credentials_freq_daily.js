@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_consensus_withdrawal_credentials_freq_daily',
   name: 'Distinct Withdrawal Credentials',
-  description: 'per amout of validators',
+  description: 'By number of validators',
+  metricDescription: 'Daily count of distinct withdrawal credentials by type. Tracks adoption of credential formats across active validators.',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,

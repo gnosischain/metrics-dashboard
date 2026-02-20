@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_validators_active_daily',
   name: 'Active Validators',
   description: 'Daily Number of Active Validators',
+  metricDescription: 'Daily count of active validators participating in consensus. Useful for tracking validator set growth and availability.',
   chartType: 'area', 
   isTimeSeries: true,
   format: 'formatNumber',

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_fees_native_by_sector_hourly',
   name: 'Fees by Sector',
   description: 'Hourly fees per sector in xDAI, Last 2 days',
+  metricDescription: 'Hourly transaction fees in xDAI by sector for the recent 48-hour window. Good for spotting short-lived fee spikes.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,

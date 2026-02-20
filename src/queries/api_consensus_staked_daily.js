@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_staked_daily',
   name: 'Staked GNO',
   description: 'Daily amount of staked GNO',
+  metricDescription: 'Daily total staked GNO on the consensus layer. Reflects aggregate validator effective stake over time.',
   chartType: 'area', 
   isTimeSeries: true,
   format: 'formatNumber',

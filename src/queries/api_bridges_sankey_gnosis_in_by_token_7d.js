@@ -2,6 +2,7 @@ const metric = {
   id: 'api_bridges_sankey_gnosis_in_by_token_7d',
   name: 'Token Flows: Gnosis Inbound',
   description: 'Inbound Flows by Token(last 7 days)',
+  metricDescription: 'Token-level inbound bridge flows into Gnosis over the last 7 days. Link width represents USD volume for each source-chain and token path.',
   chartType: 'sankey',
   format: 'formatCurrency',
   enableFiltering: true,
