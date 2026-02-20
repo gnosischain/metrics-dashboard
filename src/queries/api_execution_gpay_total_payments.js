@@ -4,8 +4,8 @@ const metric = {
   description: 'All-time',
   chartType: 'numberDisplay',
   variant: 'default',
-  format: 'formatNumber',
+  format: null,
   valueField: 'value',
-  query: `SELECT value FROM dbt.api_execution_gpay_total_payments`,
+  query: `SELECT CONCAT('+',toString(floor(value/1000000)), 'M') AS value FROM dbt.api_execution_gpay_total_payments`,
 };
 export default metric;

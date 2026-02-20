@@ -19,19 +19,19 @@ Overview:
     - id: overview_esg
       gridRow: 2
       gridColumn: 10 / span 3
-      minHeight: 130px
+      minHeight: 140px
     - id: overview_active_accounts
       gridRow: 3
       gridColumn: 10 / span 3
-      minHeight: 130px
+      minHeight: 140px
     - id: overview_transactions
       gridRow: 4
       gridColumn: 10 / span 3
-      minHeight: 130px
+      minHeight: 140px
     - id: overview_gno_supply_daily
       gridRow: 2 / span 3
       gridColumn: 1 / span 9
-      minHeight: 436px
+      minHeight: 445px
 
 
 
@@ -860,42 +860,45 @@ GnosisPay:
       metrics:
         - id: api_execution_gpay_total_volume
           gridRow: 1
-          gridColumn: 1 / span 4
-          minHeight: 130px
+          gridColumn: 1 / span 3
+          minHeight: 150px
+        - id: api_execution_gpay_volume_7d
+          gridRow: 1
+          gridColumn: 4 / span 3
+          minHeight: 150px
         - id: api_execution_gpay_total_payments
           gridRow: 1
-          gridColumn: 5 / span 4
-          minHeight: 130px
-        - id: api_execution_gpay_total_funded
-          gridRow: 1
-          gridColumn: 9 / span 4
-          minHeight: 130px
-        - id: api_execution_gpay_volume_7d
-          gridRow: 2
-          gridColumn: 1 / span 4
-          minHeight: 130px
+          gridColumn: 7 / span 3
+          minHeight: 150px
         - id: api_execution_gpay_payments_7d
-          gridRow: 2
-          gridColumn: 5 / span 4
-          minHeight: 130px
-        - id: api_execution_gpay_active_users_7d
-          gridRow: 2
-          gridColumn: 9 / span 4
-          minHeight: 130px
+          gridRow: 1
+          gridColumn: 10 / span 3
+          minHeight: 150px
         - id: api_execution_gpay_volume_payments_by_token_weekly
-          gridRow: 3
-          gridColumn: 1 / span 12
-          minHeight: 450px
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 470px
+        - id: api_execution_gpay_payments_by_token_weekly
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 470px
+       
+        
+        
     - name: Activity
       order: 2
       icon: "👥"
       iconClass: "users"
       metrics:
-        - id: api_execution_gpay_funded_addresses_weekly
+        - id: api_execution_gpay_total_funded
           gridRow: 1
-          gridColumn: 1 / span 12
-          minHeight: 400px
-        - id: api_execution_gpay_payments_by_token_weekly
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_active_users_7d
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_funded_addresses_weekly
           gridRow: 2
           gridColumn: 1 / span 12
           minHeight: 400px

@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gpay_volume_7d",
-  "query": "SELECT value, change_pct FROM dbt.api_execution_gpay_volume_7d"
+  "query": "SELECT CONCAT('+$',toString(round(value/1000000,2)), 'M') AS value, change_pct FROM dbt.api_execution_gpay_volume_7d"
 }
