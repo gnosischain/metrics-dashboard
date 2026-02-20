@@ -17,7 +17,7 @@ const Dashboard = () => {
   const [tabs, setTabs] = useState([]);
   const [tabMetrics, setTabMetrics] = useState([]);
   const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
-  const [tabFilters, setTabFilters] = useState({}); // Store filter state per tab: { tabId: selectedValue }
+  const [tabFilters, setTabFilters] = useState({}); // Store filter state per dashboard+tab: { `${dashboardId}:${tabId}`: selectedValue }
   const [isLoading, setIsLoading] = useState(true);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -26,6 +26,13 @@ const Dashboard = () => {
   });
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const sidebarRef = useRef(null);
+
+  const getTabFilterKey = useCallback((dashboardId, tabId) => {
+    if (!dashboardId || !tabId) return null;
+    return `${dashboardId}:${tabId}`;
+  }, []);
+
+  const activeTabFilterKey = getTabFilterKey(activeDashboard, activeTab);
   
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -300,16 +307,16 @@ const Dashboard = () => {
 
   // Handle global filter change for a tab
   const handleGlobalFilterChange = useCallback((selectedValue) => {
-    if (activeTab) {
+    if (activeTabFilterKey) {
       setTabFilters(prev => ({
         ...prev,
-        [activeTab]: selectedValue
+        [activeTabFilterKey]: selectedValue
       }));
     }
-  }, [activeTab]);
+  }, [activeTabFilterKey]);
 
   // Get current global filter value for active tab
-  const currentGlobalFilter = activeTab ? tabFilters[activeTab] || null : null;
+  const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {

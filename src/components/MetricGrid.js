@@ -113,15 +113,24 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   useEffect(() => {
     if (!hasGlobalFilter || !metricForOptions) {
       setGlobalFilterOptions([]);
+      setLoadingGlobalFilter(false);
       return;
     }
 
+    let cancelled = false;
+
     const fetchGlobalFilterOptions = async () => {
+      // Clear previous context options immediately to avoid cross-tab stale values.
+      setGlobalFilterOptions([]);
       setLoadingGlobalFilter(true);
       try {
         // Fetch from just one metric - much faster! All metrics should have the same tokens anyway
         const { from, to } = getDateRange('90d');
         const result = await metricsService.getMetricData(metricForOptions.id, { from, to });
+
+        if (cancelled) {
+          return;
+        }
         
         // Extract unique values
         const allValues = new Set();
@@ -138,22 +147,38 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
         const sortedOptions = Array.from(allValues).sort();
         setGlobalFilterOptions(sortedOptions);
 
-        // If no filter value is set and we have options, set the first one
-        // This only runs when options are first loaded, not on every filter change
-        // Use ref so we don't overwrite a user selection made while options were loading.
+        // Ensure selected filter is valid for the current tab options.
         const latestValue = globalFilterValueRef.current;
-        if (sortedOptions.length > 0 && onGlobalFilterChange && !latestValue) {
+        if (!onGlobalFilterChange) {
+          return;
+        }
+
+        if (sortedOptions.length === 0) {
+          if (latestValue) {
+            onGlobalFilterChange(null);
+          }
+          return;
+        }
+
+        if (!latestValue || !sortedOptions.includes(latestValue)) {
           onGlobalFilterChange(sortedOptions[0]);
         }
       } catch (error) {
-        console.error('Error fetching global filter options:', error);
-        setGlobalFilterOptions([]);
+        if (!cancelled) {
+          console.error('Error fetching global filter options:', error);
+          setGlobalFilterOptions([]);
+        }
       } finally {
-        setLoadingGlobalFilter(false);
+        if (!cancelled) {
+          setLoadingGlobalFilter(false);
+        }
       }
     };
 
     fetchGlobalFilterOptions();
+    return () => {
+      cancelled = true;
+    };
     // Only refetch when metrics change, not when filter value changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField]);
