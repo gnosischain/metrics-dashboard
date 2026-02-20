@@ -140,6 +140,18 @@ Force a cache refresh by adding `refreshCache=true` to your API requests:
 https://your-deployment-url/api/metrics?refreshCache=true
 ```
 
+### Environment Cache Behavior
+
+- **Local development (`NODE_ENV=development`)**:
+  - Frontend request caching is bypassed.
+  - Requests to `/api/metrics` and `/api/metrics/:id` automatically include `useCached=false` unless explicitly provided.
+  - API responses include `Cache-Control: no-store, max-age=0` and `Pragma: no-cache`.
+- **Production**:
+  - Existing cache behavior is unchanged.
+  - `useCached` defaults to `true` when omitted.
+- **Override support**:
+  - You can explicitly set `useCached=true` or `useCached=false` per request in any environment.
+
 ## Vercel Deployment
 
 ### Prerequisites

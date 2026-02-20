@@ -146,6 +146,14 @@ console.log(`Loaded ${availableMetrics.length} metric queries: ${availableMetric
  * Vercel API handler for metrics
  */
 module.exports = async (req, res) => {
+  const isLocalDevRuntime =
+    process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+
+  if (isLocalDevRuntime) {
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+  }
+
   // Handle preflight OPTIONS request for CORS
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -174,7 +182,11 @@ module.exports = async (req, res) => {
     }
     
     const useMock = req.query.useMock === 'true' || process.env.USE_MOCK_DATA === 'true';
-    const useCached = req.query.useCached !== 'false'; // Default to using cache
+    const rawUseCached = Array.isArray(req.query.useCached) ? req.query.useCached[0] : req.query.useCached;
+    const hasUseCachedOverride = rawUseCached !== undefined;
+    const useCached = hasUseCachedOverride
+      ? rawUseCached !== 'false'
+      : !isLocalDevRuntime;
 
     // Optional, backwards-compatible query params:
     // - from/to: override date placeholders if provided (default behavior unchanged if omitted)

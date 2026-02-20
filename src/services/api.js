@@ -3,6 +3,7 @@ import config from '../utils/config';
 const CACHE_DURATION_MS = 5 * 60 * 1000;
 const responseCache = new Map();
 const inFlightRequests = new Map();
+const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
 
 const sanitizeParams = (params = {}) =>
   Object.fromEntries(
@@ -31,11 +32,13 @@ export class ApiService {
     this.baseUrl = config.api.url;
     this.apiKey = config.api.key;
     this.useMockData = config.api.useMockData;
+    this.isDevelopment = process.env.NODE_ENV === 'development';
 
     console.log('ApiService initialized:', {
       baseUrl: this.baseUrl,
       useMockData: this.useMockData,
-      hasApiKey: !!this.apiKey
+      hasApiKey: !!this.apiKey,
+      isDevelopment: this.isDevelopment
     });
   }
 
@@ -57,11 +60,18 @@ export class ApiService {
    */
   async get(endpoint, params = {}) {
     const normalizedParams = sanitizeParams(params);
-    const cacheKey = this.getCacheKey(endpoint, normalizedParams);
-    const cachedEntry = responseCache.get(cacheKey);
+    const requestParams = { ...normalizedParams };
+
+    if (this.isDevelopment && isMetricsEndpoint(endpoint) && requestParams.useCached === undefined) {
+      requestParams.useCached = 'false';
+    }
+
+    const bypassFrontendCache = this.isDevelopment;
+    const cacheKey = this.getCacheKey(endpoint, requestParams);
+    const cachedEntry = bypassFrontendCache ? null : responseCache.get(cacheKey);
     const hasFreshCache = cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_DURATION_MS;
 
-    if (hasFreshCache) {
+    if (!bypassFrontendCache && hasFreshCache) {
       return cachedEntry.data;
     }
 
@@ -71,11 +81,13 @@ export class ApiService {
 
     const requestPromise = (async () => {
       try {
-        const data = await this.fetchFromSource(endpoint, normalizedParams);
-        responseCache.set(cacheKey, {
-          data,
-          timestamp: Date.now()
-        });
+        const data = await this.fetchFromSource(endpoint, requestParams);
+        if (!bypassFrontendCache) {
+          responseCache.set(cacheKey, {
+            data,
+            timestamp: Date.now()
+          });
+        }
         return data;
       } catch (error) {
         console.error(`API Error for ${endpoint}:`, error);
@@ -87,11 +99,13 @@ export class ApiService {
 
         if (!this.useMockData) {
           console.log(`API failed, falling back to mock data for ${endpoint}`);
-          const mockData = await this.getMockData(endpoint, normalizedParams);
-          responseCache.set(cacheKey, {
-            data: mockData,
-            timestamp: Date.now()
-          });
+          const mockData = await this.getMockData(endpoint, requestParams);
+          if (!bypassFrontendCache) {
+            responseCache.set(cacheKey, {
+              data: mockData,
+              timestamp: Date.now()
+            });
+          }
           return mockData;
         }
 
@@ -173,7 +187,8 @@ export class ApiService {
 
     const response = await fetch(url.toString(), {
       method: 'GET',
-      headers
+      headers,
+      ...(this.isDevelopment ? { cache: 'no-store' } : {})
     });
 
     if (!response.ok) {
