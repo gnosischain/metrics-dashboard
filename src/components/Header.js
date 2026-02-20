@@ -1,5 +1,7 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
+import HeaderResourcesMenu from './HeaderResourcesMenu';
+import { HEADER_RESOURCE_LINKS } from '../config/headerLinks';
 
 /**
  * Enhanced Header component for the dashboard with logo and indexing status
@@ -9,6 +11,7 @@ import ThemeToggle from './ThemeToggle';
  * @param {Function} props.toggleTheme - Function to toggle theme
  * @param {boolean} props.showIndexingAlert - Whether to show the indexing alert
  * @param {string} props.indexingMessage - Custom message for indexing alert
+ * @param {Array} props.resourceLinks - Optional resource links for the top-bar menu
  * @returns {JSX.Element} Header component
  */
 const Header = ({ 
@@ -16,7 +19,8 @@ const Header = ({
   isDarkMode, 
   toggleTheme,
   showIndexingAlert = false,
-  indexingMessage = "Data is being indexed. Some metrics may not be fully updated."
+  indexingMessage = "Data is being indexed. Some metrics may not be fully updated.",
+  resourceLinks = HEADER_RESOURCE_LINKS
 }) => {
   // Different logo URLs for light and dark mode
   //const logoUrl = isDarkMode 
@@ -52,6 +56,7 @@ const Header = ({
       </div>
       
       <div className="header-actions">
+        <HeaderResourcesMenu resourceLinks={resourceLinks} />
         <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       </div>
     </header>

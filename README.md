@@ -134,6 +134,26 @@ How to add a new sector:
 2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
 3. Start the app and verify the new sector appears in navigation.
 
+## Header Resource Links
+
+The top-bar `Resources` menu is fully config-driven from:
+
+`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/config/headerLinks.js`
+
+To add or update links, edit `HEADER_RESOURCE_LINKS` using the grouped structure below:
+
+```js
+export const HEADER_RESOURCE_LINKS = [
+  {
+    id: 'api',
+    label: 'API',
+    links: [{ id: 'api-reference', label: 'API Reference', href: 'https://your-url' }]
+  }
+];
+```
+
+Each group renders a section in the dropdown, and each link opens in a new tab.
+
 ## Caching System
 
 The dashboard implements a server-side caching system to minimize ClickHouse queries:
