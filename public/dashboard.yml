@@ -6,32 +6,175 @@ Overview:
   metrics:
     - id: overview_stake_api
       gridRow: 1
-      gridColumn: 1 / span 4
+      gridColumn: 1 / span 3
       minHeight: 130px
     - id: overview_stake_gno
       gridRow: 1
-      gridColumn: 5 / span 4
+      gridColumn: 4 / span 3
       minHeight: 130px
     - id: overview_validators
       gridRow: 1
-      gridColumn: 9 / span 4
+      gridColumn: 7 / span 3
       minHeight: 130px
     - id: overview_esg
+      gridRow: 1
+      gridColumn: 10 / span 3
+      minHeight: 130px
+    - id: overview_payments
       gridRow: 2
-      gridColumn: 10 / span 3
-      minHeight: 140px
-    - id: overview_active_accounts
-      gridRow: 3
-      gridColumn: 10 / span 3
-      minHeight: 140px
-    - id: overview_transactions
-      gridRow: 4
-      gridColumn: 10 / span 3
-      minHeight: 140px
+      gridColumn: 1 / span 6
+      minHeight: 130px
+    - id: overview_stablecoins_supply_total
+      gridRow: 2
+      gridColumn: 7 / span 6
+      minHeight: 130px
     - id: overview_gno_supply_daily
-      gridRow: 2 / span 3
-      gridColumn: 1 / span 9
-      minHeight: 445px
+      gridRow: 3 / span 2
+      gridColumn: 1 / span 5
+      minHeight: 330px
+    - id: overview_transactions
+      gridRow: 3
+      gridColumn: 6 / span 3
+      minHeight: 159px
+    - id: overview_stablecoins_supply_latest
+      gridRow: 3 / span 2
+      gridColumn: 9 / span 4
+      minHeight: 330px
+    - id: overview_active_accounts
+      gridRow: 4
+      gridColumn: 6 / span 3
+      minHeight: 159px
+    
+    
+      
+
+GnosisPay:
+  name: Gnosis Pay
+  order: 10
+  icon: "💳"
+  iconClass: "credit-card"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "chart-line"
+      metrics:
+        - id: api_execution_gpay_total_volume
+          gridRow: 1
+          gridColumn: 1 / span 3
+          minHeight: 150px
+        - id: api_execution_gpay_volume_7d
+          gridRow: 1
+          gridColumn: 4 / span 3
+          minHeight: 150px
+        - id: api_execution_gpay_total_payments
+          gridRow: 1
+          gridColumn: 7 / span 3
+          minHeight: 150px
+        - id: api_execution_gpay_payments_7d
+          gridRow: 1
+          gridColumn: 10 / span 3
+          minHeight: 150px
+        - id: api_execution_gpay_volume_payments_by_token_weekly
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 470px
+        - id: api_execution_gpay_payments_by_token_weekly
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 470px
+       
+        
+        
+    - name: Activity
+      order: 2
+      icon: "👥"
+      iconClass: "users"
+      metrics:
+        - id: api_execution_gpay_total_funded
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_active_users_7d
+          gridRow: 1
+          gridColumn: 7 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_funded_addresses_weekly
+          gridRow: 2
+          gridColumn: 1 / span 12
+          minHeight: 400px
+        - id: api_execution_gpay_retention_monthly
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 500px
+        - id: api_execution_gpay_retention_volume_monthly
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 500px
+        - id: api_execution_gpay_retention_pct_monthly
+          gridRow: 4
+          gridColumn: 1 / span 12
+          minHeight: 500px
+    - name: Cashback
+      order: 3
+      icon: "🎁"
+      iconClass: "gift"
+      unitToggle: true
+      defaultUnit: 'usd'
+      metrics:
+        - id: global_filter
+          gridRow: 1
+          gridColumn: 1 / span 2
+          minHeight: 60px
+        - id: api_execution_gpay_cashback_total
+          gridRow: 1
+          gridColumn: 3 / span 5
+          minHeight: 150px
+        - id: api_execution_gpay_cashback_7d
+          gridRow: 1
+          gridColumn: 8 / span 5
+          minHeight: 150px
+        - id: api_execution_gpay_cashback_weekly
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_cashback_cumulative
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+    - name: Balances
+      order: 4
+      icon: "💰"
+      iconClass: "wallet"
+      metrics:
+        - id: api_execution_gpay_total_balance
+          gridRow: 1
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_owner_total_balance
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 150px
+        - id: api_execution_gpay_gno_balance_daily
+          gridRow: 1 / span 2
+          gridColumn: 7 / span 6
+          minHeight: 312px
+        - id: api_execution_gpay_balances_by_token_daily
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_owner_balances_by_token_daily
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_balance_cohorts_holders_daily
+          gridRow: 4
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_gpay_balance_cohorts_value_daily
+          gridRow: 4
+          gridColumn: 7 / span 6
+          minHeight: 450px
 
 
 
@@ -48,7 +191,7 @@ Overview:
 
 OnChainActivity:
   name: OnChain Activity
-  order: 3
+  order: 20
   icon: "⛓️"
   iconClass: "link"
   tabs:
@@ -193,85 +336,7 @@ OnChainActivity:
           gridColumn: 1 / span 12
           minHeight: 420px
 
-Tokens:
-  name: Tokens
-  order: 6
-  icon: "🪙"
-  iconClass: "coins"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "chart-line"
-      globalFilterField: 'token_class'
-      globalFilterLabel: 'Token Class'
-      metrics:
-        - id: global_filter
-          gridRow: 1
-          gridColumn: 5 / span 8
-          minHeight: 60px
-        - id: api_execution_tokens_supply_distribution_latest
-          gridRow: 1 / span 2
-          gridColumn: 1 / span 4
-          minHeight: 315px
-        - id: api_execution_tokens_supply_by_sector_latest
-          gridRow: 3
-          gridColumn: 1 / span 4
-          minHeight: 315px
-        - id: api_execution_tokens_supply_by_class_daily
-          gridRow: 2 / span 2
-          gridColumn: 5 / span 8
-          minHeight: 570px
-    
-    - name: Per-token breakdown
-      order: 2
-      icon: "🪙"
-      iconClass: "coins"
-      globalFilterField: 'token'
-      unitToggle: true
-      defaultUnit: 'native'
-      metrics:
-        - id: global_filter
-          gridRow: 1
-          gridColumn: 1 / span 5
-          minHeight: 90px
-       # - id: api_execution_tokens_count_total
-       #   gridRow: 1
-       #   gridColumn: 7 / span 6
-       #   minHeight: 90px
-        - id: api_execution_tokens_supply_total
-          gridRow: 1
-          gridColumn: 6 / span 4
-          minHeight: 90px
-        - id: api_execution_tokens_holders_total
-          gridRow: 1
-          gridColumn: 10 / span 3
-          minHeight: 90px
-       # - id: api_execution_tokens_supply_daily
-       #   gridRow: 2
-       #   gridColumn: 1 / span 6
-       #   minHeight: 450px
-        - id: api_execution_tokens_balance_cohorts_value_daily
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_tokens_balance_cohorts_holders_daily
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
-       # - id: api_execution_tokens_holders_daily
-       #   gridRow: 4
-       #   gridColumn: 1 / span 6
-       #   minHeight: 450px
-        - id: api_execution_tokens_volume_daily
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 350px
-        - id: api_execution_tokens_active_senders_daily
-          gridRow: 3
-          gridColumn: 7 / span 6
-          minHeight: 350px
-        
+
 
 #Yields:
 #  name: Yields
@@ -374,7 +439,7 @@ Tokens:
    #       minHeight: 500px
 Consensus:
   name: Consensus
-  order: 4
+  order: 30
   icon: "🔄"
   iconClass: "check-circle"
   tabs:
@@ -534,7 +599,7 @@ Consensus:
 
 Network:
   name: Network
-  order: 5
+  order: 40
   icon: "🌐"
   iconClass: "globe"
   tabs:
@@ -668,9 +733,88 @@ Network:
           gridColumn: 1 / span 12
           minHeight: 500px
 
+Tokens:
+  name: Tokens
+  order: 50
+  icon: "🪙"
+  iconClass: "coins"
+  tabs:
+    - name: Overview
+      order: 1
+      icon: "📊"
+      iconClass: "chart-line"
+      globalFilterField: 'token_class'
+      globalFilterLabel: 'Token Class'
+      metrics:
+        - id: global_filter
+          gridRow: 1
+          gridColumn: 5 / span 8
+          minHeight: 60px
+        - id: api_execution_tokens_supply_distribution_latest
+          gridRow: 1 / span 2
+          gridColumn: 1 / span 4
+          minHeight: 315px
+        - id: api_execution_tokens_supply_by_sector_latest
+          gridRow: 3
+          gridColumn: 1 / span 4
+          minHeight: 315px
+        - id: api_execution_tokens_supply_by_class_daily
+          gridRow: 2 / span 2
+          gridColumn: 5 / span 8
+          minHeight: 570px
+    
+    - name: Per-token breakdown
+      order: 2
+      icon: "🪙"
+      iconClass: "coins"
+      globalFilterField: 'token'
+      unitToggle: true
+      defaultUnit: 'native'
+      metrics:
+        - id: global_filter
+          gridRow: 1
+          gridColumn: 1 / span 5
+          minHeight: 90px
+       # - id: api_execution_tokens_count_total
+       #   gridRow: 1
+       #   gridColumn: 7 / span 6
+       #   minHeight: 90px
+        - id: api_execution_tokens_supply_total
+          gridRow: 1
+          gridColumn: 6 / span 4
+          minHeight: 90px
+        - id: api_execution_tokens_holders_total
+          gridRow: 1
+          gridColumn: 10 / span 3
+          minHeight: 90px
+       # - id: api_execution_tokens_supply_daily
+       #   gridRow: 2
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_value_daily
+          gridRow: 2
+          gridColumn: 1 / span 6
+          minHeight: 450px
+        - id: api_execution_tokens_balance_cohorts_holders_daily
+          gridRow: 2
+          gridColumn: 7 / span 6
+          minHeight: 450px
+       # - id: api_execution_tokens_holders_daily
+       #   gridRow: 4
+       #   gridColumn: 1 / span 6
+       #   minHeight: 450px
+        - id: api_execution_tokens_volume_daily
+          gridRow: 3
+          gridColumn: 1 / span 6
+          minHeight: 350px
+        - id: api_execution_tokens_active_senders_daily
+          gridRow: 3
+          gridColumn: 7 / span 6
+          minHeight: 350px
+        
 Bridges:
   name: Bridges
-  order: 6
+  order: 60
   icon: "🌉"
   iconClass: "bridge"
   tabs:
@@ -740,7 +884,7 @@ Bridges:
 
 ESG:
   name: ESG
-  order: 7
+  order: 70
   icon: "🌱"
   iconClass: "leaf"
   tabs:
@@ -847,131 +991,4 @@ ESG:
 #          gridColumn: 1 / span 12
 #          minHeight: 500px
 
-GnosisPay:
-  name: Gnosis Pay
-  order: 8
-  icon: "💳"
-  iconClass: "credit-card"
-  tabs:
-    - name: Overview
-      order: 1
-      icon: "📊"
-      iconClass: "chart-line"
-      metrics:
-        - id: api_execution_gpay_total_volume
-          gridRow: 1
-          gridColumn: 1 / span 3
-          minHeight: 150px
-        - id: api_execution_gpay_volume_7d
-          gridRow: 1
-          gridColumn: 4 / span 3
-          minHeight: 150px
-        - id: api_execution_gpay_total_payments
-          gridRow: 1
-          gridColumn: 7 / span 3
-          minHeight: 150px
-        - id: api_execution_gpay_payments_7d
-          gridRow: 1
-          gridColumn: 10 / span 3
-          minHeight: 150px
-        - id: api_execution_gpay_volume_payments_by_token_weekly
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 470px
-        - id: api_execution_gpay_payments_by_token_weekly
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 470px
-       
-        
-        
-    - name: Activity
-      order: 2
-      icon: "👥"
-      iconClass: "users"
-      metrics:
-        - id: api_execution_gpay_total_funded
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 150px
-        - id: api_execution_gpay_active_users_7d
-          gridRow: 1
-          gridColumn: 7 / span 6
-          minHeight: 150px
-        - id: api_execution_gpay_funded_addresses_weekly
-          gridRow: 2
-          gridColumn: 1 / span 12
-          minHeight: 400px
-        - id: api_execution_gpay_retention_monthly
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 500px
-        - id: api_execution_gpay_retention_volume_monthly
-          gridRow: 3
-          gridColumn: 7 / span 6
-          minHeight: 500px
-        - id: api_execution_gpay_retention_pct_monthly
-          gridRow: 4
-          gridColumn: 1 / span 12
-          minHeight: 500px
-    - name: Cashback
-      order: 3
-      icon: "🎁"
-      iconClass: "gift"
-      unitToggle: true
-      defaultUnit: 'usd'
-      metrics:
-        - id: global_filter
-          gridRow: 1
-          gridColumn: 1 / span 2
-          minHeight: 60px
-        - id: api_execution_gpay_cashback_total
-          gridRow: 1
-          gridColumn: 3 / span 5
-          minHeight: 150px
-        - id: api_execution_gpay_cashback_7d
-          gridRow: 1
-          gridColumn: 8 / span 5
-          minHeight: 150px
-        - id: api_execution_gpay_cashback_weekly
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_gpay_cashback_cumulative
-          gridRow: 2
-          gridColumn: 7 / span 6
-          minHeight: 450px
-    - name: Balances
-      order: 4
-      icon: "💰"
-      iconClass: "wallet"
-      metrics:
-        - id: api_execution_gpay_total_balance
-          gridRow: 1
-          gridColumn: 1 / span 6
-          minHeight: 150px
-        - id: api_execution_gpay_owner_total_balance
-          gridRow: 2
-          gridColumn: 1 / span 6
-          minHeight: 150px
-        - id: api_execution_gpay_gno_balance_daily
-          gridRow: 1 / span 2
-          gridColumn: 7 / span 6
-          minHeight: 312px
-        - id: api_execution_gpay_balances_by_token_daily
-          gridRow: 3
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_gpay_owner_balances_by_token_daily
-          gridRow: 3
-          gridColumn: 7 / span 6
-          minHeight: 450px
-        - id: api_execution_gpay_balance_cohorts_holders_daily
-          gridRow: 4
-          gridColumn: 1 / span 6
-          minHeight: 450px
-        - id: api_execution_gpay_balance_cohorts_value_daily
-          gridRow: 4
-          gridColumn: 7 / span 6
-          minHeight: 450px
 

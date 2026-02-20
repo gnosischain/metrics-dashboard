@@ -4,7 +4,11 @@ const metric = {
   titleFontSize: '1.3rem', 
   chartType: 'area', 
   isTimeSeries: true,
-  enableZoom: false,
+  enableZoom: true,
+  defaultZoom: {
+    start: 80, 
+    end: 100   
+  },
   format: 'formatNumber',
   showTotal: true, 
   
