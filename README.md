@@ -61,7 +61,13 @@ This application follows a two-component architecture with server-side caching:
 
 4. Start the development server:
    ```bash
-   pnpm start
+   pnpm dev
+   ```
+
+5. Run tests and production build:
+   ```bash
+   pnpm test
+   pnpm build
    ```
 
 ## Project Structure
@@ -241,11 +247,25 @@ To deploy this dashboard, you'll need:
     - `CLICKHOUSE_DATABASE` (optional): Database name 
     - `CLICKHOUSE_DBT_SCHEMA` (optional): dbt schema prefix used to rewrite `dbt.` in queries (default: `dbt`)
     - `API_KEY`: A secure key for API authentication
-     - `REACT_APP_API_URL`: `/api` (relative path)
-     - `REACT_APP_API_KEY`: Same value as `API_KEY`
-     - `REACT_APP_DASHBOARD_TITLE` (optional): Custom dashboard title
-     - `CACHE_TTL_HOURS` (optional): Cache validity period in hours
-     - `CACHE_REFRESH_HOURS` (optional): Cache refresh interval in hours
+    - `VITE_API_URL`: `/api` (relative path)
+    - `VITE_API_KEY`: Same value as `API_KEY`
+    - `VITE_DASHBOARD_TITLE` (optional): Custom dashboard title
+    - `VITE_DEV_API_PROXY_TARGET` (optional): Local API proxy target for `pnpm dev`
+    - `CACHE_TTL_HOURS` (optional): Cache validity period in hours
+    - `CACHE_REFRESH_HOURS` (optional): Cache refresh interval in hours
+
+### Frontend Environment Variables
+
+Vite-prefixed variables are the primary format:
+
+- `VITE_API_URL`
+- `VITE_API_KEY`
+- `VITE_USE_MOCK_DATA`
+- `VITE_DASHBOARD_TITLE`
+- `VITE_PUBLIC_BASE_URL` (optional)
+- `VITE_DEV_API_PROXY_TARGET` (optional, local dev proxy)
+
+Legacy `REACT_APP_*` variables are still supported as a temporary migration fallback.
 
 ### Troubleshooting Deployment Issues
 
@@ -260,7 +280,7 @@ If you encounter issues:
    Visit `/api/test` to see cache information.
 
 3. **Use Mock Data Temporarily**:
-   Set `USE_MOCK_DATA=true` in environment variables during testing.
+   Set `VITE_USE_MOCK_DATA=true` in environment variables during testing.
 
 ## Adding New Metrics
 

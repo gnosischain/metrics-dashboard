@@ -2,6 +2,7 @@ import React from 'react';
 import ThemeToggle from './ThemeToggle';
 import HeaderResourcesMenu from './HeaderResourcesMenu';
 import { HEADER_RESOURCE_LINKS } from '../config/headerLinks';
+import { withBaseUrl } from '../utils/env';
 
 /**
  * Enhanced Header component for the dashboard with logo and indexing status
@@ -27,8 +28,8 @@ const Header = ({
   //  ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
   //  : "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/Black/PNG/Gnosis.png";
   const logoUrl = isDarkMode 
-    ? process.env.PUBLIC_URL + "/imgs/Gnosis_white.png"
-    : process.env.PUBLIC_URL + "/imgs/Gnosis_black.png";
+    ? withBaseUrl('/imgs/Gnosis_white.png')
+    : withBaseUrl('/imgs/Gnosis_black.png');
 
   return (
     <header className="dashboard-header">

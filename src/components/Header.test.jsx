@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import Header from './Header';
 
 describe('Header', () => {
@@ -9,7 +9,7 @@ describe('Header', () => {
       <Header
         dashboardName="Overview"
         isDarkMode={false}
-        toggleTheme={jest.fn()}
+        toggleTheme={vi.fn()}
       />
     );
 
@@ -30,7 +30,7 @@ describe('Header', () => {
       <Header
         dashboardName="Overview"
         isDarkMode={false}
-        toggleTheme={jest.fn()}
+        toggleTheme={vi.fn()}
         resourceLinks={customLinks}
       />
     );

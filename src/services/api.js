@@ -1,4 +1,5 @@
 import config from '../utils/config';
+import { isDevelopment } from '../utils/env';
 
 const CACHE_DURATION_MS = 5 * 60 * 1000;
 const responseCache = new Map();
@@ -32,7 +33,7 @@ export class ApiService {
     this.baseUrl = config.api.url;
     this.apiKey = config.api.key;
     this.useMockData = config.api.useMockData;
-    this.isDevelopment = process.env.NODE_ENV === 'development';
+    this.isDevelopment = isDevelopment;
 
     console.log('ApiService initialized:', {
       baseUrl: this.baseUrl,

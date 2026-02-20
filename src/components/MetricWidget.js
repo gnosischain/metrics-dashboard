@@ -3,6 +3,7 @@ import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import InfoPopover from './InfoPopover';
+import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 
 const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
@@ -13,6 +14,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const [availableLabels, setAvailableLabels] = useState([]);
   
   const isMounted = useRef(true);
+  const requestSequenceRef = useRef(0);
 
   // Determine if we're using global filter or local filter
   // If hasGlobalFilter is true, we should use global filter (even if value is null yet - it will be set soon)
@@ -143,6 +145,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       return;
     }
 
+    const requestId = ++requestSequenceRef.current;
+
     try {
       setLoading(true);
       setError(null);
@@ -167,6 +171,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
       const result = await metricsService.getMetricData(metricId, params);
       
+      if (!isMounted.current || requestId !== requestSequenceRef.current) {
+        return;
+      }
+
       if (isMounted.current) {
         setData(result);
         
@@ -183,12 +191,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         }
       }
     } catch (err) {
-      if (isMounted.current) {
+      if (isMounted.current && requestId === requestSequenceRef.current) {
         setError(err.message);
         console.error('Error fetching metric data:', err);
       }
     } finally {
-      if (isMounted.current) {
+      if (isMounted.current && requestId === requestSequenceRef.current) {
         setLoading(false);
       }
     }
@@ -347,6 +355,18 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
   const showInfoPopover = Boolean(widgetConfig.metricDescription);
 
+  const chartRenderConfig = useMemo(() => ({
+    ...widgetConfig.config,
+    yField: effectiveUnitConfig.yField,
+    format: effectiveUnitConfig.format,
+    enableZoom: widgetConfig.enableZoom
+  }), [
+    widgetConfig.config,
+    widgetConfig.enableZoom,
+    effectiveUnitConfig.yField,
+    effectiveUnitConfig.format
+  ]);
+
   const headerControls = (showLocalDropdown || showInfoPopover) ? (
     <>
       {showLocalDropdown && (
@@ -371,10 +391,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         subtitle={widgetConfig.description}
         chartType={widgetConfig.chartType} // Pass chartType for styling
       >
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading...</p>
-        </div>
+        <MetricWidgetSkeleton variant={widgetConfig.type} />
       </Card>
     );
   }
@@ -437,12 +454,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
           <EChartsContainer
             data={filteredData?.data || []}
             chartType={widgetConfig.chartType}
-            config={{
-              ...widgetConfig.config,
-              yField: effectiveUnitConfig.yField,
-              format: effectiveUnitConfig.format,
-              enableZoom: widgetConfig.enableZoom
-            }}
+            config={chartRenderConfig}
             isDarkMode={isDarkMode}
             width="100%"
             height="100%"
@@ -470,8 +482,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     >
       {/* Loading overlay shown during refetch (when we have data but are loading new data) */}
       {loading && data && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
+        <div className="loading-overlay loading-overlay-subtle" aria-hidden="true">
+          <div className="loading-shimmer"></div>
         </div>
       )}
       {renderContent()}

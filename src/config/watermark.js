@@ -1,3 +1,5 @@
+import { withBaseUrl } from '../utils/env';
+
 /**
  * Global watermark configuration
  * Location: src/config/watermark.js
@@ -24,8 +26,8 @@ export const WATERMARK_CONFIG = {
   //  dark: 'https://raw.githubusercontent.com/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logo/RGB/Owl_Logomark_White_RGB.png'
  // }
   watermarkImage: {
-    light: process.env.PUBLIC_URL + '/imgs/favicon_black.png',
-    dark: process.env.PUBLIC_URL + '/imgs/favicon_white.png'
+    light: withBaseUrl('/imgs/favicon_black.png'),
+    dark: withBaseUrl('/imgs/favicon_white.png')
   }
 };
 

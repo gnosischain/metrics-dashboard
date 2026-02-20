@@ -84,32 +84,26 @@ export function getChartComponent(type) {
   // Normalize the type string (lowercase, trim)
   const normalizedType = type.toLowerCase().trim();
   
-  console.log('getChartComponent: Looking for type:', type, 'normalized:', normalizedType);
-  
   // Try exact match first
   if (CHART_TYPES[normalizedType]) {
-    console.log('getChartComponent: Found exact match for:', normalizedType);
     return CHART_TYPES[normalizedType];
   }
   
   // Try camelCase version
   const camelCase = normalizedType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   if (CHART_TYPES[camelCase]) {
-    console.log('getChartComponent: Found camelCase match for:', camelCase);
     return CHART_TYPES[camelCase];
   }
   
   // Try without 'Chart' suffix
   const withoutChart = normalizedType.replace(/chart$/i, '').trim();
   if (CHART_TYPES[withoutChart]) {
-    console.log('getChartComponent: Found match without chart suffix:', withoutChart);
     return CHART_TYPES[withoutChart];
   }
   
   // Try with '-chart' suffix
   const withDashChart = `${withoutChart}-chart`;
   if (CHART_TYPES[withDashChart]) {
-    console.log('getChartComponent: Found match with -chart suffix:', withDashChart);
     return CHART_TYPES[withDashChart];
   }
   

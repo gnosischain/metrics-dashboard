@@ -147,20 +147,16 @@ const Dashboard = () => {
   // Load dashboard configuration
   useEffect(() => {
     const loadDashboards = async () => {
-      console.log('Dashboard: Starting dashboard loading...');
       setIsLoading(true);
       setConfigLoaded(false);
       setShowIndexingAlert(false); // Show alert while loading
       
       try {
         // Load dashboard configuration
-        console.log('Dashboard: Loading dashboard config...');
         await dashboardConfig.loadConfig();
         
         // Get all dashboards
-        console.log('Dashboard: Getting all dashboards...');
         const allDashboards = dashboardsService.getAllDashboards();
-        console.log('Dashboard: Retrieved dashboards:', allDashboards);
         
         setDashboards(allDashboards);
         
@@ -172,7 +168,6 @@ const Dashboard = () => {
           const matchedDashboard = allDashboards.find(d => d.id === dashboardParam);
 
           if (matchedDashboard) {
-            console.log('Dashboard: Using dashboard from URL:', matchedDashboard.id);
             setActiveDashboard(matchedDashboard.id);
 
             const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
@@ -181,11 +176,9 @@ const Dashboard = () => {
               : (dashboardTabs[0]?.id || '');
 
             if (matchedTab) {
-              console.log('Dashboard: Using tab from URL:', matchedTab);
               setActiveTab(matchedTab);
             }
           } else {
-            console.log('Dashboard: Setting first dashboard as active:', allDashboards[0].id);
             setActiveDashboard(allDashboards[0].id);
           }
         }
@@ -217,15 +210,11 @@ const Dashboard = () => {
   
   // Update tabs when active dashboard changes
   useEffect(() => {
-    console.log('Dashboard: Active dashboard changed to:', activeDashboard);
-    
     if (activeDashboard) {
         const dashboard = dashboards.find(d => d.id === activeDashboard);
-        console.log('Dashboard: Found dashboard object:', dashboard);
 
         if (dashboard) {
             const dashboardTabs = dashboardsService.getDashboardTabs(activeDashboard);
-            console.log('Dashboard: Retrieved tabs for dashboard:', dashboardTabs);
             setTabs(dashboardTabs);
 
             // Set the active tab based on the new set of tabs
@@ -233,26 +222,21 @@ const Dashboard = () => {
                 const isCurrentTabValid = dashboardTabs.some(t => t.id === currentActiveTab);
                 
                 if (dashboard.hasDefaultTab && dashboardTabs.length > 0) {
-                    console.log('Dashboard: Using default tab:', dashboardTabs[0].id);
                     return dashboardTabs[0].id; // Always use the default tab for these dashboards
                 }
                 
                 if (isCurrentTabValid) {
-                    console.log('Dashboard: Keeping current tab:', currentActiveTab);
                     return currentActiveTab; // Keep current tab if it exists in the new set
                 }
                 
                 if (dashboardTabs.length > 0) {
-                    console.log('Dashboard: Falling back to first tab:', dashboardTabs[0].id);
                     return dashboardTabs[0].id; // Otherwise, fallback to the first tab
                 }
 
-                console.log('Dashboard: No tabs available');
                 return ''; // No tabs available
             });
         }
     } else {
-        console.log('Dashboard: No active dashboard, clearing tabs');
         setTabs([]);
         setActiveTab('');
     }
@@ -260,36 +244,23 @@ const Dashboard = () => {
   
   // Update metrics when active tab changes
   useEffect(() => {
-    console.log('Dashboard: Active tab changed to:', activeTab, 'for dashboard:', activeDashboard);
-    
     if (activeDashboard && activeTab) {
       const metricsForTab = dashboardsService.getTabMetrics(activeDashboard, activeTab);
       const tabConfig = dashboardsService.getTab(activeDashboard, activeTab);
-      console.log('Dashboard: Retrieved metrics for tab:', metricsForTab);
-      console.log('Dashboard: Retrieved tab config:', tabConfig);
       setTabMetrics(metricsForTab);
       setActiveTabConfig(tabConfig);
     } else {
-      console.log('Dashboard: Clearing metrics');
-      setTabMetrics([]);
       setActiveTabConfig(null);
     }
   }, [activeDashboard, activeTab]);
   
   // Change the active dashboard and tab
   const handleNavigation = useCallback((dashboardId, tabId) => {
-    console.log('Dashboard: Navigation requested:', { dashboardId, tabId });
-    
     // If changing to a different dashboard
     if (dashboardId !== activeDashboard) {
       // First, check if tabId is valid
       const newDashboard = dashboards.find(d => d.id === dashboardId);
       const newTabs = newDashboard ? dashboardsService.getDashboardTabs(dashboardId) : [];
-      
-      console.log('Dashboard: Changing dashboard to:', dashboardId, 'with tabs:', newTabs);
-      
-      // Clear metrics first to ensure clean unmounting
-      setTabMetrics([]);
       
       // Set the new dashboard
       setActiveDashboard(dashboardId);
@@ -297,13 +268,10 @@ const Dashboard = () => {
       // Then set the new tab
       // If the provided tabId exists, use it; otherwise, use the first tab
       if (tabId && newTabs.some(tab => tab.id === tabId)) {
-        console.log('Dashboard: Using provided tab ID:', tabId);
         setActiveTab(tabId);
       } else if (newTabs.length > 0) {
-        console.log('Dashboard: Using first available tab:', newTabs[0].id);
         setActiveTab(newTabs[0].id);
       } else {
-        console.log('Dashboard: No tabs available for dashboard');
         setActiveTab('');
       }
       
@@ -314,9 +282,7 @@ const Dashboard = () => {
     } 
     // Just changing tabs within the same dashboard
     else if (tabId !== activeTab) {
-      console.log('Dashboard: Changing tab to:', tabId);
       // Just update the tab
-      setTabMetrics([]);
       setActiveTab(tabId);
       
       // On mobile, automatically close the sidebar after navigation
@@ -356,15 +322,6 @@ const Dashboard = () => {
       setSidebarCollapsed(!sidebarCollapsed);
     }
   };
-
-  console.log('Dashboard: Rendering with state:', {
-    isLoading,
-    dashboardsCount: dashboards.length,
-    activeDashboard,
-    activeTab,
-    tabsCount: tabs.length,
-    metricsCount: tabMetrics.length
-  });
 
   return (
     <div className="dashboard">
@@ -411,7 +368,6 @@ const Dashboard = () => {
           ) : activeDashboard && activeTab ? (
             <div className="tab-content">
               <MetricGrid 
-                key={`grid-${activeDashboard}-${activeTab}`} 
                 metrics={tabMetrics}
                 isDarkMode={isDarkMode}
                 tabConfig={activeTabConfig}
