@@ -15,7 +15,11 @@ export class QuantileBandsChart extends BaseChart {
 
     const { processedData, xAxisData } = this.processData(data, config);
     const colors = config.bandColors || generateColorPalette(config.bands?.length || 3, isDarkMode);
-    const lineColors = config.lineColors || ['#000000', '#0969DA', '#58A6FF'];
+    const lineColors = config.lineColors || (
+      isDarkMode
+        ? ['#E2E8F0', '#818CF8', '#38BDF8']
+        : ['#0F172A', '#4F46E5', '#0EA5E9']
+    );
     
     // Analyze time granularity for smart formatting
     const timeAnalysis = BaseChart.analyzeTimeGranularity(xAxisData);
@@ -65,7 +69,7 @@ export class QuantileBandsChart extends BaseChart {
           },
           showSymbol: false,
           areaStyle: {
-            color: isDarkMode ? '#1a1a1a' : '#ffffff',
+            color: isDarkMode ? '#0F172A' : '#FFFFFF',
             opacity: 1
           },
           silent: true,
@@ -148,7 +152,8 @@ export class QuantileBandsChart extends BaseChart {
           
           const xValue = xAxisData[dataIndex];
           
-          let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${
+          const dividerColor = isDarkMode ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.4)';
+          let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid ${dividerColor};">${
             BaseChart.formatTimeSeriesInTooltip(xValue, enhancedConfig.timeContext)
           }</div>`;
           
@@ -176,7 +181,7 @@ export class QuantileBandsChart extends BaseChart {
           
           // Show bands
           if (config.bands && config.bands.length > 0) {
-            tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.3);">`;
+            tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid ${dividerColor};">`;
             tooltip += `<div style="font-weight: 600; margin-bottom: 4px;">Quantile Bands:</div>`;
             
             config.bands.forEach((band, index) => {

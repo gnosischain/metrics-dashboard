@@ -16,6 +16,7 @@ import {
 import { MapChart, LinesChart, ScatterChart, EffectScatterChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { worldMapData } from './worldMapData';
+import { generateColorPalette } from '../../../utils';
 
 // Register required ECharts components
 echarts.use([
@@ -75,8 +76,8 @@ export class Geo2DMapChart {
       symbolSize = 3,
       
       // Colors
-      lineColor = '#91cc75',
-      effectColor = '#fff',
+      lineColor = isDarkMode ? '#34D399' : '#10B981',
+      effectColor = isDarkMode ? '#E2E8F0' : '#334155',
       
       // Map settings
       mapZoom = 1.8,
@@ -118,11 +119,7 @@ export class Geo2DMapChart {
     console.log('Geo2DMapChart: Node categories for coloring:', categories);
     
     // Create color palette
-    const colorPalette = [
-      '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-      '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9845',
-      '#8dd3c7', '#bebada', '#fb8072', '#80b1d3', '#fdb462'
-    ];
+    const colorPalette = generateColorPalette(15, isDarkMode);
     
     // Map categories to colors
     const categoryColorMap = {};
@@ -162,18 +159,18 @@ export class Geo2DMapChart {
       filterLabel: node.filterLabel, // NEW: Store filter label separately
       itemStyle: {
         color: categoryColorMap[node.category] || '#999999',
-        borderColor: '#fff',
+        borderColor: isDarkMode ? '#0F172A' : '#FFFFFF',
         borderWidth: nodeBorderWidth
       },
       coords: node.coords,
       tooltipData: node.tooltipData
     }));
 
-    const backgroundColor = isDarkMode ? '#000' : '#fff';
-    const textColor = isDarkMode ? '#ccc' : '#333';
-    const areaColor = isDarkMode ? '#323c48' : '#eee';
-    const borderColor = isDarkMode ? '#111' : '#aaa';
-    const emphasisColor = isDarkMode ? '#2a333d' : '#ccc';
+    const backgroundColor = 'transparent';
+    const textColor = isDarkMode ? '#CBD5E1' : '#334155';
+    const areaColor = isDarkMode ? '#1E293B' : '#EFF6FF';
+    const borderColor = isDarkMode ? '#334155' : '#CBD5E1';
+    const emphasisColor = isDarkMode ? '#273449' : '#DBEAFE';
 
     return {
       backgroundColor,
@@ -192,11 +189,11 @@ export class Geo2DMapChart {
         textStyle: {
           color: textColor
         },
-        backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
+        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
         borderColor: borderColor,
         borderWidth: 1,
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 8,
         inactiveColor: '#ccc'
       } : null,
       tooltip: {
@@ -204,6 +201,16 @@ export class Geo2DMapChart {
         triggerOn: 'mousemove|click',
         enterable: true,
         confine: true,
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+        borderWidth: 1,
+        borderRadius: 8,
+        textStyle: {
+          color: isDarkMode ? '#E2E8F0' : '#0F172A'
+        },
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         formatter: (params) => {
           if (params.componentType === 'series' && (params.seriesType === 'scatter' || params.seriesType === 'effectScatter')) {
             const node = params.data;
@@ -304,7 +311,7 @@ export class Geo2DMapChart {
                 lineStyle: {
                   width: lineWidth * 2,
                   opacity: lineHoverOpacity,
-                  color: '#fac858'
+                  color: '#FBBF24'
                 }
               },
               data: categoryLines
@@ -367,13 +374,13 @@ export class Geo2DMapChart {
               formatter: '{b}',
               position: 'top',
               color: textColor,
-              backgroundColor: 'rgba(255,255,255,0.9)',
+              backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.86)' : 'rgba(255, 255, 255, 0.9)',
               padding: [2, 5],
-              borderRadius: 3,
+              borderRadius: 6,
               fontSize: 12
             },
             itemStyle: {
-              borderColor: '#fff',
+              borderColor: isDarkMode ? '#0F172A' : '#FFFFFF',
               borderWidth: 3,
               shadowBlur: 10,
               shadowColor: 'rgba(0,0,0,0.5)'

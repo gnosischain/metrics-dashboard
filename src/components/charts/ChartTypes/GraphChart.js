@@ -136,12 +136,16 @@ export class GraphChart extends BaseChart {
         show: true,
         trigger: 'item',
         triggerOn: 'mousemove',
-        backgroundColor: isDarkMode ? 'rgba(50,50,50,0.95)' : 'rgba(255,255,255,0.95)',
-        borderColor: isDarkMode ? '#555' : '#ccc',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
         borderWidth: 1,
+        borderRadius: 8,
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         padding: 10,
         textStyle: {
-          color: isDarkMode ? '#fff' : '#333',
+          color: isDarkMode ? '#E2E8F0' : '#0F172A',
           fontSize: 12
         },
         formatter: function(params) {
@@ -152,23 +156,23 @@ export class GraphChart extends BaseChart {
             const formattedValue = (node.value || 0).toLocaleString();
             return `<div>
                       <strong style="font-size: 14px;">${node.name}</strong><br/>
-                      <span style="color: ${isDarkMode ? '#aaa' : '#666'};">Category:</span> ${node.category}<br/>
-                      <span style="color: ${isDarkMode ? '#aaa' : '#666'};">Total Value:</span> ${formattedValue}
+                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Category:</span> ${node.category}<br/>
+                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Total Value:</span> ${formattedValue}
                     </div>`;
           } else if (params.dataType === 'edge') {
             const edge = params.data;
             const formattedValue = (edge.value || 0).toLocaleString();
             let tooltipContent = `<div>
                       <strong style="font-size: 14px;">${edge.source} → ${edge.target}</strong><br/>
-                      <span style="color: ${isDarkMode ? '#aaa' : '#666'};">Value:</span> ${formattedValue}`;
+                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Value:</span> ${formattedValue}`;
             
             if (edge.tokenAddress) {
-              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#aaa' : '#666'};">Token:</span> ${edge.tokenAddress}`;
+              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Token:</span> ${edge.tokenAddress}`;
             }
             
             if (edge.date) {
               const dateStr = new Date(edge.date).toLocaleDateString();
-              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#aaa' : '#666'};">Date:</span> ${dateStr}`;
+              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Date:</span> ${dateStr}`;
             }
             
             tooltipContent += '</div>';
@@ -211,7 +215,7 @@ export class GraphChart extends BaseChart {
         data: nodes,
         edges: links.map(link => {
           // Calculate link color based on date
-          let lineColor = isDarkMode ? '#666' : '#ccc';
+          let lineColor = isDarkMode ? '#64748B' : '#CBD5E1';
           if (networkConfig.linkColorByDate && dateRange && link.date) {
             const dateValue = new Date(link.date).getTime();
             const ratio = (dateValue - dateRange[0]) / (dateRange[1] - dateRange[0]);
@@ -262,7 +266,7 @@ export class GraphChart extends BaseChart {
           }
         },
         itemStyle: {
-          borderColor: '#fff',
+          borderColor: isDarkMode ? '#334155' : '#FFFFFF',
           borderWidth: 1,
           shadowBlur: 10,
           shadowColor: 'rgba(0, 0, 0, 0.3)'

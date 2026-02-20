@@ -72,7 +72,7 @@ export class WordCloudChart extends BaseChart {
         
         // Styling - remove color function since we're setting it per word
         textStyle: {
-          fontFamily: config.fontFamily || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: config.fontFamily || '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           fontWeight: config.fontWeight || 'normal'
           // Color is set per word in the data
         },
@@ -91,11 +91,15 @@ export class WordCloudChart extends BaseChart {
       tooltip: {
         show: config.showTooltip !== false,
         trigger: 'item',
-        backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        borderColor: isDarkMode ? '#555' : '#ccc',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
         borderWidth: 1,
+        borderRadius: 8,
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         textStyle: {
-          color: isDarkMode ? '#fff' : '#333'
+          color: isDarkMode ? '#E2E8F0' : '#0F172A'
         },
         formatter: (params) => {
           const word = params.data;
@@ -263,8 +267,8 @@ export class WordCloudChart extends BaseChart {
       const maxValue = Math.max(...processedData.words.map(w => w.value));
       const minValue = Math.min(...processedData.words.map(w => w.value));
       const ratio = maxValue === minValue ? 0.5 : (word.value - minValue) / (maxValue - minValue);
-      const startColor = config.gradientColors?.[0] || (isDarkMode ? '#3B82F6' : '#1E40AF');
-      const endColor = config.gradientColors?.[1] || (isDarkMode ? '#EF4444' : '#DC2626');
+      const startColor = config.gradientColors?.[0] || (isDarkMode ? '#818CF8' : '#4F46E5');
+      const endColor = config.gradientColors?.[1] || (isDarkMode ? '#F472B6' : '#EC4899');
       return this.interpolateColors(startColor, endColor, ratio);
     } else {
       // Random colors (default) - but consistent per word
@@ -321,13 +325,13 @@ export class WordCloudChart extends BaseChart {
 
   static getDefaultColors(isDarkMode) {
     return isDarkMode ? [
-      '#60A5FA', '#34D399', '#FBBF24', '#F87171', '#A78BFA',
-      '#FB7185', '#38BDF8', '#4ADE80', '#FACC15', '#F472B6',
-      '#818CF8', '#2DD4BF', '#FB923C', '#E879F9', '#22D3EE'
+      '#818CF8', '#34D399', '#FBBF24', '#F87171', '#A78BFA',
+      '#60A5FA', '#F472B6', '#2DD4BF', '#FDBA74', '#A3E635',
+      '#67E8F9', '#C4B5FD', '#4ADE80', '#FDA4AF', '#38BDF8'
     ] : [
-      '#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED',
-      '#BE185D', '#0284C7', '#16A34A', '#CA8A04', '#C2410C',
-      '#4F46E5', '#0D9488', '#EA580C', '#A21CAF', '#0891B2'
+      '#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+      '#3B82F6', '#EC4899', '#14B8A6', '#F97316', '#84CC16',
+      '#06B6D4', '#A855F7', '#22C55E', '#FB7185', '#0EA5E9'
     ];
   }
 

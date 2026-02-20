@@ -53,7 +53,7 @@ const darkTheme = {
     noteBkgColor: '#2b313c',
     noteTextColor: '#e6edf3',
     fontFamily:
-      'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
+      '"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
   },
   securityLevel: 'loose',
   startOnLoad: false,

@@ -19,7 +19,7 @@ import formatters from '../utils/formatters';
 const NumberWidget = ({ 
   value, 
   format = 'formatNumber', 
-  color = '#0969DA', 
+  color = '#4F46E5', 
   label, 
   isDarkMode = false,
   variant = 'default',
@@ -34,8 +34,17 @@ const NumberWidget = ({
     ? formatters[format](value)
     : value;
     
-  // Adjust color for dark mode if the color is the default one
-  const adjustedColor = isDarkMode ? '#58A6FF' : color;
+  // Keep custom metric colors but map the default accent to the active theme.
+  const normalizedColor = (color || '').toLowerCase();
+  const isDefaultAccent =
+    !normalizedColor ||
+    normalizedColor === '#4f46e5' ||
+    normalizedColor === '#6366f1' ||
+    normalizedColor === '#0969da' ||
+    normalizedColor === '#58a6ff';
+  const adjustedColor = isDefaultAccent
+    ? (isDarkMode ? '#818CF8' : '#4F46E5')
+    : color;
 
   // Format change value
   const formattedChange = React.useMemo(() => {
@@ -83,8 +92,8 @@ const NumberWidget = ({
       default:
         return {
           ...baseStyles,
-          color: isDarkMode ? '#8B949E' : '#656d76',
-          backgroundColor: isDarkMode ? 'rgba(139, 148, 158, 0.1)' : 'rgba(101, 109, 118, 0.1)'
+          color: isDarkMode ? '#94A3B8' : '#64748B',
+          backgroundColor: isDarkMode ? 'rgba(148, 163, 184, 0.14)' : 'rgba(100, 116, 139, 0.12)'
         };
     }
   };
@@ -159,7 +168,7 @@ const NumberWidget = ({
         <div 
           className="number-label" 
           style={{
-            color: isDarkMode ? '#8B949E' : '#57606A',
+            color: 'var(--color-text-secondary)',
             fontSize: '0.9rem',
             fontWeight: 500
           }}

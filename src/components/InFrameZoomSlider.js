@@ -118,9 +118,9 @@ const InFrameZoomSlider = ({
   }, [dragging, handleMouseMove, handleMouseUp]);
 
   // Styling
-  const sliderTrackColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-  const sliderThumbColor = isDarkMode ? '#58A6FF' : '#0969DA';
-  const rangeColor = isDarkMode ? 'rgba(88, 166, 255, 0.25)' : 'rgba(9, 105, 218, 0.2)';
+  const sliderTrackColor = isDarkMode ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.24)';
+  const sliderThumbColor = isDarkMode ? '#818CF8' : '#4F46E5';
+  const rangeColor = isDarkMode ? 'rgba(129, 140, 248, 0.34)' : 'rgba(79, 70, 229, 0.24)';
   const thumbSize = 12;
   const trackHeight = 4;
 
@@ -134,7 +134,7 @@ const InFrameZoomSlider = ({
     bottom: `${bottomOffset}px`, // Dynamic positioning based on chart area
     backgroundColor: 'transparent',
     padding: '8px 12px',
-    borderRadius: '6px',
+    borderRadius: '8px',
     zIndex: 10,
     pointerEvents: 'none' // Allow mouse events to pass through to chart
   };
@@ -207,7 +207,7 @@ const InFrameZoomSlider = ({
             borderRadius: '50%',
             cursor: dragging === 'min' ? 'grabbing' : 'grab',
             zIndex: 2,
-            border: `1px solid ${isDarkMode ? '#0D1117' : '#F6F8FA'}`,
+            border: `1px solid ${isDarkMode ? '#0F172A' : '#F8FAFC'}`,
             boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
             touchAction: 'none',
           }}
@@ -226,7 +226,7 @@ const InFrameZoomSlider = ({
             borderRadius: '50%',
             cursor: dragging === 'max' ? 'grabbing' : 'grab',
             zIndex: 2,
-            border: `1px solid ${isDarkMode ? '#0D1117' : '#F6F8FA'}`,
+            border: `1px solid ${isDarkMode ? '#0F172A' : '#F8FAFC'}`,
             boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
             touchAction: 'none',
           }}

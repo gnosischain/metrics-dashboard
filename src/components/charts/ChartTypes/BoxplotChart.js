@@ -4,7 +4,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette } from '../../../utils/colors';
+import { generateColorPalette, hexToRgba } from '../../../utils/colors';
 import { formatValue } from '../../../utils/formatters';
 
 export class BoxplotChart extends BaseChart {
@@ -16,6 +16,7 @@ export class BoxplotChart extends BaseChart {
     const processedData = this.processData(data, config);
     const colors = generateColorPalette(1, isDarkMode);
     const primaryColor = colors[0];
+    const fillColor = hexToRgba(primaryColor, isDarkMode ? 0.3 : 0.2);
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -43,8 +44,8 @@ export class BoxplotChart extends BaseChart {
             return [data.q1, data.q3, data.q1, data.q3];
           }),
           itemStyle: {
-            color: isDarkMode ? 'rgba(88, 166, 255, 0.3)' : 'rgba(9, 105, 218, 0.3)',
-            color0: isDarkMode ? 'rgba(88, 166, 255, 0.3)' : 'rgba(9, 105, 218, 0.3)',
+            color: fillColor,
+            color0: fillColor,
             borderColor: primaryColor,
             borderColor0: primaryColor,
             borderWidth: 2
@@ -121,7 +122,7 @@ export class BoxplotChart extends BaseChart {
             return [i, data.median];
           }),
           itemStyle: {
-            color: isDarkMode ? '#ffffff' : '#000000',
+            color: isDarkMode ? '#E2E8F0' : '#0F172A',
             borderWidth: 0
           },
           z: 10,
@@ -153,10 +154,15 @@ export class BoxplotChart extends BaseChart {
       tooltip: {
         trigger: 'item',
         confine: true,
-        backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        borderColor: isDarkMode ? '#555' : '#ccc',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+        borderWidth: 1,
+        borderRadius: 8,
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         textStyle: {
-          color: isDarkMode ? '#fff' : '#333'
+          color: isDarkMode ? '#E2E8F0' : '#0F172A'
         }
       },
       

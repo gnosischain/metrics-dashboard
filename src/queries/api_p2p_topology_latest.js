@@ -51,8 +51,8 @@ const metric = {
   
   // Custom color palette (optional)
   colors: [
-    '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-    '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9845'
+    '#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+    '#3B82F6', '#EC4899', '#14B8A6', '#F97316', '#0EA5E9'
   ],
 
   query: `SELECT *FROM dbt.api_p2p_topology_latest`

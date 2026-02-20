@@ -51,7 +51,7 @@ export class BarChart extends BaseChart {
           data: series.data,
           itemStyle: {
             color: colors[index],
-            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            borderRadius: 0,
             // Add opacity support - same as areaOpacity but for bars
             opacity: config.barOpacity !== undefined ? config.barOpacity : 
                      config.opacity !== undefined ? config.opacity : 1.0
@@ -65,7 +65,7 @@ export class BarChart extends BaseChart {
           data: processedData.values,
           itemStyle: {
             color: colors[0],
-            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            borderRadius: 0,
             // Add opacity support for single series too
             opacity: config.barOpacity !== undefined ? config.barOpacity : 
                      config.opacity !== undefined ? config.opacity : 1.0

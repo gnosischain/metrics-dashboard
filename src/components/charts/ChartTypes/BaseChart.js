@@ -124,8 +124,8 @@ export class BaseChart {
     return {
       backgroundColor: 'transparent',
       textStyle: {
-        color: isDarkMode ? '#e5e7eb' : '#374151',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        color: isDarkMode ? '#E2E8F0' : '#334155',
+        fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
       },
       animation: true,
       animationDuration: 750,
@@ -138,7 +138,7 @@ export class BaseChart {
       axisLine: {
         show: true,
         lineStyle: {
-          color: isDarkMode ? '#4b5563' : '#d1d5db'
+          color: isDarkMode ? '#475569' : '#CBD5E1'
         }
       },
       axisTick: {
@@ -147,7 +147,7 @@ export class BaseChart {
       },
       axisLabel: {
         show: true,
-        color: isDarkMode ? '#9ca3af' : '#6b7280',
+        color: isDarkMode ? '#94A3B8' : '#64748B',
         hideOverlap: true,
         showMinLabel: true,
         showMaxLabel: true
@@ -155,7 +155,7 @@ export class BaseChart {
       splitLine: {
         show: type === 'value',
         lineStyle: {
-          color: isDarkMode ? '#374151' : '#f3f4f6',
+          color: isDarkMode ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.24)',
           type: 'dashed'
         }
       }
@@ -351,7 +351,8 @@ export class BaseChart {
       ? BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext)
       : '';
 
-    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
+    const dividerColor = config.isDarkMode ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.4)';
+    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid ${dividerColor};">${formattedDate}</div>`;
     let total = 0;
 
     const items = params
@@ -403,7 +404,7 @@ export class BaseChart {
 
     if (config.showTotal && items.length > 1) {
       tooltip += `
-        <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.3);">
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid ${dividerColor};">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-weight:600;">Total</span>
             <span style="font-weight:600;margin-left:16px;">${fmt(total)}</span>
@@ -462,7 +463,7 @@ export class BaseChart {
       top: 'top',
       left: 'center',
       textStyle: {
-        color: isDarkMode ? '#e5e7eb' : '#374151'
+        color: isDarkMode ? '#CBD5E1' : '#334155'
       },
       itemGap: 20,
       ...config.legend
@@ -475,7 +476,7 @@ export class BaseChart {
       axisPointer: {
         type: 'cross',
         label: {
-          backgroundColor: config.isDarkMode ? '#374151' : '#6b7280',
+          backgroundColor: config.isDarkMode ? '#334155' : '#475569',
           formatter: (params) => {
             if (params.axisDimension === 'x') {
               return BaseChart.formatTimeSeriesLabel(params.value, config.timeContext);
@@ -484,11 +485,15 @@ export class BaseChart {
           }
         }
       },
-      backgroundColor: config.isDarkMode ? '#1f2937' : '#ffffff',
-      borderColor: config.isDarkMode ? '#374151' : '#e5e7eb',
+      backgroundColor: config.isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+      borderColor: config.isDarkMode ? '#334155' : '#E2E8F0',
       borderWidth: 1,
+      borderRadius: 8,
+      extraCssText: config.isDarkMode
+        ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+        : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
       textStyle: {
-        color: config.isDarkMode ? '#e5e7eb' : '#374151'
+        color: config.isDarkMode ? '#E2E8F0' : '#0F172A'
       },
       padding: [10, 14],
       ...config.tooltip
@@ -519,25 +524,25 @@ export class BaseChart {
           brushSelect: false,
           borderColor: 'transparent',
           backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-          fillerColor: config.isDarkMode ? 'rgba(88, 166, 255, 0.28)' : 'rgba(9, 105, 218, 0.22)',
+          fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
           },
           handleSize: '95%',
           handleStyle: {
-            color: config.isDarkMode ? '#58A6FF' : '#0969DA',
-            borderColor: config.isDarkMode ? '#58A6FF' : '#0969DA'
+            color: config.isDarkMode ? '#818CF8' : '#4F46E5',
+            borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
           },
           textStyle: {
-            color: config.isDarkMode ? '#9ca3af' : '#6b7280'
+            color: config.isDarkMode ? '#94A3B8' : '#64748B'
           },
           dataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#4b5563' : '#d1d5db', opacity: 0.2 },
-            areaStyle: { color: config.isDarkMode ? '#374151' : '#f3f4f6', opacity: 0.2 }
+            lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
+            areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
           },
           selectedDataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#58A6FF' : '#0969DA' },
-            areaStyle: { color: config.isDarkMode ? 'rgba(88, 166, 255, 0.2)' : 'rgba(9, 105, 218, 0.2)' }
+            lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
+            areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
           }
         }
       ]
