@@ -1,31 +1,40 @@
 # ClickHouse Metrics Dashboard
 
-A simple, modular dashboard to visualize ClickHouse metrics built with React and deployed on Vercel with server-side caching.
+A modular analytics dashboard for Gnosis metrics built with React, ECharts, YAML-driven layouts, and a cached ClickHouse-backed API.
 
 ## Features
 
 - Connects to ClickHouse Cloud via API
 - Server-side caching to minimize ClickHouse queries
 - Secure handling of credentials (not exposed to frontend)
-- Responsive design for all devices
-- Simplified UI with single-column metric display
-- Modular architecture for easy addition of new metrics
+- YAML-driven dashboards/tabs/card layouts
+- ECharts-based chart rendering with expand/info/download controls
+- Header metric search with fuzzy matching and direct dashboard/tab navigation
+- Responsive design with dark mode support
 - Deployment to Vercel with serverless functions
 
-## Available Metrics
+## Dashboard Areas
 
-- Query Count - Number of queries executed
-- Data Processed - Amount of data processed by queries
-- Average Query Time - Average query execution time
-- Error Rate - Percentage of failed queries
+Configured areas live in YAML and currently include:
+
+- Overview
+- Gnosis Pay
+- OnChain Activity
+- Consensus
+- Network
+- Bridges
+- Tokens
+- Yields
+- ESG
 
 ## Architecture
 
-This application follows a two-component architecture with server-side caching:
+This application follows a config-driven frontend + API architecture with server-side caching:
 
 1. **Frontend Dashboard** - React application deployed to Vercel
-   - Visualizes metrics data using Chart.js
-   - Fetches data from a secure API proxy
+   - Resolves dashboard layout from `public/dashboard.yml` and `public/dashboards/*.yml`
+   - Merges layout entries with metric definitions from `src/queries/*.js`
+   - Renders widgets/cards using ECharts and shared UI components
 
 2. **API Proxy** - Serverless API functions that interface with ClickHouse
    - Handles authentication securely
@@ -90,15 +99,18 @@ This application follows a two-component architecture with server-side caching:
 ├── src/
 │   ├── components/
 │   │   ├── Card.js             # Card component 
-│   │   ├── Chart.js            # Chart component
 │   │   ├── Dashboard.js        # Main dashboard component
-│   │   ├── Header.js           # Simplified header component
+│   │   ├── Header.js           # Top header (search/resources/theme)
+│   │   ├── MetricSearchBar.js  # Header metric search dropdown
 │   │   └── MetricWidget.js     # Individual metric display
 │   ├── services/
 │   │   ├── api.js              # API service with cache support
-│   │   └── metrics.js          # Metrics service
+│   │   ├── dashboards.js       # Dashboard/tab/layout resolution service
+│   │   └── metrics.js          # Metric config + data service
 │   ├── queries/                # Frontend metric definitions
 │   ├── utils/
+│   │   ├── dashboardConfig.js  # Loads and resolves YAML config
+│   │   ├── metricSearch.js     # Search index + scoring logic
 │   │   ├── config.js           # Application configuration
 │   │   ├── dates.js            # Date utilities
 │   │   └── formatter.js        # Value formatters
@@ -139,6 +151,57 @@ How to add a new sector:
 1. Create `public/dashboards/<new-sector>.yml` with `metrics` or `tabs`.
 2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
 3. Start the app and verify the new sector appears in navigation.
+
+## How Dashboard Rendering Works
+
+1. **Config load at startup**
+   - `src/utils/dashboardConfig.js` loads `/dashboard.yml`.
+   - If a sector defines `source`, it loads and merges `/dashboards/<sector>.yml`.
+   - Resolved YAML is passed to `src/services/dashboards.js`.
+2. **Layout resolution**
+   - Each dashboard/tab metric ID is merged with its base metric config from `src/queries/*.js`.
+   - Grid placement (`gridRow`, `gridColumn`, `minHeight`) comes from YAML.
+3. **Navigation state**
+   - `src/components/Dashboard.js` manages active dashboard/tab and syncs `?dashboard=&tab=` in the URL.
+4. **Widget data flow**
+   - `MetricWidget` loads metric config from `metricsService`.
+   - Data is fetched via `/api/metrics/:metricId`.
+   - Text widgets can render static content without API calls.
+5. **Filters**
+   - `global_filter` is a pseudo-metric used only for UI placement in the grid.
+   - Global filter values are fetched once from a suitable metric and then reused across cards in the tab.
+6. **Card text fields**
+   - `description`: subtitle shown under the card title.
+   - `metricDescription`: markdown content shown in the info popover.
+7. **Chart controls**
+   - Chart cards include info popover, PNG download, and expand-to-modal controls.
+
+## Header Metric Search
+
+The header search is designed for fast tab jumps.
+
+1. **Scope**
+   - Search index is built only from resolved dashboard YAML metrics (`dashboard -> tab -> metrics`).
+   - Metrics that exist in `src/queries` but are not placed in any YAML tab are intentionally excluded.
+2. **Exclusions**
+   - Non-navigable pseudo entries like `global_filter` are excluded.
+3. **Matching + ranking**
+   - Highest priority: metric name exact/prefix/token matches.
+   - Then: metric ID token matches.
+   - Then: tab/dashboard/description/metricDescription context matches.
+   - Includes light typo tolerance (edit distance 1 for longer tokens).
+4. **Result limits**
+   - Default maximum is 8 results for speed and clarity.
+5. **Duplicate labels**
+   - If multiple results share the same `Metric Name + Dashboard/Tab`, the UI appends a qualifier
+     (description, or metricDescription, or metric ID fallback) to disambiguate.
+6. **Navigation behavior**
+   - Selecting a result jumps directly to its dashboard and tab (no card auto-scroll in this phase).
+7. **Keyboard controls**
+   - `ArrowUp` / `ArrowDown` to move selection
+   - `Enter` to navigate
+   - `Escape` to close suggestions
+   - Outside click closes suggestions
 
 ## Header Resource Links
 
@@ -297,8 +360,8 @@ To add a new metric:
      chartType: 'line',
      color: '#00BCD4',
      query: `
-       SELECT 
-         toDate(event_time) AS date, 
+       SELECT
+         toDate(event_time) AS date,
          count() AS value
        FROM your_table
        WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
@@ -306,25 +369,17 @@ To add a new metric:
        ORDER BY date
      `
    };
-   
+
    export default newMetric;
    ```
 
-2. Import the new metric in `src/queries/index.js`:
-   ```javascript
-   import newMetric from './newMetric';
-   
-   const allQueries = [
-     // Existing metrics
-     newMetric
-   ];
-   
-   export default allQueries;
-   ```
+2. Ensure the metric is placed in dashboard YAML so it becomes visible and searchable:
+   - Add it to `public/dashboards/<sector>.yml` under a `metrics` list in the target tab.
+   - Metrics not placed in YAML are not rendered and are not included in header search.
 
 3. Run the export script to update the API:
    ```bash
-   npm run export-queries
+   pnpm run export-queries
    ```
 
 4. Deploy your changes to Vercel:
