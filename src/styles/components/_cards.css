@@ -161,11 +161,11 @@
 }
 
 .metric-info-popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: clamp(320px, 52vw, 720px);
-  max-width: min(92vw, 720px);
+  max-width: calc(100vw - 24px);
   padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -173,7 +173,16 @@
   box-shadow: var(--shadow-sm);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
-  z-index: 20;
+  z-index: 10020;
+  will-change: top, left;
+}
+
+.metric-info-popover[data-placement="bottom"] {
+  transform-origin: top right;
+}
+
+.metric-info-popover[data-placement="top"] {
+  transform-origin: bottom right;
 }
 
 .metric-info-popover-content {
@@ -645,8 +654,6 @@
 
   .metric-info-popover {
     width: min(92vw, 720px);
-    right: auto;
-    left: 0;
   }
 
   .metric-info-popover-content {
