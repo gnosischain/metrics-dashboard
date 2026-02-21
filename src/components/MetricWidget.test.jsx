@@ -1,8 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import MetricWidget from './MetricWidget';
 import metricsService from '../services/metrics';
+import * as echarts from 'echarts';
+import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
 vi.mock('../services/metrics', () => ({
   default: {
@@ -11,11 +13,20 @@ vi.mock('../services/metrics', () => ({
   }
 }));
 
+vi.mock('echarts', () => ({
+  getInstanceByDom: vi.fn()
+}));
+
+vi.mock('../utils/echarts/exportImage', () => ({
+  downloadEChartInstanceAsPng: vi.fn()
+}));
+
 vi.mock('./index', () => ({
-  Card: ({ children, title, subtitle }) => (
-    <div data-testid="card">
+  Card: ({ children, title, subtitle, headerControls }) => (
+    <div data-testid="card" className="metric-card">
       <h3>{title}</h3>
       {subtitle ? <p>{subtitle}</p> : null}
+      {headerControls ? <div data-testid="card-controls">{headerControls}</div> : null}
       {children}
     </div>
   ),
@@ -33,7 +44,7 @@ vi.mock('./InfoPopover', () => ({
 }));
 
 vi.mock('./charts/ChartTypes/EChartsContainer', () => ({
-  default: ({ data }) => <div data-testid="chart-widget">chart-{Array.isArray(data) ? data.length : 0}</div>
+  default: ({ data }) => <div data-testid="chart-widget" className="echarts-container">chart-{Array.isArray(data) ? data.length : 0}</div>
 }));
 
 const createDeferred = () => {
@@ -167,3 +178,84 @@ describe('MetricWidget loading behavior', () => {
   });
 });
 
+describe('MetricWidget download control', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders a download button for chart widgets', async () => {
+    metricsService.getMetricConfig.mockReturnValue({
+      id: 'metric_chart',
+      chartType: 'line',
+      name: 'Test Chart',
+      enableFiltering: false
+    });
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ date: '2025-01-01', value: 1 }]
+    });
+
+    render(<MetricWidget metricId="metric_chart" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chart-widget')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /download test chart as png/i })).toBeInTheDocument();
+  });
+
+  it('does not render a download button for non-chart widgets', async () => {
+    metricsService.getMetricConfig.mockReturnValue({
+      id: 'metric_number',
+      chartType: 'number',
+      name: 'Number Metric',
+      valueField: 'value'
+    });
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ value: 7 }]
+    });
+
+    render(<MetricWidget metricId="metric_number" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('number-widget')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: /download/i })).not.toBeInTheDocument();
+  });
+
+  it('downloads from the nearest chart instance when clicked', async () => {
+    const mockChartInstance = { getDataURL: vi.fn(() => 'data:image/png;base64,abc') };
+
+    metricsService.getMetricConfig.mockReturnValue({
+      id: 'metric_chart_download',
+      chartType: 'line',
+      name: 'Downloadable Chart',
+      enableFiltering: false
+    });
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ date: '2025-01-01', value: 10 }]
+    });
+    echarts.getInstanceByDom.mockReturnValue(mockChartInstance);
+
+    render(<MetricWidget metricId="metric_chart_download" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chart-widget')).toBeInTheDocument();
+    });
+
+    const downloadButton = screen.getByRole('button', { name: /download downloadable chart as png/i });
+    fireEvent.click(downloadButton);
+
+    expect(echarts.getInstanceByDom).toHaveBeenCalledTimes(1);
+    const chartDomNode = echarts.getInstanceByDom.mock.calls[0][0];
+    expect(chartDomNode).toHaveClass('echarts-container');
+
+    expect(downloadEChartInstanceAsPng).toHaveBeenCalledWith(
+      mockChartInstance,
+      expect.objectContaining({
+        title: 'Downloadable Chart',
+        isDarkMode: false
+      })
+    );
+  });
+});

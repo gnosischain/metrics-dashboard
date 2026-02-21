@@ -160,4 +160,165 @@ describe('Geo2DMapChart topology visual overrides', () => {
     const unknownSeries = options.series.find(series => series.type === 'scatter' && series.name === 'Unknown');
     expect(unknownSeries.itemStyle.color).toBe('#94A3B8');
   });
+
+  it('keeps default legend placement when container width is above responsive breakpoint', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        containerWidth: 1320,
+        legendType: 'scroll',
+        legendOrient: 'vertical',
+        legendLeft: 12,
+        legendTop: 12,
+        legendWidth: 132,
+        mapLayoutCenter: ['50%', '52%'],
+        mapLayoutSize: '114%',
+        responsiveNarrow: {
+          breakpoint: 1180,
+          legend: {
+            orient: 'horizontal',
+            left: 'center',
+            top: 'bottom',
+            width: '88%'
+          },
+          geo: {
+            layoutCenter: ['50%', '46%'],
+            layoutSize: '102%'
+          }
+        }
+      },
+      false
+    );
+
+    expect(options.legend.orient).toBe('vertical');
+    expect(options.legend.left).toBe(12);
+    expect(options.legend.top).toBe(12);
+    expect(options.legend.width).toBe(132);
+    expect(options.geo.layoutCenter).toEqual(['50%', '52%']);
+    expect(options.geo.layoutSize).toBe('114%');
+  });
+
+  it('applies responsive narrow legend overrides when container width is below breakpoint', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        containerWidth: 1024,
+        legendType: 'scroll',
+        legendOrient: 'vertical',
+        legendLeft: 12,
+        legendTop: 12,
+        responsiveNarrow: {
+          breakpoint: 1180,
+          legend: {
+            type: 'scroll',
+            orient: 'horizontal',
+            left: 'center',
+            top: 'bottom',
+            width: '88%',
+            height: 42,
+            itemGap: 10,
+            padding: [6, 10, 6, 10]
+          }
+        }
+      },
+      false
+    );
+
+    expect(options.legend.type).toBe('scroll');
+    expect(options.legend.orient).toBe('horizontal');
+    expect(options.legend.left).toBe('center');
+    expect(options.legend.top).toBe('bottom');
+    expect(options.legend.width).toBe('88%');
+    expect(options.legend.height).toBe(42);
+    expect(options.legend.itemGap).toBe(10);
+    expect(options.legend.padding).toEqual([6, 10, 6, 10]);
+  });
+
+  it('applies responsive narrow geo layout overrides when container width is below breakpoint', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        containerWidth: 960,
+        mapLayoutCenter: ['50%', '52%'],
+        mapLayoutSize: '114%',
+        responsiveNarrow: {
+          breakpoint: 1180,
+          geo: {
+            layoutCenter: ['50%', '46%'],
+            layoutSize: '102%'
+          }
+        }
+      },
+      false
+    );
+
+    expect(options.geo.layoutCenter).toEqual(['50%', '46%']);
+    expect(options.geo.layoutSize).toBe('102%');
+  });
+
+  it('keeps behavior unchanged when responsiveNarrow is not configured', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        containerWidth: 900,
+        legendOrient: 'vertical',
+        legendLeft: 12,
+        legendTop: 12,
+        mapLayoutCenter: ['50%', '52%'],
+        mapLayoutSize: '114%'
+      },
+      false
+    );
+
+    expect(options.legend.orient).toBe('vertical');
+    expect(options.legend.left).toBe(12);
+    expect(options.legend.top).toBe(12);
+    expect(options.geo.layoutCenter).toEqual(['50%', '52%']);
+    expect(options.geo.layoutSize).toBe('114%');
+  });
+
+  it('can use viewport width for responsive decision to avoid container resize flicker', () => {
+    const originalInnerWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      writable: true,
+      value: 1366
+    });
+    try {
+      const options = Geo2DMapChart.getOptions(
+        SAMPLE_DATA,
+        {
+          ...BASE_CONFIG,
+          containerWidth: 960,
+          legendOrient: 'vertical',
+          legendLeft: 12,
+          legendTop: 12,
+          responsiveNarrow: {
+            breakpoint: 1180,
+            useWindowWidth: true,
+            legend: {
+              orient: 'horizontal',
+              left: 'center',
+              top: 'bottom'
+            }
+          }
+        },
+        false
+      );
+
+      expect(options.legend.orient).toBe('vertical');
+      expect(options.legend.left).toBe(12);
+      expect(options.legend.top).toBe(12);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        writable: true,
+        value: originalInnerWidth
+      });
+    }
+  });
 });

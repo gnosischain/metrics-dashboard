@@ -94,6 +94,24 @@ const metric = {
   legendPadding: [8, 8, 8, 8],
   mapLayoutCenter: ['50%', '52%'],
   mapLayoutSize: '114%',
+  responsiveNarrow: {
+    breakpoint: 1180,
+    useWindowWidth: true,
+    legend: {
+      type: 'scroll',
+      orient: 'horizontal',
+      left: 'center',
+      top: 'bottom',
+      width: '88%',
+      height: 42,
+      itemGap: 10,
+      padding: [6, 10, 6, 10]
+    },
+    geo: {
+      layoutCenter: ['50%', '46%'],
+      layoutSize: '102%'
+    }
+  },
 
   query: `SELECT *FROM dbt.api_p2p_topology_latest`
 };

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import * as echarts from 'echarts';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import InfoPopover from './InfoPopover';
 import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
+import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
 const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
   const [data, setData] = useState(null);
@@ -354,6 +356,26 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const onLabelSelect = setSelectedLabel;
 
   const showInfoPopover = Boolean(widgetConfig.metricDescription);
+  const showDownloadButton = widgetConfig.type === 'chart';
+  const isDownloadDisabled = loading || Boolean(error);
+
+  const handleDownloadChart = useCallback((event) => {
+    if (!showDownloadButton) return;
+
+    const trigger = event?.currentTarget;
+    const container = trigger?.closest('.chart-modal, .metric-card, .minimal-widget-container');
+    const chartNode = container?.querySelector('.echarts-container');
+    if (!chartNode) return;
+
+    const chartInstance = echarts.getInstanceByDom(chartNode);
+    if (!chartInstance) return;
+
+    downloadEChartInstanceAsPng(chartInstance, {
+      title: widgetConfig.title || metricId,
+      isDarkMode,
+      anchorElement: container
+    });
+  }, [showDownloadButton, widgetConfig.title, metricId, isDarkMode]);
 
   const chartRenderConfig = useMemo(() => ({
     ...widgetConfig.config,
@@ -367,7 +389,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     effectiveUnitConfig.format
   ]);
 
-  const headerControls = (showLocalDropdown || showInfoPopover) ? (
+  const headerControls = (showLocalDropdown || showInfoPopover || showDownloadButton) ? (
     <>
       {showLocalDropdown && (
         <LabelSelector
@@ -379,6 +401,26 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       {showInfoPopover && (
         <InfoPopover text={widgetConfig.metricDescription} />
       )}
+      {showDownloadButton && (
+        <button
+          type="button"
+          className="metric-download-button"
+          onClick={handleDownloadChart}
+          disabled={isDownloadDisabled}
+          aria-label={`Download ${widgetConfig.title || 'chart'} as PNG`}
+          title="Download chart as PNG"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 3V14M12 14L8 10M12 14L16 10M4 17V18.5C4 19.8807 5.11929 21 6.5 21H17.5C18.8807 21 20 19.8807 20 18.5V17"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </>
   ) : undefined;
 
@@ -389,6 +431,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         minimal={minimal} 
         title={widgetConfig.title} 
         subtitle={widgetConfig.description}
+        headerControls={headerControls}
         chartType={widgetConfig.chartType} // Pass chartType for styling
       >
         <MetricWidgetSkeleton variant={widgetConfig.type} />
@@ -402,6 +445,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         minimal={minimal} 
         title={widgetConfig.title} 
         subtitle={widgetConfig.description}
+        headerControls={headerControls}
         chartType={widgetConfig.chartType} // Pass chartType for styling
       >
         <div className="error-container">

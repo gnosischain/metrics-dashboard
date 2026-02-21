@@ -111,7 +111,11 @@ export class Geo2DMapChart {
       legendPadding = null,
       legendBackgroundColor = null,
       legendBorderColor = null,
-      legendBorderWidth = null
+      legendBorderWidth = null,
+
+      // Responsive layout overrides (optional)
+      responsiveNarrow = null,
+      containerWidth = null
     } = config;
 
     // Validate required fields
@@ -264,38 +268,101 @@ export class Geo2DMapChart {
     const defaultLegendBackground = isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
     const defaultLegendBorderColor = borderColor;
     const defaultLegendBorderWidth = 1;
+    const useWindowWidthForResponsive = Boolean(responsiveNarrow?.useWindowWidth);
+    const numericContainerWidth = Number(containerWidth);
+    const hasContainerWidth = Number.isFinite(numericContainerWidth) && numericContainerWidth > 0;
+    const viewportWidth = (typeof window !== 'undefined') ? Number(window.innerWidth) : NaN;
+    const hasViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0;
+    const responsiveWidth = useWindowWidthForResponsive
+      ? (hasViewportWidth ? viewportWidth : (hasContainerWidth ? numericContainerWidth : NaN))
+      : (hasContainerWidth ? numericContainerWidth : NaN);
+    const responsiveBreakpoint = Number(responsiveNarrow?.breakpoint);
+    const isNarrowLayout = Number.isFinite(responsiveWidth)
+      && Number.isFinite(responsiveBreakpoint)
+      && responsiveWidth <= responsiveBreakpoint;
+    const narrowLegendOverrides = isNarrowLayout && responsiveNarrow?.legend
+      ? responsiveNarrow.legend
+      : null;
+    const narrowGeoOverrides = isNarrowLayout && responsiveNarrow?.geo
+      ? responsiveNarrow.geo
+      : null;
+
+    const legendOptions = actualCategoryField ? {
+      ...(legendType ? { type: legendType } : {}),
+      orient: legendOrient || 'vertical',
+      left: legendLeft ?? 'left',
+      top: legendTop ?? 'middle',
+      selectedMode: true,
+      ...(legendWidth !== null && legendWidth !== undefined ? { width: legendWidth } : {}),
+      ...(legendHeight !== null && legendHeight !== undefined ? { height: legendHeight } : {}),
+      ...(legendItemWidth !== null && legendItemWidth !== undefined ? { itemWidth: legendItemWidth } : {}),
+      ...(legendItemHeight !== null && legendItemHeight !== undefined ? { itemHeight: legendItemHeight } : {}),
+      ...(legendItemGap !== null && legendItemGap !== undefined ? { itemGap: legendItemGap } : {}),
+      data: categories.map(cat => ({
+        name: cat,
+        icon: 'circle',
+        itemStyle: {
+          color: categoryColorMap[cat]
+        }
+      })),
+      textStyle: {
+        color: textColor,
+        ...(legendFontSize !== null && legendFontSize !== undefined ? { fontSize: legendFontSize } : {})
+      },
+      backgroundColor: legendBackgroundColor ?? defaultLegendBackground,
+      borderColor: legendBorderColor ?? defaultLegendBorderColor,
+      borderWidth: legendBorderWidth ?? defaultLegendBorderWidth,
+      padding: legendPadding ?? 10,
+      borderRadius: 8,
+      inactiveColor: '#ccc'
+    } : null;
+
+    if (legendOptions && narrowLegendOverrides) {
+      Object.assign(legendOptions, narrowLegendOverrides);
+    }
+
+    const geoOptions = {
+      map: 'world',
+      roam: mapRoam,
+      scaleLimit: {
+        min: 0.5,
+        max: 10
+      },
+      zoom: mapZoom,
+      center: mapCenter,
+      label: {
+        emphasis: {
+          show: false
+        }
+      },
+      itemStyle: {
+        normal: {
+          areaColor: areaColor,
+          borderColor: borderColor
+        },
+        emphasis: {
+          areaColor: emphasisColor
+        }
+      },
+      layoutCenter: mapLayoutCenter || ['50%', '50%'],
+      layoutSize: mapLayoutSize || '100%'
+    };
+
+    if (narrowGeoOverrides) {
+      if (narrowGeoOverrides.layoutCenter !== undefined) {
+        geoOptions.layoutCenter = narrowGeoOverrides.layoutCenter;
+      }
+      if (narrowGeoOverrides.layoutSize !== undefined) {
+        geoOptions.layoutSize = narrowGeoOverrides.layoutSize;
+      }
+      if (narrowGeoOverrides.zoom !== undefined) {
+        geoOptions.zoom = narrowGeoOverrides.zoom;
+      }
+    }
 
     return {
       backgroundColor,
-      legend: actualCategoryField ? {
-        ...(legendType ? { type: legendType } : {}),
-        orient: legendOrient || 'vertical',
-        left: legendLeft ?? 'left',
-        top: legendTop ?? 'middle',
-        selectedMode: true,
-        ...(legendWidth !== null && legendWidth !== undefined ? { width: legendWidth } : {}),
-        ...(legendHeight !== null && legendHeight !== undefined ? { height: legendHeight } : {}),
-        ...(legendItemWidth !== null && legendItemWidth !== undefined ? { itemWidth: legendItemWidth } : {}),
-        ...(legendItemHeight !== null && legendItemHeight !== undefined ? { itemHeight: legendItemHeight } : {}),
-        ...(legendItemGap !== null && legendItemGap !== undefined ? { itemGap: legendItemGap } : {}),
-        data: categories.map(cat => ({
-          name: cat,
-          icon: 'circle',
-          itemStyle: {
-            color: categoryColorMap[cat]
-          }
-        })),
-        textStyle: {
-          color: textColor,
-          ...(legendFontSize !== null && legendFontSize !== undefined ? { fontSize: legendFontSize } : {})
-        },
-        backgroundColor: legendBackgroundColor ?? defaultLegendBackground,
-        borderColor: legendBorderColor ?? defaultLegendBorderColor,
-        borderWidth: legendBorderWidth ?? defaultLegendBorderWidth,
-        padding: legendPadding ?? 10,
-        borderRadius: 8,
-        inactiveColor: '#ccc'
-      } : null,
+      legend: legendOptions,
       tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove|click',
@@ -353,32 +420,7 @@ export class Geo2DMapChart {
           return '';
         }
       },
-      geo: {
-        map: 'world',
-        roam: mapRoam,
-        scaleLimit: {
-          min: 0.5,
-          max: 10
-        },
-        zoom: mapZoom,
-        center: mapCenter,
-        label: {
-          emphasis: {
-            show: false
-          }
-        },
-        itemStyle: {
-          normal: {
-            areaColor: areaColor,
-            borderColor: borderColor
-          },
-          emphasis: {
-            areaColor: emphasisColor
-          }
-        },
-        layoutCenter: mapLayoutCenter || ['50%', '50%'],
-        layoutSize: mapLayoutSize || '100%'
-      },
+      geo: geoOptions,
       series: [
         // Create line series for each category - they will be controlled by legend
         ...categories.flatMap(category => {
