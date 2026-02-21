@@ -9,6 +9,7 @@ GnosisPay:
   order: 10
   icon: 💳
   iconClass: credit-card
+  palette: gnosis-pay
   source: /dashboards/gnosis-pay.yml
 OnChainActivity:
   name: OnChain Activity

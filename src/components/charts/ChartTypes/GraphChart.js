@@ -113,6 +113,13 @@ export class GraphChart extends BaseChart {
     
     const { nodes, links, categories } = this.processData(data, config);
     const networkConfig = config.networkConfig || {};
+    const categoryPalette = this.resolveSeriesPalette(config, Math.max(categories.length, 1), isDarkMode);
+    const mappedCategories = categories.map((category, index) => ({
+      ...category,
+      itemStyle: {
+        color: categoryPalette[index % categoryPalette.length]
+      }
+    }));
     
     // Date range for temporal coloring
     let dateRange = null;
@@ -132,6 +139,7 @@ export class GraphChart extends BaseChart {
     
     const options = {
       ...this.getBaseOptions(config, isDarkMode),
+      color: categoryPalette,
       tooltip: {
         show: true,
         trigger: 'item',
@@ -252,7 +260,7 @@ export class GraphChart extends BaseChart {
             }
           };
         }),
-        categories: categories,
+        categories: mappedCategories,
         label: {
           show: networkConfig.showLabels || false,
           position: 'right',

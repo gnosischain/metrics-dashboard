@@ -6,7 +6,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 // Import echarts-wordcloud plugin
 import 'echarts-wordcloud';
@@ -233,10 +233,10 @@ export class WordCloudChart extends BaseChart {
   static generateColors(processedData, config, isDarkMode) {
     if (config.categoryField && processedData.categories.length > 0) {
       // Generate colors for categories
-      return generateColorPalette(processedData.categories.length, isDarkMode);
+      return this.resolveSeriesPalette(config, processedData.categories.length, isDarkMode);
     } else {
       // Generate colors for random/gradient coloring
-      return this.getDefaultColors(isDarkMode);
+      return this.resolveSeriesPalette(config, 15, isDarkMode);
     }
   }
 

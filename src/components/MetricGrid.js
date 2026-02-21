@@ -17,9 +17,17 @@ import { getDateRange } from '../utils';
  * @param {Object} props.tabConfig - Tab configuration object (may contain globalFilterField)
  * @param {string} props.globalFilterValue - Currently selected global filter value
  * @param {Function} props.onGlobalFilterChange - Handler for global filter changes
+ * @param {Object|null} props.dashboardPalette - Active dashboard palette definition
  * @returns {JSX.Element} Grid component
  */
-const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilterValue = null, onGlobalFilterChange = null }) => {
+const MetricGrid = ({
+  metrics,
+  isDarkMode = false,
+  tabConfig = null,
+  globalFilterValue = null,
+  onGlobalFilterChange = null,
+  dashboardPalette = null
+}) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
   const globalFilterValueRef = useRef(globalFilterValue);
@@ -241,6 +249,7 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
               <MetricWidget 
                 metricId={metric.id} 
                 isDarkMode={isDarkMode}
+                dashboardPalette={dashboardPalette}
                 globalSelectedLabel={
                   // Only pass global filter if this metric matches the global filter field
                   hasGlobalFilter && 

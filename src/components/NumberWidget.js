@@ -14,6 +14,7 @@ import formatters from '../utils/formatters';
  * @param {string} props.changeType - Type of change: 'positive', 'negative', or 'neutral'
  * @param {boolean} props.showChange - Whether to show change indicator
  * @param {string} props.changePeriod - Period for the change (e.g., '30d ago', 'from last month')
+ * @param {Object|null} props.dashboardPalette - Dashboard-level palette overrides
  * @returns {JSX.Element} Number widget component
  */
 const NumberWidget = ({ 
@@ -27,7 +28,8 @@ const NumberWidget = ({
   changeType = 'neutral',
   showChange = false,
   changePeriod = '',
-  fontSize
+  fontSize,
+  dashboardPalette = null
 }) => {
   // Apply formatting if specified
   const formattedValue = format && formatters[format] 
@@ -43,7 +45,10 @@ const NumberWidget = ({
     normalizedColor === '#0969da' ||
     normalizedColor === '#58a6ff';
   const adjustedColor = isDefaultAccent
-    ? (isDarkMode ? '#818CF8' : '#4F46E5')
+    ? (
+      (isDarkMode ? dashboardPalette?.numberAccentDark : dashboardPalette?.numberAccentLight) ||
+      (isDarkMode ? '#818CF8' : '#4F46E5')
+    )
     : color;
 
   // Format change value

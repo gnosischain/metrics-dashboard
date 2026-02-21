@@ -5,7 +5,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class QuantileBandsChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -14,12 +14,8 @@ export class QuantileBandsChart extends BaseChart {
     }
 
     const { processedData, xAxisData } = this.processData(data, config);
-    const colors = config.bandColors || generateColorPalette(config.bands?.length || 3, isDarkMode);
-    const lineColors = config.lineColors || (
-      isDarkMode
-        ? ['#E2E8F0', '#818CF8', '#38BDF8']
-        : ['#0F172A', '#4F46E5', '#0EA5E9']
-    );
+    const colors = config.bandColors || this.resolveSeriesPalette(config, config.bands?.length || 3, isDarkMode);
+    const lineColors = config.lineColors || this.resolveSeriesPalette(config, 3, isDarkMode);
     
     // Analyze time granularity for smart formatting
     const timeAnalysis = BaseChart.analyzeTimeGranularity(xAxisData);

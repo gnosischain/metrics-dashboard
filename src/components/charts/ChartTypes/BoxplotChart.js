@@ -4,7 +4,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, hexToRgba } from '../../../utils/colors';
+import { hexToRgba } from '../../../utils/colors';
 import { formatValue } from '../../../utils/formatters';
 
 export class BoxplotChart extends BaseChart {
@@ -14,7 +14,7 @@ export class BoxplotChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
-    const colors = generateColorPalette(1, isDarkMode);
+    const colors = this.resolveSeriesPalette(config, 1, isDarkMode);
     const primaryColor = colors[0];
     const fillColor = hexToRgba(primaryColor, isDarkMode ? 0.3 : 0.2);
 

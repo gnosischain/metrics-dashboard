@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import metricsService from './metrics';
+import { resolveDashboardPalette } from '../utils/dashboardPalettes';
 
 /**
  * Service for handling dashboard configuration and layouts
@@ -69,6 +70,7 @@ class DashboardService {
       order: dashboardConfig.order || 999,
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
+      palette: resolveDashboardPalette(dashboardConfig.palette)
     };
     
     console.log('DashboardService: Created dashboard object:', dashboard);

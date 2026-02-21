@@ -12,6 +12,7 @@ export class HeatmapChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
+    const heatmapScale = this.resolveHeatmapScale(config, isDarkMode);
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -36,9 +37,7 @@ export class HeatmapChart extends BaseChart {
         left: 'center',
         bottom: '5%',
         inRange: {
-          color: isDarkMode 
-            ? ['#003366', '#006699', '#0099cc', '#33ccff', '#66ffff']
-            : ['#ffffff', '#cce7ff', '#99d6ff', '#66c2ff', '#0080ff']
+          color: heatmapScale
         },
         textStyle: {
           color: isDarkMode ? '#e5e7eb' : '#374151'

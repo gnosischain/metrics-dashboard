@@ -1,4 +1,5 @@
 import { formatValue } from '../../../utils';
+import { DARK_MODE_COLORS, DEFAULT_COLORS, generateColorPalette } from '../../../utils/colors';
 
 export class BaseChart {
   static isPlainObject(value) {
@@ -131,6 +132,124 @@ export class BaseChart {
       animationDuration: 750,
       animationEasing: 'cubicOut'
     };
+  }
+
+  static normalizeColorHex(color) {
+    return typeof color === 'string' ? color.trim().toLowerCase() : '';
+  }
+
+  static isColorInPalette(color, palette = []) {
+    const needle = BaseChart.normalizeColorHex(color);
+    if (!needle) return false;
+    return palette.some(candidate => BaseChart.normalizeColorHex(candidate) === needle);
+  }
+
+  static fillPaletteWithFallback(primaryPalette, fallbackPalette, count) {
+    const targetCount = Math.max(1, Number.isFinite(count) ? count : 1);
+    const result = [...(Array.isArray(primaryPalette) ? primaryPalette : [])].filter(Boolean);
+    const seen = new Set(result.map(color => BaseChart.normalizeColorHex(color)).filter(Boolean));
+
+    const tryAppend = (color) => {
+      const normalized = BaseChart.normalizeColorHex(color);
+      if (!normalized || seen.has(normalized)) return;
+      result.push(color);
+      seen.add(normalized);
+    };
+
+    if (Array.isArray(fallbackPalette)) {
+      fallbackPalette.forEach(tryAppend);
+    }
+
+    return result.slice(0, targetCount);
+  }
+
+  static resolveSeriesPalette(config = {}, count = 1, isDarkMode = false) {
+    const normalizedCount = Math.max(1, Number.isFinite(count) ? count : 1);
+    const standardPalette = isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS;
+    const highContrast = config?.highContrastPalette === true || config?.highContrast === true;
+    const generatedPalette = generateColorPalette(normalizedCount, isDarkMode, highContrast);
+
+    if (Array.isArray(config?.colors) && config.colors.filter(Boolean).length > 0) {
+      const explicitPalette = config.colors.filter(Boolean);
+      if (explicitPalette.length >= normalizedCount) {
+        return explicitPalette.slice(0, normalizedCount);
+      }
+
+      const withStandardFallback = BaseChart.fillPaletteWithFallback(
+        explicitPalette,
+        standardPalette,
+        normalizedCount
+      );
+
+      if (withStandardFallback.length >= normalizedCount) {
+        return withStandardFallback;
+      }
+
+      return BaseChart.fillPaletteWithFallback(
+        withStandardFallback,
+        generatedPalette,
+        normalizedCount
+      );
+    }
+
+    const dashboardPalette = config?.dashboardPalette;
+    const dashboardSeries = isDarkMode
+      ? dashboardPalette?.seriesDark
+      : dashboardPalette?.seriesLight;
+    if (Array.isArray(dashboardSeries) && dashboardSeries.filter(Boolean).length > 0) {
+      const dashboardSeriesPalette = dashboardSeries.filter(Boolean);
+      if (dashboardSeriesPalette.length >= normalizedCount) {
+        return dashboardSeriesPalette.slice(0, normalizedCount);
+      }
+
+      const withStandardFallback = BaseChart.fillPaletteWithFallback(
+        dashboardSeriesPalette,
+        standardPalette,
+        normalizedCount
+      );
+
+      if (withStandardFallback.length >= normalizedCount) {
+        return withStandardFallback;
+      }
+
+      return BaseChart.fillPaletteWithFallback(
+        withStandardFallback,
+        generatedPalette,
+        normalizedCount
+      );
+    }
+
+    return generatedPalette;
+  }
+
+  static resolveHeatmapScale(config = {}, isDarkMode = false) {
+    const defaultScale = isDarkMode
+      ? ['#003366', '#006699', '#0099cc', '#33ccff', '#66ffff']
+      : ['#ffffff', '#cce7ff', '#99d6ff', '#66c2ff', '#0080ff'];
+
+    const metricThemeScale = isDarkMode ? config?.heatmapScaleDark : config?.heatmapScaleLight;
+    if (Array.isArray(metricThemeScale) && metricThemeScale.filter(Boolean).length > 0) {
+      return metricThemeScale.filter(Boolean);
+    }
+
+    if (Array.isArray(config?.heatmapScale) && config.heatmapScale.filter(Boolean).length > 0) {
+      return config.heatmapScale.filter(Boolean);
+    }
+
+    const visualMapScale = config?.visualMap?.inRange?.color;
+    if (Array.isArray(visualMapScale) && visualMapScale.filter(Boolean).length > 0) {
+      return visualMapScale.filter(Boolean);
+    }
+
+    const dashboardPalette = config?.dashboardPalette;
+    const dashboardScale = isDarkMode
+      ? dashboardPalette?.heatmapScaleDark
+      : dashboardPalette?.heatmapScaleLight;
+    if (Array.isArray(dashboardScale) && dashboardScale.filter(Boolean).length > 0) {
+      return dashboardScale.filter(Boolean);
+    }
+
+    return defaultScale;
   }
 
   static getAxisConfig(isDarkMode, type = 'category', config = {}) {

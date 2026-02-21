@@ -4,7 +4,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { formatValue, generateColorPalette } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class SunburstChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -19,7 +19,7 @@ export class SunburstChart extends BaseChart {
       
       series: [{
         type: 'sunburst',
-        data: this.assignColors(processedData.data, isDarkMode),
+        data: this.assignColors(processedData.data, config, isDarkMode),
         radius: config.radius || [0, '90%'],
         center: config.center || ['50%', '50%'],
         sort: config.sort || 'desc',
@@ -275,8 +275,8 @@ export class SunburstChart extends BaseChart {
     }
   }
 
-  static assignColors(nodes, isDarkMode) {
-    const basePalette = generateColorPalette(Math.max(nodes.length, 12), isDarkMode);
+  static assignColors(nodes, config, isDarkMode) {
+    const basePalette = this.resolveSeriesPalette(config, Math.max(nodes.length, 12), isDarkMode);
     
     return nodes.map((node, index) => {
       // Use palette colors, cycling through if needed

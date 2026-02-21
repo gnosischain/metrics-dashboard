@@ -16,7 +16,7 @@ import {
 import { MapChart, LinesChart, ScatterChart, EffectScatterChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { worldMapData } from './worldMapData';
-import { generateColorPalette } from '../../../utils';
+import { BaseChart } from './BaseChart';
 
 // Register required ECharts components
 echarts.use([
@@ -193,9 +193,11 @@ export class Geo2DMapChart {
     
     // Create color palette
     const usesCustomPalette = Array.isArray(colors) && colors.length > 0;
-    const colorPalette = usesCustomPalette
-      ? colors
-      : generateColorPalette(hasScopedVisualOverrides ? Math.max(categories.length, 15) : 15, isDarkMode);
+    const colorPalette = BaseChart.resolveSeriesPalette(
+      config,
+      hasScopedVisualOverrides ? Math.max(categories.length, 15) : 15,
+      isDarkMode
+    );
     
     // Map categories to colors
     const categoryColorMap = {};

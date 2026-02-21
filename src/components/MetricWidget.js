@@ -8,7 +8,18 @@ import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
-const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
+const MetricWidget = ({
+  metricId,
+  isDarkMode = false,
+  minimal = false,
+  className = '',
+  globalSelectedLabel = null,
+  hasGlobalFilter = false,
+  globalFilterField = null,
+  globalFilterValue = null,
+  selectedUnit = null,
+  dashboardPalette = null
+}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -379,11 +390,13 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
   const chartRenderConfig = useMemo(() => ({
     ...widgetConfig.config,
+    dashboardPalette,
     yField: effectiveUnitConfig.yField,
     format: effectiveUnitConfig.format,
     enableZoom: widgetConfig.enableZoom
   }), [
     widgetConfig.config,
+    dashboardPalette,
     widgetConfig.enableZoom,
     effectiveUnitConfig.yField,
     effectiveUnitConfig.format
@@ -478,6 +491,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
             changeType={processChangeData.changeType}
             changePeriod={processChangeData.changePeriod}
             fontSize={widgetConfig.fontSize}
+            dashboardPalette={dashboardPalette}
             minimal={true}
           />
         );

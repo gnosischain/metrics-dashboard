@@ -30,7 +30,16 @@ vi.mock('./index', () => ({
       {children}
     </div>
   ),
-  NumberWidget: ({ value }) => <div data-testid="number-widget">{String(value)}</div>,
+  NumberWidget: ({ value, color, dashboardPalette }) => (
+    <div
+      data-testid="number-widget"
+      data-color={color || ''}
+      data-number-accent-light={dashboardPalette?.numberAccentLight || ''}
+      data-number-accent-dark={dashboardPalette?.numberAccentDark || ''}
+    >
+      {String(value)}
+    </div>
+  ),
   TextWidget: ({ content }) => <div data-testid="text-widget">{content}</div>,
   TableWidget: ({ data }) => <div data-testid="table-widget">{Array.isArray(data) ? data.length : 0}</div>
 }));
@@ -44,7 +53,16 @@ vi.mock('./InfoPopover', () => ({
 }));
 
 vi.mock('./charts/ChartTypes/EChartsContainer', () => ({
-  default: ({ data }) => <div data-testid="chart-widget" className="echarts-container">chart-{Array.isArray(data) ? data.length : 0}</div>
+  default: ({ data, config }) => (
+    <div
+      data-testid="chart-widget"
+      className="echarts-container"
+      data-series-light-color={config?.dashboardPalette?.seriesLight?.[0] || ''}
+      data-series-dark-color={config?.dashboardPalette?.seriesDark?.[0] || ''}
+    >
+      chart-{Array.isArray(data) ? data.length : 0}
+    </div>
+  )
 }));
 
 const createDeferred = () => {
@@ -257,5 +275,57 @@ describe('MetricWidget download control', () => {
         isDarkMode: false
       })
     );
+  });
+});
+
+describe('MetricWidget dashboard palette propagation', () => {
+  const dashboardPalette = {
+    seriesLight: ['#111111', '#222222'],
+    seriesDark: ['#aaaaaa', '#bbbbbb'],
+    numberAccentLight: '#3F2ACD',
+    numberAccentDark: '#CBFB6C'
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('passes dashboard palette to chart config as fallback context', async () => {
+    metricsService.getMetricConfig.mockReturnValue({
+      id: 'metric_chart_palette',
+      chartType: 'line',
+      name: 'Palette Chart'
+    });
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ date: '2025-01-01', value: 10 }]
+    });
+
+    render(<MetricWidget metricId="metric_chart_palette" dashboardPalette={dashboardPalette} />);
+
+    await waitFor(() => {
+      const chartWidget = screen.getByTestId('chart-widget');
+      expect(chartWidget).toHaveAttribute('data-series-light-color', '#111111');
+      expect(chartWidget).toHaveAttribute('data-series-dark-color', '#aaaaaa');
+    });
+  });
+
+  it('passes dashboard palette to number widget for accent fallback', async () => {
+    metricsService.getMetricConfig.mockReturnValue({
+      id: 'metric_number_palette',
+      chartType: 'number',
+      name: 'Palette Number',
+      valueField: 'value'
+    });
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ value: 42 }]
+    });
+
+    render(<MetricWidget metricId="metric_number_palette" dashboardPalette={dashboardPalette} />);
+
+    await waitFor(() => {
+      const numberWidget = screen.getByTestId('number-widget');
+      expect(numberWidget).toHaveAttribute('data-number-accent-light', '#3F2ACD');
+      expect(numberWidget).toHaveAttribute('data-number-accent-dark', '#CBFB6C');
+    });
   });
 });

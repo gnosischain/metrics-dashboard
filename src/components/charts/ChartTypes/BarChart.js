@@ -6,7 +6,6 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette } from '../../../utils';
 
 export class BarChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -25,7 +24,7 @@ export class BarChart extends BaseChart {
       timeContext: timeAnalysis
     };
     
-    const colors = generateColorPalette(processedData.series?.length || 1, isDarkMode);
+    const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series?.length || 1, isDarkMode);
 
     // Check if this should be a stacked bar chart
     const isStacked = config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1;

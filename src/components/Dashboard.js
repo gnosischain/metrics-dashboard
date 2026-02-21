@@ -301,9 +301,14 @@ const Dashboard = () => {
   }, [activeDashboard, activeTab, dashboards]);
   
   // Get active dashboard name
+  const activeDashboardConfig = useMemo(
+    () => dashboards.find(d => d.id === activeDashboard) || null,
+    [dashboards, activeDashboard]
+  );
+  const activeDashboardPalette = activeDashboardConfig?.palette || null;
+
   const getActiveDashboardName = () => {
-    const dashboard = dashboards.find(d => d.id === activeDashboard);
-    return dashboard ? dashboard.name : '';
+    return activeDashboardConfig ? activeDashboardConfig.name : '';
   };
 
   // Handle global filter change for a tab
@@ -393,6 +398,7 @@ const Dashboard = () => {
                 tabConfig={activeTabConfig}
                 globalFilterValue={currentGlobalFilter}
                 onGlobalFilterChange={handleGlobalFilterChange}
+                dashboardPalette={activeDashboardPalette}
               />
             </div>
           ) : dashboards.length === 0 ? (

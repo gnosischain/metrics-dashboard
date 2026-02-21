@@ -4,7 +4,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class SankeyChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -50,7 +50,7 @@ export class SankeyChart extends BaseChart {
         }
       }
 
-      const colors = generateColorPalette(processedData.nodes.length, isDarkMode);
+      const colors = this.resolveSeriesPalette(config, processedData.nodes.length, isDarkMode);
 
       // Merge sankeyConfig if provided (handles both locations)
       const sankeyConfig = config.sankeyConfig || config.config?.sankeyConfig || {};

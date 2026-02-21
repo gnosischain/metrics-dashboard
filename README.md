@@ -152,6 +152,43 @@ How to add a new sector:
 2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
 3. Start the app and verify the new sector appears in navigation.
 
+## Dashboard Palette System
+
+Dashboards opt into named palette presets in `public/dashboard.yml`.
+All palette definitions are centralized in:
+`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js`
+
+### Named palette example
+
+```yaml
+GnosisPay:
+  name: Gnosis Pay
+  order: 10
+  icon: 💳
+  iconClass: credit-card
+  palette: gnosis-pay
+  source: /dashboards/gnosis-pay.yml
+```
+
+### Palette behavior and precedence
+
+1. Scope is dashboard-level only (set once per top-level dashboard entry).
+2. Dashboard palette applies automatically to all chart and number widgets in that dashboard.
+3. Fallback-only precedence is enforced:
+   - Metric-level explicit color config wins (`color`, `colors`, `bandColors`, `lineColors`, map-specific overrides, and explicit heatmap scale).
+   - Dashboard palette is used only when metric-level colors are not explicitly defined.
+   - If dashboard palette is missing/invalid, `standard` is used safely.
+   - If a custom/dashboard palette has fewer colors than required series, the remaining series are filled from the `standard` palette before any repetition.
+4. `palette` in YAML accepts preset names only (for example: `standard`, `gnosis-pay`).
+
+### Scalability
+
+This is fully config-driven:
+
+1. Adding new dashboards/tabs/metrics in YAML requires no code changes to inherit palette behavior.
+2. Any metric placed in YAML under a dashboard automatically receives that dashboard palette fallback.
+3. New palette presets are added once in `/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js` and then referenced by name in YAML.
+
 ## How Dashboard Rendering Works
 
 1. **Config load at startup**

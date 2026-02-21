@@ -62,6 +62,25 @@ describe('Geo2DMapChart topology visual overrides', () => {
     expect(zetaSeries.itemStyle.color).toBe('#222222');
   });
 
+  it('uses dashboard palette colors when metric colors are not provided', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        dashboardPalette: {
+          seriesLight: ['#101010', '#202020', '#303030'],
+          seriesDark: ['#f1f1f1', '#f2f2f2', '#f3f3f3']
+        }
+      },
+      false
+    );
+
+    const alphaSeries = options.series.find(series => series.type === 'scatter' && series.name === 'alpha');
+    const zetaSeries = options.series.find(series => series.type === 'scatter' && series.name === 'zeta');
+    expect(alphaSeries.itemStyle.color).toBe('#101010');
+    expect(zetaSeries.itemStyle.color).toBe('#202020');
+  });
+
   it('applies dark map color overrides', () => {
     const options = Geo2DMapChart.getOptions(
       SAMPLE_DATA,
@@ -159,6 +178,26 @@ describe('Geo2DMapChart topology visual overrides', () => {
 
     const unknownSeries = options.series.find(series => series.type === 'scatter' && series.name === 'Unknown');
     expect(unknownSeries.itemStyle.color).toBe('#94A3B8');
+  });
+
+  it('keeps explicit config.colors priority over dashboard palette', () => {
+    const options = Geo2DMapChart.getOptions(
+      SAMPLE_DATA,
+      {
+        ...BASE_CONFIG,
+        colors: ['#abcdef', '#123456'],
+        dashboardPalette: {
+          seriesLight: ['#101010', '#202020'],
+          seriesDark: ['#f1f1f1', '#f2f2f2']
+        }
+      },
+      false
+    );
+
+    const alphaSeries = options.series.find(series => series.type === 'scatter' && series.name === 'alpha');
+    const zetaSeries = options.series.find(series => series.type === 'scatter' && series.name === 'zeta');
+    expect(alphaSeries.itemStyle.color).toBe('#abcdef');
+    expect(zetaSeries.itemStyle.color).toBe('#123456');
   });
 
   it('keeps default legend placement when container width is above responsive breakpoint', () => {
