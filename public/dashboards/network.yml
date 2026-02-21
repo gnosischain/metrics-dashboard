@@ -30,12 +30,12 @@ tabs:
         minHeight: 130px
       - id: api_p2p_topology_latest
         gridRow: 2
-        gridColumn: 1 / span 8
+        gridColumn: 1 / span 12
         minHeight: 490px
-      - id: text_network_overview
-        gridRow: 2
-        gridColumn: 9 / span 4
-        minHeight: 490px
+   #   - id: text_network_overview
+   #     gridRow: 2
+   #     gridColumn: 9 / span 4
+   #     minHeight: 490px
   - name: Clients
     order: 2
     icon: 💻

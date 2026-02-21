@@ -65,23 +65,23 @@ tabs:
     defaultUnit: usd
     metrics:
       - id: global_filter
-        gridRow: 1
+        gridRow: 3
         gridColumn: 1 / span 2
         minHeight: 60px
       - id: api_execution_gpay_cashback_total
-        gridRow: 1
+        gridRow: 1 / span 3
         gridColumn: 3 / span 5
         minHeight: 150px
       - id: api_execution_gpay_cashback_7d
-        gridRow: 1
+        gridRow: 1 / span 3
         gridColumn: 8 / span 5
         minHeight: 150px
       - id: api_execution_gpay_cashback_weekly
-        gridRow: 2
+        gridRow: 4
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_gpay_cashback_cumulative
-        gridRow: 2
+        gridRow: 4
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Balances

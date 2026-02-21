@@ -1,8 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const InfoPopover = ({ text }) => {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const reactId = useId();
+  const popoverId = useMemo(
+    () => `metric-info-popover-${reactId.replace(/[:]/g, '')}`,
+    [reactId]
+  );
 
   const toggleOpen = () => setOpen(prev => !prev);
 
@@ -39,12 +46,24 @@ const InfoPopover = ({ text }) => {
         className="metric-info-button"
         onClick={toggleOpen}
         aria-label="Metric information"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={popoverId}
       >
         i
       </button>
       {open && (
-        <div className="metric-info-popover" role="dialog" aria-live="polite">
-          {text}
+        <div
+          id={popoverId}
+          className="metric-info-popover"
+          role="dialog"
+          aria-live="polite"
+        >
+          <div className="metric-info-popover-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {text}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>

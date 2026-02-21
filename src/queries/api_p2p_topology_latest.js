@@ -2,7 +2,22 @@ const metric = {
   id: 'api_p2p_topology_latest',
   name: 'P2P Geographic Network Topology',
   description: 'Geographic visualization of peer-to-peer network connections',
-  metricDescription: 'Geographic map of observed P2P peers and links from recent crawls. Locations are inferred from IP geolocation and may be approximate.',
+  metricDescription: `
+  # Crawl Details
+  ___
+  _All crawl data is filtered for Gnosis Network_
+
+  #### Legend
+
+  - **Node** - a peer (identified by its node ID / ENR).
+  - **Link** - “seen-as-neighbors” during a crawl
+  - **Thickness** - persistence/frequency across crawls: thicker means those two IDs are often adjacent in the routing tables.
+
+  #### Reading the links correctly
+
+  - **Geo-IP is fuzzy** (NAT, VPNs, clouds; city-level can be off). Don’t over-interpret exact cities or countries.
+  - **Crawler bias**: seed lists, query schedule, and crawler location influence which buckets one hit most.
+  `,
   chartType: 'map',
 
   enableFiltering: true,
@@ -45,16 +60,40 @@ const metric = {
   nodeMaxSize: 35,
   lineMinWidth: 0.5,
   lineMaxWidth: 5,
-  lineOpacity: 0.2,
+  lineOpacity: 0.22,
+  lineColorLight: '#6EE7B7',
+  lineColorDark: '#86EFAC',
   
   // Animation toggle
   enableAnimation: false, // Set to true to enable animated connection trails
   
   // Custom color palette (optional)
   colors: [
-    '#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
-    '#3B82F6', '#EC4899', '#14B8A6', '#F97316', '#0EA5E9'
+    '#0072B2', '#009E73', '#E69F00', '#D55E00',
+    '#CC79A7', '#56B4E9', '#F0E442', '#94A3B8'
   ],
+  mapBackgroundColor: '#FFFFFF',
+  mapAreaColor: '#DCE6F2',
+  mapBorderColor: '#8EA6C2',
+  mapEmphasisColor: '#C8D9ED',
+  mapBackgroundColorDark: '#0B1220',
+  mapAreaColorDark: '#1F2A3D',
+  mapBorderColorDark: '#5B6B84',
+  mapEmphasisColorDark: '#2B3D59',
+  mapRoam: false,
+  legendType: 'scroll',
+  legendOrient: 'vertical',
+  legendLeft: 12,
+  legendTop: 12,
+  legendWidth: 132,
+  legendHeight: '58%',
+  legendItemWidth: 9,
+  legendItemHeight: 9,
+  legendItemGap: 8,
+  legendFontSize: 11,
+  legendPadding: [8, 8, 8, 8],
+  mapLayoutCenter: ['50%', '52%'],
+  mapLayoutSize: '114%',
 
   query: `SELECT *FROM dbt.api_p2p_topology_latest`
 };

@@ -138,18 +138,118 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 220px;
-  max-width: 320px;
-  padding: 10px 12px;
+  width: clamp(320px, 52vw, 720px);
+  max-width: min(92vw, 720px);
+  padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-sm);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
-  line-height: 1.4;
-  white-space: pre-wrap;
   z-index: 20;
+}
+
+.metric-info-popover-content {
+  padding: 0.85rem 1rem;
+  max-height: min(62vh, 460px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+.metric-info-popover-content > *:first-child {
+  margin-top: 0;
+}
+
+.metric-info-popover-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.metric-info-popover-content p {
+  margin: 0 0 0.7rem;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content h1,
+.metric-info-popover-content h2,
+.metric-info-popover-content h3,
+.metric-info-popover-content h4,
+.metric-info-popover-content h5,
+.metric-info-popover-content h6 {
+  margin: 0.9rem 0 0.45rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content h1 {
+  font-size: 1rem;
+}
+
+.metric-info-popover-content h2 {
+  font-size: 0.96rem;
+}
+
+.metric-info-popover-content h3 {
+  font-size: 0.92rem;
+}
+
+.metric-info-popover-content h4,
+.metric-info-popover-content h5,
+.metric-info-popover-content h6 {
+  font-size: 0.88rem;
+}
+
+.metric-info-popover-content ul,
+.metric-info-popover-content ol {
+  margin: 0 0 0.7rem;
+  padding-left: 1.1rem;
+}
+
+.metric-info-popover-content li {
+  margin-bottom: 0.3rem;
+}
+
+.metric-info-popover-content blockquote {
+  margin: 0.7rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--primary-blue);
+  background: var(--color-accent-softer);
+  border-radius: 0 6px 6px 0;
+}
+
+.metric-info-popover-content code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.85em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  background: var(--color-accent-soft);
+  color: var(--primary-blue);
+}
+
+.metric-info-popover-content pre {
+  margin: 0.7rem 0;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  overflow-x: auto;
+}
+
+.metric-info-popover-content pre code {
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content a {
+  color: var(--primary-blue);
+  text-decoration: none;
+}
+
+.metric-info-popover-content a:hover {
+  text-decoration: underline;
 }
 
 /* ==================
@@ -505,6 +605,16 @@
   
   .card-header-controls {
     width: 100%;
+  }
+
+  .metric-info-popover {
+    width: min(92vw, 720px);
+    right: auto;
+    left: 0;
+  }
+
+  .metric-info-popover-content {
+    max-height: min(56vh, 420px);
   }
   
   .minimal-widget-header {
