@@ -9,7 +9,16 @@ const metricGridLifecycle = {
 };
 
 vi.mock('./Header', () => ({
-  default: () => <div data-testid="header">header</div>
+  default: ({ onSearchSelect }) => (
+    <div data-testid="header">
+      header
+      {typeof onSearchSelect === 'function' && (
+        <button type="button" onClick={() => onSearchSelect({ dashboardId: 'dashboard-a', tabId: 'tab-2' })}>
+          Search Jump
+        </button>
+      )}
+    </div>
+  )
 }));
 
 vi.mock('./IconComponent', () => ({
@@ -64,7 +73,9 @@ vi.mock('../services/dashboards', () => ({
       hasDefaultTab: false
     })),
     getTabMetrics: vi.fn((_dashboardId, tabId) =>
-      tabId === 'tab-2' ? [{ id: 'metric-2' }] : [{ id: 'metric-1' }]
+      tabId === 'tab-2'
+        ? [{ id: 'metric-2' }, { id: 'metric-3' }]
+        : [{ id: 'metric-1' }]
     ),
     getTab: vi.fn((_dashboardId, tabId) => ({
       id: tabId,
@@ -103,10 +114,24 @@ describe('Dashboard rendering behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Go Tab 2' }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:1');
+      expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:2');
     });
 
     expect(metricGridLifecycle.mounts).toBe(1);
     expect(metricGridLifecycle.unmounts).toBe(0);
+  });
+
+  it('navigates to dashboard tab when selecting a search result', async () => {
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search Jump' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:2');
+    });
   });
 });

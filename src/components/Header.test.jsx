@@ -37,4 +37,33 @@ describe('Header', () => {
 
     expect(screen.getByRole('button', { name: /resources/i })).toBeInTheDocument();
   });
+
+  it('renders metric search input when search props are provided', () => {
+    const searchIndex = [
+      {
+        key: 'network::overview::api_p2p_topology_latest',
+        dashboardId: 'network',
+        dashboardName: 'Network',
+        tabId: 'overview',
+        tabName: 'Overview',
+        metricId: 'api_p2p_topology_latest',
+        metricName: 'P2P Geographic Network Topology',
+        description: '',
+        metricDescription: ''
+      }
+    ];
+
+    render(
+      <Header
+        dashboardName="Overview"
+        isDarkMode={false}
+        toggleTheme={vi.fn()}
+        searchIndex={searchIndex}
+        onSearchSelect={vi.fn()}
+        searchEnabled={true}
+      />
+    );
+
+    expect(screen.getByRole('searchbox', { name: /search metrics/i })).toBeInTheDocument();
+  });
 });

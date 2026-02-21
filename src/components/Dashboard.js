@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
 import IconComponent from './IconComponent';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
+import { buildMetricSearchIndex } from '../utils/metricSearch';
 
 /**
  * Main Dashboard component with dashboard and tabbed interface
@@ -317,6 +318,7 @@ const Dashboard = () => {
 
   // Get current global filter value for active tab
   const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;
+  const searchIndex = useMemo(() => buildMetricSearchIndex(dashboards), [dashboards]);
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
@@ -330,6 +332,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleSearchSelect = useCallback((searchEntry) => {
+    if (!searchEntry?.dashboardId || !searchEntry?.tabId) {
+      return;
+    }
+
+    handleNavigation(searchEntry.dashboardId, searchEntry.tabId);
+  }, [handleNavigation]);
+
   return (
     <div className="dashboard">
       <Header 
@@ -338,6 +348,9 @@ const Dashboard = () => {
         toggleTheme={toggleTheme}
         showIndexingAlert={showIndexingAlert}
         indexingMessage={indexingMessage}
+        searchIndex={searchIndex}
+        onSearchSelect={handleSearchSelect}
+        searchEnabled={configLoaded && searchIndex.length > 0}
       />
       
       <div className="dashboard-main">

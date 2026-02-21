@@ -1,6 +1,7 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
 import HeaderResourcesMenu from './HeaderResourcesMenu';
+import MetricSearchBar from './MetricSearchBar';
 import { HEADER_RESOURCE_LINKS } from '../config/headerLinks';
 import { withBaseUrl } from '../utils/env';
 
@@ -21,7 +22,10 @@ const Header = ({
   toggleTheme,
   showIndexingAlert = false,
   indexingMessage = "Data is being indexed. Some metrics may not be fully updated.",
-  resourceLinks = HEADER_RESOURCE_LINKS
+  resourceLinks = HEADER_RESOURCE_LINKS,
+  searchIndex = [],
+  onSearchSelect = null,
+  searchEnabled = false
 }) => {
   // Different logo URLs for light and dark mode
   //const logoUrl = isDarkMode 
@@ -57,6 +61,13 @@ const Header = ({
       </div>
       
       <div className="header-actions">
+        {searchEnabled && typeof onSearchSelect === 'function' && (
+          <MetricSearchBar
+            searchIndex={searchIndex}
+            onSelect={onSearchSelect}
+            searchEnabled={searchEnabled}
+          />
+        )}
         <HeaderResourcesMenu resourceLinks={resourceLinks} />
         <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       </div>
