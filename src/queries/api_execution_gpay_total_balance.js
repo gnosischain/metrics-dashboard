@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_total_balance',
   name: 'Total Balance',
-  description: 'Latest wallet balance',
+  description: 'Latest wallet balance — payment tokens',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumberWithUSD',

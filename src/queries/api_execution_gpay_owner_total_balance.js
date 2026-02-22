@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_owner_total_balance',
   name: 'Owner Total Balance',
-  description: 'Latest owner balance',
+  description: 'Latest owner balance — payment tokens',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumberWithUSD',

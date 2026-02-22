@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_balance_cohorts_value_daily',
   name: 'Value by Balance Cohort',
-  description: 'Daily total USD value by balance cohort',
+  description: 'Daily total USD value by balance cohort — all tokens',
   metricDescription: 'Daily total wallet value (USD) by balance cohort. Stacked areas show where aggregate balances are concentrated.',
   chartType: 'area',
   isTimeSeries: true,

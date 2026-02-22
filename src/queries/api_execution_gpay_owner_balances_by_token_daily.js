@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_owner_balances_by_token_daily',
   name: 'Owner Balance',
-  description: 'Daily owner balance',
+  description: 'Daily owner balance - payment tokens',
   metricDescription: 'Daily owner balances in USD by stablecoin token (EURe, GBPe, USDC.e). Stacked total equals tracked owner balance.',
   chartType: 'area',
   isTimeSeries: true,
