@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_yields_lending_activity_volumes_weekly',
   name: 'Aave V3 Deposits & Borrows Volume',
   description: 'Weekly deposit and borrow volume',
+  metricDescription: 'Weekly deposit and borrow volumes by token and protocol. Token filter helps compare capital-flow direction for one asset.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

@@ -67,7 +67,7 @@ input:hover,
 textarea:hover,
 select:hover,
 .input:hover {
-  border-color: #ADBAC7;
+  border-color: var(--color-border-hover);
 }
 
 input:focus,
@@ -76,7 +76,7 @@ select:focus,
 .input:focus {
   outline: none;
   border-color: var(--primary-blue);
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.2);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 input:disabled,

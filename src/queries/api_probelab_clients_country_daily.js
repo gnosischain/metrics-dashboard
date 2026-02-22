@@ -2,6 +2,7 @@ const metric = {
   id: 'api_probelab_clients_country_daily',
   name: 'Country Distribution',
   description: 'Client per country',
+  metricDescription: 'Daily client distribution by country, with client filter. Highlights geographic concentration and diversification trends.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

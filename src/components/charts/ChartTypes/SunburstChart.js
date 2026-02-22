@@ -19,7 +19,7 @@ export class SunburstChart extends BaseChart {
       
       series: [{
         type: 'sunburst',
-        data: this.assignColors(processedData.data, isDarkMode),
+        data: this.assignColors(processedData.data, config, isDarkMode),
         radius: config.radius || [0, '90%'],
         center: config.center || ['50%', '50%'],
         sort: config.sort || 'desc',
@@ -96,13 +96,13 @@ export class SunburstChart extends BaseChart {
         ],
         
         label: {
-          color: isDarkMode ? '#e5e7eb' : '#374151',
+          color: isDarkMode ? '#E2E8F0' : '#334155',
           overflow: 'truncate',
           rotate: 'radial'
         },
         
         itemStyle: {
-          borderColor: isDarkMode ? '#1f2937' : '#ffffff',
+          borderColor: isDarkMode ? '#334155' : '#FFFFFF',
           borderWidth: 2,
           gapWidth: 2
         }
@@ -110,9 +110,13 @@ export class SunburstChart extends BaseChart {
       
       tooltip: {
         trigger: 'item',
-        backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
         borderWidth: 1,
+        borderRadius: 8,
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         padding: 12,
         formatter: (params) => {
           const value = formatValue(params.value, config.format);
@@ -271,24 +275,8 @@ export class SunburstChart extends BaseChart {
     }
   }
 
-  static assignColors(nodes, isDarkMode) {
-    // Define color palettes for light and dark modes
-    const palettes = {
-      light: [
-        '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-        '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#8d98b3',
-        '#e5cf0d', '#97b552', '#95706d', '#dc69aa', '#07a2a4',
-        '#9a7fd1', '#588dd5', '#f5994e', '#c05050', '#59678c'
-      ],
-      dark: [
-        '#91cc75', '#5470c6', '#fac858', '#ee6666', '#73c0de',
-        '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#8d98b3',
-        '#e5cf0d', '#97b552', '#95706d', '#dc69aa', '#07a2a4',
-        '#9a7fd1', '#588dd5', '#f5994e', '#c05050', '#59678c'
-      ]
-    };
-    
-    const basePalette = isDarkMode ? palettes.dark : palettes.light;
+  static assignColors(nodes, config, isDarkMode) {
+    const basePalette = this.resolveSeriesPalette(config, Math.max(nodes.length, 12), isDarkMode);
     
     return nodes.map((node, index) => {
       // Use palette colors, cycling through if needed
@@ -298,7 +286,7 @@ export class SunburstChart extends BaseChart {
         ...node,
         itemStyle: {
           color: parentColor,
-          borderColor: isDarkMode ? '#1f2937' : '#ffffff'
+          borderColor: isDarkMode ? '#334155' : '#ffffff'
         }
       };
 
@@ -317,7 +305,7 @@ export class SunburstChart extends BaseChart {
             ...child,
             itemStyle: {
               color: childColor,
-              borderColor: isDarkMode ? '#374151' : '#f3f4f6'
+              borderColor: isDarkMode ? '#475569' : '#E2E8F0'
             }
           };
         });

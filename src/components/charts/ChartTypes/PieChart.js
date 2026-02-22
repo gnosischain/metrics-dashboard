@@ -3,7 +3,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class PieChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -12,7 +12,7 @@ export class PieChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
-    const colors = generateColorPalette(processedData.data.length, isDarkMode);
+    const colors = this.resolveSeriesPalette(config, processedData.data.length, isDarkMode);
 
     return {
       ...this.getBaseOptions(isDarkMode),

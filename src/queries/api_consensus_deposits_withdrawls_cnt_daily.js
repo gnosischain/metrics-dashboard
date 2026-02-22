@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_consensus_deposits_withdrawls_cnt_daily',
-  name: 'Deposits/Withdrawls (Count)',
-  description: 'Daily number of deposits/withdrawls',
+  name: 'Deposits/Withdrawals (Count)',
+  description: 'Daily number of deposits/withdrawals',
+  metricDescription: 'Daily count of validator deposits and withdrawals. Compare both series to monitor validator-set expansion versus exits.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_fees_native_by_project_monthly_top5',
   name: 'Top-5 Projects by Fees',
   description: 'Monthly fees per project in xDAI',
+  metricDescription: 'Monthly transaction fees (xDAI) for the top 5 projects. Shows which projects drive fee generation.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,

@@ -1,11 +1,25 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import * as echarts from 'echarts';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import InfoPopover from './InfoPopover';
+import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
+import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
-const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className = '', globalSelectedLabel = null, hasGlobalFilter = false, globalFilterField = null, globalFilterValue = null, selectedUnit = null }) => {
+const MetricWidget = ({
+  metricId,
+  isDarkMode = false,
+  minimal = false,
+  className = '',
+  globalSelectedLabel = null,
+  hasGlobalFilter = false,
+  globalFilterField = null,
+  globalFilterValue = null,
+  selectedUnit = null,
+  dashboardPalette = null
+}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,6 +27,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const [availableLabels, setAvailableLabels] = useState([]);
   
   const isMounted = useRef(true);
+  const requestSequenceRef = useRef(0);
 
   // Determine if we're using global filter or local filter
   // If hasGlobalFilter is true, we should use global filter (even if value is null yet - it will be set soon)
@@ -38,6 +53,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         enableFiltering = false, 
         enableZoom = false,
         variant, 
+        cardVariant,
         changeData,
         fontSize,
         titleFontSize
@@ -48,6 +64,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
     if (chartType === 'table') widgetType = 'table';
     
+    const resolvedCardVariant = chartType === 'numberDisplay'
+      ? (cardVariant || 'outline')
+      : (cardVariant || 'default');
+
     return { 
       type: widgetType, 
       chartType, 
@@ -61,6 +81,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       enableFiltering, 
       enableZoom, 
       variant,
+      cardVariant: resolvedCardVariant,
       changeData,
       fontSize,
       titleFontSize,
@@ -137,6 +158,8 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       return;
     }
 
+    const requestId = ++requestSequenceRef.current;
+
     try {
       setLoading(true);
       setError(null);
@@ -161,6 +184,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
 
       const result = await metricsService.getMetricData(metricId, params);
       
+      if (!isMounted.current || requestId !== requestSequenceRef.current) {
+        return;
+      }
+
       if (isMounted.current) {
         setData(result);
         
@@ -177,12 +204,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         }
       }
     } catch (err) {
-      if (isMounted.current) {
+      if (isMounted.current && requestId === requestSequenceRef.current) {
         setError(err.message);
         console.error('Error fetching metric data:', err);
       }
     } finally {
-      if (isMounted.current) {
+      if (isMounted.current && requestId === requestSequenceRef.current) {
         setLoading(false);
       }
     }
@@ -340,8 +367,42 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
   const onLabelSelect = setSelectedLabel;
 
   const showInfoPopover = Boolean(widgetConfig.metricDescription);
+  const showDownloadButton = widgetConfig.type === 'chart';
+  const isDownloadDisabled = loading || Boolean(error);
 
-  const headerControls = (showLocalDropdown || showInfoPopover) ? (
+  const handleDownloadChart = useCallback((event) => {
+    if (!showDownloadButton) return;
+
+    const trigger = event?.currentTarget;
+    const container = trigger?.closest('.chart-modal, .metric-card, .minimal-widget-container');
+    const chartNode = container?.querySelector('.echarts-container');
+    if (!chartNode) return;
+
+    const chartInstance = echarts.getInstanceByDom(chartNode);
+    if (!chartInstance) return;
+
+    downloadEChartInstanceAsPng(chartInstance, {
+      title: widgetConfig.title || metricId,
+      isDarkMode,
+      anchorElement: container
+    });
+  }, [showDownloadButton, widgetConfig.title, metricId, isDarkMode]);
+
+  const chartRenderConfig = useMemo(() => ({
+    ...widgetConfig.config,
+    dashboardPalette,
+    yField: effectiveUnitConfig.yField,
+    format: effectiveUnitConfig.format,
+    enableZoom: widgetConfig.enableZoom
+  }), [
+    widgetConfig.config,
+    dashboardPalette,
+    widgetConfig.enableZoom,
+    effectiveUnitConfig.yField,
+    effectiveUnitConfig.format
+  ]);
+
+  const headerControls = (showLocalDropdown || showInfoPopover || showDownloadButton) ? (
     <>
       {showLocalDropdown && (
         <LabelSelector
@@ -353,6 +414,26 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       {showInfoPopover && (
         <InfoPopover text={widgetConfig.metricDescription} />
       )}
+      {showDownloadButton && (
+        <button
+          type="button"
+          className="metric-download-button"
+          onClick={handleDownloadChart}
+          disabled={isDownloadDisabled}
+          aria-label={`Download ${widgetConfig.title || 'chart'} as PNG`}
+          title="Download chart as PNG"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 3V14M12 14L8 10M12 14L16 10M4 17V18.5C4 19.8807 5.11929 21 6.5 21H17.5C18.8807 21 20 19.8807 20 18.5V17"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </>
   ) : undefined;
 
@@ -363,12 +444,10 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         minimal={minimal} 
         title={widgetConfig.title} 
         subtitle={widgetConfig.description}
+        headerControls={headerControls}
         chartType={widgetConfig.chartType} // Pass chartType for styling
       >
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading...</p>
-        </div>
+        <MetricWidgetSkeleton variant={widgetConfig.type} />
       </Card>
     );
   }
@@ -379,6 +458,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
         minimal={minimal} 
         title={widgetConfig.title} 
         subtitle={widgetConfig.description}
+        headerControls={headerControls}
         chartType={widgetConfig.chartType} // Pass chartType for styling
       >
         <div className="error-container">
@@ -411,6 +491,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
             changeType={processChangeData.changeType}
             changePeriod={processChangeData.changePeriod}
             fontSize={widgetConfig.fontSize}
+            dashboardPalette={dashboardPalette}
             minimal={true}
           />
         );
@@ -431,12 +512,7 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
           <EChartsContainer
             data={filteredData?.data || []}
             chartType={widgetConfig.chartType}
-            config={{
-              ...widgetConfig.config,
-              yField: effectiveUnitConfig.yField,
-              format: effectiveUnitConfig.format,
-              enableZoom: widgetConfig.enableZoom
-            }}
+            config={chartRenderConfig}
             isDarkMode={isDarkMode}
             width="100%"
             height="100%"
@@ -460,11 +536,12 @@ const MetricWidget = ({ metricId, isDarkMode = false, minimal = false, className
       isDarkMode={isDarkMode}
       chartType={widgetConfig.chartType}
       titleFontSize={widgetConfig.titleFontSize}
+      cardVariant={widgetConfig.cardVariant}
     >
       {/* Loading overlay shown during refetch (when we have data but are loading new data) */}
       {loading && data && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
+        <div className="loading-overlay loading-overlay-subtle" aria-hidden="true">
+          <div className="loading-shimmer"></div>
         </div>
       )}
       {renderContent()}

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_p2p_discv5_clients_latest',
   name: 'DiscV5 Client Distribution',
   description: 'Last day clients distribution',
+  metricDescription: 'Latest DiscV5 client distribution snapshot. Metric filter toggles between absolute peer counts and percentage share.',
   format: 'formatNumber',
   chartType: 'pie',
   

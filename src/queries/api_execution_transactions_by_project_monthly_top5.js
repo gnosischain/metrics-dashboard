@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_by_project_monthly_top5',
   name: 'Top-5 Projects by Transactions',
   description: 'Monthly number transactions per project',
+  metricDescription: 'Monthly transaction counts for the top 5 projects. Useful for tracking leading project throughput over time.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,

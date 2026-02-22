@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_graffiti',
   name: 'Graffiti Word Cloud',
   description: 'Top 50 graffiti messages from validators',
+  metricDescription: 'Top validator graffiti messages weighted by frequency. Use the label filter to isolate message sources and themes.',
   chartType: 'wordcloud',
   format: 'formatNumber',
   

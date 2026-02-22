@@ -4,7 +4,7 @@ const metric = {
   format: 'formatNumber',
   chartType: 'numberDisplay',
   showSubtitle: true,
-  color: '#0969DA',
+  color: '#4F46E5',
   query: `SELECT SUM(cnt) AS value FROM dbt.p2p_peers_geo_latest`
 };
 

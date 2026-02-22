@@ -5,7 +5,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class QuantileBandsChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -14,8 +14,8 @@ export class QuantileBandsChart extends BaseChart {
     }
 
     const { processedData, xAxisData } = this.processData(data, config);
-    const colors = config.bandColors || generateColorPalette(config.bands?.length || 3, isDarkMode);
-    const lineColors = config.lineColors || ['#000000', '#0969DA', '#58A6FF'];
+    const colors = config.bandColors || this.resolveSeriesPalette(config, config.bands?.length || 3, isDarkMode);
+    const lineColors = config.lineColors || this.resolveSeriesPalette(config, 3, isDarkMode);
     
     // Analyze time granularity for smart formatting
     const timeAnalysis = BaseChart.analyzeTimeGranularity(xAxisData);
@@ -65,7 +65,7 @@ export class QuantileBandsChart extends BaseChart {
           },
           showSymbol: false,
           areaStyle: {
-            color: isDarkMode ? '#1a1a1a' : '#ffffff',
+            color: isDarkMode ? '#0F172A' : '#FFFFFF',
             opacity: 1
           },
           silent: true,
@@ -148,7 +148,8 @@ export class QuantileBandsChart extends BaseChart {
           
           const xValue = xAxisData[dataIndex];
           
-          let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${
+          const dividerColor = isDarkMode ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.4)';
+          let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid ${dividerColor};">${
             BaseChart.formatTimeSeriesInTooltip(xValue, enhancedConfig.timeContext)
           }</div>`;
           
@@ -176,7 +177,7 @@ export class QuantileBandsChart extends BaseChart {
           
           // Show bands
           if (config.bands && config.bands.length > 0) {
-            tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.3);">`;
+            tooltip += `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid ${dividerColor};">`;
             tooltip += `<div style="font-weight: 600; margin-bottom: 4px;">Quantile Bands:</div>`;
             
             config.bands.forEach((band, index) => {
@@ -239,9 +240,20 @@ export class QuantileBandsChart extends BaseChart {
       config.lines.forEach(line => requiredFields.add(line));
     }
     
+    const normalizeQuantileValue = (value) => {
+      if (value === null || value === undefined || value === '') {
+        return null;
+      }
+      if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+      }
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
     // Process data for each required field
     requiredFields.forEach(field => {
-      processedData[field] = data.map(item => item[field] || null);
+      processedData[field] = data.map(item => normalizeQuantileValue(item[field]));
     });
     
     return { processedData, xAxisData };

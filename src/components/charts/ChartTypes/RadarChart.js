@@ -3,7 +3,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class RadarChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -12,7 +12,7 @@ export class RadarChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
-    const colors = generateColorPalette(processedData.series.length, isDarkMode);
+    const colors = this.resolveSeriesPalette(config, processedData.series.length, isDarkMode);
 
     return {
       ...this.getBaseOptions(isDarkMode),

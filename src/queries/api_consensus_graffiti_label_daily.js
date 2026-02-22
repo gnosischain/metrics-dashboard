@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_consensus_graffiti_label_daily',
-  name: 'Graffities',
-  description: 'Daily number graffities per keyword',
+  name: 'Graffiti',
+  description: 'Daily number of graffiti per keyword',
+  metricDescription: 'Daily graffiti counts by keyword/category label. Trends help identify operator branding and campaign-style activity.',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,

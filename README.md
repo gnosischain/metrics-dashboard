@@ -1,31 +1,40 @@
 # ClickHouse Metrics Dashboard
 
-A simple, modular dashboard to visualize ClickHouse metrics built with React and deployed on Vercel with server-side caching.
+A modular analytics dashboard for Gnosis metrics built with React, ECharts, YAML-driven layouts, and a cached ClickHouse-backed API.
 
 ## Features
 
 - Connects to ClickHouse Cloud via API
 - Server-side caching to minimize ClickHouse queries
 - Secure handling of credentials (not exposed to frontend)
-- Responsive design for all devices
-- Simplified UI with single-column metric display
-- Modular architecture for easy addition of new metrics
+- YAML-driven dashboards/tabs/card layouts
+- ECharts-based chart rendering with expand/info/download controls
+- Header metric search with fuzzy matching and direct dashboard/tab navigation
+- Responsive design with dark mode support
 - Deployment to Vercel with serverless functions
 
-## Available Metrics
+## Dashboard Areas
 
-- Query Count - Number of queries executed
-- Data Processed - Amount of data processed by queries
-- Average Query Time - Average query execution time
-- Error Rate - Percentage of failed queries
+Configured areas live in YAML and currently include:
+
+- Overview
+- Gnosis Pay
+- OnChain Activity
+- Consensus
+- Network
+- Bridges
+- Tokens
+- Yields
+- ESG
 
 ## Architecture
 
-This application follows a two-component architecture with server-side caching:
+This application follows a config-driven frontend + API architecture with server-side caching:
 
 1. **Frontend Dashboard** - React application deployed to Vercel
-   - Visualizes metrics data using Chart.js
-   - Fetches data from a secure API proxy
+   - Resolves dashboard layout from `public/dashboard.yml` and `public/dashboards/*.yml`
+   - Merges layout entries with metric definitions from `src/queries/*.js`
+   - Renders widgets/cards using ECharts and shared UI components
 
 2. **API Proxy** - Serverless API functions that interface with ClickHouse
    - Handles authentication securely
@@ -61,7 +70,13 @@ This application follows a two-component architecture with server-side caching:
 
 4. Start the development server:
    ```bash
-   pnpm start
+   pnpm dev
+   ```
+
+5. Run tests and production build:
+   ```bash
+   pnpm test
+   pnpm build
    ```
 
 ## Project Structure
@@ -77,26 +92,173 @@ This application follows a two-component architecture with server-side caching:
 │   ├── package.json            # API dependencies
 │   └── queries/                # Query definitions as JSON
 ├── public/                     # Static assets
+│   ├── dashboard.yml           # Main sector index (order + icons + source)
+│   └── dashboards/             # Per-sector layouts (metrics/tabs)
 ├── scripts/
 │   └── export-queries.js       # Script to export queries from frontend to API
 ├── src/
 │   ├── components/
 │   │   ├── Card.js             # Card component 
-│   │   ├── Chart.js            # Chart component
 │   │   ├── Dashboard.js        # Main dashboard component
-│   │   ├── Header.js           # Simplified header component
+│   │   ├── Header.js           # Top header (search/resources/theme)
+│   │   ├── MetricSearchBar.js  # Header metric search dropdown
 │   │   └── MetricWidget.js     # Individual metric display
 │   ├── services/
 │   │   ├── api.js              # API service with cache support
-│   │   └── metrics.js          # Metrics service
+│   │   ├── dashboards.js       # Dashboard/tab/layout resolution service
+│   │   └── metrics.js          # Metric config + data service
 │   ├── queries/                # Frontend metric definitions
 │   ├── utils/
+│   │   ├── dashboardConfig.js  # Loads and resolves YAML config
+│   │   ├── metricSearch.js     # Search index + scoring logic
 │   │   ├── config.js           # Application configuration
 │   │   ├── dates.js            # Date utilities
 │   │   └── formatter.js        # Value formatters
 │   └── styles.css              # Application styles
 └── vercel.json                 # Vercel deployment configuration
 ```
+
+## Dashboard Configuration
+
+The dashboard config is split into:
+
+1. `public/dashboard.yml` for sector metadata and ordering.
+2. `public/dashboards/<sector>.yml` for each sector layout (`metrics` or `tabs`).
+
+Main file example:
+
+```yaml
+Overview:
+  name: Overview
+  order: 1
+  icon: "📊"
+  iconClass: "chart-line"
+  source: /dashboards/overview.yml
+```
+
+Sector file example:
+
+```yaml
+metrics:
+  - id: overview_stake_api
+    gridRow: 1
+    gridColumn: 1 / span 3
+    minHeight: 130px
+```
+
+How to add a new sector:
+
+1. Create `public/dashboards/<new-sector>.yml` with `metrics` or `tabs`.
+2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
+3. Start the app and verify the new sector appears in navigation.
+
+## Dashboard Palette System
+
+Dashboards opt into named palette presets in `public/dashboard.yml`.
+All palette definitions are centralized in:
+`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js`
+
+### Named palette example
+
+```yaml
+GnosisPay:
+  name: Gnosis Pay
+  order: 10
+  icon: 💳
+  iconClass: credit-card
+  palette: gnosis-pay
+  source: /dashboards/gnosis-pay.yml
+```
+
+### Palette behavior and precedence
+
+1. Scope is dashboard-level only (set once per top-level dashboard entry).
+2. Dashboard palette applies automatically to all chart and number widgets in that dashboard.
+3. Fallback-only precedence is enforced:
+   - Metric-level explicit color config wins (`color`, `colors`, `bandColors`, `lineColors`, map-specific overrides, and explicit heatmap scale).
+   - Dashboard palette is used only when metric-level colors are not explicitly defined.
+   - If dashboard palette is missing/invalid, `standard` is used safely.
+   - If a custom/dashboard palette has fewer colors than required series, the remaining series are filled from the `standard` palette before any repetition.
+4. `palette` in YAML accepts preset names only (for example: `standard`, `gnosis-pay`).
+
+### Scalability
+
+This is fully config-driven:
+
+1. Adding new dashboards/tabs/metrics in YAML requires no code changes to inherit palette behavior.
+2. Any metric placed in YAML under a dashboard automatically receives that dashboard palette fallback.
+3. New palette presets are added once in `/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js` and then referenced by name in YAML.
+
+## How Dashboard Rendering Works
+
+1. **Config load at startup**
+   - `src/utils/dashboardConfig.js` loads `/dashboard.yml`.
+   - If a sector defines `source`, it loads and merges `/dashboards/<sector>.yml`.
+   - Resolved YAML is passed to `src/services/dashboards.js`.
+2. **Layout resolution**
+   - Each dashboard/tab metric ID is merged with its base metric config from `src/queries/*.js`.
+   - Grid placement (`gridRow`, `gridColumn`, `minHeight`) comes from YAML.
+3. **Navigation state**
+   - `src/components/Dashboard.js` manages active dashboard/tab and syncs `?dashboard=&tab=` in the URL.
+4. **Widget data flow**
+   - `MetricWidget` loads metric config from `metricsService`.
+   - Data is fetched via `/api/metrics/:metricId`.
+   - Text widgets can render static content without API calls.
+5. **Filters**
+   - `global_filter` is a pseudo-metric used only for UI placement in the grid.
+   - Global filter values are fetched once from a suitable metric and then reused across cards in the tab.
+6. **Card text fields**
+   - `description`: subtitle shown under the card title.
+   - `metricDescription`: markdown content shown in the info popover.
+7. **Chart controls**
+   - Chart cards include info popover, PNG download, and expand-to-modal controls.
+
+## Header Metric Search
+
+The header search is designed for fast tab jumps.
+
+1. **Scope**
+   - Search index is built only from resolved dashboard YAML metrics (`dashboard -> tab -> metrics`).
+   - Metrics that exist in `src/queries` but are not placed in any YAML tab are intentionally excluded.
+2. **Exclusions**
+   - Non-navigable pseudo entries like `global_filter` are excluded.
+3. **Matching + ranking**
+   - Highest priority: metric name exact/prefix/token matches.
+   - Then: metric ID token matches.
+   - Then: tab/dashboard/description/metricDescription context matches.
+   - Includes light typo tolerance (edit distance 1 for longer tokens).
+4. **Result limits**
+   - Default maximum is 8 results for speed and clarity.
+5. **Duplicate labels**
+   - If multiple results share the same `Metric Name + Dashboard/Tab`, the UI appends a qualifier
+     (description, or metricDescription, or metric ID fallback) to disambiguate.
+6. **Navigation behavior**
+   - Selecting a result jumps directly to its dashboard and tab (no card auto-scroll in this phase).
+7. **Keyboard controls**
+   - `ArrowUp` / `ArrowDown` to move selection
+   - `Enter` to navigate
+   - `Escape` to close suggestions
+   - Outside click closes suggestions
+
+## Header Resource Links
+
+The top-bar `Resources` menu is fully config-driven from:
+
+`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/config/headerLinks.js`
+
+To add or update links, edit `HEADER_RESOURCE_LINKS` using the grouped structure below:
+
+```js
+export const HEADER_RESOURCE_LINKS = [
+  {
+    id: 'api',
+    label: 'API',
+    links: [{ id: 'api-reference', label: 'API Reference', href: 'https://your-url' }]
+  }
+];
+```
+
+Each group renders a section in the dropdown, and each link opens in a new tab.
 
 ## Caching System
 
@@ -140,6 +302,18 @@ Force a cache refresh by adding `refreshCache=true` to your API requests:
 https://your-deployment-url/api/metrics?refreshCache=true
 ```
 
+### Environment Cache Behavior
+
+- **Local development (`NODE_ENV=development`)**:
+  - Frontend request caching is bypassed.
+  - Requests to `/api/metrics` and `/api/metrics/:id` automatically include `useCached=false` unless explicitly provided.
+  - API responses include `Cache-Control: no-store, max-age=0` and `Pragma: no-cache`.
+- **Production**:
+  - Existing cache behavior is unchanged.
+  - `useCached` defaults to `true` when omitted.
+- **Override support**:
+  - You can explicitly set `useCached=true` or `useCached=false` per request in any environment.
+
 ## Vercel Deployment
 
 ### Prerequisites
@@ -173,11 +347,25 @@ To deploy this dashboard, you'll need:
     - `CLICKHOUSE_DATABASE` (optional): Database name 
     - `CLICKHOUSE_DBT_SCHEMA` (optional): dbt schema prefix used to rewrite `dbt.` in queries (default: `dbt`)
     - `API_KEY`: A secure key for API authentication
-     - `REACT_APP_API_URL`: `/api` (relative path)
-     - `REACT_APP_API_KEY`: Same value as `API_KEY`
-     - `REACT_APP_DASHBOARD_TITLE` (optional): Custom dashboard title
-     - `CACHE_TTL_HOURS` (optional): Cache validity period in hours
-     - `CACHE_REFRESH_HOURS` (optional): Cache refresh interval in hours
+    - `VITE_API_URL`: `/api` (relative path)
+    - `VITE_API_KEY`: Same value as `API_KEY`
+    - `VITE_DASHBOARD_TITLE` (optional): Custom dashboard title
+    - `VITE_DEV_API_PROXY_TARGET` (optional): Local API proxy target for `pnpm dev`
+    - `CACHE_TTL_HOURS` (optional): Cache validity period in hours
+    - `CACHE_REFRESH_HOURS` (optional): Cache refresh interval in hours
+
+### Frontend Environment Variables
+
+Vite-prefixed variables are the primary format:
+
+- `VITE_API_URL`
+- `VITE_API_KEY`
+- `VITE_USE_MOCK_DATA`
+- `VITE_DASHBOARD_TITLE`
+- `VITE_PUBLIC_BASE_URL` (optional)
+- `VITE_DEV_API_PROXY_TARGET` (optional, local dev proxy)
+
+Legacy `REACT_APP_*` variables are still supported as a temporary migration fallback.
 
 ### Troubleshooting Deployment Issues
 
@@ -192,7 +380,7 @@ If you encounter issues:
    Visit `/api/test` to see cache information.
 
 3. **Use Mock Data Temporarily**:
-   Set `USE_MOCK_DATA=true` in environment variables during testing.
+   Set `VITE_USE_MOCK_DATA=true` in environment variables during testing.
 
 ## Adding New Metrics
 
@@ -209,8 +397,8 @@ To add a new metric:
      chartType: 'line',
      color: '#00BCD4',
      query: `
-       SELECT 
-         toDate(event_time) AS date, 
+       SELECT
+         toDate(event_time) AS date,
          count() AS value
        FROM your_table
        WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
@@ -218,25 +406,17 @@ To add a new metric:
        ORDER BY date
      `
    };
-   
+
    export default newMetric;
    ```
 
-2. Import the new metric in `src/queries/index.js`:
-   ```javascript
-   import newMetric from './newMetric';
-   
-   const allQueries = [
-     // Existing metrics
-     newMetric
-   ];
-   
-   export default allQueries;
-   ```
+2. Ensure the metric is placed in dashboard YAML so it becomes visible and searchable:
+   - Add it to `public/dashboards/<sector>.yml` under a `metrics` list in the target tab.
+   - Metrics not placed in YAML are not rendered and are not included in header search.
 
 3. Run the export script to update the API:
    ```bash
-   npm run export-queries
+   pnpm run export-queries
    ```
 
 4. Deploy your changes to Vercel:

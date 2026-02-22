@@ -63,12 +63,12 @@
   }
   
   .dark-mode .dashboard-item > .dashboard-header:hover {
-    background-color: rgba(88, 166, 255, 0.08);
+    background-color: var(--color-accent-softer);
     color: var(--primary-blue);
   }
   
   .dark-mode .dashboard-item > .dashboard-header.active {
-    background-color: rgba(88, 166, 255, 0.1);
+    background-color: var(--color-accent-soft);
     border-left-color: var(--primary-blue);
     color: var(--primary-blue);
   }
@@ -88,7 +88,7 @@
   }
   
   .dark-mode .sidebar-toggle:hover {
-    background-color: var(--hover-background);
+    background-color: var(--color-hover-background);
     color: var(--color-text-primary);
   }
   
@@ -99,17 +99,17 @@
   .dark-mode .metric-card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-base);
   }
   
   .dark-mode .metric-card:hover {
-    border-color: #4D565F;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
   }
   
   .dark-mode .card-header {
     border-bottom: 1px solid var(--color-border);
-    background-color: rgba(22, 27, 34, 0.8);
+    background-color: transparent;
   }
   
   .dark-mode .card-title {
@@ -138,10 +138,10 @@
      ================== */
   
   .dark-mode #chartjs-tooltip {
-    background-color: #1F2328 !important;
+    background-color: var(--color-surface) !important;
     border-color: var(--color-border) !important;
     color: var(--color-text-primary) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    box-shadow: var(--color-tooltip-shadow) !important;
   }
   
   .dark-mode .tooltip-header,
@@ -150,7 +150,7 @@
   }
   
   .dark-mode .tooltip-color-square {
-    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--color-border-subtle) !important;
   }
   
   /* ==================
@@ -162,7 +162,7 @@
   }
   
   .dark-mode .theme-toggle:hover {
-    background-color: rgba(88, 166, 255, 0.08);
+    background-color: var(--color-accent-softer);
     color: var(--color-text-primary);
   }
   
@@ -175,7 +175,7 @@
   
   .dark-mode button:hover,
   .dark-mode .button:hover {
-    background-color: rgba(88, 166, 255, 0.08);
+    background-color: var(--color-accent-softer);
     border-color: var(--color-text-secondary);
   }
   
@@ -209,7 +209,7 @@
   .dark-mode .label-selector-dropdown:focus,
   .dark-mode .label-selector-dropdown:focus-visible {
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
   }
   
   .dark-mode .label-selector-label {
@@ -236,13 +236,13 @@
   }
   
   .dark-mode .text-widget code {
-    background-color: rgba(139, 148, 158, 0.1);
+    background-color: var(--color-accent-soft);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
   }
   
   .dark-mode .text-widget pre {
-    background-color: rgba(139, 148, 158, 0.1);
+    background-color: var(--color-accent-soft);
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
   }

@@ -2,11 +2,6 @@ import api from './api';
 import queries from '../queries';
 
 class MetricsService {
-  constructor() {
-    this.cache = new Map();
-    this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
-  }
-
   /**
    * Get metric configuration by ID
    * @param {string} metricId - The metric ID
@@ -35,66 +30,26 @@ class MetricsService {
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
     );
 
-    // Backwards-compatible cache key:
-    // - Without params: key is metricId (existing behavior)
-    // - With params: include them so different ranges/filters don't collide
-    const cacheKey =
-      Object.keys(normalizedParams).length === 0
-        ? metricId
-        : `${metricId}|${Object.entries(normalizedParams)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([k, v]) => `${k}=${String(v)}`)
-            .join('&')}`;
-
-    // Check cache first
-    const cached = this.cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.data;
-    }
-
     try {
       // Get metric configuration to check if it's a text widget
       const metricConfig = this.getMetricConfig(metricId);
       
       // For text widgets with static content, return the content directly
       if (metricConfig && metricConfig.chartType === 'text' && metricConfig.content) {
-        const data = {
+        return {
           content: metricConfig.content
         };
-        
-        // Cache the result
-        this.cache.set(cacheKey, {
-          data: data,
-          timestamp: Date.now()
-        });
-        
-        return data;
       }
       
       // For other widgets, fetch from API
       const response = await api.get(`/metrics/${metricId}`, normalizedParams);
 
       // The API returns the data directly for a specific metric
-      const data = {
+      return {
         data: response
       };
-
-      // Cache the result
-      this.cache.set(cacheKey, {
-        data: data,
-        timestamp: Date.now()
-      });
-
-      return data;
     } catch (error) {
       console.error(`Error fetching metric ${metricId}:`, error);
-      
-      // If we have cached data, return it even if expired
-      if (cached) {
-        console.warn(`Using expired cache for metric ${metricId}`);
-        return cached.data;
-      }
-      
       throw error;
     }
   }
@@ -105,9 +60,9 @@ class MetricsService {
    */
   clearCache(metricId = null) {
     if (metricId) {
-      this.cache.delete(metricId);
+      api.clearCacheByEndpoint(`/metrics/${metricId}`);
     } else {
-      this.cache.clear();
+      api.clearCache();
     }
   }
 

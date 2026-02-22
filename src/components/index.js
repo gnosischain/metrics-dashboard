@@ -7,6 +7,7 @@
 
 import Dashboard from './Dashboard';
 import Header from './Header';
+import HeaderResourcesMenu from './HeaderResourcesMenu';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
 import MetricWidget from './MetricWidget';
@@ -38,6 +39,7 @@ import {
 export {
   Dashboard,
   Header,
+  HeaderResourcesMenu,
   TabNavigation,
   MetricGrid,
   MetricWidget,

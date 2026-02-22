@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_validators_apy_dist',
   name: 'APY Distribution',
   description: "Last 30 Days",
+  metricDescription: 'Boxplots summarize daily validator APY dispersion over the last 30 days. Whiskers use the 10th and 90th percentiles, and the box shows the interquartile range with median.',
   chartType: 'boxplot', 
   isTimeSeries: false,
   enableZoom: false,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_active_accounts_by_sector_weekly',
   name: 'Initiator Accounts by Sector',
   description: 'Weekly active accounts per sector',
+  metricDescription: 'Weekly unique initiator accounts by sector. Compare sector participation trends at a smoother cadence.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

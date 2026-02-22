@@ -445,7 +445,7 @@
 }
 
 .dark-mode .number-icon {
-  background-color: rgba(88, 166, 255, 0.1);
+  background-color: var(--color-accent-soft);
   color: var(--primary-blue);
 }
 

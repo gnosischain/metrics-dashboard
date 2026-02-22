@@ -6,7 +6,6 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette } from '../../../utils';
 
 export class BarChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -25,7 +24,7 @@ export class BarChart extends BaseChart {
       timeContext: timeAnalysis
     };
     
-    const colors = generateColorPalette(processedData.series?.length || 1, isDarkMode);
+    const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series?.length || 1, isDarkMode);
 
     // Check if this should be a stacked bar chart
     const isStacked = config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1;
@@ -51,7 +50,7 @@ export class BarChart extends BaseChart {
           data: series.data,
           itemStyle: {
             color: colors[index],
-            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            borderRadius: 0,
             // Add opacity support - same as areaOpacity but for bars
             opacity: config.barOpacity !== undefined ? config.barOpacity : 
                      config.opacity !== undefined ? config.opacity : 1.0
@@ -65,7 +64,7 @@ export class BarChart extends BaseChart {
           data: processedData.values,
           itemStyle: {
             color: colors[0],
-            borderRadius: config.borderRadius || [2, 2, 0, 0],
+            borderRadius: 0,
             // Add opacity support for single series too
             opacity: config.barOpacity !== undefined ? config.barOpacity : 
                      config.opacity !== undefined ? config.opacity : 1.0

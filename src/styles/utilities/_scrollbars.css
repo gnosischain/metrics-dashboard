@@ -19,14 +19,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D0D7DE;
+  background: var(--chart-axis-line);
   border-radius: 5px;
   border: 2px solid var(--color-background);
   transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ADBAC7;
+  background: var(--color-border-hover);
 }
 
 ::-webkit-scrollbar-corner {
@@ -66,7 +66,7 @@
 /* Firefox scrollbar styling */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D0D7DE var(--color-background);
+  scrollbar-color: var(--chart-axis-line) var(--color-background);
 }
 
 .scrollbar-thin {
@@ -108,16 +108,16 @@
 }
 
 .dark-mode ::-webkit-scrollbar-thumb {
-  background: #30363D;
+  background: var(--color-border);
   border: 2px solid var(--color-background);
 }
 
 .dark-mode ::-webkit-scrollbar-thumb:hover {
-  background: #484F58;
+  background: var(--color-border-hover);
 }
 
 .dark-mode * {
-  scrollbar-color: #30363D var(--color-background);
+  scrollbar-color: var(--color-border) var(--color-background);
 }
 
 .dark-mode .tabulator-tableHolder::-webkit-scrollbar-thumb {

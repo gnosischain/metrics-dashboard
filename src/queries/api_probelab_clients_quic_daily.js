@@ -2,6 +2,7 @@ const metric = {
   id: 'api_probelab_clients_quic_daily',
   name: 'Clients QUIC Support',
   description: '7DMA distribution',
+  metricDescription: '7-day average distribution of QUIC support by client, with client filter. Indicates transport-protocol adoption by implementation.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

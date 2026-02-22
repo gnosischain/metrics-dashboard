@@ -40,10 +40,19 @@
      Tab Content
      ================== */
   
-  .tab-content {
-    width: 100%;
-    animation: fadeIn var(--transition-slow);
+.tab-content {
+  width: 100%;
+  animation: tabContentFadeIn var(--transition-base);
+}
+
+@keyframes tabContentFadeIn {
+  from {
+    opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
+}
   
   /* ==================
      Empty States
@@ -90,13 +99,19 @@
      ================== */
   
   @media (max-width: 768px) {
-    .dashboard-content {
-      margin-left: var(--sidebar-width-collapsed);
-      width: calc(100% - var(--sidebar-width-collapsed));
-      padding: var(--spacing-md);
-    }
-    
-    .dashboard-tabs {
-      flex-wrap: wrap;
-    }
+  .dashboard-content {
+    margin-left: var(--sidebar-width-collapsed);
+    width: calc(100% - var(--sidebar-width-collapsed));
+    padding: var(--spacing-md);
   }
+    
+  .dashboard-tabs {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-content {
+    animation: none !important;
+  }
+}

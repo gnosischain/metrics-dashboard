@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_consensus_info_deposits_cnt_latest',
-  name: 'Deposists',
+  name: 'Deposits',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',

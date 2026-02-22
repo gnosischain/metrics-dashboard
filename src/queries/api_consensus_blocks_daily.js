@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_blocks_daily',
   name: 'Blocks',
   description: 'Daily number produced/missed blocks',
+  metricDescription: 'Daily produced versus missed blocks from consensus data. Divergence between series highlights validator performance and liveness issues.',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,
