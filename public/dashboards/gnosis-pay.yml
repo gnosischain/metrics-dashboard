@@ -121,3 +121,40 @@ tabs:
         gridRow: 4
         gridColumn: 7 / span 6
         minHeight: 450px
+  - name: User Portfolio
+    order: 5
+    icon: 👤
+    iconClass: user
+    globalFilterField: wallet_address
+    globalFilterLabel: Wallet
+    searchable: true
+    searchPlaceholder: Paste wallet address...
+    metrics:
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 60px
+      - id: api_execution_gpay_user_total_volume
+        gridRow: 1
+        gridColumn: 5 / span 3
+        minHeight: 120px
+      - id: api_execution_gpay_user_total_payments
+        gridRow: 1
+        gridColumn: 8 / span 2
+        minHeight: 120px
+      - id: api_execution_gpay_user_total_cashback
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_gpay_user_payments_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_gpay_user_cashback_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_gpay_user_balances_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
