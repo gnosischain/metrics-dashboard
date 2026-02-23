@@ -3,6 +3,37 @@ import queries from '../queries';
 
 class MetricsService {
   /**
+   * Normalize API payloads to a consistent row-array shape.
+   * Supports raw arrays and common wrapped formats.
+   * @param {any} response
+   * @returns {Array}
+   */
+  normalizeMetricRows(response) {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (response && typeof response === 'object') {
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      if (Array.isArray(response.rows)) {
+        return response.rows;
+      }
+
+      if (Array.isArray(response.result)) {
+        return response.result;
+      }
+
+      // Single-row object payload
+      return [response];
+    }
+
+    return [];
+  }
+
+  /**
    * Get metric configuration by ID
    * @param {string} metricId - The metric ID
    * @returns {Object} The metric configuration
@@ -44,9 +75,11 @@ class MetricsService {
       // For other widgets, fetch from API
       const response = await api.get(`/metrics/${metricId}`, normalizedParams);
 
-      // The API returns the data directly for a specific metric
+      // Normalize all metric responses into an array for widget consumers.
+      const normalizedRows = this.normalizeMetricRows(response);
+
       return {
-        data: response
+        data: normalizedRows
       };
     } catch (error) {
       console.error(`Error fetching metric ${metricId}:`, error);

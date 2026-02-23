@@ -24,6 +24,7 @@ const MetricWidget = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState('');
+  const [selectedValueMode, setSelectedValueMode] = useState(null);
   const [availableLabels, setAvailableLabels] = useState([]);
   
   const isMounted = useRef(true);
@@ -131,6 +132,73 @@ const MetricWidget = ({
     };
   }, [selectedUnit, metricConfig, resolveFormat]);
 
+  const valueModeOptions = useMemo(() => {
+    if (!Array.isArray(metricConfig?.valueModeOptions)) {
+      return [];
+    }
+
+    return metricConfig.valueModeOptions
+      .map((option) => {
+        if (!option || typeof option !== 'object') return null;
+
+        const key = typeof option.key === 'string' ? option.key.trim() : '';
+        if (!key) return null;
+
+        const label = typeof option.label === 'string' && option.label.trim()
+          ? option.label.trim()
+          : key;
+
+        const valueField = typeof option.valueField === 'string' && option.valueField.trim()
+          ? option.valueField.trim()
+          : (typeof option.field === 'string' ? option.field.trim() : '');
+
+        return {
+          key,
+          label,
+          valueField,
+          format: option.format
+        };
+      })
+      .filter(Boolean);
+  }, [metricConfig?.valueModeOptions]);
+
+  const valueModeByKey = useMemo(() => {
+    return valueModeOptions.reduce((acc, option) => {
+      acc[option.key] = option;
+      return acc;
+    }, {});
+  }, [valueModeOptions]);
+
+  const valueModeKeyByLabel = useMemo(() => {
+    return valueModeOptions.reduce((acc, option) => {
+      if (!(option.label in acc)) {
+        acc[option.label] = option.key;
+      }
+      return acc;
+    }, {});
+  }, [valueModeOptions]);
+
+  const selectedValueModeOption = selectedValueMode ? valueModeByKey[selectedValueMode] : null;
+
+  const effectiveValueConfig = useMemo(() => {
+    const baseConfig = {
+      yField: effectiveUnitConfig.yField,
+      valueField: effectiveUnitConfig.valueField,
+      format: effectiveUnitConfig.format
+    };
+
+    if (!selectedValueModeOption) {
+      return baseConfig;
+    }
+
+    return {
+      yField: selectedValueModeOption.valueField || baseConfig.yField,
+      valueField: selectedValueModeOption.valueField || baseConfig.valueField,
+      // Preserve explicit null to disable formatting.
+      format: resolveFormat(selectedValueModeOption.format, baseConfig.format)
+    };
+  }, [effectiveUnitConfig, selectedValueModeOption, resolveFormat]);
+
   // Check if this widget should use global filter for its labelField
   const isGlobalFilterForThisField = useMemo(() => {
     return hasGlobalFilter && widgetConfig?.labelField === globalFilterField;
@@ -150,6 +218,30 @@ const MetricWidget = ({
       isMounted.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (valueModeOptions.length === 0) {
+      if (selectedValueMode !== null) {
+        setSelectedValueMode(null);
+      }
+      return;
+    }
+
+    if (selectedValueMode && valueModeByKey[selectedValueMode]) {
+      return;
+    }
+
+    const preferredValueMode = typeof metricConfig?.defaultValueMode === 'string'
+      ? metricConfig.defaultValueMode
+      : null;
+
+    if (preferredValueMode && valueModeByKey[preferredValueMode]) {
+      setSelectedValueMode(preferredValueMode);
+      return;
+    }
+
+    setSelectedValueMode(valueModeOptions[0].key);
+  }, [metricConfig?.defaultValueMode, selectedValueMode, valueModeByKey, valueModeOptions]);
 
   const fetchData = useCallback(async () => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
@@ -365,6 +457,16 @@ const MetricWidget = ({
   // Since showLocalDropdown already checks !isGlobalFilterForThisField, we can always use selectedLabel here
   const selectedLabelForDropdown = selectedLabel;
   const onLabelSelect = setSelectedLabel;
+  const valueModeLabels = valueModeOptions.map((option) => option.label);
+  const showValueModeDropdown = valueModeLabels.length > 1;
+  const selectedValueModeLabel = selectedValueModeOption?.label || valueModeLabels[0] || '';
+
+  const handleValueModeSelect = useCallback((selectedLabelValueMode) => {
+    const selectedKey = valueModeKeyByLabel[selectedLabelValueMode];
+    if (selectedKey) {
+      setSelectedValueMode(selectedKey);
+    }
+  }, [valueModeKeyByLabel]);
 
   const showInfoPopover = Boolean(widgetConfig.metricDescription);
   const showDownloadButton = widgetConfig.type === 'chart';
@@ -391,24 +493,33 @@ const MetricWidget = ({
   const chartRenderConfig = useMemo(() => ({
     ...widgetConfig.config,
     dashboardPalette,
-    yField: effectiveUnitConfig.yField,
-    format: effectiveUnitConfig.format,
+    yField: effectiveValueConfig.yField,
+    valueField: effectiveValueConfig.valueField,
+    format: effectiveValueConfig.format,
     enableZoom: widgetConfig.enableZoom
   }), [
     widgetConfig.config,
     dashboardPalette,
     widgetConfig.enableZoom,
-    effectiveUnitConfig.yField,
-    effectiveUnitConfig.format
+    effectiveValueConfig.yField,
+    effectiveValueConfig.valueField,
+    effectiveValueConfig.format
   ]);
 
-  const headerControls = (showLocalDropdown || showInfoPopover || showDownloadButton) ? (
+  const headerControls = (showLocalDropdown || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
     <>
       {showLocalDropdown && (
         <LabelSelector
           labels={labelsForDropdown}
           selectedLabel={selectedLabelForDropdown}
           onSelectLabel={onLabelSelect}
+        />
+      )}
+      {showValueModeDropdown && (
+        <LabelSelector
+          labels={valueModeLabels}
+          selectedLabel={selectedValueModeLabel}
+          onSelectLabel={handleValueModeSelect}
         />
       )}
       {showInfoPopover && (
@@ -477,11 +588,11 @@ const MetricWidget = ({
         return <TextWidget content={data?.content || 'No content available'} minimal={true} />;
       
       case 'number':
-        const value = filteredData?.data?.[0]?.[effectiveUnitConfig.valueField] || 0;
+        const value = filteredData?.data?.[0]?.[effectiveValueConfig.valueField] || 0;
         return (
           <NumberWidget
             value={value}
-            format={effectiveUnitConfig.format}
+            format={effectiveValueConfig.format}
             color={widgetConfig.color}
             label={undefined} // Never pass label in compact mode - title is shown in header
             isDarkMode={isDarkMode}

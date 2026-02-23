@@ -158,3 +158,12 @@ tabs:
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
+  - name: Flows
+    order: 6
+    icon: 🔀
+    iconClass: flow
+    metrics:
+      - id: api_execution_gpay_flows_snapshot
+        gridRow: 1
+        gridColumn: 1 / span 8
+        minHeight: 500px

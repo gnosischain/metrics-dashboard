@@ -267,6 +267,29 @@ export class ApiService {
             apy: parseFloat((Math.random() * 2 + 3 + (label === '90DMA' ? 0.5 : 0)).toFixed(2))
           });
         });
+      } else if (metricId.includes('gpay_flows_snapshot')) {
+        // Directed flow graph mock data with windows and symbols
+        const windows = ['1D', '7D', '30D'];
+        const symbols = ['USDC', 'DAI', 'EURe'];
+        const labels = ['Merchant', 'Card', 'Settlement', 'Rewards'];
+
+        windows.forEach((windowValue, windowIndex) => {
+          symbols.forEach((symbol, symbolIndex) => {
+            const from = labels[(windowIndex + symbolIndex) % labels.length];
+            const to = labels[(windowIndex + symbolIndex + 1) % labels.length];
+            const amountUsd = Math.round((windowIndex + 1) * (symbolIndex + 1) * 2500 + Math.random() * 900);
+            const tfCnt = Math.max(1, Math.round(amountUsd / 350 + Math.random() * 6));
+
+            data.push({
+              window: windowValue,
+              symbol,
+              from_label: from,
+              to_label: to,
+              amount_usd: amountUsd,
+              tf_cnt: tfCnt
+            });
+          });
+        });
       } else if (metricId.includes('prices')) {
         // Price data with multiple assets
         const assets = ['bIB01', 'bTSLA', 'bAAPL'];

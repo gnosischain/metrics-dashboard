@@ -26,6 +26,7 @@ const EChartsContainer = ({
   const instanceRef = useRef(null);
   const hasRenderedRef = useRef(false);
   const previousChartTypeRef = useRef(chartType);
+  const graphEdgeLegendListenerRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +36,82 @@ const EChartsContainer = ({
   const [containerSize, setContainerSize] = useState({ width: undefined, height: undefined });
 
   const isWordCloud = isWordCloudType(chartType);
+
+  const detachGraphEdgeLegendListener = () => {
+    if (instanceRef.current && graphEdgeLegendListenerRef.current) {
+      instanceRef.current.off('legendselectchanged', graphEdgeLegendListenerRef.current);
+    }
+    graphEdgeLegendListenerRef.current = null;
+  };
+
+  const applyGraphEdgeLegendSelection = (edgeLegendConfig, baseEdges, selectedMap = {}) => {
+    if (!instanceRef.current || !edgeLegendConfig?.targetSeriesId) {
+      return;
+    }
+
+    const allowedStyleNames = Array.isArray(edgeLegendConfig.styleNames)
+      ? new Set(edgeLegendConfig.styleNames.map((name) => String(name)))
+      : null;
+
+    const filteredEdges = baseEdges.filter((edge) => {
+      const edgeStyleValue = edge?.styleValue;
+      if (edgeStyleValue === undefined || edgeStyleValue === null || edgeStyleValue === '') {
+        return true;
+      }
+
+      const normalizedStyle = String(edgeStyleValue);
+      if (allowedStyleNames && allowedStyleNames.size > 0 && !allowedStyleNames.has(normalizedStyle)) {
+        return true;
+      }
+
+      return selectedMap[normalizedStyle] !== false;
+    });
+
+    instanceRef.current.setOption({
+      series: [{
+        id: edgeLegendConfig.targetSeriesId,
+        edges: filteredEdges
+      }]
+    }, {
+      lazyUpdate: true
+    });
+  };
+
+  const bindGraphEdgeLegendSelection = (options) => {
+    detachGraphEdgeLegendListener();
+
+    const edgeLegendConfig = options?.__graphEdgeLegend;
+    if (!edgeLegendConfig?.enabled || !instanceRef.current) {
+      return;
+    }
+
+    const targetSeriesId = edgeLegendConfig.targetSeriesId;
+    if (!targetSeriesId) {
+      return;
+    }
+
+    const seriesOptions = Array.isArray(options?.series) ? options.series : [];
+    const targetSeries = seriesOptions.find((series) => series?.id === targetSeriesId);
+    const baseEdges = Array.isArray(targetSeries?.edges) ? targetSeries.edges : null;
+
+    if (!baseEdges) {
+      return;
+    }
+
+    const legendOptions = Array.isArray(options.legend) ? options.legend[0] : options.legend;
+    const initialSelected = legendOptions?.selected && typeof legendOptions.selected === 'object'
+      ? legendOptions.selected
+      : {};
+
+    const handleLegendSelectionChange = (params) => {
+      applyGraphEdgeLegendSelection(edgeLegendConfig, baseEdges, params?.selected);
+    };
+
+    graphEdgeLegendListenerRef.current = handleLegendSelectionChange;
+    instanceRef.current.on('legendselectchanged', handleLegendSelectionChange);
+
+    applyGraphEdgeLegendSelection(edgeLegendConfig, baseEdges, initialSelected);
+  };
 
   useEffect(() => {
     const normalizedType = (chartType || '').toLowerCase();
@@ -204,6 +281,7 @@ const EChartsContainer = ({
           };
 
       instanceRef.current.setOption(chartOptions, setOptionConfig);
+      bindGraphEdgeLegendSelection(chartOptions);
       hasRenderedRef.current = true;
 
       if (isWordCloud) {
@@ -238,6 +316,7 @@ const EChartsContainer = ({
       instanceRef.current.setOption(chartOptions, {
         notMerge: true
       });
+      bindGraphEdgeLegendSelection(chartOptions);
     }
   }, [isDarkMode, chartOptions, loading, requiresGL, isWordCloud]);
 
@@ -250,6 +329,7 @@ const EChartsContainer = ({
   useEffect(() => {
     return () => {
       if (instanceRef.current) {
+        detachGraphEdgeLegendListener();
         try {
           if (isWordCloud) {
             instanceRef.current.clear();

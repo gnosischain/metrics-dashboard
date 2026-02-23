@@ -1,118 +1,316 @@
 import { BaseChart } from './BaseChart';
+import { formatValue } from '../../../utils';
+
+const DEFAULT_EDGE_LINE_TYPES = ['solid', 'dashed', 'dotted', 'dashdot'];
+const SUPPORTED_EDGE_LINE_TYPES = new Set(['solid', 'dashed', 'dotted']);
+const EDGE_LEGEND_ICONS = {
+  solid: 'path://M2,7 H18 V9 H2 Z',
+  dashed: 'path://M2,7 H6 V9 H2 Z M8,7 H12 V9 H8 Z M14,7 H18 V9 H14 Z',
+  dotted: 'path://M3,7 H5 V9 H3 Z M9,7 H11 V9 H9 Z M15,7 H17 V9 H15 Z'
+};
+
+const toFiniteNumber = (value) => {
+  const numeric = Number.parseFloat(value);
+  return Number.isFinite(numeric) ? numeric : null;
+};
+
+const toNonNegativeNumber = (value) => {
+  const numeric = toFiniteNumber(value);
+  if (numeric === null) return null;
+  return Math.max(0, numeric);
+};
+
+const normalizeLineType = (lineType) => {
+  const normalized = typeof lineType === 'string' ? lineType.trim().toLowerCase() : '';
+  if (SUPPORTED_EDGE_LINE_TYPES.has(normalized)) {
+    return normalized;
+  }
+
+  if (normalized === 'dashdot' || normalized === 'dash-dot' || normalized === 'dotdash') {
+    return 'dashed';
+  }
+
+  return 'solid';
+};
+
+const resolveLegendIconForLineType = (lineType) => {
+  const normalized = normalizeLineType(lineType);
+  return EDGE_LEGEND_ICONS[normalized] || EDGE_LEGEND_ICONS.solid;
+};
 
 export class GraphChart extends BaseChart {
-  static processData(data, config) {
-    // Transform flat data into nodes and links for graph
-    const nodeMap = new Map();
-    const links = [];
-    const categories = new Map();
-    
-    // Count links per node for better positioning
-    const nodeLinkCount = new Map();
-    
-    // Process data to create nodes and links
-    data.forEach(row => {
-      // Create/update source node
-      const sourceId = row[config.sourceIdField];
-      const targetId = row[config.targetIdField];
-      
-      if (!nodeMap.has(sourceId)) {
-        nodeMap.set(sourceId, {
-          id: sourceId,
-          name: row[config.sourceNameField] || sourceId,
-          category: row[config.sourceGroupField] || 'default',
-          symbolSize: 10,
-          value: 0,
-          x: null,
-          y: null
+  static resolveEdgeCurvenessMap(links, baseCurveness, separation) {
+    const byPair = new Map();
+    const curvenessByIndex = new Map();
+    const safeBase = Math.max(Math.abs(baseCurveness), 0.02);
+    const safeSeparation = Math.max(separation, 0);
+
+    links.forEach((link, index) => {
+      const source = String(link.source);
+      const target = String(link.target);
+      const pairKey = source < target
+        ? `${source}\u0000${target}`
+        : `${target}\u0000${source}`;
+
+      if (!byPair.has(pairKey)) {
+        byPair.set(pairKey, []);
+      }
+
+      byPair.get(pairKey).push({ index, link, source, target });
+    });
+
+    byPair.forEach((pairItems) => {
+      const byDirection = new Map();
+
+      pairItems.forEach((item) => {
+        const directionKey = `${item.source}\u0000${item.target}`;
+        if (!byDirection.has(directionKey)) {
+          byDirection.set(directionKey, []);
+        }
+        byDirection.get(directionKey).push(item);
+      });
+
+      byDirection.forEach((directionItems, directionKey) => {
+        const [source, target] = directionKey.split('\u0000');
+        const directionSign = source <= target ? 1 : -1;
+        const orderedItems = [...directionItems].sort((a, b) => {
+          const aStyle = a.link.styleValue || '';
+          const bStyle = b.link.styleValue || '';
+          if (aStyle !== bStyle) {
+            return aStyle.localeCompare(bStyle);
+          }
+          return a.index - b.index;
         });
-      }
-      
-      // Create/update target node
-      if (!nodeMap.has(targetId)) {
-        nodeMap.set(targetId, {
-          id: targetId,
-          name: row[config.targetNameField] || targetId,
-          category: row[config.targetGroupField] || 'default',
-          symbolSize: 10,
-          value: 0,
-          x: null,
-          y: null
+
+        const count = orderedItems.length;
+        orderedItems.forEach((item, position) => {
+          const centeredOffset = count === 1
+            ? 0
+            : (position - (count - 1) / 2) * safeSeparation;
+          const magnitude = Math.max(0.02, safeBase + centeredOffset);
+          curvenessByIndex.set(item.index, directionSign * magnitude);
         });
-      }
-      
-      // Update node values
-      const sourceNode = nodeMap.get(sourceId);
-      const targetNode = nodeMap.get(targetId);
-      const value = parseFloat(row[config.valueField] || 0);
-      sourceNode.value += value;
-      targetNode.value += value;
-      
-      // Track link counts
-      nodeLinkCount.set(sourceId, (nodeLinkCount.get(sourceId) || 0) + 1);
-      nodeLinkCount.set(targetId, (nodeLinkCount.get(targetId) || 0) + 1);
-      
-      // Track categories
-      if (row[config.sourceGroupField]) {
-        categories.set(row[config.sourceGroupField], true);
-      }
-      if (row[config.targetGroupField]) {
-        categories.set(row[config.targetGroupField], true);
-      }
-      
-      // Create link - store all data needed for tooltip
-      links.push({
-        source: sourceId,
-        target: targetId,
-        value: value,
-        date: row[config.dateField],
-        tokenAddress: row.token_address || row[config.sourceGroupField],
-        // Store original row data
-        _originalData: row
       });
     });
-    
-    // Convert nodes map to array and scale symbol sizes
+
+    return curvenessByIndex;
+  }
+
+  static normalizeRows(data) {
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    if (data && typeof data === 'object' && Array.isArray(data.data)) {
+      return data.data;
+    }
+
+    return [];
+  }
+
+  static processData(data, config) {
+    const rows = this.normalizeRows(data);
+
+    if (rows.length === 0) {
+      return {
+        nodes: [],
+        links: [],
+        categories: [],
+        edgeStyles: []
+      };
+    }
+
+    const sourceIdField = config.sourceIdField || 'source';
+    const targetIdField = config.targetIdField || 'target';
+    const sourceNameField = config.sourceNameField || sourceIdField;
+    const targetNameField = config.targetNameField || targetIdField;
+    const sourceGroupField = config.sourceGroupField || null;
+    const targetGroupField = config.targetGroupField || null;
+    const valueField = config.valueField || config.yField || 'value';
+    const edgeStyleField = config.edgeStyleField || null;
+    const dateField = config.dateField || null;
+    const amountField = config.amountField || 'amount_usd';
+    const countField = config.countField || 'tf_cnt';
+
+    const nodeMap = new Map();
+    const edgeMap = new Map();
+    const categories = new Set();
+    const edgeStyles = new Set();
+    const nodeLinkCount = new Map();
+
+    const ensureNode = (nodeId, nodeName, categoryValue) => {
+      if (!nodeMap.has(nodeId)) {
+        nodeMap.set(nodeId, {
+          id: nodeId,
+          name: nodeName || nodeId,
+          category: categoryValue ? String(categoryValue) : undefined,
+          symbolSize: 10,
+          value: 0,
+          inValue: 0,
+          outValue: 0,
+          x: null,
+          y: null
+        });
+      }
+
+      const existingNode = nodeMap.get(nodeId);
+      if (!existingNode.name && nodeName) {
+        existingNode.name = nodeName;
+      }
+      if (categoryValue && !existingNode.category) {
+        existingNode.category = String(categoryValue);
+      }
+
+      return existingNode;
+    };
+
+    rows.forEach((row) => {
+      const sourceIdRaw = row?.[sourceIdField];
+      const targetIdRaw = row?.[targetIdField];
+      if (
+        sourceIdRaw === undefined || sourceIdRaw === null || sourceIdRaw === '' ||
+        targetIdRaw === undefined || targetIdRaw === null || targetIdRaw === ''
+      ) {
+        return;
+      }
+
+      const sourceId = String(sourceIdRaw);
+      const targetId = String(targetIdRaw);
+      const sourceName = row?.[sourceNameField];
+      const targetName = row?.[targetNameField];
+      const sourceCategory = sourceGroupField ? row?.[sourceGroupField] : null;
+      const targetCategory = targetGroupField ? row?.[targetGroupField] : null;
+
+      const sourceNode = ensureNode(sourceId, sourceName, sourceCategory);
+      const targetNode = ensureNode(targetId, targetName, targetCategory);
+
+      if (sourceCategory) categories.add(String(sourceCategory));
+      if (targetCategory) categories.add(String(targetCategory));
+
+      const value = toNonNegativeNumber(row?.[valueField]) ?? 0;
+      sourceNode.value += value;
+      targetNode.value += value;
+      sourceNode.outValue += value;
+      targetNode.inValue += value;
+
+      nodeLinkCount.set(sourceId, (nodeLinkCount.get(sourceId) || 0) + 1);
+      nodeLinkCount.set(targetId, (nodeLinkCount.get(targetId) || 0) + 1);
+
+      const edgeStyleValue = edgeStyleField && row?.[edgeStyleField] !== undefined && row?.[edgeStyleField] !== null
+        ? String(row[edgeStyleField])
+        : null;
+
+      if (edgeStyleValue) {
+        edgeStyles.add(edgeStyleValue);
+      }
+
+      const edgeKey = `${sourceId}\u0000${targetId}\u0000${edgeStyleValue || '__none__'}`;
+      if (!edgeMap.has(edgeKey)) {
+        edgeMap.set(edgeKey, {
+          source: sourceId,
+          target: targetId,
+          value: 0,
+          styleValue: edgeStyleValue,
+          date: dateField ? row?.[dateField] : null,
+          tokenAddress: row?.token_address || null,
+          amountUsd: 0,
+          tfCnt: 0,
+          hasAmountUsd: false,
+          hasTfCnt: false
+        });
+      }
+
+      const edge = edgeMap.get(edgeKey);
+      edge.value += value;
+
+      const amountValue = toNonNegativeNumber(row?.[amountField]);
+      if (amountValue !== null) {
+        edge.amountUsd += amountValue;
+        edge.hasAmountUsd = true;
+      }
+
+      const countValue = toNonNegativeNumber(row?.[countField]);
+      if (countValue !== null) {
+        edge.tfCnt += countValue;
+        edge.hasTfCnt = true;
+      }
+
+      if (!edge.date && dateField && row?.[dateField]) {
+        edge.date = row[dateField];
+      }
+    });
+
     const nodes = Array.from(nodeMap.values());
-    const maxValue = Math.max(...nodes.map(n => n.value));
-    const minSize = config.networkConfig?.minNodeSize || 8;
-    const maxSize = config.networkConfig?.maxNodeSize || 40;
-    
-    // Pre-layout nodes in a circle to start with better positions
+    const links = Array.from(edgeMap.values()).map((edge) => ({
+      ...edge,
+      amountUsd: edge.hasAmountUsd ? edge.amountUsd : null,
+      tfCnt: edge.hasTfCnt ? edge.tfCnt : null
+    }));
+
+    const minNodeSize = config.networkConfig?.minNodeSize || 8;
+    const maxNodeSize = config.networkConfig?.maxNodeSize || 40;
+    const maxNodeValue = nodes.length > 0 ? Math.max(...nodes.map((node) => node.value)) : 0;
+
     const centerX = 400;
     const centerY = 300;
     const radius = 200;
-    
+
     nodes.forEach((node, index) => {
-      // Scale node size based on value
-      node.symbolSize = minSize + (node.value / maxValue) * (maxSize - minSize);
-      
-      // Initial circular layout
-      const angle = (index / nodes.length) * 2 * Math.PI;
+      const ratio = maxNodeValue > 0 ? node.value / maxNodeValue : 0;
+      node.symbolSize = minNodeSize + ratio * (maxNodeSize - minNodeSize);
+
+      const angle = (index / Math.max(nodes.length, 1)) * 2 * Math.PI;
       node.x = centerX + radius * Math.cos(angle);
       node.y = centerY + radius * Math.sin(angle);
-      
-      // Nodes with more connections should be more central
+
       const linkCount = nodeLinkCount.get(node.id) || 0;
       const centralityFactor = Math.min(linkCount / 10, 1);
       node.x = node.x * (1 - centralityFactor * 0.5) + centerX * centralityFactor * 0.5;
       node.y = node.y * (1 - centralityFactor * 0.5) + centerY * centralityFactor * 0.5;
     });
-    
+
     return {
       nodes,
       links,
-      categories: Array.from(categories.keys()).map(name => ({ name }))
+      categories: Array.from(categories).map((name) => ({ name })),
+      edgeStyles: Array.from(edgeStyles)
     };
   }
-  
+
   static getOptions(data, config, isDarkMode) {
-    if (!data || data.length === 0) {
-      return this.getEmptyDataOptions(config, isDarkMode);
+    const rows = this.normalizeRows(data);
+
+    if (rows.length === 0) {
+      return this.getEmptyChartOptions(isDarkMode);
     }
-    
-    const { nodes, links, categories } = this.processData(data, config);
+
+    const { nodes, links, categories, edgeStyles } = this.processData(rows, config);
+    if (nodes.length === 0 || links.length === 0) {
+      return this.getEmptyChartOptions(isDarkMode);
+    }
+
     const networkConfig = config.networkConfig || {};
+    const selectedMetricField = config.valueField || config.yField || 'value';
+    const amountField = config.amountField || 'amount_usd';
+    const countField = config.countField || 'tf_cnt';
+    const showSelectedValueInTooltip = selectedMetricField !== amountField && selectedMetricField !== countField;
+    const linkCurveness = Number.isFinite(networkConfig.linkCurveness)
+      ? networkConfig.linkCurveness
+      : 0.2;
+    const parallelEdgeSeparation = Number.isFinite(networkConfig.parallelEdgeSeparation)
+      ? networkConfig.parallelEdgeSeparation
+      : 0.08;
+    const linkThicknessScale = Number.isFinite(networkConfig.linkThicknessScale)
+      ? networkConfig.linkThicknessScale
+      : 1;
+    const minThickness = Number.isFinite(networkConfig.minLinkThickness)
+      ? networkConfig.minLinkThickness
+      : 0.5;
+    const maxThickness = Number.isFinite(networkConfig.maxLinkThickness)
+      ? networkConfig.maxLinkThickness
+      : 6;
+    const normalizeEdgeWidthToMax = networkConfig.normalizeEdgeWidthToMax !== false;
+
     const categoryPalette = this.resolveSeriesPalette(config, Math.max(categories.length, 1), isDarkMode);
     const mappedCategories = categories.map((category, index) => ({
       ...category,
@@ -120,26 +318,145 @@ export class GraphChart extends BaseChart {
         color: categoryPalette[index % categoryPalette.length]
       }
     }));
-    
-    // Date range for temporal coloring
+
+    const edgeStylePalette = this.resolveSeriesPalette(config, Math.max(edgeStyles.length, 1), isDarkMode);
+    const edgeLineTypes = Array.isArray(networkConfig.edgeLineTypes) && networkConfig.edgeLineTypes.length > 0
+      ? networkConfig.edgeLineTypes
+      : DEFAULT_EDGE_LINE_TYPES;
+
+    const edgeStyleVisuals = edgeStyles.reduce((acc, styleValue, index) => {
+      acc[styleValue] = {
+        color: edgeStylePalette[index % edgeStylePalette.length],
+        type: normalizeLineType(edgeLineTypes[index % edgeLineTypes.length])
+      };
+      return acc;
+    }, {});
+
+    const edgeLegendItems = edgeStyles.map((styleValue) => {
+      const visual = edgeStyleVisuals[styleValue];
+      return {
+        name: styleValue,
+        color: visual?.color,
+        type: visual?.type,
+        icon: resolveLegendIconForLineType(visual?.type)
+      };
+    });
+
+    const hasEdgeStyleLegend = edgeLegendItems.length > 0;
+    const textColor = isDarkMode ? '#CBD5E1' : '#334155';
+    const defaultLegendBackground = isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+    const defaultLegendBorderColor = isDarkMode ? '#334155' : '#E2E8F0';
+    const defaultLegendBorderWidth = 1;
+    const legendData = hasEdgeStyleLegend
+      ? edgeLegendItems.map((item) => ({
+          name: item.name,
+          icon: item.icon
+        }))
+      : categories.map((category) => category.name);
+    const legendSelected = hasEdgeStyleLegend
+      ? edgeLegendItems.reduce((acc, item) => {
+          acc[item.name] = true;
+          return acc;
+        }, {})
+      : {};
+
+    const legendOptions = {
+      data: legendData,
+      selected: legendSelected,
+      show: hasEdgeStyleLegend ? edgeLegendItems.length > 0 : categories.length > 1,
+      type: networkConfig.legendType || (hasEdgeStyleLegend ? 'plain' : 'scroll'),
+      orient: networkConfig.legendOrient || (hasEdgeStyleLegend ? 'vertical' : 'horizontal'),
+      left: networkConfig.legendLeft ?? (hasEdgeStyleLegend ? 12 : 'center'),
+      ...(hasEdgeStyleLegend
+        ? { top: networkConfig.legendTop ?? 12 }
+        : { bottom: networkConfig.legendBottom ?? 60 }),
+      selectedMode: 'multiple',
+      itemWidth: networkConfig.legendItemWidth ?? 18,
+      itemHeight: networkConfig.legendItemHeight ?? 10,
+      itemGap: networkConfig.legendItemGap ?? 8,
+      ...(networkConfig.legendWidth !== null && networkConfig.legendWidth !== undefined ? { width: networkConfig.legendWidth } : {}),
+      ...(networkConfig.legendHeight !== null && networkConfig.legendHeight !== undefined ? { height: networkConfig.legendHeight } : {}),
+      ...(hasEdgeStyleLegend ? { align: networkConfig.legendAlign || 'left' } : {}),
+      textStyle: {
+        color: textColor,
+        ...(networkConfig.legendFontSize !== undefined ? { fontSize: networkConfig.legendFontSize } : {})
+      },
+      backgroundColor: networkConfig.legendBackgroundColor ?? defaultLegendBackground,
+      borderColor: networkConfig.legendBorderColor ?? defaultLegendBorderColor,
+      borderWidth: networkConfig.legendBorderWidth ?? defaultLegendBorderWidth,
+      padding: networkConfig.legendPadding ?? 10,
+      borderRadius: networkConfig.legendBorderRadius ?? 8,
+      inactiveColor: '#94A3B8'
+    };
+
     let dateRange = null;
     if (networkConfig.linkColorByDate && config.dateField) {
-      const dates = links.map(l => new Date(l.date).getTime()).filter(d => !isNaN(d));
+      const dates = links.map((link) => new Date(link.date).getTime()).filter((timestamp) => !Number.isNaN(timestamp));
       if (dates.length > 0) {
         dateRange = [Math.min(...dates), Math.max(...dates)];
       }
     }
-    
-    // Scale for link thickness
-    const values = links.map(l => l.value).filter(v => v > 0);
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
-    const minThickness = networkConfig.minLinkThickness || 0.5;
-    const maxThickness = networkConfig.maxLinkThickness || 6;
-    
-    const options = {
-      ...this.getBaseOptions(config, isDarkMode),
+
+    const positiveValues = links.map((link) => link.value).filter((value) => value > 0);
+    const minValue = positiveValues.length > 0 ? Math.min(...positiveValues) : 0;
+    const maxValue = positiveValues.length > 0 ? Math.max(...positiveValues) : 0;
+    const curvenessByIndex = this.resolveEdgeCurvenessMap(links, linkCurveness, parallelEdgeSeparation);
+
+    const resolveEdgeThickness = (value) => {
+      if (!Number.isFinite(value) || value <= 0) {
+        return minThickness;
+      }
+
+      if (normalizeEdgeWidthToMax) {
+        if (maxValue <= 0) {
+          return minThickness;
+        }
+        return minThickness + (value / maxValue) * (maxThickness - minThickness);
+      }
+
+      if (maxValue > minValue) {
+        return minThickness + ((value - minValue) / (maxValue - minValue)) * (maxThickness - minThickness);
+      }
+
+      return minThickness;
+    };
+
+    const tooltipMutedColor = isDarkMode ? '#94A3B8' : '#64748B';
+    const mainSeriesId = 'graph-main-series';
+    const edgeLegendProxySeries = hasEdgeStyleLegend
+      ? [{
+          id: 'edge-style-legend-proxy',
+          name: 'Edge styles',
+          type: 'pie',
+          center: [-100, -100],
+          radius: 0,
+          z: -10,
+          silent: true,
+          tooltip: { show: false },
+          label: { show: false },
+          labelLine: { show: false },
+          data: edgeLegendItems.map((item) => ({
+            name: item.name,
+            value: 1,
+            itemStyle: {
+              color: item.color
+            }
+          }))
+        }]
+      : [];
+
+    return {
+      ...this.getBaseOptions(isDarkMode),
       color: categoryPalette,
+      ...(hasEdgeStyleLegend
+        ? {
+            __graphEdgeLegend: {
+              enabled: true,
+              targetSeriesId: mainSeriesId,
+              styleNames: edgeLegendItems.map((item) => item.name)
+            }
+          }
+        : {}),
       tooltip: {
         show: true,
         trigger: 'item',
@@ -156,49 +473,62 @@ export class GraphChart extends BaseChart {
           color: isDarkMode ? '#E2E8F0' : '#0F172A',
           fontSize: 12
         },
-        formatter: function(params) {
-          console.log('Tooltip params:', params); // Debug log
-          
+        formatter: (params) => {
           if (params.dataType === 'node') {
             const node = params.data;
-            const formattedValue = (node.value || 0).toLocaleString();
-            return `<div>
-                      <strong style="font-size: 14px;">${node.name}</strong><br/>
-                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Category:</span> ${node.category}<br/>
-                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Total Value:</span> ${formattedValue}
-                    </div>`;
-          } else if (params.dataType === 'edge') {
-            const edge = params.data;
-            const formattedValue = (edge.value || 0).toLocaleString();
-            let tooltipContent = `<div>
-                      <strong style="font-size: 14px;">${edge.source} → ${edge.target}</strong><br/>
-                      <span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Value:</span> ${formattedValue}`;
-            
-            if (edge.tokenAddress) {
-              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Token:</span> ${edge.tokenAddress}`;
+            const nodeLines = [
+              `<strong style="font-size: 14px;">${node.name}</strong>`
+            ];
+
+            if (node.category) {
+              nodeLines.push(`<span style="color: ${tooltipMutedColor};">Category:</span> ${node.category}`);
             }
-            
-            if (edge.date) {
-              const dateStr = new Date(edge.date).toLocaleDateString();
-              tooltipContent += `<br/><span style="color: ${isDarkMode ? '#94A3B8' : '#64748B'};">Date:</span> ${dateStr}`;
-            }
-            
-            tooltipContent += '</div>';
-            return tooltipContent;
+
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Inflow:</span> ${formatValue(node.inValue || 0, config.format)}`);
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Outflow:</span> ${formatValue(node.outValue || 0, config.format)}`);
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Total (In + Out):</span> ${formatValue(node.value || 0, config.format)}`);
+            return `<div>${nodeLines.join('<br/>')}</div>`;
           }
-          
+
+          if (params.dataType === 'edge') {
+            const edge = params.data;
+            const lines = [
+              `<strong style="font-size: 14px;">${edge.source} → ${edge.target}</strong>`
+            ];
+
+            if (showSelectedValueInTooltip) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Selected Value:</span> ${formatValue(edge.value || 0, config.format)}`);
+            }
+
+            if (edge.styleValue) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Symbol:</span> ${edge.styleValue}`);
+            }
+
+            if (edge.amountUsd !== null) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Amount (USD):</span> ${formatValue(edge.amountUsd, 'formatCurrency')}`);
+            }
+
+            if (edge.tfCnt !== null) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Transfer Count:</span> ${formatValue(edge.tfCnt, 'formatNumber')}`);
+            }
+
+            if (edge.tokenAddress) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Token:</span> ${edge.tokenAddress}`);
+            }
+
+            if (edge.date) {
+              lines.push(`<span style="color: ${tooltipMutedColor};">Date:</span> ${new Date(edge.date).toLocaleDateString()}`);
+            }
+
+            return `<div>${lines.join('<br/>')}</div>`;
+          }
+
           return '';
         }
       },
-      legend: {
-        data: categories.map(c => c.name),
-        selected: {},
-        show: categories.length > 1,
-        type: 'scroll',
-        orient: 'horizontal',
-        bottom: 60
-      },
+      legend: legendOptions,
       series: [{
+        id: mainSeriesId,
         type: 'graph',
         layout: 'force',
         animation: true,
@@ -206,72 +536,72 @@ export class GraphChart extends BaseChart {
         animationEasingUpdate: 'cubicOut',
         force: {
           initLayout: 'circular',
-          repulsion: networkConfig.chargeStrength || 300,
-          gravity: networkConfig.centerStrength || 0.1,
-          edgeLength: networkConfig.linkDistance || 100,
+          repulsion: Number.isFinite(networkConfig.chargeStrength) ? Math.abs(networkConfig.chargeStrength) : 300,
+          gravity: Number.isFinite(networkConfig.centerStrength) ? networkConfig.centerStrength : 0.1,
+          edgeLength: Number.isFinite(networkConfig.linkDistance) ? networkConfig.linkDistance : 100,
           layoutAnimation: true,
-          friction: 0.3,
-          edgeSymbol: ['none', 'arrow'],
-          edgeSymbolSize: [0, 8]
+          friction: 0.3
         },
+        edgeSymbol: networkConfig.showArrows === false ? ['none', 'none'] : ['none', 'arrow'],
+        edgeSymbolSize: Array.isArray(networkConfig.edgeSymbolSize) && networkConfig.edgeSymbolSize.length === 2
+          ? networkConfig.edgeSymbolSize
+          : [0, 8],
         draggable: networkConfig.enableDrag !== false,
-        roam: networkConfig.enableZoom !== false ? true : false,
+        roam: networkConfig.enableZoom !== false,
         scaleLimit: {
           min: 0.5,
           max: 5
         },
         data: nodes,
-        edges: links.map(link => {
-          // Calculate link color based on date
-          let lineColor = isDarkMode ? '#64748B' : '#CBD5E1';
+        edges: links.map((link, linkIndex) => {
+          const styleVisual = link.styleValue ? edgeStyleVisuals[link.styleValue] : null;
+          let lineColor = styleVisual?.color || (isDarkMode ? '#64748B' : '#CBD5E1');
+
           if (networkConfig.linkColorByDate && dateRange && link.date) {
             const dateValue = new Date(link.date).getTime();
-            const ratio = (dateValue - dateRange[0]) / (dateRange[1] - dateRange[0]);
+            const denominator = dateRange[1] - dateRange[0];
+            const ratio = denominator > 0 ? (dateValue - dateRange[0]) / denominator : 0;
+            const clampedRatio = Math.min(Math.max(ratio, 0), 1);
             const colorRange = networkConfig.linkColorDateRange || ['#4dabf7', '#e03131'];
-            lineColor = this.interpolateColor(colorRange[0], colorRange[1], ratio);
+            lineColor = this.interpolateColor(colorRange[0], colorRange[1], clampedRatio);
           }
-          
-          // Calculate link thickness based on value
-          let thickness = minThickness;
-          if (maxValue > minValue) {
-            thickness = minThickness + 
-              ((link.value - minValue) / (maxValue - minValue)) * (maxThickness - minThickness);
-          }
-          
+
+          const thickness = resolveEdgeThickness(link.value) * linkThicknessScale;
+
           return {
             source: link.source,
             target: link.target,
             value: link.value,
-            // Ensure all data is available for tooltip
+            styleValue: link.styleValue,
+            amountUsd: link.amountUsd,
+            tfCnt: link.tfCnt,
             date: link.date,
             tokenAddress: link.tokenAddress,
             lineStyle: {
               color: lineColor,
-              width: thickness * (networkConfig.linkThicknessScale || 1),
-              curveness: 0.2,
-              opacity: 0.6
+              type: styleVisual?.type || 'solid',
+              width: thickness,
+              curveness: curvenessByIndex.get(linkIndex) ?? linkCurveness,
+              opacity: 0.72
             },
             emphasis: {
               focus: 'adjacency',
               lineStyle: {
-                width: thickness * (networkConfig.linkThicknessScale || 1) * 1.5,
+                width: thickness * 1.4,
                 opacity: 1
               }
             }
           };
         }),
-        categories: mappedCategories,
+        categories: mappedCategories.length > 0 ? mappedCategories : undefined,
         label: {
-          show: networkConfig.showLabels || false,
+          show: networkConfig.showLabels === true,
           position: 'right',
           formatter: '{b}',
           fontSize: 10
         },
         emphasis: {
-          focus: networkConfig.highlightConnectedNodes !== false ? 'adjacency' : 'self',
-          lineStyle: {
-            width: 10
-          }
+          focus: networkConfig.highlightConnectedNodes !== false ? 'adjacency' : 'self'
         },
         itemStyle: {
           borderColor: isDarkMode ? '#334155' : '#FFFFFF',
@@ -279,13 +609,10 @@ export class GraphChart extends BaseChart {
           shadowBlur: 10,
           shadowColor: 'rgba(0, 0, 0, 0.3)'
         }
-      }]
+      }, ...edgeLegendProxySeries]
     };
-    
-    return options;
   }
-  
-  // Helper method to interpolate between two colors
+
   static interpolateColor(color1, color2, ratio) {
     const hex2rgb = (hex) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -295,20 +622,21 @@ export class GraphChart extends BaseChart {
         b: parseInt(result[3], 16)
       } : null;
     };
-    
+
     const rgb2hex = (r, g, b) => {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     };
-    
+
     const c1 = hex2rgb(color1);
     const c2 = hex2rgb(color2);
-    
+
     if (!c1 || !c2) return color1;
-    
-    const r = Math.round(c1.r + (c2.r - c1.r) * ratio);
-    const g = Math.round(c1.g + (c2.g - c1.g) * ratio);
-    const b = Math.round(c1.b + (c2.b - c1.b) * ratio);
-    
+
+    const clampedRatio = Math.min(Math.max(ratio, 0), 1);
+    const r = Math.round(c1.r + (c2.r - c1.r) * clampedRatio);
+    const g = Math.round(c1.g + (c2.g - c1.g) * clampedRatio);
+    const b = Math.round(c1.b + (c2.b - c1.b) * clampedRatio);
+
     return rgb2hex(r, g, b);
   }
 }
