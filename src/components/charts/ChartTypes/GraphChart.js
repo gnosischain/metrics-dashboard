@@ -476,6 +476,9 @@ export class GraphChart extends BaseChart {
         formatter: (params) => {
           if (params.dataType === 'node') {
             const node = params.data;
+            const inflow = node.inValue || 0;
+            const outflow = node.outValue || 0;
+            const net = inflow - outflow;
             const nodeLines = [
               `<strong style="font-size: 14px;">${node.name}</strong>`
             ];
@@ -484,9 +487,9 @@ export class GraphChart extends BaseChart {
               nodeLines.push(`<span style="color: ${tooltipMutedColor};">Category:</span> ${node.category}`);
             }
 
-            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Inflow:</span> ${formatValue(node.inValue || 0, config.format)}`);
-            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Outflow:</span> ${formatValue(node.outValue || 0, config.format)}`);
-            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Total (In + Out):</span> ${formatValue(node.value || 0, config.format)}`);
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Inflow:</span> ${formatValue(inflow, config.format)}`);
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Outflow:</span> ${formatValue(outflow, config.format)}`);
+            nodeLines.push(`<span style="color: ${tooltipMutedColor};">Net (Inflow - Outflow):</span> ${formatValue(net, config.format)}`);
             return `<div>${nodeLines.join('<br/>')}</div>`;
           }
 
