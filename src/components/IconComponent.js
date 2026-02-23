@@ -137,6 +137,12 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
       ),
+      'user': (
+        <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      ),
       // Toggle icons
       'chevron-left': (
         <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

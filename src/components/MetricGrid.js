@@ -251,16 +251,16 @@ const MetricGrid = ({
                 isDarkMode={isDarkMode}
                 dashboardPalette={dashboardPalette}
                 globalSelectedLabel={
-                  // Only pass global filter if this metric matches the global filter field
                   hasGlobalFilter && 
                   metric.enableFiltering && 
                   metric.labelField === tabConfig.globalFilterField
                     ? (globalFilterValue || globalFilterOptions[0] || null)
                     : null
                 }
-                hasGlobalFilter={hasGlobalFilter && 
-                  metric.enableFiltering && 
-                  metric.labelField === tabConfig.globalFilterField}
+                hasGlobalFilter={hasGlobalFilter && (
+                  (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
+                  (metric.globalFilterField === tabConfig.globalFilterField)
+                )}
                 globalFilterField={tabConfig?.globalFilterField}
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
                 selectedUnit={hasUnitToggle ? selectedUnit : null}

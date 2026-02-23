@@ -49,6 +49,8 @@ const GlobalFilterWidget = ({
                   onSelectLabel={onGlobalFilterChange}
                   labelField={fieldName}
                   idPrefix="global-filter"
+                  searchable={!!tabConfig?.searchable}
+                  placeholder={tabConfig?.searchPlaceholder || ''}
                 />
               ) : (
                 <div className="global-filter-error">No options available</div>
