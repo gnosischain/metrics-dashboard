@@ -677,7 +677,11 @@ export class GraphChart extends BaseChart {
 
     const positiveValues = links.map((link) => link.value).filter((value) => value > 0);
     const minValue = positiveValues.length > 0 ? Math.min(...positiveValues) : 0;
+    const sortedValues = [...positiveValues].sort((a, b) => a - b);
+    const p90Index = Math.floor(sortedValues.length * 0.9);
+    const p90Value = sortedValues.length > 0 ? sortedValues[Math.min(p90Index, sortedValues.length - 1)] : 0;
     const maxValue = positiveValues.length > 0 ? Math.max(...positiveValues) : 0;
+    const effectiveMax = normalizeEdgeWidthToMax && p90Value > 0 ? p90Value : maxValue;
     const curvenessByIndex = this.resolveEdgeCurvenessMap(links, linkCurveness, parallelEdgeSeparation);
 
     const resolveEdgeThickness = (value) => {
@@ -686,14 +690,18 @@ export class GraphChart extends BaseChart {
       }
 
       if (normalizeEdgeWidthToMax) {
-        if (maxValue <= 0) {
+        if (effectiveMax <= 0) {
           return minThickness;
         }
-        return minThickness + (value / maxValue) * (maxThickness - minThickness);
+        const clamped = Math.min(value / effectiveMax, 1);
+        const ratio = Math.sqrt(clamped);
+        return minThickness + ratio * (maxThickness - minThickness);
       }
 
       if (maxValue > minValue) {
-        return minThickness + ((value - minValue) / (maxValue - minValue)) * (maxThickness - minThickness);
+        const normalized = (value - minValue) / (maxValue - minValue);
+        const ratio = Math.sqrt(normalized);
+        return minThickness + ratio * (maxThickness - minThickness);
       }
 
       return minThickness;

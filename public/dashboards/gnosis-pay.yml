@@ -171,7 +171,28 @@ tabs:
     icon: 🔀
     iconClass: flow
     metrics:
-      - id: api_execution_gpay_flows_snapshot
+      
+      - id: api_execution_gpay_flows_total_volume_1d
         gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 130px
+      - id: api_execution_gpay_flows_total_volume_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 130px
+      - id: api_execution_gpay_flows_total_volume_30d
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 130px
+      - id: api_execution_gpay_flows_total_volume_90d
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 130px
+      - id: api_execution_gpay_flows_snapshot
+        gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 600px
+        minHeight: 500px
+      - id: api_execution_gpay_flows_inout_by_label_snapshot
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 500px

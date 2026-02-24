@@ -25,20 +25,43 @@ export class BarChart extends BaseChart {
     };
     
     const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series?.length || 1, isDarkMode);
+    const seriesColorsByName = (config?.seriesColorsByName && typeof config.seriesColorsByName === 'object')
+      ? config.seriesColorsByName
+      : null;
+
+    const resolveSeriesColor = (seriesName, index) => {
+      if (seriesColorsByName && typeof seriesName === 'string') {
+        const configuredColor = seriesColorsByName[seriesName];
+        if (typeof configuredColor === 'string' && configuredColor.trim()) {
+          return configuredColor.trim();
+        }
+      }
+
+      return colors[index];
+    };
 
     // Check if this should be a stacked bar chart
     const isStacked = config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1;
+    const isHorizontal = !!config.horizontal;
 
     return {
       ...this.getBaseOptions(isDarkMode),
-      
-      xAxis: {
+
+      xAxis: isHorizontal ? {
+        type: 'value',
+        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
+      } : {
         type: 'category',
         data: processedData.categories,
         ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
       },
-      
-      yAxis: {
+
+      yAxis: isHorizontal ? {
+        type: 'category',
+        data: processedData.categories,
+        inverse: true,
+        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
+      } : {
         type: 'value',
         ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
       },
@@ -49,7 +72,7 @@ export class BarChart extends BaseChart {
           type: 'bar',
           data: series.data,
           itemStyle: {
-            color: colors[index],
+            color: resolveSeriesColor(series.name, index),
             borderRadius: 0,
             // Add opacity support - same as areaOpacity but for bars
             opacity: config.barOpacity !== undefined ? config.barOpacity : 
@@ -107,16 +130,15 @@ export class BarChart extends BaseChart {
     const actualYField = this.findBestField(availableFields, yField, ['value', 'y', 'count', 'amount']);
     const actualSeriesField = seriesField ? this.findBestField(availableFields, seriesField, ['label', 'series', 'category', 'group']) : null;
 
-    // Extract and sort categories (handle dates if present)
-    const categories = [...new Set(data.map(item => item[actualXField]))]
-      .sort((a, b) => {
-        const dateA = new Date(a);
-        const dateB = new Date(b);
-        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-          return dateA - dateB;
-        }
-        return String(a).localeCompare(String(b));
-      });
+    // Extract and sort categories
+    const categories = this.sortCategories(
+      [...new Set(data.map(item => item[actualXField]))],
+      data,
+      actualXField,
+      actualYField,
+      actualSeriesField,
+      config
+    );
 
     if (actualSeriesField) {
       // Multi-series bar chart
@@ -162,6 +184,37 @@ export class BarChart extends BaseChart {
       }
     }
     return preferredField;
+  }
+
+  static sortCategories(categories, data, xField, yField, seriesField, config = {}) {
+    if (config?.categorySort === 'absNetDesc' && seriesField) {
+      const categorySums = {};
+      data.forEach((item) => {
+        const category = item[xField];
+        const numericValue = Number.parseFloat(item[yField] || 0);
+        if (!Number.isFinite(numericValue)) {
+          return;
+        }
+        categorySums[category] = (categorySums[category] || 0) + numericValue;
+      });
+
+      return [...categories].sort((a, b) => {
+        const absoluteDelta = Math.abs(categorySums[b] || 0) - Math.abs(categorySums[a] || 0);
+        if (absoluteDelta !== 0) {
+          return absoluteDelta;
+        }
+        return String(a).localeCompare(String(b));
+      });
+    }
+
+    return [...categories].sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+        return dateA - dateB;
+      }
+      return String(a).localeCompare(String(b));
+    });
   }
 }
 

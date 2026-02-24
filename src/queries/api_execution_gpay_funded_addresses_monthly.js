@@ -3,7 +3,7 @@ const metric = {
   name: 'Funded Addresses',
   description: 'Cumulative Gnosis Pay wallets',
   metricDescription: 'Cumulative funded Gnosis Pay addresses by month. This tracks total funded wallets over time.',
-  chartType: 'area',
+  chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',

@@ -40,7 +40,7 @@ const metric = {
     minNodeSize: 10,
     maxNodeSize: 44,
     minLinkThickness: 1.25,
-    maxLinkThickness: 9,
+    maxLinkThickness: 5,
     normalizeEdgeWidthToMax: true,
     linkCurveness: 0.16,
     parallelEdgeSeparation: 0.1,

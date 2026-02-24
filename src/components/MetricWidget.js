@@ -27,6 +27,7 @@ const MetricWidget = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState('');
+  const [selectedLocalFilters, setSelectedLocalFilters] = useState({});
   const [selectedValueMode, setSelectedValueMode] = useState(null);
   const [availableLabels, setAvailableLabels] = useState([]);
   
@@ -75,7 +76,8 @@ const MetricWidget = ({
         changeData,
         fontSize,
         titleFontSize,
-        resolutions
+        resolutions,
+        localFilterFields
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -105,9 +107,22 @@ const MetricWidget = ({
       fontSize,
       titleFontSize,
       resolutions,
+      localFilterFields,
       config: metricConfig 
     };
   }, [metricConfig]);
+
+  const multiLocalFilterFields = useMemo(() => {
+    if (!Array.isArray(widgetConfig?.localFilterFields)) {
+      return [];
+    }
+
+    return widgetConfig.localFilterFields
+      .map((fieldName) => (typeof fieldName === 'string' ? fieldName.trim() : ''))
+      .filter(Boolean);
+  }, [widgetConfig?.localFilterFields]);
+
+  const hasMultiLocalFilters = multiLocalFilterFields.length > 0;
 
   const resolveFormat = useCallback((preferred, fallback) => {
     return preferred === undefined ? fallback : preferred;
@@ -303,6 +318,10 @@ const MetricWidget = ({
         setData(result);
         
         if (widgetConfig.enableFiltering && result?.data?.length > 0) {
+          if (hasMultiLocalFilters) {
+            return;
+          }
+
           // If this is a secondary filter (different field than global), we'll extract labels later from filtered data
           // For now, extract from all data (will be updated when global filter is applied)
           const uniqueLabels = [...new Set(result.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
@@ -333,6 +352,7 @@ const MetricWidget = ({
     globalFilterField,
     globalFilterValue,
     hasGlobalFilter,
+    hasMultiLocalFilters,
     selectedUnit,
     metricConfig?.unitFilterField
   ]);
@@ -340,6 +360,84 @@ const MetricWidget = ({
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (!hasMultiLocalFilters) return;
+    setSelectedLocalFilters({});
+  }, [effectiveMetricId, hasMultiLocalFilters, multiLocalFilterFields]);
+
+  const localFilterOptionsByField = useMemo(() => {
+    if (!hasMultiLocalFilters || !Array.isArray(data?.data)) {
+      return {};
+    }
+
+    const optionsByField = {};
+    let scopedRows = data.data;
+
+    multiLocalFilterFields.forEach((fieldName) => {
+      const options = [...new Set(scopedRows.map((item) => item[fieldName]))].filter(
+        (value) => value !== null && value !== undefined && value !== ''
+      );
+      optionsByField[fieldName] = options;
+
+      const selectedValue = options.includes(selectedLocalFilters[fieldName])
+        ? selectedLocalFilters[fieldName]
+        : options[0];
+
+      if (selectedValue) {
+        scopedRows = scopedRows.filter((item) => item[fieldName] === selectedValue);
+      } else {
+        scopedRows = [];
+      }
+    });
+
+    return optionsByField;
+  }, [hasMultiLocalFilters, data, multiLocalFilterFields, selectedLocalFilters]);
+
+  useEffect(() => {
+    if (!hasMultiLocalFilters) return;
+
+    setSelectedLocalFilters((previousSelections) => {
+      const nextSelections = {};
+      let hasChanges = false;
+
+      multiLocalFilterFields.forEach((fieldName) => {
+        const options = localFilterOptionsByField[fieldName] || [];
+        const previousValue = previousSelections[fieldName];
+        const nextValue = options.includes(previousValue) ? previousValue : (options[0] || '');
+
+        if (nextValue) {
+          nextSelections[fieldName] = nextValue;
+        }
+
+        if (nextValue !== previousValue) {
+          hasChanges = true;
+        }
+      });
+
+      if (Object.keys(previousSelections).some((fieldName) => !multiLocalFilterFields.includes(fieldName))) {
+        hasChanges = true;
+      }
+
+      return hasChanges ? nextSelections : previousSelections;
+    });
+  }, [hasMultiLocalFilters, multiLocalFilterFields, localFilterOptionsByField]);
+
+  const handleMultiLocalFilterSelect = useCallback((fieldName, selectedValue) => {
+    setSelectedLocalFilters((previousSelections) => {
+      const nextSelections = {
+        ...previousSelections,
+        [fieldName]: selectedValue
+      };
+
+      const fieldIndex = multiLocalFilterFields.indexOf(fieldName);
+      for (let index = fieldIndex + 1; index < multiLocalFilterFields.length; index += 1) {
+        delete nextSelections[multiLocalFilterFields[index]];
+      }
+
+      return nextSelections;
+    });
+  }, [multiLocalFilterFields]);
 
   // Apply per-chart filter (secondary filter) if applicable.
   // Note: Global filter is already applied server-side, so data is pre-filtered by token.
@@ -350,6 +448,25 @@ const MetricWidget = ({
     // If no filtering enabled, return data as-is (already filtered by server)
     if (!widgetConfig.enableFiltering) {
       return data;
+    }
+
+    if (hasMultiLocalFilters) {
+      let rows = data.data;
+
+      multiLocalFilterFields.forEach((fieldName) => {
+        const options = localFilterOptionsByField[fieldName] || [];
+        const selectedValue = options.includes(selectedLocalFilters[fieldName])
+          ? selectedLocalFilters[fieldName]
+          : options[0];
+        if (selectedValue) {
+          rows = rows.filter((item) => item[fieldName] === selectedValue);
+        }
+      });
+
+      return {
+        ...data,
+        data: rows
+      };
     }
     
     // If this widget uses the global filter field, data is already filtered by server
@@ -372,7 +489,19 @@ const MetricWidget = ({
       ...data,
       data: data.data.filter(item => item[widgetConfig.labelField] === effectiveSelectedLabel)
     };
-  }, [data, widgetConfig.enableFiltering, widgetConfig.labelField, effectiveSelectedLabel, isGlobalFilterForThisField, shouldShowSecondaryFilter, selectedLabel]);
+  }, [
+    data,
+    widgetConfig.enableFiltering,
+    widgetConfig.labelField,
+    effectiveSelectedLabel,
+    hasMultiLocalFilters,
+    multiLocalFilterFields,
+    localFilterOptionsByField,
+    selectedLocalFilters,
+    isGlobalFilterForThisField,
+    shouldShowSecondaryFilter,
+    selectedLabel
+  ]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
@@ -439,17 +568,19 @@ const MetricWidget = ({
   // Data is already filtered by global filter (server-side), so we extract secondary options from it
   // MUST be before any early returns (Rules of Hooks)
   const availableSecondaryLabels = useMemo(() => {
+    if (hasMultiLocalFilters) return [];
     if (!shouldShowSecondaryFilter || !data?.data) return availableLabels;
     
     // Extract unique labels from server-filtered data (e.g., pools containing selected token)
     const uniqueLabels = [...new Set(data.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
     return uniqueLabels;
-  }, [shouldShowSecondaryFilter, data, widgetConfig.labelField, availableLabels]);
+  }, [hasMultiLocalFilters, shouldShowSecondaryFilter, data, widgetConfig.labelField, availableLabels]);
 
   // Update available labels when data changes (for secondary filters)
   // Also handles Issue 5: reset selectedLabel if it's no longer valid after global filter change
   // MUST be before any early returns (Rules of Hooks)
   useEffect(() => {
+    if (hasMultiLocalFilters) return;
     if (shouldShowSecondaryFilter && data?.data) {
       const uniqueLabels = [...new Set(data.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
       setAvailableLabels(uniqueLabels);
@@ -463,14 +594,20 @@ const MetricWidget = ({
         setSelectedLabel(uniqueLabels[0]);
       }
     }
-  }, [shouldShowSecondaryFilter, data, widgetConfig.labelField, selectedLabel]);
+  }, [hasMultiLocalFilters, shouldShowSecondaryFilter, data, widgetConfig.labelField, selectedLabel]);
 
   // Show per-metric dropdown if:
   // 1. Not using global filter for this field, OR
   // 2. Using a secondary filter (different field than global filter)
-  const showLocalDropdown = widgetConfig.enableFiltering && 
+  const showLocalDropdown = !hasMultiLocalFilters &&
+    widgetConfig.enableFiltering && 
     !isGlobalFilterForThisField && 
     (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
+
+  const showMultiLocalDropdowns = hasMultiLocalFilters &&
+    widgetConfig.enableFiltering &&
+    !isGlobalFilterForThisField &&
+    multiLocalFilterFields.some((fieldName) => (localFilterOptionsByField[fieldName] || []).length > 0);
   
   const labelsForDropdown = shouldShowSecondaryFilter ? availableSecondaryLabels : availableLabels;
   // Since showLocalDropdown already checks !isGlobalFilterForThisField, we can always use selectedLabel here
@@ -527,8 +664,29 @@ const MetricWidget = ({
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
 
-  const headerControls = (showLocalDropdown || showResolutionSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
+  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
     <>
+      {showMultiLocalDropdowns && multiLocalFilterFields.map((fieldName) => {
+        const labels = localFilterOptionsByField[fieldName] || [];
+        if (labels.length === 0) {
+          return null;
+        }
+
+        const selectedValue = labels.includes(selectedLocalFilters[fieldName])
+          ? selectedLocalFilters[fieldName]
+          : labels[0];
+
+        return (
+          <LabelSelector
+            key={fieldName}
+            labels={labels}
+            selectedLabel={selectedValue}
+            onSelectLabel={(nextSelectedValue) => handleMultiLocalFilterSelect(fieldName, nextSelectedValue)}
+            labelField={fieldName}
+            idPrefix={`${metricId}-${fieldName}`}
+          />
+        );
+      })}
       {showLocalDropdown && (
         <LabelSelector
           labels={labelsForDropdown}
