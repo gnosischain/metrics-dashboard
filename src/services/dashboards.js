@@ -126,6 +126,8 @@ class DashboardService {
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
+          resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
+          defaultResolution: tab.defaultResolution || 'weekly', // Default resolution
           metrics: (tab.metrics || []).map(metric => {
             console.log('DashboardService: Processing tab metric:', metric);
             

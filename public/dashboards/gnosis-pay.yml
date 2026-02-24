@@ -3,6 +3,8 @@ tabs:
     order: 1
     icon: 📊
     iconClass: chart-line
+    resolutionToggle: true
+    defaultResolution: weekly
     metrics:
       - id: api_execution_gpay_total_volume
         gridRow: 1

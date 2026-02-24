@@ -1,8 +1,8 @@
 const metric = {
-  id: 'api_execution_gpay_payments_by_token_weekly',
+  id: 'api_execution_gpay_payments_by_token_daily',
   name: 'Payments',
-  description: 'Weekly payment count',
-  metricDescription: 'Weekly payment count split by token. Stacked bars show token mix and overall payment activity.',
+  description: 'Daily payment count',
+  metricDescription: 'Daily payment count split by token. Stacked bars show token mix and overall payment activity.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
@@ -17,7 +17,7 @@ const metric = {
   defaultResolution: 'weekly',
   query: `
     SELECT date, label, value
-    FROM dbt.api_execution_gpay_payments_by_token_weekly
+    FROM dbt.api_execution_gpay_payments_by_token_daily
   `,
 };
 export default metric;

@@ -8,6 +8,8 @@ import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
+const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
+
 const MetricWidget = ({
   metricId,
   isDarkMode = false,
@@ -18,7 +20,8 @@ const MetricWidget = ({
   globalFilterField = null,
   globalFilterValue = null,
   selectedUnit = null,
-  dashboardPalette = null
+  dashboardPalette = null,
+  enableResolutionToggle = false
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,13 +33,27 @@ const MetricWidget = ({
   const isMounted = useRef(true);
   const requestSequenceRef = useRef(0);
 
+  // Per-chart resolution toggle (independent per widget)
+  const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
+  const [localResolution, setLocalResolution] = useState(baseMetricConfig?.defaultResolution || 'weekly');
+  const supportsResolution = enableResolutionToggle && baseMetricConfig?.resolutions;
+
+  // Resolve effective metric ID based on local resolution selection
+  const effectiveMetricId = useMemo(() => {
+    if (!supportsResolution || localResolution === baseMetricConfig?.defaultResolution) {
+      return metricId;
+    }
+    const base = metricId.replace(/_(daily|weekly|monthly)$/, '');
+    return `${base}_${localResolution}`;
+  }, [metricId, supportsResolution, localResolution, baseMetricConfig?.defaultResolution]);
+
   // Determine if we're using global filter or local filter
   // If hasGlobalFilter is true, we should use global filter (even if value is null yet - it will be set soon)
   const isUsingGlobalFilter = hasGlobalFilter || (globalSelectedLabel !== null && globalSelectedLabel !== undefined);
   // Use global filter if provided, otherwise use local state
   const effectiveSelectedLabel = (hasGlobalFilter && globalSelectedLabel) ? globalSelectedLabel : (isUsingGlobalFilter ? globalSelectedLabel : selectedLabel);
 
-  const metricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
+  const metricConfig = useMemo(() => metricsService.getMetricConfig(effectiveMetricId), [effectiveMetricId]);
 
   const widgetConfig = useMemo(() => {
     if (!metricConfig) {
@@ -57,7 +74,8 @@ const MetricWidget = ({
         cardVariant,
         changeData,
         fontSize,
-        titleFontSize
+        titleFontSize,
+        resolutions
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -86,6 +104,7 @@ const MetricWidget = ({
       changeData,
       fontSize,
       titleFontSize,
+      resolutions,
       config: metricConfig 
     };
   }, [metricConfig]);
@@ -274,7 +293,7 @@ const MetricWidget = ({
         params.filterValue2 = selectedUnit;
       }
 
-      const result = await metricsService.getMetricData(metricId, params);
+      const result = await metricsService.getMetricData(effectiveMetricId, params);
       
       if (!isMounted.current || requestId !== requestSequenceRef.current) {
         return;
@@ -307,10 +326,10 @@ const MetricWidget = ({
     }
   // Note: selectedLabel is intentionally excluded from dependencies.
   // Local filter changes should NOT trigger refetches - filtering is done client-side.
-  // Only metricId and global filter changes should trigger API calls.
+  // Only effectiveMetricId and global filter changes should trigger API calls.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    metricId,
+    effectiveMetricId,
     globalFilterField,
     globalFilterValue,
     hasGlobalFilter,
@@ -506,7 +525,9 @@ const MetricWidget = ({
     effectiveValueConfig.format
   ]);
 
-  const headerControls = (showLocalDropdown || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
+  const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
+
+  const headerControls = (showLocalDropdown || showResolutionSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
     <>
       {showLocalDropdown && (
         <LabelSelector
@@ -514,6 +535,20 @@ const MetricWidget = ({
           selectedLabel={selectedLabelForDropdown}
           onSelectLabel={onLabelSelect}
         />
+      )}
+      {showResolutionSelector && (
+        <div className="resolution-toggle">
+          {widgetConfig.resolutions.map(res => (
+            <button
+              key={res}
+              type="button"
+              className={`resolution-btn${localResolution === res ? ' active' : ''}`}
+              onClick={() => setLocalResolution(res)}
+            >
+              {RESOLUTION_LABELS[res] || res}
+            </button>
+          ))}
+        </div>
       )}
       {showValueModeDropdown && (
         <LabelSelector

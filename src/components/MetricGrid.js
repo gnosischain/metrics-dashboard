@@ -36,6 +36,9 @@ const MetricGrid = ({
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
   const hasUnitToggle = tabConfig?.unitToggle === true;
 
+  // Whether per-chart resolution toggles are enabled for this tab
+  const hasResolutionToggle = tabConfig?.resolutionToggle === true;
+
   // Keep a ref of the latest global filter value to avoid stale-closure overwrites
   useEffect(() => {
     globalFilterValueRef.current = globalFilterValue;
@@ -264,6 +267,7 @@ const MetricGrid = ({
                 globalFilterField={tabConfig?.globalFilterField}
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
                 selectedUnit={hasUnitToggle ? selectedUnit : null}
+                enableResolutionToggle={hasResolutionToggle}
               />
             </div>
           );
