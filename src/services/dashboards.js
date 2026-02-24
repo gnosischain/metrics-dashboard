@@ -125,6 +125,7 @@ class DashboardService {
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
+          globalFilterVertical: tab.globalFilterVertical || false, // Stack label above filter input
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
           resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
           defaultResolution: tab.defaultResolution || 'weekly', // Default resolution

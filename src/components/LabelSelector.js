@@ -207,7 +207,6 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
             </div>
             {selectedLabel && (
               <div className="custom-dropdown-selected-badge">
-                <span>Selected</span>
                 <span className="custom-dropdown-selected-value">{selectedLabel}</span>
               </div>
             )}

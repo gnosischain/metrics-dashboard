@@ -87,6 +87,12 @@
   display: inline-block;
 }
 
+.custom-dropdown:has(.custom-dropdown-trigger.searchable) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 /* Trigger button – inherits .label-selector-dropdown styles automatically.
    We only need to add layout overrides for the button element. */
 .custom-dropdown-trigger {
@@ -209,8 +215,8 @@
    ================== */
 
 .custom-dropdown-trigger.searchable {
-  min-width: 260px;
-  max-width: 400px;
+  min-width: min(260px, 100%);
+  max-width: 100%;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: var(--font-size-xs, 12px);
   letter-spacing: -0.02em;
@@ -229,8 +235,9 @@
 }
 
 .custom-dropdown-panel.searchable-panel {
-  min-width: 340px;
-  max-width: 440px;
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
 }
 
 .custom-dropdown-panel .custom-dropdown-list {
@@ -278,12 +285,18 @@
   font-size: var(--font-size-xs, 12px);
   color: var(--color-text-secondary);
   border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+  min-width: 0;
 }
 
 .custom-dropdown-selected-value {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   color: var(--primary-blue);
   font-weight: var(--font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .custom-dropdown-panel .custom-dropdown-item {
@@ -829,6 +842,31 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  min-width: 0;
+}
+
+.global-filter-widget-group .global-filter-selector {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.global-filter-widget-group .label-selector {
+  min-width: 0;
+}
+
+.global-filter-widget-group .label-selector-dropdown.searchable {
+  min-width: 0;
+  max-width: 100%;
+  padding-right: 2rem;
+}
+
+.global-filter-widget-group.vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.global-filter-widget-group.vertical .global-filter-label {
+  margin-bottom: 2px;
 }
 
 /* Dark mode */

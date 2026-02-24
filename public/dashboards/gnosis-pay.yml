@@ -137,6 +137,7 @@ tabs:
     globalFilterLabel: Wallet
     searchable: true
     searchPlaceholder: Paste wallet address...
+    globalFilterVertical: true
     metrics:
       - id: global_filter
         gridRow: 1
