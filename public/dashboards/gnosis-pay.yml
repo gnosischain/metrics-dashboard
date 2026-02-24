@@ -167,5 +167,5 @@ tabs:
     metrics:
       - id: api_execution_gpay_flows_snapshot
         gridRow: 1
-        gridColumn: 1 / span 8
-        minHeight: 500px
+        gridColumn: 1 / span 6
+        minHeight: 600px

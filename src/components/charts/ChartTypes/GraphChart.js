@@ -8,6 +8,35 @@ const EDGE_LEGEND_ICONS = {
   dashed: 'path://M2,7 H6 V9 H2 Z M8,7 H12 V9 H8 Z M14,7 H18 V9 H14 Z',
   dotted: 'path://M3,7 H5 V9 H3 Z M9,7 H11 V9 H9 Z M15,7 H17 V9 H15 Z'
 };
+const PAYMENT_NODE_ICON = 'path://M12 2v2.15c2.82.32 4.82 1.99 5.3 4.43h-2.52c-.4-1.28-1.5-2.01-2.98-2.01-1.86 0-3.03.82-3.03 2.05 0 1.15.95 1.74 3.78 2.49 3.17.85 5.02 2.14 5.02 4.91 0 2.6-2 4.42-5.15 4.82V22H10v-1.15c-3.12-.37-5.17-2.19-5.57-4.85h2.56c.43 1.52 1.75 2.36 3.53 2.36 1.97 0 3.22-.88 3.22-2.22 0-1.24-.9-1.88-3.83-2.67-3.28-.9-4.95-2.18-4.95-4.7 0-2.36 1.88-4.06 5.04-4.41V2H12z';
+const WALLET_NODE_ICON = 'path://M3 6h14a2 2 0 0 1 2 2v1h2v7h-2v1a2 2 0 0 1-2 2H3V6zm2 2v9h12V8H5zm9 3h4v3h-4v-3z';
+const encodeSvgSymbol = (svgMarkup) => `image://data:image/svg+xml;utf8,${encodeURIComponent(svgMarkup)}`;
+
+const buildCardNodeIcon = (isDarkMode) => {
+  const backgroundColor = isDarkMode ? '#3B82F6' : '#5b5954';
+  const svgMarkup = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10.2" fill="${backgroundColor}"/>
+      <rect x="8" y="8.4" width="8" height="6.2" rx="1.1" fill="none" stroke="#ffffff" stroke-width="1.05"/>
+      <path d="M8 10h8M9.1 11.7h2M12.2 11.7h2.8M11 13.2h3.8" fill="none" stroke="#ffffff" stroke-width="0.82" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `.trim();
+
+  return encodeSvgSymbol(svgMarkup);
+};
+
+const BUILTIN_NODE_ICON_LIBRARY = Object.freeze({
+  bank: 'path://M12 2L2 7v2h20V7L12 2zm-7 9h2v7H5v-7zm4 0h2v7H9v-7zm4 0h2v7h-2v-7zm4 0h2v7h-2v-7zM2 20h20v2H2v-2z',
+  payment: PAYMENT_NODE_ICON,
+  wallet: WALLET_NODE_ICON
+});
+const DEFAULT_OUTGOING_BOUNDARY_ANCHOR_CONFIG = Object.freeze({
+  enabled: false,
+  sourceLabels: [],
+  radiusScale: 0.72,
+  laneAngleStep: 0.12,
+  pinSourceNodes: true
+});
 
 const toFiniteNumber = (value) => {
   const numeric = Number.parseFloat(value);
@@ -38,12 +67,70 @@ const resolveLegendIconForLineType = (lineType) => {
   return EDGE_LEGEND_ICONS[normalized] || EDGE_LEGEND_ICONS.solid;
 };
 
+const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const isRawSymbol = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim();
+  return normalized.startsWith('path://') || normalized.startsWith('image://');
+};
+
+const buildNodeIconLibrary = (customLibrary, isDarkMode) => {
+  const library = {
+    ...BUILTIN_NODE_ICON_LIBRARY,
+    card: buildCardNodeIcon(isDarkMode)
+  };
+
+  if (!isPlainObject(customLibrary)) {
+    return library;
+  }
+
+  Object.entries(customLibrary).forEach(([iconKey, iconSymbol]) => {
+    if (typeof iconKey !== 'string' || typeof iconSymbol !== 'string') {
+      return;
+    }
+
+    const normalizedKey = iconKey.trim();
+    const normalizedSymbol = iconSymbol.trim();
+    if (!normalizedKey || !isRawSymbol(normalizedSymbol)) {
+      return;
+    }
+
+    library[normalizedKey] = normalizedSymbol;
+  });
+
+  return library;
+};
+
+const resolveNodeSymbol = (iconReference, iconLibrary) => {
+  if (typeof iconReference !== 'string') {
+    return null;
+  }
+
+  const normalizedReference = iconReference.trim();
+  if (!normalizedReference) {
+    return null;
+  }
+
+  if (isRawSymbol(normalizedReference)) {
+    return normalizedReference;
+  }
+
+  const mappedSymbol = iconLibrary[normalizedReference];
+  if (typeof mappedSymbol !== 'string') {
+    return null;
+  }
+
+  const normalizedMappedSymbol = mappedSymbol.trim();
+  return isRawSymbol(normalizedMappedSymbol) ? normalizedMappedSymbol : null;
+};
+
 export class GraphChart extends BaseChart {
   static resolveEdgeCurvenessMap(links, baseCurveness, separation) {
     const byPair = new Map();
     const curvenessByIndex = new Map();
     const safeBase = Math.max(Math.abs(baseCurveness), 0.02);
-    const safeSeparation = Math.max(separation, 0);
+    const safeSeparation = Math.max(separation, 0.02);
 
     links.forEach((link, index) => {
       const source = String(link.source);
@@ -67,12 +154,10 @@ export class GraphChart extends BaseChart {
         if (!byDirection.has(directionKey)) {
           byDirection.set(directionKey, []);
         }
-        byDirection.get(directionKey).push(item);
+      byDirection.get(directionKey).push(item);
       });
 
-      byDirection.forEach((directionItems, directionKey) => {
-        const [source, target] = directionKey.split('\u0000');
-        const directionSign = source <= target ? 1 : -1;
+      const directionEntries = Array.from(byDirection.entries()).map(([directionKey, directionItems]) => {
         const orderedItems = [...directionItems].sort((a, b) => {
           const aStyle = a.link.styleValue || '';
           const bStyle = b.link.styleValue || '';
@@ -81,14 +166,21 @@ export class GraphChart extends BaseChart {
           }
           return a.index - b.index;
         });
+        return { directionKey, orderedItems };
+      }).sort((a, b) => a.directionKey.localeCompare(b.directionKey));
 
-        const count = orderedItems.length;
-        orderedItems.forEach((item, position) => {
-          const centeredOffset = count === 1
-            ? 0
-            : (position - (count - 1) / 2) * safeSeparation;
-          const magnitude = Math.max(0.02, safeBase + centeredOffset);
-          curvenessByIndex.set(item.index, directionSign * magnitude);
+      const maxDirectionCount = directionEntries.reduce((maxCount, directionEntry) => (
+        Math.max(maxCount, directionEntry.orderedItems.length)
+      ), 1);
+      const directionSpacing = Math.max(safeSeparation * 0.9, 0.05) + Math.max(maxDirectionCount - 1, 0) * safeSeparation * 0.15;
+
+      directionEntries.forEach((directionEntry, directionIndex) => {
+        const directionBaseCurveness = Math.min(0.95, safeBase + directionIndex * directionSpacing);
+        const laneMidpoint = (directionEntry.orderedItems.length - 1) / 2;
+        directionEntry.orderedItems.forEach((item, position) => {
+          const laneOffset = (position - laneMidpoint) * safeSeparation;
+          const magnitude = Math.min(0.95, Math.max(0.02, directionBaseCurveness + laneOffset));
+          curvenessByIndex.set(item.index, magnitude);
         });
       });
     });
@@ -106,6 +198,164 @@ export class GraphChart extends BaseChart {
     }
 
     return [];
+  }
+
+  static normalizeOutgoingBoundaryAnchorConfig(networkConfig) {
+    const rawConfig = isPlainObject(networkConfig?.outgoingBoundaryAnchors)
+      ? networkConfig.outgoingBoundaryAnchors
+      : {};
+
+    const sourceLabels = Array.isArray(rawConfig.sourceLabels)
+      ? rawConfig.sourceLabels.filter((value) => typeof value === 'string' && value.length > 0)
+      : [];
+
+    const radiusScale = Number.isFinite(rawConfig.radiusScale)
+      ? Math.max(0.1, rawConfig.radiusScale)
+      : DEFAULT_OUTGOING_BOUNDARY_ANCHOR_CONFIG.radiusScale;
+
+    const laneAngleStep = Number.isFinite(rawConfig.laneAngleStep)
+      ? Math.max(0.01, Math.abs(rawConfig.laneAngleStep))
+      : DEFAULT_OUTGOING_BOUNDARY_ANCHOR_CONFIG.laneAngleStep;
+
+    return {
+      enabled: rawConfig.enabled === true,
+      sourceLabels,
+      sourceLabelSet: new Set(sourceLabels),
+      radiusScale,
+      laneAngleStep,
+      pinSourceNodes: rawConfig.pinSourceNodes !== false
+    };
+  }
+
+  static applyOutgoingBoundaryAnchorTransform(nodes, links, networkConfig) {
+    const boundaryConfig = this.normalizeOutgoingBoundaryAnchorConfig(networkConfig);
+    if (!boundaryConfig.enabled || boundaryConfig.sourceLabels.length === 0 || nodes.length === 0 || links.length === 0) {
+      return { nodes, links };
+    }
+
+    const transformedNodes = nodes.map((node) => ({ ...node }));
+    const transformedLinks = links.map((link) => ({ ...link }));
+    const nodeById = new Map(transformedNodes.map((node) => [String(node.id), node]));
+    const edgeIndexesBySourceId = new Map();
+
+    transformedLinks.forEach((link, linkIndex) => {
+      const sourceNode = nodeById.get(String(link.source));
+      if (!sourceNode || !boundaryConfig.sourceLabelSet.has(sourceNode.name)) {
+        return;
+      }
+
+      const sourceId = String(sourceNode.id);
+      if (!edgeIndexesBySourceId.has(sourceId)) {
+        edgeIndexesBySourceId.set(sourceId, []);
+      }
+      edgeIndexesBySourceId.get(sourceId).push(linkIndex);
+    });
+
+    if (edgeIndexesBySourceId.size === 0) {
+      return { nodes, links };
+    }
+
+    let anchorCounter = 0;
+
+    edgeIndexesBySourceId.forEach((edgeIndexes, sourceId) => {
+      const sourceNode = nodeById.get(sourceId);
+      if (!sourceNode) {
+        return;
+      }
+
+      if (boundaryConfig.pinSourceNodes) {
+        sourceNode.fixed = true;
+      }
+
+      const sourceX = Number.isFinite(sourceNode.x) ? sourceNode.x : null;
+      const sourceY = Number.isFinite(sourceNode.y) ? sourceNode.y : null;
+      if (sourceX === null || sourceY === null) {
+        return;
+      }
+
+      const orderedEdgeIndexes = [...edgeIndexes].sort((a, b) => {
+        const linkA = transformedLinks[a];
+        const linkB = transformedLinks[b];
+        const targetA = String(linkA.target);
+        const targetB = String(linkB.target);
+        if (targetA !== targetB) {
+          return targetA.localeCompare(targetB);
+        }
+
+        const styleA = linkA.styleValue || '';
+        const styleB = linkB.styleValue || '';
+        if (styleA !== styleB) {
+          return styleA.localeCompare(styleB);
+        }
+
+        return a - b;
+      });
+
+      const laneMidpoint = (orderedEdgeIndexes.length - 1) / 2;
+
+      orderedEdgeIndexes.forEach((edgeIndex, laneIndex) => {
+        const link = transformedLinks[edgeIndex];
+        const targetNode = nodeById.get(String(link.target));
+        if (!targetNode) {
+          return;
+        }
+
+        const targetX = Number.isFinite(targetNode.x) ? targetNode.x : null;
+        const targetY = Number.isFinite(targetNode.y) ? targetNode.y : null;
+        if (targetX === null || targetY === null) {
+          return;
+        }
+
+        const baseAngle = Math.atan2(targetY - sourceY, targetX - sourceX);
+        const laneOffset = (laneIndex - laneMidpoint) * boundaryConfig.laneAngleStep;
+        const anchorAngle = baseAngle + laneOffset;
+        const sourceRadius = Math.max((Number.isFinite(sourceNode.symbolSize) ? sourceNode.symbolSize : 10) / 2, 1);
+        const anchorDistance = Math.max(sourceRadius * boundaryConfig.radiusScale, 1.5);
+        const anchorX = sourceX + Math.cos(anchorAngle) * anchorDistance;
+        const anchorY = sourceY + Math.sin(anchorAngle) * anchorDistance;
+        const anchorId = `__outgoing_boundary_anchor__${sourceId}__${anchorCounter++}`;
+
+        transformedNodes.push({
+          id: anchorId,
+          name: '',
+          value: 0,
+          inValue: 0,
+          outValue: 0,
+          symbol: 'circle',
+          symbolSize: 0.01,
+          x: anchorX,
+          y: anchorY,
+          fixed: true,
+          silent: true,
+          draggable: false,
+          isBoundaryAnchor: true,
+          label: { show: false },
+          tooltip: { show: false },
+          itemStyle: {
+            color: 'rgba(0,0,0,0)',
+            borderColor: 'rgba(0,0,0,0)',
+            borderWidth: 0,
+            opacity: 0,
+            shadowBlur: 0
+          },
+          emphasis: {
+            disabled: true
+          }
+        });
+
+        transformedLinks[edgeIndex] = {
+          ...link,
+          source: anchorId,
+          displaySource: sourceNode.name || String(sourceNode.id),
+          displayTarget: targetNode.name || String(targetNode.id)
+        };
+      });
+    });
+
+    return {
+      nodes: transformedNodes,
+      links: transformedLinks
+    };
   }
 
   static processData(data, config) {
@@ -284,12 +534,22 @@ export class GraphChart extends BaseChart {
       return this.getEmptyChartOptions(isDarkMode);
     }
 
-    const { nodes, links, categories, edgeStyles } = this.processData(rows, config);
+    const processedData = this.processData(rows, config);
+    let { nodes, links } = processedData;
+    const { categories, edgeStyles } = processedData;
     if (nodes.length === 0 || links.length === 0) {
       return this.getEmptyChartOptions(isDarkMode);
     }
 
     const networkConfig = config.networkConfig || {};
+    ({ nodes, links } = this.applyOutgoingBoundaryAnchorTransform(nodes, links, networkConfig));
+    const hasBoundaryAnchorNodes = nodes.some((node) => node.isBoundaryAnchor === true);
+    const requestedForceInitLayout = typeof networkConfig.forceInitLayout === 'string'
+      ? networkConfig.forceInitLayout.trim().toLowerCase()
+      : '';
+    const forceInitLayout = requestedForceInitLayout === 'none' || requestedForceInitLayout === 'circular'
+      ? requestedForceInitLayout
+      : (hasBoundaryAnchorNodes ? 'none' : 'circular');
     const selectedMetricField = config.valueField || config.yField || 'value';
     const amountField = config.amountField || 'amount_usd';
     const countField = config.countField || 'tf_cnt';
@@ -310,6 +570,24 @@ export class GraphChart extends BaseChart {
       ? networkConfig.maxLinkThickness
       : 6;
     const normalizeEdgeWidthToMax = networkConfig.normalizeEdgeWidthToMax !== false;
+    const nodeIconsByLabel = isPlainObject(networkConfig.nodeIconsByLabel)
+      ? networkConfig.nodeIconsByLabel
+      : {};
+    const nodeIconLibrary = buildNodeIconLibrary(networkConfig.nodeIconLibrary, isDarkMode);
+
+    nodes.forEach((node) => {
+      if (node.isBoundaryAnchor || !Object.prototype.hasOwnProperty.call(nodeIconsByLabel, node.name)) {
+        return;
+      }
+
+      const resolvedNodeSymbol = resolveNodeSymbol(nodeIconsByLabel[node.name], nodeIconLibrary);
+      if (!resolvedNodeSymbol) {
+        return;
+      }
+
+      node.symbol = resolvedNodeSymbol;
+      node.symbolKeepAspect = true;
+    });
 
     const categoryPalette = this.resolveSeriesPalette(config, Math.max(categories.length, 1), isDarkMode);
     const mappedCategories = categories.map((category, index) => ({
@@ -476,6 +754,9 @@ export class GraphChart extends BaseChart {
         formatter: (params) => {
           if (params.dataType === 'node') {
             const node = params.data;
+            if (node.isBoundaryAnchor) {
+              return '';
+            }
             const inflow = node.inValue || 0;
             const outflow = node.outValue || 0;
             const net = inflow - outflow;
@@ -495,8 +776,10 @@ export class GraphChart extends BaseChart {
 
           if (params.dataType === 'edge') {
             const edge = params.data;
+            const sourceLabel = edge.displaySource || edge.source;
+            const targetLabel = edge.displayTarget || edge.target;
             const lines = [
-              `<strong style="font-size: 14px;">${edge.source} → ${edge.target}</strong>`
+              `<strong style="font-size: 14px;">${sourceLabel} → ${targetLabel}</strong>`
             ];
 
             if (showSelectedValueInTooltip) {
@@ -538,7 +821,7 @@ export class GraphChart extends BaseChart {
         animationDuration: 500,
         animationEasingUpdate: 'cubicOut',
         force: {
-          initLayout: 'circular',
+          initLayout: forceInitLayout,
           repulsion: Number.isFinite(networkConfig.chargeStrength) ? Math.abs(networkConfig.chargeStrength) : 300,
           gravity: Number.isFinite(networkConfig.centerStrength) ? networkConfig.centerStrength : 0.1,
           edgeLength: Number.isFinite(networkConfig.linkDistance) ? networkConfig.linkDistance : 100,
@@ -575,6 +858,8 @@ export class GraphChart extends BaseChart {
             source: link.source,
             target: link.target,
             value: link.value,
+            displaySource: link.displaySource,
+            displayTarget: link.displayTarget,
             styleValue: link.styleValue,
             amountUsd: link.amountUsd,
             tfCnt: link.tfCnt,

@@ -32,11 +32,17 @@ const metric = {
     showLabels: true,
     enableZoom: true,
     enableDrag: true,
+    nodeIconsByLabel: {
+      'Null/Burn': 'bank',
+      'Gnosis Pay': 'payment',
+      gpay: 'card'
+    },
     minNodeSize: 10,
     maxNodeSize: 44,
     minLinkThickness: 1.25,
     maxLinkThickness: 9,
     normalizeEdgeWidthToMax: true,
+    linkCurveness: 0.16,
     parallelEdgeSeparation: 0.1,
     edgeLineTypes: ['solid', 'dashed', 'dotted', 'dashdot'],
     linkDistance: 120,
