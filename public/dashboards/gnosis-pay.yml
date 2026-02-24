@@ -34,6 +34,8 @@ tabs:
     order: 2
     icon: 👥
     iconClass: users
+    resolutionToggle: true
+    defaultResolution: weekly
     metrics:
       - id: api_execution_gpay_total_funded
         gridRow: 1
