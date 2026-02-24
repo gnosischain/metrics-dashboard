@@ -47,7 +47,11 @@ tabs:
         minHeight: 150px
       - id: api_execution_gpay_funded_addresses_weekly
         gridRow: 2
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 6
+        minHeight: 400px
+      - id: api_execution_gpay_payments_hourly
+        gridRow: 2
+        gridColumn: 7 / span 6
         minHeight: 400px
       - id: api_execution_gpay_retention_monthly
         gridRow: 3
