@@ -9,6 +9,8 @@ const metric = {
   valueField: 'value',
   format: 'formatPercentage',
   showLabels: true,
+  visualMapOrient: 'vertical',
+  grid: { right: '8%', bottom: '8%' },
   query: `
     SELECT x, y, value
     FROM dbt.api_execution_gpay_retention_pct_monthly

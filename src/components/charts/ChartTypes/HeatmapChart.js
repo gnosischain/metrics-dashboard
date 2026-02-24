@@ -33,9 +33,10 @@ export class HeatmapChart extends BaseChart {
         min: processedData.minValue,
         max: processedData.maxValue,
         calculable: true,
-        orient: 'horizontal',
-        left: 'center',
-        bottom: '5%',
+        orient: config.visualMapOrient || 'horizontal',
+        ...(config.visualMapOrient === 'vertical'
+          ? { right: config.visualMapRight ?? '2%', top: config.visualMapTop ?? 'center' }
+          : { left: config.visualMapLeft ?? 'center', bottom: config.visualMapBottom ?? '5%' }),
         inRange: {
           color: heatmapScale
         },
@@ -69,10 +70,7 @@ export class HeatmapChart extends BaseChart {
         }
       },
       
-      grid: {
-        height: '60%',
-        top: '10%'
-      }
+      grid: this.getGridConfig(config)
     };
   }
 
