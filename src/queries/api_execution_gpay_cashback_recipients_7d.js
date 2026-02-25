@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_recipients_7d',
   name: 'Recipients',
-  description: 'Unique wallets receiving cashback - Last 7 days',
+  description: 'Last 7 days',
+  metricDescription: 'Unique wallets receiving cashback',
   chartType: 'numberDisplay',
   variant: 'default',
   valueField: 'value',

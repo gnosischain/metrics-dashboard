@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_recipients_total',
   name: 'Recipients',
-  description: 'Unique wallets receiving cashback - All-time',
+  description: 'All-time',
+  metricDescription: 'Unique wallets receiving cashback',
   chartType: 'numberDisplay',
   variant: 'default',
   valueField: 'value',
