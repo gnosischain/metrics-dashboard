@@ -40,6 +40,13 @@ const metric = {
   watermarkSize: 25,
   watermarkOpacity: 0.3,
 
+  yAxis: {
+    type: 'log',
+    logBase: 10, // Optional: specify the logarithm base (default is 10)
+    min: 1e-4,//'dataMin', // Optional: set minimum value
+    max: 1//'dataMax', // Optional: set maximum value
+  },
+
   query: `
     SELECT date, unit, q05, q10, q25, q50, q75, q90, q95, average
     FROM dbt.api_execution_gpay_cashback_dist_weekly
