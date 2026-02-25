@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_cashback_total',
-  name: 'Total Cashback',
-  description: 'All-time cashback distributed',
+  name: 'Cashback',
+  description: 'All-time',
   chartType: 'numberDisplay',
   variant: 'default',
   valueField: 'value',

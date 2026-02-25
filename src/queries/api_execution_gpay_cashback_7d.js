@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_gpay_cashback_7d',
-  name: 'Cashback 7D',
+  name: 'Cashback',
   description: 'Last 7 days',
   chartType: 'numberDisplay',
   variant: 'default',
