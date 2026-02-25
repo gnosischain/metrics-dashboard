@@ -751,6 +751,10 @@
   margin-left: var(--spacing-lg);
 }
 
+.unit-toggle-container:only-child {
+  margin-left: 0;
+}
+
 .unit-toggle-buttons {
   display: flex;
   border: 1px solid var(--color-border);
@@ -833,6 +837,7 @@
 .global-filter-widget-content {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-md);
   flex-wrap: wrap;
   width: 100%;
