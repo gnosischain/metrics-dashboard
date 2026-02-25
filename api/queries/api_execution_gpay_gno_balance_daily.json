@@ -1,4 +1,0 @@
-{
-  "id": "api_execution_gpay_gno_balance_daily",
-  "query": "SELECT date, value\n    FROM dbt.api_execution_gpay_gno_balance_daily"
-}
