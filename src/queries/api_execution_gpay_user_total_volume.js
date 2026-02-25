@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_gpay_user_total_volume',
-  name: 'Total Volume',
+  name: 'Payments Volume',
   description: 'Lifetime payment volume (USD)',
   chartType: 'numberDisplay',
   variant: 'default',

@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_gpay_volume_7d',
-  name: 'Volume',
+  name: 'Payments Volume',
   description: 'Last 7 days',
   chartType: 'numberDisplay',
   variant: 'default',

@@ -116,15 +116,15 @@ tabs:
       - id: api_execution_gpay_total_balance
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 180px
       - id: api_execution_gpay_gno_total_balance
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 180px
       - id: api_execution_gpay_wallet_balance_composition
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 412px
+        minHeight: 372px
       - id: api_execution_gpay_balances_usd_daily
         gridRow: 3
         gridColumn: 1 / span 6
@@ -153,15 +153,15 @@ tabs:
     metrics:
       - id: global_filter
         gridRow: 1
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 60px
       - id: api_execution_gpay_user_total_volume
         gridRow: 1
-        gridColumn: 5 / span 3
+        gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gpay_user_total_payments
         gridRow: 1
-        gridColumn: 8 / span 2
+        gridColumn: 7 / span 3
         minHeight: 120px
       - id: api_execution_gpay_user_total_cashback
         gridRow: 1

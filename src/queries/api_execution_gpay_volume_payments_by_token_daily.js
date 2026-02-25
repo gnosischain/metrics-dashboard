@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_gpay_volume_payments_by_token_daily',
-  name: 'Volume by Token',
+  name: 'Payments Volume',
   description: 'Daily payment volume in USD',
   metricDescription: 'Daily payment volume in USD split by token. Stacked bars show token contribution to total processed volume.',
   chartType: 'bar',

@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_gpay_total_payments',
-  name: 'Total Payments',
+  name: 'Payments',
   description: 'All-time',
   chartType: 'numberDisplay',
   variant: 'default',
