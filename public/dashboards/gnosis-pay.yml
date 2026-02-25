@@ -100,24 +100,20 @@ tabs:
       - id: api_execution_gpay_total_balance
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 120px
-      - id: api_execution_gpay_owner_total_balance
-        gridRow: 1
-        gridColumn: 7 / span 6
-        minHeight: 120px
-      - id: api_execution_gpay_wallet_balance_composition
+        minHeight: 200px
+      - id: api_execution_gpay_gno_total_balance
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 350px
-      - id: api_execution_gpay_gno_balance_daily
-        gridRow: 2
+        minHeight: 200px
+      - id: api_execution_gpay_wallet_balance_composition
+        gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 350px
-      - id: api_execution_gpay_balances_by_token_daily
+        minHeight: 412px
+      - id: api_execution_gpay_balances_usd_daily
         gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 450px
-      - id: api_execution_gpay_owner_balances_by_token_daily
+      - id: api_execution_gpay_balances_native_daily
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 450px
