@@ -9,6 +9,7 @@ import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
+const UNIT_LABELS = { native: 'Native', usd: 'USD' };
 
 const MetricWidget = ({
   metricId,
@@ -21,7 +22,8 @@ const MetricWidget = ({
   globalFilterValue = null,
   selectedUnit = null,
   dashboardPalette = null,
-  enableResolutionToggle = false
+  enableResolutionToggle = false,
+  enableUnitToggle = false
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +38,11 @@ const MetricWidget = ({
 
   // Per-chart resolution toggle (independent per widget)
   const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
+
+  // Per-chart unit toggle (independent per widget)
+  const [localUnit, setLocalUnit] = useState('usd');
+  const supportsLocalUnitToggle = enableUnitToggle && !selectedUnit && baseMetricConfig?.unitFilterField;
+  const effectiveUnit = selectedUnit || (supportsLocalUnitToggle ? localUnit : null);
   const [localResolution, setLocalResolution] = useState(baseMetricConfig?.defaultResolution || 'weekly');
   const supportsResolution = enableResolutionToggle && baseMetricConfig?.resolutions;
 
@@ -134,7 +141,7 @@ const MetricWidget = ({
     const unitFields = metricConfig?.unitFields;
     
     // If no unit toggle or metric doesn't support it, return defaults
-    if (!selectedUnit || !unitFields) {
+    if (!effectiveUnit || !unitFields) {
       return {
         yField: metricConfig?.yField || 'value',
         valueField: metricConfig?.valueField || 'value',
@@ -144,7 +151,7 @@ const MetricWidget = ({
     }
     
     // Get config for the selected unit
-    const unitConfig = unitFields[selectedUnit];
+    const unitConfig = unitFields[effectiveUnit];
     if (unitConfig) {
       return {
         yField: unitConfig.field || metricConfig?.yField || 'value',
@@ -164,7 +171,7 @@ const MetricWidget = ({
       // Preserve explicit null to disable formatting.
       format: resolveFormat(metricConfig?.format, 'formatNumber')
     };
-  }, [selectedUnit, metricConfig, resolveFormat]);
+  }, [effectiveUnit, metricConfig, resolveFormat]);
 
   const valueModeOptions = useMemo(() => {
     if (!Array.isArray(metricConfig?.valueModeOptions)) {
@@ -303,9 +310,9 @@ const MetricWidget = ({
         params.filterField = globalFilterField;
         params.filterValue = globalFilterValue;
       }
-      if (selectedUnit && metricConfig?.unitFilterField) {
+      if (effectiveUnit && metricConfig?.unitFilterField) {
         params.filterField2 = metricConfig.unitFilterField;
-        params.filterValue2 = selectedUnit;
+        params.filterValue2 = effectiveUnit;
       }
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
@@ -353,7 +360,7 @@ const MetricWidget = ({
     globalFilterValue,
     hasGlobalFilter,
     hasMultiLocalFilters,
-    selectedUnit,
+    effectiveUnit,
     metricConfig?.unitFilterField
   ]);
 
@@ -663,8 +670,9 @@ const MetricWidget = ({
   ]);
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
+  const showUnitSelector = supportsLocalUnitToggle;
 
-  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
+  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
     <>
       {showMultiLocalDropdowns && multiLocalFilterFields.map((fieldName) => {
         const labels = localFilterOptionsByField[fieldName] || [];
@@ -704,6 +712,20 @@ const MetricWidget = ({
               onClick={() => setLocalResolution(res)}
             >
               {RESOLUTION_LABELS[res] || res}
+            </button>
+          ))}
+        </div>
+      )}
+      {showUnitSelector && (
+        <div className="resolution-toggle">
+          {Object.entries(UNIT_LABELS).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={`resolution-btn${localUnit === key ? ' active' : ''}`}
+              onClick={() => setLocalUnit(key)}
+            >
+              {label}
             </button>
           ))}
         </div>

@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_balance_cohorts_holders_daily',
   name: 'Holders by Balance Cohort',
-  description: 'Daily wallet count by USD balance cohort — all tokens',
-  metricDescription: 'Daily Gnosis Pay wallet counts by USD balance bucket. Cohorts show distribution shifts across low- and high-balance users.',
+  description: 'Wallet count by balance bucket per token',
+  metricDescription: 'Daily Gnosis Pay wallet counts by balance bucket with token and unit filters. Switch between native and USD bucketing.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,
@@ -16,9 +16,12 @@ const metric = {
   xField: 'date',
   yField: 'value',
   seriesField: 'label',
+  enableFiltering: true,
+  labelField: 'token',
+  unitFilterField: 'cohort_unit',
   tooltipOrder: 'valueDesc',
   query: `
-    SELECT date, label, value
+    SELECT date, token, cohort_unit, label, value
     FROM dbt.api_execution_gpay_balance_cohorts_holders_daily
   `,
 };
