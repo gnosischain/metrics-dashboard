@@ -310,6 +310,9 @@ const MetricWidget = ({
         params.filterField = globalFilterField;
         params.filterValue = globalFilterValue;
       }
+      if (metricConfig?.useCached === false) {
+        params.useCached = 'false';
+      }
       if (effectiveUnit && metricConfig?.unitFilterField) {
         params.filterField2 = metricConfig.unitFilterField;
         params.filterValue2 = effectiveUnit;

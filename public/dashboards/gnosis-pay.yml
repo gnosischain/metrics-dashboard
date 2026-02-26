@@ -167,10 +167,14 @@ tabs:
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
+      - id: api_execution_gpay_user_balances_latest
+        gridRow: 2
+        gridColumn: 1 / span 4
+        minHeight: 450px
       - id: api_execution_gpay_user_activity
         gridRow: 2
-        gridColumn: 1 / span 12
-        minHeight: 500px
+        gridColumn: 5 / span 8
+        minHeight: 450px
       - id: api_execution_gpay_user_balances_daily
         gridRow: 3
         gridColumn: 1 / span 12

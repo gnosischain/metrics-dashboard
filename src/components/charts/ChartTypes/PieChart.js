@@ -13,9 +13,23 @@ export class PieChart extends BaseChart {
 
     const processedData = this.processData(data, config);
     const colors = this.resolveSeriesPalette(config, processedData.data.length, isDarkMode);
+    const totalValue = processedData.data.reduce((sum, item) => sum + Number(item.value || 0), 0);
 
     return {
       ...this.getBaseOptions(isDarkMode),
+      title: config.showTotal === true ? {
+        text: '',
+        left: 'center',
+        top: 0,
+        itemGap: 0,
+        textStyle: { fontSize: 0 },
+        subtext: `Total: ${formatValue(totalValue, config.format)}`,
+        subtextStyle: {
+          color: isDarkMode ? '#9ca3af' : '#6b7280',
+          fontSize: 16,
+          fontWeight: 400
+        }
+      } : undefined,
       
       series: [{
         type: 'pie',
