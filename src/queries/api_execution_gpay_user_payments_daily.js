@@ -5,7 +5,7 @@ const metric = {
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
-  enableZoom: true,
+  enableZoom: false,
   format: 'formatCurrency',
   xField: 'date',
   yField: 'value',

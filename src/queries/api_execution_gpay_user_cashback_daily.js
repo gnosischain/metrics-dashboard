@@ -4,7 +4,7 @@ const metric = {
   description: 'Daily cashback received (GNO)',
   chartType: 'bar',
   isTimeSeries: true,
-  enableZoom: true,
+  enableZoom: false,
   format: 'formatNumber',
   xField: 'date',
   yField: 'value',

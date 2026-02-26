@@ -5,7 +5,7 @@ const metric = {
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,
-  enableZoom: true,
+  enableZoom: false,
   xField: 'date',
   yField: 'value_usd',
   seriesField: 'label',
