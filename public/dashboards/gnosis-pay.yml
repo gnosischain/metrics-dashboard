@@ -167,17 +167,21 @@ tabs:
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
-      - id: api_execution_gpay_user_payments_daily
+      - id: api_execution_gpay_user_activity
         gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_execution_gpay_user_cashback_daily
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 450px
+        gridColumn: 1 / span 12
+        minHeight: 500px
       - id: api_execution_gpay_user_balances_daily
         gridRow: 3
         gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_gpay_user_payments_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_gpay_user_cashback_daily
+        gridRow: 4
+        gridColumn: 7 / span 6
         minHeight: 450px
   - name: Flows
     order: 6
