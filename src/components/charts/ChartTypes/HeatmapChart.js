@@ -13,29 +13,31 @@ export class HeatmapChart extends BaseChart {
 
     const processedData = this.processData(data, config);
     const heatmapScale = this.resolveHeatmapScale(config, isDarkMode);
+    const { vmMin, vmMax } = this.resolveVisualMapRange(processedData, config);
 
     return {
       ...this.getBaseOptions(isDarkMode),
-      
+
       xAxis: {
         type: 'category',
         data: processedData.xCategories,
         ...this.getAxisConfig(isDarkMode, 'category', config)
       },
-      
+
       yAxis: {
         type: 'category',
         data: processedData.yCategories,
         ...this.getAxisConfig(isDarkMode, 'category', config)
       },
-      
+
       visualMap: {
-        min: processedData.minValue,
-        max: processedData.maxValue,
+        min: vmMin,
+        max: vmMax,
         calculable: true,
         orient: config.visualMapOrient || 'horizontal',
+        formatter: (value) => formatValue(value, config.format),
         ...(config.visualMapOrient === 'vertical'
-          ? { right: config.visualMapRight ?? '2%', top: config.visualMapTop ?? 'center' }
+          ? { right: config.visualMapRight ?? '4%', top: config.visualMapTop ?? 'center' }
           : { left: config.visualMapLeft ?? 'center', bottom: config.visualMapBottom ?? '5%' }),
         inRange: {
           color: heatmapScale
@@ -51,6 +53,9 @@ export class HeatmapChart extends BaseChart {
         label: {
           show: config.showLabels || false,
           color: isDarkMode ? '#e5e7eb' : '#374151',
+          fontSize: config.labelFontSize || 10,
+          overflow: 'truncate',
+          ellipsis: '..',
           formatter: (params) => formatValue(params.data[2], config.format)
         },
         emphasis: {
@@ -70,9 +75,39 @@ export class HeatmapChart extends BaseChart {
           return `${xLabel} - ${yLabel}<br/><strong>${formatValue(value, config.format)}</strong>`;
         }
       },
-      
-      grid: this.getGridConfig(config)
+
+      grid: this.getGridConfig(config.enableZoom
+        ? { ...config, grid: { ...config.grid, left: config.grid?.left ?? '4%' } }
+        : config),
+
+      ...(config.enableZoom ? {
+        dataZoom: [
+          { type: 'inside', xAxisIndex: [0], filterMode: 'none' },
+          { type: 'inside', yAxisIndex: [0], filterMode: 'none' },
+          {
+            type: 'slider', yAxisIndex: [0], filterMode: 'none',
+            left: 8, width: 12, showDetail: false, showDataShadow: false
+          },
+        ]
+      } : {})
     };
+  }
+
+  static resolveVisualMapRange(processedData, config) {
+    const pct = config.visualMapPercentile;
+    const dataMin = pct ? processedData.p5 : processedData.minValue;
+    const dataMax = pct ? processedData.p95 : processedData.maxValue;
+
+    if (config.visualMapCenter != null) {
+      const center = config.visualMapCenter;
+      const spread = Math.max(center - dataMin, dataMax - center);
+      return {
+        vmMin: Math.max(0, center - spread),
+        vmMax: center + spread
+      };
+    }
+
+    return { vmMin: dataMin, vmMax: dataMax };
   }
 
   static processData(data, config) {
@@ -107,12 +142,18 @@ export class HeatmapChart extends BaseChart {
       }
     });
 
+    // Compute percentile values for outlier-resistant color mapping
+    const sortedValues = heatmapData.map(d => d[2]).sort((a, b) => a - b);
+    const percentile = (pct) => sortedValues[Math.min(Math.floor(pct / 100 * sortedValues.length), sortedValues.length - 1)];
+
     return {
       xCategories,
       yCategories,
       heatmapData,
       minValue,
-      maxValue
+      maxValue,
+      p5: percentile(5),
+      p95: percentile(95)
     };
   }
 }

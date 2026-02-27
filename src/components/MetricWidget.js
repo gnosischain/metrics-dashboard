@@ -40,12 +40,24 @@ const MetricWidget = ({
   const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
 
   // Per-chart unit toggle (independent per widget)
+  const unitFieldGroups = baseMetricConfig?.unitFieldGroups;
+  const hasGroupedUnits = Array.isArray(unitFieldGroups) && unitFieldGroups.length > 0;
   const defaultLocalUnit = useMemo(() => {
     const uf = baseMetricConfig?.unitFields;
-    if (uf) return Object.keys(uf)[0];
-    return 'usd';
-  }, [baseMetricConfig]);
+    if (!uf) return 'usd';
+    if (hasGroupedUnits) {
+      return unitFieldGroups.map(g => Object.keys(g.options)[0]).join('|');
+    }
+    return Object.keys(uf)[0];
+  }, [baseMetricConfig, hasGroupedUnits, unitFieldGroups]);
   const [localUnit, setLocalUnit] = useState(defaultLocalUnit);
+  const setGroupedUnit = useCallback((groupIndex, key) => {
+    setLocalUnit(prev => {
+      const parts = prev.split('|');
+      parts[groupIndex] = key;
+      return parts.join('|');
+    });
+  }, []);
   const supportsLocalUnitToggle = enableUnitToggle && !selectedUnit && (baseMetricConfig?.unitFilterField || baseMetricConfig?.unitFields);
   const effectiveUnit = selectedUnit || (supportsLocalUnitToggle ? localUnit : null);
   const [localResolution, setLocalResolution] = useState(baseMetricConfig?.defaultResolution || 'weekly');
@@ -165,10 +177,12 @@ const MetricWidget = ({
         format: resolveFormat(
           unitConfig.format,
           resolveFormat(metricConfig?.format, 'formatNumber')
-        )
+        ),
+        visualMapCenter: unitConfig.visualMapCenter,
+        visualMapPercentile: unitConfig.visualMapPercentile,
       };
     }
-    
+
     // Fallback to defaults
     return {
       yField: metricConfig?.yField || 'value',
@@ -669,6 +683,8 @@ const MetricWidget = ({
       ...(!metricHasValueField ? { yField: effectiveValueConfig.yField } : {}),
       valueField: effectiveValueConfig.valueField,
       format: effectiveValueConfig.format,
+      visualMapCenter: effectiveValueConfig.visualMapCenter,
+      visualMapPercentile: effectiveValueConfig.visualMapPercentile,
       enableZoom: widgetConfig.enableZoom
     };
   }, [
@@ -677,7 +693,9 @@ const MetricWidget = ({
     widgetConfig.enableZoom,
     effectiveValueConfig.yField,
     effectiveValueConfig.valueField,
-    effectiveValueConfig.format
+    effectiveValueConfig.format,
+    effectiveValueConfig.visualMapCenter,
+    effectiveValueConfig.visualMapPercentile
   ]);
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
@@ -727,7 +745,7 @@ const MetricWidget = ({
           ))}
         </div>
       )}
-      {showUnitSelector && (
+      {showUnitSelector && !hasGroupedUnits && (
         <div className="resolution-toggle">
           {Object.entries(
             baseMetricConfig?.unitFields
@@ -745,6 +763,23 @@ const MetricWidget = ({
           ))}
         </div>
       )}
+      {showUnitSelector && hasGroupedUnits && unitFieldGroups.map((group, groupIndex) => {
+        const activePart = localUnit.split('|')[groupIndex] || Object.keys(group.options)[0];
+        return (
+          <div key={groupIndex} className="resolution-toggle">
+            {Object.entries(group.options).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className={`resolution-btn${activePart === key ? ' active' : ''}`}
+                onClick={() => setGroupedUnit(groupIndex, key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        );
+      })}
       {showValueModeDropdown && (
         <LabelSelector
           labels={valueModeLabels}

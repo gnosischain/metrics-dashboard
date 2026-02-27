@@ -224,8 +224,8 @@ export class BaseChart {
 
   static resolveHeatmapScale(config = {}, isDarkMode = false) {
     const defaultScale = isDarkMode
-      ? ['#003366', '#006699', '#0099cc', '#33ccff', '#66ffff']
-      : ['#ffffff', '#cce7ff', '#99d6ff', '#66c2ff', '#0080ff'];
+      ? ['#001a33', '#003366', '#006699', '#0099cc', '#33ccff', '#66ffff', '#99ffff']
+      : ['#ffffff', '#e6f3ff', '#cce7ff', '#99d6ff', '#66c2ff', '#3399ff', '#0080ff'];
 
     const metricThemeScale = isDarkMode ? config?.heatmapScaleDark : config?.heatmapScaleLight;
     if (Array.isArray(metricThemeScale) && metricThemeScale.filter(Boolean).length > 0) {

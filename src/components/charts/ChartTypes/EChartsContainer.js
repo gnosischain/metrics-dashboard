@@ -27,6 +27,7 @@ const EChartsContainer = ({
   const hasRenderedRef = useRef(false);
   const previousChartTypeRef = useRef(chartType);
   const graphEdgeLegendListenerRef = useRef(null);
+  const heatmapZoomListenerRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -111,6 +112,81 @@ const EChartsContainer = ({
     instanceRef.current.on('legendselectchanged', handleLegendSelectionChange);
 
     applyGraphEdgeLegendSelection(edgeLegendConfig, baseEdges, initialSelected);
+  };
+
+  const detachHeatmapZoomListener = () => {
+    if (instanceRef.current && heatmapZoomListenerRef.current) {
+      instanceRef.current.off('datazoom', heatmapZoomListenerRef.current);
+    }
+    heatmapZoomListenerRef.current = null;
+  };
+
+  const bindHeatmapZoomListener = (options) => {
+    detachHeatmapZoomListener();
+    if (!instanceRef.current || chartType !== 'heatmap' || !config?.enableZoom) return;
+
+    const heatmapData = options?.series?.[0]?.data;
+    const xLen = options?.xAxis?.data?.length || 1;
+    const yLen = options?.yAxis?.data?.length || 1;
+    if (!heatmapData || !heatmapData.length) return;
+
+    let prevRange = [0, 100];
+    let syncing = false;
+
+    const handleZoom = () => {
+      if (syncing) return;
+
+      const opt = instanceRef.current.getOption();
+      const dzList = opt.dataZoom || [];
+      const yZoom = dzList.find(dz => dz.yAxisIndex?.[0] === 0) || {};
+      const targetStart = yZoom.start ?? 0;
+      const targetEnd = yZoom.end ?? 100;
+
+      if (Math.abs(targetStart - prevRange[0]) < 0.01 && Math.abs(targetEnd - prevRange[1]) < 0.01) return;
+      prevRange = [targetStart, targetEnd];
+
+      // Sync all dataZoom components to the same range + recompute visualMap
+      syncing = true;
+      const update = {
+        dataZoom: dzList.map(() => ({ start: targetStart, end: targetEnd }))
+      };
+
+      const visXStart = Math.floor(targetStart / 100 * xLen);
+      const visXEnd = Math.ceil(targetEnd / 100 * xLen);
+      const visYStart = Math.floor(targetStart / 100 * yLen);
+      const visYEnd = Math.ceil(targetEnd / 100 * yLen);
+
+      const visible = heatmapData.filter(([x, y]) => x >= visXStart && x < visXEnd && y >= visYStart && y < visYEnd);
+      if (visible.length > 0) {
+        const values = visible.map(d => d[2]);
+        const sorted = [...values].sort((a, b) => a - b);
+        const pctile = (p) => sorted[Math.min(Math.floor(p / 100 * sorted.length), sorted.length - 1)];
+
+        let newMin, newMax;
+        if (config.visualMapPercentile) {
+          newMin = pctile(5);
+          newMax = pctile(95);
+        } else {
+          newMin = Math.min(...values);
+          newMax = Math.max(...values);
+        }
+
+        if (config.visualMapCenter != null) {
+          const center = config.visualMapCenter;
+          const spread = Math.max(center - newMin, newMax - center);
+          newMin = Math.max(0, center - spread);
+          newMax = center + spread;
+        }
+
+        update.visualMap = { min: newMin, max: newMax };
+      }
+
+      instanceRef.current.setOption(update, { lazyUpdate: true });
+      syncing = false;
+    };
+
+    heatmapZoomListenerRef.current = handleZoom;
+    instanceRef.current.on('datazoom', handleZoom);
   };
 
   useEffect(() => {
@@ -282,6 +358,7 @@ const EChartsContainer = ({
 
       instanceRef.current.setOption(chartOptions, setOptionConfig);
       bindGraphEdgeLegendSelection(chartOptions);
+      bindHeatmapZoomListener(chartOptions);
       hasRenderedRef.current = true;
 
       if (isWordCloud) {
@@ -317,6 +394,7 @@ const EChartsContainer = ({
         notMerge: true
       });
       bindGraphEdgeLegendSelection(chartOptions);
+      bindHeatmapZoomListener(chartOptions);
     }
   }, [isDarkMode, chartOptions, loading, requiresGL, isWordCloud]);
 
@@ -330,6 +408,7 @@ const EChartsContainer = ({
     return () => {
       if (instanceRef.current) {
         detachGraphEdgeLegendListener();
+        detachHeatmapZoomListener();
         try {
           if (isWordCloud) {
             instanceRef.current.clear();

@@ -120,6 +120,11 @@ export const formatNumberWithGNO = (value) => {
   return `${full} GNO`;
 };
 
+export const formatPercentageInt = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0%';
+  return Math.round(value) + '%';
+};
+
 export const formatCurrencyCompact = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '$0';
   const v = Number(value);
@@ -134,6 +139,7 @@ const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
+  formatPercentageInt,
   formatDuration,
   formatValue,
   formatNumberWithXDAI,
