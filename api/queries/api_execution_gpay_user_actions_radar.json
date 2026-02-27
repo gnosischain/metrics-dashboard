@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_user_actions_radar",
+  "query": "SELECT\n      wallet_address,\n      'Action Count' AS profile,\n      toFloat64(countIf(action = 'Payment')) AS payment,\n      toFloat64(countIf(action = 'Reversal')) AS reversal,\n      toFloat64(countIf(action = 'Cashback')) AS cashback,\n      toFloat64(countIf(action = 'Fiat Top Up')) AS fiat_top_up,\n      toFloat64(countIf(action = 'Fiat Off-ramp')) AS fiat_off_ramp,\n      toFloat64(countIf(action = 'Crypto Deposit')) AS crypto_deposit,\n      toFloat64(countIf(action = 'Crypto Withdrawal')) AS crypto_withdrawal,\n      toFloat64(countIf(action = 'Refund')) AS refund\n    FROM dbt.api_execution_gpay_user_activity\n    GROUP BY wallet_address"
+}

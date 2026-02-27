@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_cashback_impact_monthly",
+  "query": "SELECT\n      toDate(month) AS date,\n      segment,\n      users,\n      payment_volume_usd,\n      payment_count,\n      avg_volume_per_user,\n      avg_tx_per_user,\n      deposit_volume_usd,\n      withdrawal_volume_usd,\n      net_flow_usd,\n      pct_of_total_volume,\n      pct_of_total_users\n    FROM dbt.api_execution_gpay_cashback_impact_monthly\n    ORDER BY date ASC, segment ASC"
+}

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_gpay_user_balances_daily',
   name: 'Balance by Token',
   description: 'Daily wallet balance by token',
-  chartType: 'area',
+  chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
   enableZoom: false,
