@@ -50,7 +50,8 @@ export class HeatmapChart extends BaseChart {
         data: processedData.heatmapData,
         label: {
           show: config.showLabels || false,
-          color: isDarkMode ? '#e5e7eb' : '#374151'
+          color: isDarkMode ? '#e5e7eb' : '#374151',
+          formatter: (params) => formatValue(params.data[2], config.format)
         },
         emphasis: {
           itemStyle: {
