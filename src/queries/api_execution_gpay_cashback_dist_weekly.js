@@ -13,7 +13,6 @@ const metric = {
   },
 
   xField: 'date',
-  unitFilterField: 'unit',
 
   bands: [
     { lower: 'q05', upper: 'q95', opacity: 0.15, name: '90% Range (5%-95%)' },
@@ -48,7 +47,7 @@ const metric = {
   },
 
   query: `
-    SELECT date, unit, q05, q10, q25, q50, q75, q90, q95, average
+    SELECT date, q05, q10, q25, q50, q75, q90, q95, average
     FROM dbt.api_execution_gpay_cashback_dist_weekly
   `,
 };
