@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_dist_weekly',
   name: 'Cashback Distribution',
-  description: 'Weekly per-user cashback percentiles',
-  metricDescription: 'Percentile bands of weekly per-user cashback amounts. The median line shows the typical user, and the shaded bands reveal how spread out users are — narrow bands mean even distribution, wide bands mean concentration.',
+  description: 'Per-user GNO percentiles, weekly',
+  metricDescription: 'Percentile bands of weekly per-user GNO cashback on a log scale. The median line (q50) shows the typical user. Shaded bands show how spread out users are — narrow bands mean even distribution, wide bands mean concentration.\n\nExample: if the 90% range is 0.002–0.2 GNO, it means most users earned between those amounts that week.',
   chartType: 'quantileBands',
   isTimeSeries: true,
   enableZoom: true,

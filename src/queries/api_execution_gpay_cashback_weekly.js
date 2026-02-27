@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_weekly',
-  name: 'Weekly Cashback',
-  description: 'Cashback distributed per week',
-  metricDescription: 'Weekly cashback distributed, with unit toggle (native token or USD). Use this for period-over-period incentive pacing.',
+  name: 'Cashback',
+  description: 'Distributed per week',
+  metricDescription: 'Weekly GNO cashback distributed to Gnosis Pay users. Toggle between native GNO and USD value to compare reward amounts or dollar cost over time.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

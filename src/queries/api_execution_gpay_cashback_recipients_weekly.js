@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_recipients_weekly',
-  name: 'Weekly Cashback Recipients',
-  description: 'Unique wallets receiving cashback per week',
-  metricDescription: 'Weekly count of distinct wallets that received at least one cashback transfer.',
+  name: 'Recipients',
+  description: 'Unique wallets per week',
+  metricDescription: 'Weekly count of unique wallets that received at least one GNO cashback transfer. A wallet is counted once per week regardless of how many cashback events it received.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

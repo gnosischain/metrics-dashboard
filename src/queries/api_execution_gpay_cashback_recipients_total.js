@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_gpay_cashback_recipients_total',
   name: 'Recipients',
   description: 'All-time',
-  metricDescription: 'Unique wallets receiving cashback',
+  metricDescription: 'Total unique wallets that have received at least one GNO cashback reward from Gnosis Pay.',
   chartType: 'numberDisplay',
   variant: 'default',
   valueField: 'value',

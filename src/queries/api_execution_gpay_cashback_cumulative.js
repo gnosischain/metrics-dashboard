@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_cashback_cumulative',
   name: 'Cumulative Cashback',
-  description: 'Running total of cashback distributed',
-  metricDescription: 'Running total cashback distributed, with unit toggle (native token or USD). Values are cumulative and monotonic by design.',
+  description: 'Running total distributed',
+  metricDescription: 'Cumulative GNO cashback distributed over time. Toggle between native GNO and USD. This curve is monotonically increasing by design.',
   chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,
