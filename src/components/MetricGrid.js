@@ -268,7 +268,7 @@ const MetricGrid = ({
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
                 selectedUnit={hasUnitToggle ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
-                enableUnitToggle={!hasUnitToggle && !!metric.unitFilterField}
+                enableUnitToggle={!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields)}
               />
             </div>
           );

@@ -40,8 +40,13 @@ const MetricWidget = ({
   const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
 
   // Per-chart unit toggle (independent per widget)
-  const [localUnit, setLocalUnit] = useState('usd');
-  const supportsLocalUnitToggle = enableUnitToggle && !selectedUnit && baseMetricConfig?.unitFilterField;
+  const defaultLocalUnit = useMemo(() => {
+    const uf = baseMetricConfig?.unitFields;
+    if (uf) return Object.keys(uf)[0];
+    return 'usd';
+  }, [baseMetricConfig]);
+  const [localUnit, setLocalUnit] = useState(defaultLocalUnit);
+  const supportsLocalUnitToggle = enableUnitToggle && !selectedUnit && (baseMetricConfig?.unitFilterField || baseMetricConfig?.unitFields);
   const effectiveUnit = selectedUnit || (supportsLocalUnitToggle ? localUnit : null);
   const [localResolution, setLocalResolution] = useState(baseMetricConfig?.defaultResolution || 'weekly');
   const supportsResolution = enableResolutionToggle && baseMetricConfig?.resolutions;
@@ -656,14 +661,17 @@ const MetricWidget = ({
     });
   }, [showDownloadButton, widgetConfig.title, metricId, isDarkMode]);
 
-  const chartRenderConfig = useMemo(() => ({
-    ...widgetConfig.config,
-    dashboardPalette,
-    yField: effectiveValueConfig.yField,
-    valueField: effectiveValueConfig.valueField,
-    format: effectiveValueConfig.format,
-    enableZoom: widgetConfig.enableZoom
-  }), [
+  const chartRenderConfig = useMemo(() => {
+    const metricHasValueField = !!widgetConfig.config?.valueField;
+    return {
+      ...widgetConfig.config,
+      dashboardPalette,
+      ...(!metricHasValueField ? { yField: effectiveValueConfig.yField } : {}),
+      valueField: effectiveValueConfig.valueField,
+      format: effectiveValueConfig.format,
+      enableZoom: widgetConfig.enableZoom
+    };
+  }, [
     widgetConfig.config,
     dashboardPalette,
     widgetConfig.enableZoom,
@@ -721,7 +729,11 @@ const MetricWidget = ({
       )}
       {showUnitSelector && (
         <div className="resolution-toggle">
-          {Object.entries(UNIT_LABELS).map(([key, label]) => (
+          {Object.entries(
+            baseMetricConfig?.unitFields
+              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, v.label || k]))
+              : UNIT_LABELS
+          ).map(([key, label]) => (
             <button
               key={key}
               type="button"
