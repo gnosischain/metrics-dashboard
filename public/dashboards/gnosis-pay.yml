@@ -53,17 +53,17 @@ tabs:
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 400px
-      - id: api_execution_gpay_retention_monthly
+      - id: api_execution_gpay_retention_pct_monthly
         gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: api_execution_gpay_retention_monthly
+        gridRow: 4
         gridColumn: 1 / span 6
         minHeight: 500px
       - id: api_execution_gpay_retention_volume_monthly
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 500px
-      - id: api_execution_gpay_retention_pct_monthly
         gridRow: 4
-        gridColumn: 1 / span 12
+        gridColumn: 7 / span 6
         minHeight: 500px
   - name: Cashback
     order: 3
