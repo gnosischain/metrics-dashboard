@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_balances_usd_daily',
-  name: 'Balance by Token (USD)',
-  description: 'Daily wallet balance in USD',
-  metricDescription: 'Daily wallet balances in USD split by token (EURe, GBPe, USDC.e, GNO). Stacked total shows full wallet balance.',
+  name: 'Balance by Token',
+  description: 'Daily total in USD',
+  metricDescription: 'Daily aggregate wallet balances in USD, stacked by token (EURe, GBPe, USDC.e, GNO). The total line shows the combined USD value across all tokens.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

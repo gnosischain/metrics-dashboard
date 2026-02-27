@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_balance_cohorts_value_daily',
-  name: 'Value by Balance Cohort',
-  description: 'Total value by balance bucket per token',
-  metricDescription: 'Daily aggregate wallet balances by balance cohort with token and unit filters. Unit toggle switches between native amount and USD value.',
+  name: 'Value',
+  description: 'Total value by balance cohort',
+  metricDescription: 'Daily aggregate balance grouped by balance cohort. Use the token dropdown and Native/USD toggle to see how total value is concentrated across balance tiers.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

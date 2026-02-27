@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_balance_cohorts_holders_daily',
-  name: 'Holders by Balance Cohort',
-  description: 'Wallet count by balance bucket per token',
-  metricDescription: 'Daily Gnosis Pay wallet counts by balance bucket with token and unit filters. Switch between native and USD bucketing.',
+  name: 'Holders',
+  description: 'Wallet count by balance cohort',
+  metricDescription: 'Daily wallet count grouped by balance cohort (e.g. 0–10, 10–100, 100–1K). Use the token dropdown and Native/USD toggle to switch between balance denominations. Shows how wallets are distributed across balance tiers.',
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,
