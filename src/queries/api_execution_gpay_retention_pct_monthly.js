@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_retention_pct_monthly',
-  name: 'Retention Heatmap',
-  description: 'Retention rate by activation cohort — rows are cohort months, columns are activity months',
-  metricDescription: 'Cohort retention matrix where rows are activation cohorts and columns are activity months. Toggle between retention rate (%) and absolute user counts (#).',
+  name: 'User Retention',
+  description: 'By activation cohort',
+  metricDescription: 'Each row is a cohort of users grouped by the month they made their first payment. Each column is a calendar month. The cell shows what % of that cohort was active (made at least one payment) in that month. Toggle to # to see absolute user counts instead.\n\nExample: if the Jun 2024 row shows 65% in the Oct 2024 column, it means 65% of users who first paid in Jun 2024 were still active in Oct 2024.',
   chartType: 'heatmap',
   xField: 'x',
   yField: 'y',
