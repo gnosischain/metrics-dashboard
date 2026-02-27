@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_tokens_supply_by_class_daily',
   name: 'Token Market Cap',
   description: 'Daily token supply in USD (market cap) by token',
+  metricDescription: 'Daily token market cap (USD) by token, filtered by token class. Stacked view shows class composition over time.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_entry_queue_daily',
   name: 'Validators Entry Queue',
   description: 'Daily average in days',
+  metricDescription: 'Daily average estimated time (days) to enter the validator set. Rising values indicate queue pressure and slower activation.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

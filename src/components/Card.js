@@ -11,6 +11,7 @@ const Card = forwardRef(({
   isDarkMode = false, 
   chartType,
   variant, 
+  cardVariant = 'default',
   minimal = false,
   contentClassName = '',
   titleFontSize = null
@@ -20,6 +21,9 @@ const Card = forwardRef(({
   const toggleExpand = () => setIsExpanded(!isExpanded);
   
   const isNumberDisplay = chartType === 'numberDisplay';
+  const cardVariantClass = cardVariant && cardVariant !== 'default'
+    ? `card-variant-${cardVariant}`
+    : '';
   
   if (minimal) {
     return (
@@ -51,7 +55,7 @@ const Card = forwardRef(({
     <>
       <div 
         ref={ref} 
-        className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+        className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''} ${cardVariantClass}`}
         data-chart-type={chartType} 
       >
         <div className="card-header">

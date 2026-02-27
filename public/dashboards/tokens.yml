@@ -1,0 +1,60 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    globalFilterField: token_class
+    globalFilterLabel: Token Class
+    metrics:
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 5 / span 8
+        minHeight: 60px
+      - id: api_execution_tokens_supply_distribution_latest
+        gridRow: 1 / span 2
+        gridColumn: 1 / span 4
+        minHeight: 315px
+      - id: api_execution_tokens_supply_by_sector_latest
+        gridRow: 3
+        gridColumn: 1 / span 4
+        minHeight: 315px
+      - id: api_execution_tokens_supply_by_class_daily
+        gridRow: 2 / span 2
+        gridColumn: 5 / span 8
+        minHeight: 570px
+  - name: Per-token breakdown
+    order: 2
+    icon: 🪙
+    iconClass: coins
+    globalFilterField: token
+    unitToggle: true
+    defaultUnit: native
+    metrics:
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 1 / span 5
+        minHeight: 90px
+      - id: api_execution_tokens_supply_total
+        gridRow: 1
+        gridColumn: 6 / span 4
+        minHeight: 90px
+      - id: api_execution_tokens_holders_total
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 90px
+      - id: api_execution_tokens_balance_cohorts_value_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_tokens_balance_cohorts_holders_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_tokens_volume_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 350px
+      - id: api_execution_tokens_active_senders_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 350px

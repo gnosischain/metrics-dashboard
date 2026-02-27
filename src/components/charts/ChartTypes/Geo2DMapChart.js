@@ -16,6 +16,7 @@ import {
 import { MapChart, LinesChart, ScatterChart, EffectScatterChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { worldMapData } from './worldMapData';
+import { BaseChart } from './BaseChart';
 
 // Register required ECharts components
 echarts.use([
@@ -75,12 +76,46 @@ export class Geo2DMapChart {
       symbolSize = 3,
       
       // Colors
-      lineColor = '#91cc75',
-      effectColor = '#fff',
+      colors = null,
+      lineColor = null,
+      lineColorLight = null,
+      lineColorDark = null,
+      effectColor = isDarkMode ? '#E2E8F0' : '#334155',
       
       // Map settings
       mapZoom = 1.8,
-      mapCenter = [10, 10]
+      mapCenter = [10, 10],
+      mapRoam = true,
+      mapBackgroundColor = null,
+      mapBackgroundColorDark = null,
+      mapAreaColor = null,
+      mapAreaColorDark = null,
+      mapBorderColor = null,
+      mapBorderColorDark = null,
+      mapEmphasisColor = null,
+      mapEmphasisColorDark = null,
+      mapLayoutCenter = null,
+      mapLayoutSize = null,
+
+      // Legend overrides
+      legendType = null,
+      legendOrient = null,
+      legendLeft = null,
+      legendTop = null,
+      legendWidth = null,
+      legendHeight = null,
+      legendItemWidth = null,
+      legendItemHeight = null,
+      legendItemGap = null,
+      legendFontSize = null,
+      legendPadding = null,
+      legendBackgroundColor = null,
+      legendBorderColor = null,
+      legendBorderWidth = null,
+
+      // Responsive layout overrides (optional)
+      responsiveNarrow = null,
+      containerWidth = null
     } = config;
 
     // Validate required fields
@@ -91,6 +126,36 @@ export class Geo2DMapChart {
     // Determine which field to use for node categorization/coloring
     // Priority: categoryField > nodeColorField > labelField > default
     const actualCategoryField = categoryField || nodeColorField || labelField;
+    const hasScopedVisualOverrides = [
+      colors,
+      lineColorLight,
+      lineColorDark,
+      mapBackgroundColor,
+      mapBackgroundColorDark,
+      mapAreaColor,
+      mapAreaColorDark,
+      mapBorderColor,
+      mapBorderColorDark,
+      mapEmphasisColor,
+      mapEmphasisColorDark,
+      mapLayoutCenter,
+      mapLayoutSize,
+      legendType,
+      legendOrient,
+      legendLeft,
+      legendTop,
+      legendWidth,
+      legendHeight,
+      legendItemWidth,
+      legendItemHeight,
+      legendItemGap,
+      legendFontSize,
+      legendPadding,
+      legendBackgroundColor,
+      legendBorderColor,
+      legendBorderWidth,
+      mapRoam
+    ].some(value => value !== null && value !== undefined);
 
     // Process data with separate fields for filtering and coloring
     const { nodes, connections } = this.processNetworkData(data, {
@@ -110,24 +175,41 @@ export class Geo2DMapChart {
     });
 
     // Get unique categories for coloring (from the category field, not label field)
-    const categories = [...new Set(nodes.map(n => n.category))].filter(c => c && c !== 'Unknown');
-    if (!categories.includes('Unknown')) {
-      categories.push('Unknown');
-    }
+    const unknownCategory = 'Unknown';
+    const rawCategories = [...new Set(nodes.map(n => n.category))].filter(Boolean);
+    const categories = hasScopedVisualOverrides
+      ? [
+          ...rawCategories
+            .filter(category => category !== unknownCategory)
+            .sort((a, b) => String(a).localeCompare(String(b))),
+          unknownCategory
+        ]
+      : [
+          ...rawCategories.filter(category => category !== unknownCategory),
+          unknownCategory
+        ];
     
     console.log('Geo2DMapChart: Node categories for coloring:', categories);
     
     // Create color palette
-    const colorPalette = [
-      '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-      '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9845',
-      '#8dd3c7', '#bebada', '#fb8072', '#80b1d3', '#fdb462'
-    ];
+    const usesCustomPalette = Array.isArray(colors) && colors.length > 0;
+    const colorPalette = BaseChart.resolveSeriesPalette(
+      config,
+      hasScopedVisualOverrides ? Math.max(categories.length, 15) : 15,
+      isDarkMode
+    );
     
     // Map categories to colors
     const categoryColorMap = {};
+    const unknownFallbackColor = '#94A3B8';
     categories.forEach((cat, index) => {
-      categoryColorMap[cat] = colorPalette[index % colorPalette.length];
+      if (hasScopedVisualOverrides && cat === unknownCategory) {
+        const explicitUnknownColor = usesCustomPalette ? colors[index] : null;
+        categoryColorMap[cat] = explicitUnknownColor || unknownFallbackColor;
+        return;
+      }
+
+      categoryColorMap[cat] = colorPalette[index % colorPalette.length] || unknownFallbackColor;
     });
 
     // Calculate value ranges
@@ -162,48 +244,142 @@ export class Geo2DMapChart {
       filterLabel: node.filterLabel, // NEW: Store filter label separately
       itemStyle: {
         color: categoryColorMap[node.category] || '#999999',
-        borderColor: '#fff',
+        borderColor: isDarkMode ? '#0F172A' : '#FFFFFF',
         borderWidth: nodeBorderWidth
       },
       coords: node.coords,
       tooltipData: node.tooltipData
     }));
 
-    const backgroundColor = isDarkMode ? '#000' : '#fff';
-    const textColor = isDarkMode ? '#ccc' : '#333';
-    const areaColor = isDarkMode ? '#323c48' : '#eee';
-    const borderColor = isDarkMode ? '#111' : '#aaa';
-    const emphasisColor = isDarkMode ? '#2a333d' : '#ccc';
+    const resolvedLineColor = lineColor || (isDarkMode
+      ? (lineColorDark || '#34D399')
+      : (lineColorLight || '#10B981'));
+    const backgroundColor = isDarkMode
+      ? (mapBackgroundColorDark || mapBackgroundColor || 'transparent')
+      : (mapBackgroundColor || 'transparent');
+    const textColor = isDarkMode ? '#CBD5E1' : '#334155';
+    const areaColor = isDarkMode
+      ? (mapAreaColorDark || mapAreaColor || '#1E293B')
+      : (mapAreaColor || '#EFF6FF');
+    const borderColor = isDarkMode
+      ? (mapBorderColorDark || mapBorderColor || '#334155')
+      : (mapBorderColor || '#CBD5E1');
+    const emphasisColor = isDarkMode
+      ? (mapEmphasisColorDark || mapEmphasisColor || '#273449')
+      : (mapEmphasisColor || '#DBEAFE');
+    const defaultLegendBackground = isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+    const defaultLegendBorderColor = borderColor;
+    const defaultLegendBorderWidth = 1;
+    const useWindowWidthForResponsive = Boolean(responsiveNarrow?.useWindowWidth);
+    const numericContainerWidth = Number(containerWidth);
+    const hasContainerWidth = Number.isFinite(numericContainerWidth) && numericContainerWidth > 0;
+    const viewportWidth = (typeof window !== 'undefined') ? Number(window.innerWidth) : NaN;
+    const hasViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0;
+    const responsiveWidth = useWindowWidthForResponsive
+      ? (hasViewportWidth ? viewportWidth : (hasContainerWidth ? numericContainerWidth : NaN))
+      : (hasContainerWidth ? numericContainerWidth : NaN);
+    const responsiveBreakpoint = Number(responsiveNarrow?.breakpoint);
+    const isNarrowLayout = Number.isFinite(responsiveWidth)
+      && Number.isFinite(responsiveBreakpoint)
+      && responsiveWidth <= responsiveBreakpoint;
+    const narrowLegendOverrides = isNarrowLayout && responsiveNarrow?.legend
+      ? responsiveNarrow.legend
+      : null;
+    const narrowGeoOverrides = isNarrowLayout && responsiveNarrow?.geo
+      ? responsiveNarrow.geo
+      : null;
+
+    const legendOptions = actualCategoryField ? {
+      ...(legendType ? { type: legendType } : {}),
+      orient: legendOrient || 'vertical',
+      left: legendLeft ?? 'left',
+      top: legendTop ?? 'middle',
+      selectedMode: true,
+      ...(legendWidth !== null && legendWidth !== undefined ? { width: legendWidth } : {}),
+      ...(legendHeight !== null && legendHeight !== undefined ? { height: legendHeight } : {}),
+      ...(legendItemWidth !== null && legendItemWidth !== undefined ? { itemWidth: legendItemWidth } : {}),
+      ...(legendItemHeight !== null && legendItemHeight !== undefined ? { itemHeight: legendItemHeight } : {}),
+      ...(legendItemGap !== null && legendItemGap !== undefined ? { itemGap: legendItemGap } : {}),
+      data: categories.map(cat => ({
+        name: cat,
+        icon: 'circle',
+        itemStyle: {
+          color: categoryColorMap[cat]
+        }
+      })),
+      textStyle: {
+        color: textColor,
+        ...(legendFontSize !== null && legendFontSize !== undefined ? { fontSize: legendFontSize } : {})
+      },
+      backgroundColor: legendBackgroundColor ?? defaultLegendBackground,
+      borderColor: legendBorderColor ?? defaultLegendBorderColor,
+      borderWidth: legendBorderWidth ?? defaultLegendBorderWidth,
+      padding: legendPadding ?? 10,
+      borderRadius: 8,
+      inactiveColor: '#ccc'
+    } : null;
+
+    if (legendOptions && narrowLegendOverrides) {
+      Object.assign(legendOptions, narrowLegendOverrides);
+    }
+
+    const geoOptions = {
+      map: 'world',
+      roam: mapRoam,
+      scaleLimit: {
+        min: 0.5,
+        max: 10
+      },
+      zoom: mapZoom,
+      center: mapCenter,
+      label: {
+        emphasis: {
+          show: false
+        }
+      },
+      itemStyle: {
+        normal: {
+          areaColor: areaColor,
+          borderColor: borderColor
+        },
+        emphasis: {
+          areaColor: emphasisColor
+        }
+      },
+      layoutCenter: mapLayoutCenter || ['50%', '50%'],
+      layoutSize: mapLayoutSize || '100%'
+    };
+
+    if (narrowGeoOverrides) {
+      if (narrowGeoOverrides.layoutCenter !== undefined) {
+        geoOptions.layoutCenter = narrowGeoOverrides.layoutCenter;
+      }
+      if (narrowGeoOverrides.layoutSize !== undefined) {
+        geoOptions.layoutSize = narrowGeoOverrides.layoutSize;
+      }
+      if (narrowGeoOverrides.zoom !== undefined) {
+        geoOptions.zoom = narrowGeoOverrides.zoom;
+      }
+    }
 
     return {
       backgroundColor,
-      legend: actualCategoryField ? {
-        orient: 'vertical',
-        left: 'left',
-        top: 'middle',
-        selectedMode: true,
-        data: categories.map(cat => ({
-          name: cat,
-          icon: 'circle',
-          itemStyle: {
-            color: categoryColorMap[cat]
-          }
-        })),
-        textStyle: {
-          color: textColor
-        },
-        backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
-        borderColor: borderColor,
-        borderWidth: 1,
-        padding: 10,
-        borderRadius: 5,
-        inactiveColor: '#ccc'
-      } : null,
+      legend: legendOptions,
       tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove|click',
         enterable: true,
         confine: true,
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+        borderWidth: 1,
+        borderRadius: 8,
+        textStyle: {
+          color: isDarkMode ? '#E2E8F0' : '#0F172A'
+        },
+        extraCssText: isDarkMode
+          ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+          : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
         formatter: (params) => {
           if (params.componentType === 'series' && (params.seriesType === 'scatter' || params.seriesType === 'effectScatter')) {
             const node = params.data;
@@ -246,32 +422,7 @@ export class Geo2DMapChart {
           return '';
         }
       },
-      geo: {
-        map: 'world',
-        roam: true,
-        scaleLimit: {
-          min: 0.5,
-          max: 10
-        },
-        zoom: mapZoom,
-        center: mapCenter,
-        label: {
-          emphasis: {
-            show: false
-          }
-        },
-        itemStyle: {
-          normal: {
-            areaColor: areaColor,
-            borderColor: borderColor
-          },
-          emphasis: {
-            areaColor: emphasisColor
-          }
-        },
-        layoutCenter: ['50%', '50%'],
-        layoutSize: '100%'
-      },
+      geo: geoOptions,
       series: [
         // Create line series for each category - they will be controlled by legend
         ...categories.flatMap(category => {
@@ -296,7 +447,7 @@ export class Geo2DMapChart {
               clip: false,
               showSymbol: false,
               lineStyle: {
-                color: lineColor,
+                color: resolvedLineColor,
                 opacity: lineOpacity,
                 curveness: 0.2
               },
@@ -304,7 +455,7 @@ export class Geo2DMapChart {
                 lineStyle: {
                   width: lineWidth * 2,
                   opacity: lineHoverOpacity,
-                  color: '#fac858'
+                  color: '#FBBF24'
                 }
               },
               data: categoryLines
@@ -328,7 +479,7 @@ export class Geo2DMapChart {
                 symbolSize: symbolSize
               },
               lineStyle: {
-                color: lineColor,
+                color: resolvedLineColor,
                 width: 0,
                 curveness: 0.2
               },
@@ -367,13 +518,13 @@ export class Geo2DMapChart {
               formatter: '{b}',
               position: 'top',
               color: textColor,
-              backgroundColor: 'rgba(255,255,255,0.9)',
+              backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.86)' : 'rgba(255, 255, 255, 0.9)',
               padding: [2, 5],
-              borderRadius: 3,
+              borderRadius: 6,
               fontSize: 12
             },
             itemStyle: {
-              borderColor: '#fff',
+              borderColor: isDarkMode ? '#0F172A' : '#FFFFFF',
               borderWidth: 3,
               shadowBlur: 10,
               shadowColor: 'rgba(0,0,0,0.5)'

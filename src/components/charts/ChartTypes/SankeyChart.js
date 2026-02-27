@@ -4,7 +4,7 @@
  */
 
 import { BaseChart } from './BaseChart';
-import { generateColorPalette, formatValue } from '../../../utils';
+import { formatValue } from '../../../utils';
 
 export class SankeyChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -50,7 +50,7 @@ export class SankeyChart extends BaseChart {
         }
       }
 
-      const colors = generateColorPalette(processedData.nodes.length, isDarkMode);
+      const colors = this.resolveSeriesPalette(config, processedData.nodes.length, isDarkMode);
 
       // Merge sankeyConfig if provided (handles both locations)
       const sankeyConfig = config.sankeyConfig || config.config?.sankeyConfig || {};
@@ -161,7 +161,7 @@ export class SankeyChart extends BaseChart {
             focus: 'adjacency',
             blurScope: 'coordinateSystem',
             itemStyle: {
-              borderColor: '#000',
+              borderColor: isDarkMode ? '#0F172A' : '#334155',
               borderWidth: 2
             }
           },
@@ -170,7 +170,7 @@ export class SankeyChart extends BaseChart {
             ...node,
             itemStyle: {
               color: node.color || colors[index % colors.length],
-              borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+              borderColor: isDarkMode ? '#334155' : '#E2E8F0',
               borderWidth: 1
             },
             label: {
@@ -213,10 +213,15 @@ export class SankeyChart extends BaseChart {
         tooltip: {
           trigger: 'item',
           triggerOn: 'mousemove',
-          backgroundColor: isDarkMode ? 'rgba(17, 24, 39, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-          borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+          backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+          borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+          borderWidth: 1,
+          borderRadius: 8,
+          extraCssText: isDarkMode
+            ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+            : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
           textStyle: {
-            color: isDarkMode ? '#f3f4f6' : '#111827'
+            color: isDarkMode ? '#E2E8F0' : '#0F172A'
           },
           formatter: function(params) {
             if (params.dataType === 'node') {

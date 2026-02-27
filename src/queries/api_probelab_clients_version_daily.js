@@ -2,6 +2,7 @@ const metric = {
   id: 'api_probelab_clients_version_daily',
   name: 'Client Version',
   description: 'Versions per client distribution',
+  metricDescription: 'Daily distribution of client semantic versions, with client filter. Helps track upgrade adoption and version fragmentation.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

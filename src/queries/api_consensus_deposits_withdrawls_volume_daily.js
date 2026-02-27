@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_consensus_deposits_withdrawls_volume_daily',
-  name: 'Deposits/Withdrawls (Volume)',
-  description: 'Daily mGNO amount of deposits/withdrawls',
+  name: 'Deposits/Withdrawals (Volume)',
+  description: 'Daily mGNO amount of deposits/withdrawals',
+  metricDescription: 'Daily deposit and withdrawal volume in mGNO. Volume captures stake movement magnitude, not just event counts.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

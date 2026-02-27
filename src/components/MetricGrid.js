@@ -17,9 +17,17 @@ import { getDateRange } from '../utils';
  * @param {Object} props.tabConfig - Tab configuration object (may contain globalFilterField)
  * @param {string} props.globalFilterValue - Currently selected global filter value
  * @param {Function} props.onGlobalFilterChange - Handler for global filter changes
+ * @param {Object|null} props.dashboardPalette - Active dashboard palette definition
  * @returns {JSX.Element} Grid component
  */
-const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilterValue = null, onGlobalFilterChange = null }) => {
+const MetricGrid = ({
+  metrics,
+  isDarkMode = false,
+  tabConfig = null,
+  globalFilterValue = null,
+  onGlobalFilterChange = null,
+  dashboardPalette = null
+}) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
   const globalFilterValueRef = useRef(globalFilterValue);
@@ -27,6 +35,9 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
   const hasUnitToggle = tabConfig?.unitToggle === true;
+
+  // Whether per-chart resolution toggles are enabled for this tab
+  const hasResolutionToggle = tabConfig?.resolutionToggle === true;
 
   // Keep a ref of the latest global filter value to avoid stale-closure overwrites
   useEffect(() => {
@@ -113,15 +124,24 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
   useEffect(() => {
     if (!hasGlobalFilter || !metricForOptions) {
       setGlobalFilterOptions([]);
+      setLoadingGlobalFilter(false);
       return;
     }
 
+    let cancelled = false;
+
     const fetchGlobalFilterOptions = async () => {
+      // Clear previous context options immediately to avoid cross-tab stale values.
+      setGlobalFilterOptions([]);
       setLoadingGlobalFilter(true);
       try {
         // Fetch from just one metric - much faster! All metrics should have the same tokens anyway
         const { from, to } = getDateRange('90d');
         const result = await metricsService.getMetricData(metricForOptions.id, { from, to });
+
+        if (cancelled) {
+          return;
+        }
         
         // Extract unique values
         const allValues = new Set();
@@ -138,22 +158,38 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
         const sortedOptions = Array.from(allValues).sort();
         setGlobalFilterOptions(sortedOptions);
 
-        // If no filter value is set and we have options, set the first one
-        // This only runs when options are first loaded, not on every filter change
-        // Use ref so we don't overwrite a user selection made while options were loading.
+        // Ensure selected filter is valid for the current tab options.
         const latestValue = globalFilterValueRef.current;
-        if (sortedOptions.length > 0 && onGlobalFilterChange && !latestValue) {
+        if (!onGlobalFilterChange) {
+          return;
+        }
+
+        if (sortedOptions.length === 0) {
+          if (latestValue) {
+            onGlobalFilterChange(null);
+          }
+          return;
+        }
+
+        if (!latestValue || !sortedOptions.includes(latestValue)) {
           onGlobalFilterChange(sortedOptions[0]);
         }
       } catch (error) {
-        console.error('Error fetching global filter options:', error);
-        setGlobalFilterOptions([]);
+        if (!cancelled) {
+          console.error('Error fetching global filter options:', error);
+          setGlobalFilterOptions([]);
+        }
       } finally {
-        setLoadingGlobalFilter(false);
+        if (!cancelled) {
+          setLoadingGlobalFilter(false);
+        }
       }
     };
 
     fetchGlobalFilterOptions();
+    return () => {
+      cancelled = true;
+    };
     // Only refetch when metrics change, not when filter value changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField]);
@@ -216,20 +252,23 @@ const MetricGrid = ({ metrics, isDarkMode = false, tabConfig = null, globalFilte
               <MetricWidget 
                 metricId={metric.id} 
                 isDarkMode={isDarkMode}
+                dashboardPalette={dashboardPalette}
                 globalSelectedLabel={
-                  // Only pass global filter if this metric matches the global filter field
                   hasGlobalFilter && 
                   metric.enableFiltering && 
                   metric.labelField === tabConfig.globalFilterField
                     ? (globalFilterValue || globalFilterOptions[0] || null)
                     : null
                 }
-                hasGlobalFilter={hasGlobalFilter && 
-                  metric.enableFiltering && 
-                  metric.labelField === tabConfig.globalFilterField}
+                hasGlobalFilter={hasGlobalFilter && (
+                  (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
+                  (metric.globalFilterField === tabConfig.globalFilterField)
+                )}
                 globalFilterField={tabConfig?.globalFilterField}
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
                 selectedUnit={hasUnitToggle ? selectedUnit : null}
+                enableResolutionToggle={hasResolutionToggle}
+                enableUnitToggle={!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields)}
               />
             </div>
           );

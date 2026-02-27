@@ -40,6 +40,7 @@ export {
 // Configuration utilities
 export * from './config';
 export * from './dashboardConfig';
+export * from './dashboardPalettes';
 
 // Other utilities
 export * from './gridLayoutManager';

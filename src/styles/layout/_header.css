@@ -77,6 +77,103 @@
   gap: var(--spacing-md);
 }
 
+.metric-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.metric-search-input {
+  width: clamp(220px, 30vw, 420px);
+  height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
+}
+
+.metric-search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.metric-search-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.metric-search-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.metric-search-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: clamp(280px, 34vw, 420px);
+  max-height: min(62vh, 360px);
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-base);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-index-dropdown);
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.metric-search-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.15rem;
+}
+
+.metric-search-item:hover,
+.metric-search-item.active {
+  background-color: var(--color-accent-softer);
+  border-color: var(--color-border-subtle);
+}
+
+.metric-search-title {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+}
+
+.metric-search-path {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.2;
+}
+
+.metric-search-empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  padding: 0.55rem 0.5rem;
+}
+
 .active-dashboard-name {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
@@ -117,6 +214,114 @@
 .theme-toggle svg {
   width: 20px;
   height: 20px;
+}
+
+/* ==================
+   Header Resources Menu
+   ================== */
+
+.header-resources {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header-resources-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--border-radius-base);
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  transition: background-color var(--transition-base), 
+              border-color var(--transition-base), 
+              color var(--transition-base),
+              box-shadow var(--transition-base);
+}
+
+.header-resources-trigger:hover {
+  background-color: var(--color-accent-softer);
+  border-color: var(--color-border-hover);
+  color: var(--primary-blue);
+}
+
+.header-resources-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+.header-resources-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  max-width: min(92vw, 380px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-sm);
+  z-index: var(--z-index-dropdown);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.header-resources-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.header-resources-group + .header-resources-group {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--spacing-sm);
+}
+
+.header-resources-group-label {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.header-resources-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.header-resources-link {
+  display: block;
+  padding: 0.36rem 0.45rem;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.header-resources-link:hover {
+  background-color: var(--color-accent-softer);
+  color: var(--primary-blue);
+}
+
+.header-resources-link:focus-visible {
+  outline: none;
+  background-color: var(--color-accent-soft);
+  color: var(--primary-blue);
 }
 
 /* ==================
@@ -286,6 +491,29 @@
   .header-actions {
     gap: var(--spacing-sm);
   }
+
+  .metric-search-input {
+    width: min(54vw, 240px);
+    height: 36px;
+    font-size: 0.75rem;
+  }
+
+  .metric-search-menu {
+    width: min(92vw, 320px);
+    right: 0;
+    max-height: min(58vh, 320px);
+  }
+
+  .header-resources-trigger {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .header-resources-menu {
+    min-width: 220px;
+    max-width: min(94vw, 320px);
+    right: 0;
+  }
   
   .theme-toggle {
     width: 36px;
@@ -314,4 +542,28 @@
 
 .dark-mode .header-dropdown-item:hover {
   background-color: var(--color-background);
+}
+
+.dark-mode .header-resources-menu {
+  border-color: var(--color-border);
+}
+
+.dark-mode .header-resources-link:hover {
+  background-color: var(--color-accent-softer);
+}
+
+.dark-mode .metric-search-input {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.dark-mode .metric-search-menu {
+  border-color: var(--color-border);
+}
+
+.dark-mode .metric-search-item:hover,
+.dark-mode .metric-search-item.active {
+  background-color: var(--color-accent-soft);
+  border-color: var(--color-border);
 }

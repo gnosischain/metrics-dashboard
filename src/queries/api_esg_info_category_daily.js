@@ -2,6 +2,7 @@ const metric = {
   id: 'api_esg_info_category_daily',
   name: 'Daily Estimations by Node Category',
   description: 'Emissions, Energy Consumption, Nodes',
+  metricDescription: 'Daily emissions and energy estimates by node-category segment. Category filter shows which node groups drive footprint changes.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

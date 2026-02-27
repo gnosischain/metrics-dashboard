@@ -115,15 +115,15 @@ export const hexToRgba = (hex, alpha = 1) => {
  * Default color palette
  */
 export const defaultColors = [
-  '#5470c6',
-  '#91cc75',
-  '#fac858',
-  '#ee6666',
-  '#73c0de',
-  '#3ba272',
-  '#fc8452',
-  '#9a60b4',
-  '#ea7ccc'
+  '#4F46E5',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#8B5CF6',
+  '#3B82F6',
+  '#EC4899',
+  '#14B8A6',
+  '#F97316'
 ];
 
 /**
@@ -172,8 +172,8 @@ export const addWatermark = (options, config = {}) => {
       opacity: finalConfig.watermarkOpacity
     },
     right: 10,
-    // Position at the same level as the zoom slider
-    bottom: config.hasZoom ? 15 : 10  // Same height as zoom slider when present
+    // Keep watermark above simplified zoom slider to avoid collisions.
+    bottom: config.hasZoom ? 28 : 10
   };
 
   // Add graphic to options
@@ -248,7 +248,7 @@ export const generateAxisConfig = (config, axisType = 'x') => {
     axisLine: {
       show: true,
       lineStyle: {
-        color: '#D0D7DE'
+        color: '#CBD5E1'
       }
     },
     axisTick: {
@@ -257,7 +257,7 @@ export const generateAxisConfig = (config, axisType = 'x') => {
     },
     axisLabel: {
       show: true,
-      color: '#57606A',
+      color: '#64748B',
       fontSize: 12
     },
     splitLine: {
@@ -272,7 +272,7 @@ export const generateAxisConfig = (config, axisType = 'x') => {
     baseAxis.splitLine = {
       show: true,
       lineStyle: {
-        color: '#F6F8FA',
+        color: 'rgba(148, 163, 184, 0.24)',
         type: 'dashed'
       }
     };

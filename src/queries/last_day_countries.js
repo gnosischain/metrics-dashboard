@@ -3,7 +3,7 @@ const metric = {
   name: 'Countries',
   format: 'formatNumber',
   chartType: 'numberDisplay',
-  color: '#0969DA',
+  color: '#4F46E5',
   query: `SELECT COUNT(DISTINCT country) AS value FROM dbt.p2p_peers_geo_latest`
 };
 

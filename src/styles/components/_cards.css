@@ -9,9 +9,9 @@
 
 .metric-card {
   background-color: var(--color-surface);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-base);
-  border: 0.5px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -24,8 +24,9 @@
 }
 
 .metric-card:hover {
-  border-color: rgba(0, 0, 0, 0.2);
+  border-color: var(--color-border-hover);
   box-shadow: var(--shadow-md);
+  transform: none;
 }
 
 /* ==================
@@ -33,17 +34,17 @@
    ================== */
 
 .card-header {
-  padding: var(--spacing-md) 1.25rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border-subtle);
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 50px;
+  min-height: 42px;
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
 }
 
 .card-header-text {
@@ -53,15 +54,16 @@
 }
 
 .card-title {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: var(--font-weight-semibold);
   margin-bottom: 0.1rem;
   color: var(--color-text-primary);
+  letter-spacing: -0.01em;
   word-break: break-word; 
 }
 
 .card-subtitle {
-  font-size: var(--font-size-sm);
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
@@ -72,10 +74,10 @@
 /* Enhanced styles for text widget cards */
 .metric-card[data-chart-type="text"] .card-header .card-title {
   font-size: 1.4rem; /* Increased from 0.9rem */
-  font-weight: var(--font-weight-bold); /* Increased from semibold */
+  font-weight: 800;
   margin-bottom: 0.5rem; /* Increased from 0.1rem */
   line-height: 1.3;
-  color: var(--primary-blue); /* Blue title for text widgets */
+  color: var(--color-text-primary);
 }
 
 .metric-card[data-chart-type="text"] .card-header .card-subtitle {
@@ -132,22 +134,189 @@
   border-color: var(--color-border-hover);
 }
 
+.metric-download-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base), opacity var(--transition-base);
+}
+
+.metric-download-button:hover:not(:disabled) {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
+}
+
+.metric-download-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.resolution-toggle {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  height: 24px;
+}
+
+.resolution-btn {
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.resolution-btn:hover {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.resolution-btn.active {
+  background-color: var(--color-accent-soft, rgba(99, 102, 241, 0.1));
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
 .metric-info-popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 220px;
-  max-width: 320px;
-  padding: 10px 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: clamp(320px, 52vw, 720px);
+  max-width: calc(100vw - 24px);
+  padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-sm);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
-  line-height: 1.4;
-  white-space: pre-wrap;
-  z-index: 20;
+  z-index: 10020;
+  will-change: top, left;
+}
+
+.metric-info-popover[data-placement="bottom"] {
+  transform-origin: top right;
+}
+
+.metric-info-popover[data-placement="top"] {
+  transform-origin: bottom right;
+}
+
+.metric-info-popover-content {
+  padding: 0.85rem 1rem;
+  max-height: min(62vh, 460px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+.metric-info-popover-content > *:first-child {
+  margin-top: 0;
+}
+
+.metric-info-popover-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.metric-info-popover-content p {
+  margin: 0 0 0.7rem;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content h1,
+.metric-info-popover-content h2,
+.metric-info-popover-content h3,
+.metric-info-popover-content h4,
+.metric-info-popover-content h5,
+.metric-info-popover-content h6 {
+  margin: 0.9rem 0 0.45rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content h1 {
+  font-size: 1rem;
+}
+
+.metric-info-popover-content h2 {
+  font-size: 0.96rem;
+}
+
+.metric-info-popover-content h3 {
+  font-size: 0.92rem;
+}
+
+.metric-info-popover-content h4,
+.metric-info-popover-content h5,
+.metric-info-popover-content h6 {
+  font-size: 0.88rem;
+}
+
+.metric-info-popover-content ul,
+.metric-info-popover-content ol {
+  margin: 0 0 0.7rem;
+  padding-left: 1.1rem;
+}
+
+.metric-info-popover-content li {
+  margin-bottom: 0.3rem;
+}
+
+.metric-info-popover-content blockquote {
+  margin: 0.7rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--primary-blue);
+  background: var(--color-accent-softer);
+  border-radius: 0 6px 6px 0;
+}
+
+.metric-info-popover-content code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.85em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  background: var(--color-accent-soft);
+  color: var(--primary-blue);
+}
+
+.metric-info-popover-content pre {
+  margin: 0.7rem 0;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  overflow-x: auto;
+}
+
+.metric-info-popover-content pre code {
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.metric-info-popover-content a {
+  color: var(--primary-blue);
+  text-decoration: none;
+}
+
+.metric-info-popover-content a:hover {
+  text-decoration: underline;
 }
 
 /* ==================
@@ -169,7 +338,7 @@
 }
 
 .expand-chart-button:hover {
-  background-color: #EFF3F7;
+  background-color: var(--color-accent-softer);
   color: var(--color-text-primary);
 }
 
@@ -217,6 +386,42 @@
 
 .metric-card.number-display-card .card-content {
   padding: 0;
+}
+
+/* Generic outline variant: keeps card border but uses dashboard background */
+.metric-card.card-variant-outline {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+.metric-card.card-variant-outline:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: none;
+}
+
+/* Number display card with dashboard background + border only */
+.metric-card.number-display-card.card-variant-outline {
+  box-shadow: none !important;
+  border: 1px solid var(--color-border-hover) !important;
+  background: var(--color-background) !important;
+}
+
+.metric-card.number-display-card.card-variant-outline:hover {
+  box-shadow: none !important;
+  border: 1px solid var(--color-text-muted) !important;
+  background: var(--color-background) !important;
+  transform: none;
+}
+
+.metric-card.number-display-card.card-variant-outline .card-header {
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: transparent;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.metric-card.number-display-card.card-variant-outline .card-content {
+  padding: var(--spacing-xs) 0 var(--spacing-sm);
 }
 
 /* Remove the separate compact class since all number display cards should be borderless */
@@ -381,13 +586,13 @@
 
 .dark-mode .metric-card {
   background-color: var(--color-surface);
-  border: 0.5px solid var(--color-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-base);
 }
 
 .dark-mode .metric-card:hover {
-  border-color: #4D565F;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .dark-mode .metric-card.compact {
@@ -405,7 +610,7 @@
 
 .dark-mode .card-header {
   border-bottom: 1px solid var(--color-border);
-  background-color: rgba(22, 27, 34, 0.8);
+  background-color: transparent;
 }
 
 .dark-mode .card-title {
@@ -418,7 +623,7 @@
 
 /* Dark mode support for text widget enhanced styles */
 .dark-mode .metric-card[data-chart-type="text"] .card-header .card-title {
-  color: var(--primary-blue); /* Blue title in dark mode too */
+  color: var(--color-text-primary);
 }
 
 .dark-mode .metric-card[data-chart-type="text"] .card-header .card-subtitle {
@@ -430,12 +635,31 @@
 }
 
 .dark-mode .expand-chart-button:hover {
-  background-color: rgba(139, 148, 158, 0.1);
+  background-color: var(--color-accent-soft);
   color: var(--color-text-primary);
 }
 
-.dark-mode .number-display-card {
-  border-left-color: rgba(255, 255, 255, 0.2) !important;
+.dark-mode .metric-download-button {
+  color: var(--color-text-secondary);
+}
+
+.dark-mode .metric-download-button:hover:not(:disabled) {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
+}
+
+.dark-mode .resolution-toggle {
+  border-color: var(--color-border);
+}
+
+.dark-mode .resolution-btn:hover {
+  background-color: var(--color-accent-soft);
+}
+
+.dark-mode .resolution-btn.active {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text-primary);
 }
 
 .dark-mode .minimal-title {
@@ -471,6 +695,14 @@
   
   .card-header-controls {
     width: 100%;
+  }
+
+  .metric-info-popover {
+    width: min(92vw, 720px);
+  }
+
+  .metric-info-popover-content {
+    max-height: min(56vh, 420px);
   }
   
   .minimal-widget-header {

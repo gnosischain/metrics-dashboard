@@ -1,0 +1,4 @@
+{
+  "id": "overview_payments",
+  "query": "SELECT CONCAT('+$',toString(floor(value/1000000)), 'M') AS value FROM dbt.api_execution_gpay_total_volume"
+}

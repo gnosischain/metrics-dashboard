@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_consensus_attestations_daily',
   name: 'Attestations',
-  description: 'Daily number Attesations per inclusion delay',
+  description: 'Daily number of attestations per inclusion delay',
+  metricDescription: 'Daily attestation counts by inclusion-delay bucket. Lower delay buckets indicate faster inclusion and healthier validator performance.',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,

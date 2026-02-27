@@ -55,7 +55,7 @@
 
 .tab:hover,
 .dashboard-tab:hover {
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
 }
 
@@ -64,7 +64,8 @@
   border-bottom: 3px solid var(--primary-blue);
   color: var(--primary-blue);
   font-weight: var(--font-weight-semibold);
-  background-color: transparent;
+  background-color: var(--color-hover-background);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
 /* ==================
@@ -145,7 +146,8 @@
 
 .tabs-container.vertical .tab.active {
   border-left: 3px solid var(--primary-blue);
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
 }
 
 /* ==================
@@ -167,7 +169,7 @@
 }
 
 .tabs-nav.pills .tab:hover {
-  background-color: rgba(9, 105, 218, 0.1);
+  background-color: var(--color-accent-soft);
 }
 
 .tabs-nav.pills .tab.active {
@@ -195,7 +197,7 @@
 }
 
 .tabs-nav.boxed .tab:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-accent-softer);
 }
 
 .tabs-nav.boxed .tab.active {
@@ -317,7 +319,7 @@
 
 .dark-mode .tab:hover,
 .dark-mode .dashboard-tab:hover {
-  background-color: rgba(88, 166, 255, 0.08);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
 }
 
@@ -325,6 +327,7 @@
 .dark-mode .dashboard-tab.active {
   color: var(--primary-blue);
   border-color: var(--primary-blue);
+  background-color: var(--color-hover-background);
 }
 
 .dark-mode .tabs-content {

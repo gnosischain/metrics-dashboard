@@ -55,7 +55,7 @@
 }
 
 .sidebar-toggle:hover {
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
 }
 
@@ -150,12 +150,12 @@
 }
 
 .dashboard-header:hover {
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
 }
 
 .dashboard-header.active {
-  background-color: rgba(9, 105, 218, 0.08);
+  background-color: var(--color-hover-background);
   border-left: 3px solid var(--primary-blue);
   font-weight: var(--font-weight-semibold);
   color: var(--primary-blue);
@@ -187,7 +187,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
   min-height: 24px; /* Set minimum height for consistency */
   display: flex;
   align-items: center;
@@ -215,12 +215,12 @@
 }
 
 .tab-item:hover {
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
 }
 
 .tab-item.active {
-  background-color: rgba(9, 105, 218, 0.08);
+  background-color: var(--color-hover-background);
   border-left: 3px solid var(--primary-blue);
   font-weight: var(--font-weight-medium);
   color: var(--primary-blue);
@@ -299,6 +299,6 @@
 
   .dashboard-header.active,
   .tab-item.active {
-    background-color: rgba(9, 105, 218, 0.15);
+    background-color: var(--color-hover-background-strong);
   }
 }

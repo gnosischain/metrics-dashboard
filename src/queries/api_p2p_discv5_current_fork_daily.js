@@ -2,6 +2,7 @@ const metric = {
   id: 'api_p2p_discv5_current_fork_daily',
   name: 'CL Forks Distribution',
   description: 'Distribution for forks across the network (Consensus Layer)',
+  metricDescription: 'Daily distribution of currently advertised consensus fork versions across DiscV5 peers. Divergence can indicate upgrade lag.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

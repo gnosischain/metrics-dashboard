@@ -1,0 +1,48 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: bar-chart-2
+    metrics:
+      - id: api_esg_carbon_emissions_annualised_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 130px
+      - id: api_esg_energy_consumption_annualised_latest
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 130px
+      - id: api_esg_cif_network_vs_countries_daily
+        gridRow: 1 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 602px
+      - id: api_esg_carbon_emissions_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 460px
+  - name: Breakdown
+    order: 2
+    icon: ''
+    iconClass: search
+    metrics:
+      - id: api_esg_info_category_daily
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_esg_info_annual_daily
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_esg_estimated_nodes_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+  - name: Methodology
+    order: 3
+    icon: 📝
+    iconClass: file-text
+    metrics:
+      - id: text_esg_methodology
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 12100px

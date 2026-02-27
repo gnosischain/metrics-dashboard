@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_consensus_info_withdrawls_cnt_latest',
-  name: 'Withdrawls',
+  name: 'Withdrawals',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',

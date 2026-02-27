@@ -120,17 +120,33 @@ export const formatNumberWithGNO = (value) => {
   return `${full} GNO`;
 };
 
+export const formatPercentageInt = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0%';
+  return Math.round(value) + '%';
+};
+
+export const formatCurrencyCompact = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '$0';
+  const v = Number(value);
+  if (Math.abs(v) >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+  if (Math.abs(v) >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
+  if (Math.abs(v) >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
+  return '$' + v.toFixed(0);
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
+  formatPercentageInt,
   formatDuration,
   formatValue,
   formatNumberWithXDAI,
   formatNumberWithUSD,
   formatNumberWithGNO,
-  formatCurrency
+  formatCurrency,
+  formatCurrencyCompact
 };
 
 export default formatters;

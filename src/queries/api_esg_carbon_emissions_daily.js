@@ -2,6 +2,7 @@ const metric = {
   id: 'api_esg_carbon_emissions_daily',
   name: 'Network CO2 Emissions',
   description: 'Daily kgCO2 emissions from the network',
+  metricDescription: 'Daily network CO2e estimate with uncertainty bands from model simulations. The central line is the smoothed estimate and bands show confidence bounds.',
   chartType: 'quantileBands', 
   isTimeSeries: true,
   enableZoom: false,

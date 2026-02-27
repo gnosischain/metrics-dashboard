@@ -37,9 +37,9 @@ queryFiles.forEach(file => {
       return;
     }
     
-    // Parse metric configuration using simple regex
+    // Parse metric configuration using delimiter-aware regex
     const idMatch = fileContent.match(/id:\s*['"]([^'"]+)['"]/);
-    const queryMatch = fileContent.match(/query:\s*[`'"]([^`]+)[`'"]/s);
+    const queryMatch = fileContent.match(/query:\s*([`'"])((?:\\.|(?!\1)[\s\S])*?)\1/s);
     
     if (!idMatch || !queryMatch) {
       console.warn(`Could not find ID or query in ${file}, skipping`);
@@ -47,7 +47,17 @@ queryFiles.forEach(file => {
     }
     
     const id = idMatch[1];
-    const query = queryMatch[1].trim();
+    const delimiter = queryMatch[1];
+    let query = queryMatch[2].trim();
+
+    // Unescape escaped delimiters from source literals
+    if (delimiter === '`') {
+      query = query.replace(/\\`/g, '`');
+    } else if (delimiter === '\'') {
+      query = query.replace(/\\'/g, '\'');
+    } else if (delimiter === '"') {
+      query = query.replace(/\\"/g, '"');
+    }
     
     // Create a JSON object with just id and query
     const jsonObj = { id, query };
