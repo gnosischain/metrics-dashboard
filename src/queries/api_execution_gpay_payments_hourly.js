@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_payments_hourly',
-  name: 'Hourly Payments',
-  description: 'Payment count by hour',
-  metricDescription: 'Hourly payment counts over the last 14 complete days, stacked by token. Shows intraday activity patterns.',
+  name: 'Payments',
+  description: 'Hourly count by token',
+  metricDescription: 'Payment counts per hour over the last 14 complete days, broken down by token. Useful for spotting intraday activity patterns and peak usage hours.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

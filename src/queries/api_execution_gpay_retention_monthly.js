@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_gpay_retention_monthly',
-  name: 'User Retention',
-  description: 'Monthly active users by activation cohort',
-  metricDescription: 'Monthly active users by activation cohort (cohort month as series). Compare cohort decay and persistence over activity months.',
+  name: 'User Count',
+  description: 'By activation cohort',
+  metricDescription: 'Monthly active user count broken down by activation cohort. Each color represents users who made their first payment in that month. Shows how many users from each cohort remain active over time.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,
