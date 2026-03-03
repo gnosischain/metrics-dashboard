@@ -47,9 +47,9 @@ ESG:
   icon: 🌱
   iconClass: leaf
   source: /dashboards/esg.yml
-#Yields:
-#  name: Yields
-#  order: 80
-#  icon: "📈"
-#  iconClass: yield
-#  source: /dashboards/yields.yml
+Yields:
+  name: Yields
+  order: 80
+  icon: "📈"
+  iconClass: yield
+  source: /dashboards/yields.yml
