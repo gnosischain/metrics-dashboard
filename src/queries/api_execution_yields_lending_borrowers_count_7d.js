@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_lending_borrowers_count_7d',
-  name: 'Aave V3 Borrowers Count',
-  description: 'Unique borrowers (last 7 days)',
+  name: 'Borrowers',
+  description: 'Last 7 days',
+  metricDescription: 'Unique wallets that borrowed at least one asset on Aave V3 in the last 7 days. Change compares to the prior 7-day window.',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',

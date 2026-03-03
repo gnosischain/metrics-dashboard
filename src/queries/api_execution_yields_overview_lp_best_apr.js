@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_lp_best_apr',
   name: 'Top Pool APR',
-  description: 'Best 7D fee yield among LP pools',
+  description: 'Best 7D fee yield',
+  metricDescription: 'Highest 7-day trailing fee APR among tracked Uniswap V3 and Swapr V3 pools. Annualised from recent fee revenue relative to pool TVL.',
   format: 'formatPercentage',
   valueField: 'value',
   chartType: 'numberDisplay',

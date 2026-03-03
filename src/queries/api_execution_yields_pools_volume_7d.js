@@ -1,8 +1,8 @@
 const metric = {
-  id: 'api_execution_yields_pools_fees_7d',
-  name: 'Fees Accrued',
+  id: 'api_execution_yields_pools_volume_7d',
+  name: 'Trading Volume',
   description: 'Last 7 days',
-  metricDescription: 'Total fees accrued across all tracked pools for the selected token. Change compares to the prior 7-day window.',
+  metricDescription: 'Total gross trading volume across all tracked pools for the selected token. Change compares to the prior 7-day window.',
   format: 'formatValue',
   valueField: 'value',
   chartType: 'numberDisplay',
@@ -15,7 +15,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs prior 7 days'
   },
-  query: `SELECT token, value, change_pct FROM dbt.api_execution_yields_pools_fees_7d`,
+  query: `SELECT token, value, change_pct FROM dbt.api_execution_yields_pools_volume_7d`,
 };
 
 export default metric;

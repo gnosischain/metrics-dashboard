@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_lending_lenders',
   name: 'Total Lenders',
-  description: 'All-time unique suppliers on Aave V3',
+  description: 'All-time on Aave V3',
+  metricDescription: 'Cumulative unique wallets that have supplied at least one asset on Aave V3. Change compares new lenders in last 7D vs prior 7D.',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',

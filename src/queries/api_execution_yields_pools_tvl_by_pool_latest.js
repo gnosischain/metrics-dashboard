@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_yields_pools_tvl_by_pool_latest',
   name: 'TVL by Pool',
-  description: 'TVL distribution across pools for selected token, in USD',
-  metricDescription: 'Latest TVL distribution across pools for the selected token. Pie shares are within-token and indicate liquidity concentration.',
+  description: 'Current distribution',
+  metricDescription: 'Latest TVL distribution across pools for the selected token. Pie shares show within-token liquidity concentration.',
   chartType: 'pie',
   nameField: 'label',
   valueField: 'value',

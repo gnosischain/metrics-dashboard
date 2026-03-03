@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_yields_opportunities_latest',
   name: 'Yield Opportunities',
-  description: 'LP pools and lending markets sorted by yield',
-  metricDescription: 'Current yield opportunities across LP pools and lending markets. Rows are ranked by yield to compare candidates quickly.',
+  description: 'Pools & lending ranked by yield',
+  metricDescription: 'Current yield opportunities across LP pools and lending markets on Gnosis Chain. Rows are ranked by yield to compare candidates quickly.',
   chartType: 'table',
   enableFiltering: true,
   labelField: 'type',

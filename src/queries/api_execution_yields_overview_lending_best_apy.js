@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_lending_best_apy',
   name: 'Top Lending APY',
-  description: 'Best supply APY on Aave V3',
+  description: 'Aave V3 best supply rate',
+  metricDescription: 'Highest supply APY currently available on Aave V3 across all listed tokens. Shows which asset is offering the best return for lenders.',
   format: 'formatPercentage',
   valueField: 'value',
   chartType: 'numberDisplay',
