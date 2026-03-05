@@ -33,7 +33,7 @@ const metric = {
     enableZoom: true,
     enableDrag: true,
     nodeIconsByLabel: {
-      'Null/Burn': 'bank',
+      'Bank': 'bank',
       'Gnosis Pay': 'payment',
       gpay: 'card'
     },
