@@ -1,0 +1,76 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: "📊"
+    iconClass: "chart-line"
+    metrics:
+      - id: api_execution_yields_overview_lp_tvl
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 160px
+      - id: api_execution_yields_overview_lending_best_apy
+        gridRow: 2
+        gridColumn: 5 / span 4
+        minHeight: 160px
+      - id: api_execution_yields_opportunities_latest
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: Lending yields
+    order: 2
+    icon: "💰"
+    iconClass: "lending"
+    globalFilterField: 'token'
+    metrics:
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 60px
+      - id: api_execution_yields_lending_lenders_count_7d
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 200px
+      - id: api_execution_yields_lending_borrowers_count_7d
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 200px
+      - id: api_execution_yields_lending_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_yields_lending_activity_counts_weekly
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_yields_lending_activity_volumes_weekly
+        gridRow: 5
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: Pool Yields
+    order: 3
+    icon: "📊"
+    iconClass: "pool"
+    globalFilterField: 'token'
+    metrics:
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 60px
+      - id: api_execution_yields_pools_tvl_latest
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 200px
+      - id: api_execution_yields_pools_fees_7d
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 200px
+      - id: api_execution_yields_pools_tvl_by_pool_latest
+        gridRow: 2 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 422px
+      - id: api_execution_yields_pools_fee_apr_7d_daily
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 450px

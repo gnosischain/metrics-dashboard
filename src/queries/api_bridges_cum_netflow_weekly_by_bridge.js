@@ -2,6 +2,7 @@ const metric = {
   id: 'api_bridges_cum_netflow_weekly_by_bridge',
   name: 'Cumulative Netflow',
   description: 'Weekly',
+  metricDescription: 'Weekly cumulative netflow in USD by bridge (inflow minus outflow). Positive values indicate net inflow to Gnosis Chain.',
   chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,

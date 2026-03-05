@@ -2,6 +2,7 @@ const metric = {
   id: 'api_consensus_zero_blob_commitments_daily',
   name: 'Blocks With Blob Commitments',
   description: 'Daily produced blocks with/without blobs',
+  metricDescription: 'Daily split of blocks with versus without blob commitments. Use it to monitor blob adoption relative to total block production.',
   chartType: 'area', 
   format: 'formatNumber',
   isTimeSeries: true,

@@ -3,10 +3,15 @@ import * as echarts from 'echarts';
 import { getChartComponent } from './chartRegistry';
 import { addWatermark } from '../../../utils/echarts/chartUtils';
 
-const EChartsContainer = ({ 
-  data, 
-  chartType, 
-  config = {}, 
+const GL_CHART_TYPES = ['3dbar', '3dmap', 'globe', 'geo-gl', 'scatter3d', 'surface', 'geo3d-map'];
+const WORD_CLOUD_TYPES = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'];
+
+const isWordCloudType = (type = '') => WORD_CLOUD_TYPES.includes(type);
+
+const EChartsContainer = ({
+  data,
+  chartType,
+  config = {},
   isDarkMode = false,
   width = '100%',
   height = '400px',
@@ -19,6 +24,11 @@ const EChartsContainer = ({
 }) => {
   const chartRef = useRef(null);
   const instanceRef = useRef(null);
+  const hasRenderedRef = useRef(false);
+  const previousChartTypeRef = useRef(chartType);
+  const graphEdgeLegendListenerRef = useRef(null);
+  const heatmapZoomListenerRef = useRef(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chartOptions, setChartOptions] = useState(null);
@@ -26,24 +36,171 @@ const EChartsContainer = ({
   const [requiresGL, setRequiresGL] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: undefined, height: undefined });
 
-  console.log(`EChartsContainer: Rendering with chartType=${chartType}, dataLength=${data?.length}, isDarkMode=${isDarkMode}`);
+  const isWordCloud = isWordCloudType(chartType);
 
-  // Check if chart type requires GL or special handling
-  useEffect(() => {
-    const needsGL = ['3dbar', '3dmap', 'globe', 'geo-gl', 'scatter3d', 'surface', 'geo3d-map'].includes(chartType);
-    const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-    
-    setRequiresGL(needsGL);
-    
-    // Word cloud specific logging
-    if (isWordCloud) {
-      console.log(`EChartsContainer: Detected word cloud chart type: ${chartType}`);
+  const detachGraphEdgeLegendListener = () => {
+    if (instanceRef.current && graphEdgeLegendListenerRef.current) {
+      instanceRef.current.off('legendselectchanged', graphEdgeLegendListenerRef.current);
     }
-    
-    console.log(`EChartsContainer: Chart type ${chartType} requires GL: ${needsGL}, is word cloud: ${isWordCloud}`);
+    graphEdgeLegendListenerRef.current = null;
+  };
+
+  const applyGraphEdgeLegendSelection = (edgeLegendConfig, baseEdges, selectedMap = {}) => {
+    if (!instanceRef.current || !edgeLegendConfig?.targetSeriesId) {
+      return;
+    }
+
+    const allowedStyleNames = Array.isArray(edgeLegendConfig.styleNames)
+      ? new Set(edgeLegendConfig.styleNames.map((name) => String(name)))
+      : null;
+
+    const filteredEdges = baseEdges.filter((edge) => {
+      const edgeStyleValue = edge?.styleValue;
+      if (edgeStyleValue === undefined || edgeStyleValue === null || edgeStyleValue === '') {
+        return true;
+      }
+
+      const normalizedStyle = String(edgeStyleValue);
+      if (allowedStyleNames && allowedStyleNames.size > 0 && !allowedStyleNames.has(normalizedStyle)) {
+        return true;
+      }
+
+      return selectedMap[normalizedStyle] !== false;
+    });
+
+    instanceRef.current.setOption({
+      series: [{
+        id: edgeLegendConfig.targetSeriesId,
+        edges: filteredEdges
+      }]
+    }, {
+      lazyUpdate: true
+    });
+  };
+
+  const bindGraphEdgeLegendSelection = (options) => {
+    detachGraphEdgeLegendListener();
+
+    const edgeLegendConfig = options?.__graphEdgeLegend;
+    if (!edgeLegendConfig?.enabled || !instanceRef.current) {
+      return;
+    }
+
+    const targetSeriesId = edgeLegendConfig.targetSeriesId;
+    if (!targetSeriesId) {
+      return;
+    }
+
+    const seriesOptions = Array.isArray(options?.series) ? options.series : [];
+    const targetSeries = seriesOptions.find((series) => series?.id === targetSeriesId);
+    const baseEdges = Array.isArray(targetSeries?.edges) ? targetSeries.edges : null;
+
+    if (!baseEdges) {
+      return;
+    }
+
+    const legendOptions = Array.isArray(options.legend) ? options.legend[0] : options.legend;
+    const initialSelected = legendOptions?.selected && typeof legendOptions.selected === 'object'
+      ? legendOptions.selected
+      : {};
+
+    const handleLegendSelectionChange = (params) => {
+      applyGraphEdgeLegendSelection(edgeLegendConfig, baseEdges, params?.selected);
+    };
+
+    graphEdgeLegendListenerRef.current = handleLegendSelectionChange;
+    instanceRef.current.on('legendselectchanged', handleLegendSelectionChange);
+
+    applyGraphEdgeLegendSelection(edgeLegendConfig, baseEdges, initialSelected);
+  };
+
+  const detachHeatmapZoomListener = () => {
+    if (instanceRef.current && heatmapZoomListenerRef.current) {
+      instanceRef.current.off('datazoom', heatmapZoomListenerRef.current);
+    }
+    heatmapZoomListenerRef.current = null;
+  };
+
+  const bindHeatmapZoomListener = (options) => {
+    detachHeatmapZoomListener();
+    if (!instanceRef.current || chartType !== 'heatmap' || !config?.enableZoom) return;
+
+    const heatmapData = options?.series?.[0]?.data;
+    const xLen = options?.xAxis?.data?.length || 1;
+    const yLen = options?.yAxis?.data?.length || 1;
+    if (!heatmapData || !heatmapData.length) return;
+
+    let prevRange = [0, 100];
+    let syncing = false;
+
+    const handleZoom = () => {
+      if (syncing) return;
+
+      const opt = instanceRef.current.getOption();
+      const dzList = opt.dataZoom || [];
+      const yZoom = dzList.find(dz => dz.yAxisIndex?.[0] === 0) || {};
+      const targetStart = yZoom.start ?? 0;
+      const targetEnd = yZoom.end ?? 100;
+
+      if (Math.abs(targetStart - prevRange[0]) < 0.01 && Math.abs(targetEnd - prevRange[1]) < 0.01) return;
+      prevRange = [targetStart, targetEnd];
+
+      // Sync all dataZoom components to the same range + recompute visualMap
+      syncing = true;
+      const update = {
+        dataZoom: dzList.map(() => ({ start: targetStart, end: targetEnd }))
+      };
+
+      const visXStart = Math.floor(targetStart / 100 * xLen);
+      const visXEnd = Math.ceil(targetEnd / 100 * xLen);
+      const visYStart = Math.floor(targetStart / 100 * yLen);
+      const visYEnd = Math.ceil(targetEnd / 100 * yLen);
+
+      const visible = heatmapData.filter(([x, y]) => x >= visXStart && x < visXEnd && y >= visYStart && y < visYEnd);
+      if (visible.length > 0) {
+        const values = visible.map(d => d[2]);
+        const sorted = [...values].sort((a, b) => a - b);
+        const pctile = (p) => sorted[Math.min(Math.floor(p / 100 * sorted.length), sorted.length - 1)];
+
+        let newMin, newMax;
+        if (config.visualMapPercentile) {
+          newMin = pctile(5);
+          newMax = pctile(95);
+        } else {
+          newMin = Math.min(...values);
+          newMax = Math.max(...values);
+        }
+
+        if (config.visualMapCenter != null) {
+          const center = config.visualMapCenter;
+          const spread = Math.max(center - newMin, newMax - center);
+          newMin = Math.max(0, center - spread);
+          newMax = center + spread;
+        }
+
+        update.visualMap = { min: newMin, max: newMax };
+      }
+
+      instanceRef.current.setOption(update, { lazyUpdate: true });
+      syncing = false;
+    };
+
+    heatmapZoomListenerRef.current = handleZoom;
+    instanceRef.current.on('datazoom', handleZoom);
+  };
+
+  useEffect(() => {
+    const normalizedType = (chartType || '').toLowerCase();
+    const needsGL = GL_CHART_TYPES.includes(normalizedType);
+    const chartTypeChanged = previousChartTypeRef.current !== normalizedType;
+
+    setRequiresGL(needsGL);
+    if (chartTypeChanged) {
+      hasRenderedRef.current = false;
+      previousChartTypeRef.current = normalizedType;
+    }
   }, [chartType]);
 
-  // Handle resize
   useEffect(() => {
     const handleResize = () => {
       if (instanceRef.current) {
@@ -55,7 +212,6 @@ const EChartsContainer = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Track container size for layout-sensitive charts (e.g., Sankey auto-fit)
   useEffect(() => {
     if (!chartRef.current) return;
 
@@ -70,9 +226,9 @@ const EChartsContainer = ({
 
       if (!next.width || !next.height) return;
 
-      setContainerSize(prev => {
-        if (prev.width === next.width && prev.height === next.height) {
-          return prev;
+      setContainerSize((previous) => {
+        if (previous.width === next.width && previous.height === next.height) {
+          return previous;
         }
         return next;
       });
@@ -90,30 +246,31 @@ const EChartsContainer = ({
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Generate chart options
   useEffect(() => {
     if (!data || !chartType) {
-      console.log(`EChartsContainer: Missing required props - data: ${!!data}, chartType: ${chartType}`);
       setError('Missing required data or chart type');
       setLoading(false);
       return;
     }
 
-    // Don't proceed if GL is required but not loaded
     if (requiresGL && !glLoaded) {
-      console.log('EChartsContainer: Waiting for GL to load...');
-      setLoading(true);
+      if (!hasRenderedRef.current) {
+        setLoading(true);
+      }
       return;
     }
 
+    let cancelled = false;
+
     const generateOptions = async () => {
       try {
-        setLoading(true);
+        const shouldShowLoadingState = !hasRenderedRef.current;
+        if (shouldShowLoadingState) {
+          setLoading(true);
+        }
         setError(null);
 
-        console.log(`EChartsContainer: Getting chart component for type: ${chartType}`);
         const ChartComponent = getChartComponent(chartType);
-        
         if (!ChartComponent) {
           throw new Error(`Unsupported chart type: ${chartType}`);
         }
@@ -126,48 +283,39 @@ const EChartsContainer = ({
           containerWidth: containerSize.width
         };
 
-        console.log(`EChartsContainer: Generating options with config:`, mergedConfig);
         const optionsPromise = ChartComponent.getOptions(data, mergedConfig, isDarkMode);
         const options = optionsPromise instanceof Promise ? await optionsPromise : optionsPromise;
 
-        // Check if chart has zoom enabled
+        if (cancelled) return;
+
         const zoomEnabled = options?.dataZoom && options.dataZoom.length > 0;
         setHasZoom(zoomEnabled);
 
-        // Word cloud specific processing
-        const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-        
-        let finalOptions;
-        if (isWordCloud) {
-          // For word clouds, don't apply watermark as it interferes with the word layout
-          console.log('EChartsContainer: Skipping watermark for word cloud');
-          finalOptions = options;
-        } else {
-          // Apply watermark to other chart types
-          finalOptions = addWatermark(options, {
-            hasZoom: zoomEnabled,
-            isDarkMode: isDarkMode,
-            showWatermark: showWatermark
-          });
-        }
-
-        console.log(`EChartsContainer: Generated options:`, {
-          hasOptions: !!finalOptions,
-          hasData: !!finalOptions?.series?.length,
-          hasZoom: zoomEnabled,
-          isWordCloud: isWordCloud
-        });
+        const finalOptions = isWordCloud
+          ? options
+          : addWatermark(options, {
+              hasZoom: zoomEnabled,
+              isDarkMode,
+              showWatermark
+            });
 
         setChartOptions(finalOptions);
       } catch (err) {
-        console.error(`EChartsContainer: Error generating chart options:`, err);
-        setError(err.message || 'Failed to generate chart options');
+        if (!cancelled) {
+          setError(err.message || 'Failed to generate chart options');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     generateOptions();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     data,
     chartType,
@@ -179,124 +327,90 @@ const EChartsContainer = ({
     showWatermark,
     requiresGL,
     containerSize.width,
-    containerSize.height
+    containerSize.height,
+    isWordCloud
   ]);
 
-  // Initialize/update chart
   useEffect(() => {
     if (!chartRef.current || !chartOptions || loading) {
-      console.log(`EChartsContainer: Skipping chart initialization`, {
-        hasChartRef: !!chartRef.current,
-        hasChartOptions: !!chartOptions,
-        isLoading: loading
-      });
       return;
     }
 
     try {
-      const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-      
-      // Initialize or get existing instance
       if (!instanceRef.current) {
-        console.log(`EChartsContainer: Creating new ECharts instance`);
-        const renderer = requiresGL ? 'canvas' : 'canvas';
-        
         instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
-          renderer: renderer,
+          renderer: 'canvas',
           useDirtyRect: !requiresGL && !isWordCloud,
           width: isWordCloud ? 'auto' : undefined,
           height: isWordCloud ? 'auto' : undefined
         });
-        
-        if (isWordCloud) {
-          console.log('EChartsContainer: Initialized with word cloud specific settings');
-        }
       }
 
-      console.log(`EChartsContainer: Setting chart options`);
-      
-      // For word cloud, use more stable options
-      const setOptionConfig = isWordCloud ? {
-        notMerge: false, // Use merge for word cloud to prevent re-layout
-        lazyUpdate: false,
-        silent: false
-      } : {
-        notMerge: true
-      };
-      
+      const setOptionConfig = isWordCloud
+        ? {
+            notMerge: false,
+            lazyUpdate: false,
+            silent: false
+          }
+        : {
+            notMerge: true
+          };
+
       instanceRef.current.setOption(chartOptions, setOptionConfig);
-      
-      // Word cloud specific post-render handling
+      bindGraphEdgeLegendSelection(chartOptions);
+      bindHeatmapZoomListener(chartOptions);
+      hasRenderedRef.current = true;
+
       if (isWordCloud) {
-        // Ensure the word cloud is properly sized after a brief delay
         setTimeout(() => {
           if (instanceRef.current && chartRef.current) {
             instanceRef.current.resize();
-            // Prevent additional renders that might cause flickering
-            console.log('EChartsContainer: Word cloud stabilized');
           }
         }, 200);
       }
-      
     } catch (err) {
-      console.error(`EChartsContainer: Error initializing chart:`, err);
       setError(err.message || 'Failed to initialize chart');
     }
-  }, [chartOptions, loading, isDarkMode, requiresGL, chartType]);
+  }, [chartOptions, loading, isDarkMode, requiresGL, isWordCloud]);
 
-  // Update theme - but avoid recreating for word clouds unless absolutely necessary
   useEffect(() => {
     if (instanceRef.current && !loading && chartOptions) {
-      const isWordCloud = ['wordcloud', 'word-cloud', 'wordcloud-chart', 'word-cloud-chart'].includes(chartType);
-      
-      // For word clouds, avoid theme recreation as it causes flickering
       if (isWordCloud) {
-        console.log(`EChartsContainer: Skipping theme recreation for word cloud to prevent flickering`);
         return;
       }
-      
-      console.log(`EChartsContainer: Updating theme to ${isDarkMode ? 'dark' : 'light'}`);
-      
-      // Safe disposal for non-word cloud charts
+
       try {
         instanceRef.current.dispose();
-      } catch (err) {
-        console.warn('EChartsContainer: Error during disposal:', err);
+      } catch {
+        // no-op
       }
-      
-      const renderer = requiresGL ? 'canvas' : 'canvas';
-      
+
       instanceRef.current = echarts.init(chartRef.current, isDarkMode ? 'dark' : null, {
-        renderer: renderer,
+        renderer: 'canvas',
         useDirtyRect: !requiresGL
       });
-      
-      instanceRef.current.setOption(chartOptions, { 
+
+      instanceRef.current.setOption(chartOptions, {
         notMerge: true
       });
+      bindGraphEdgeLegendSelection(chartOptions);
+      bindHeatmapZoomListener(chartOptions);
     }
-  }, [isDarkMode, chartOptions, loading, requiresGL, chartType]);
+  }, [isDarkMode, chartOptions, loading, requiresGL, isWordCloud]);
 
-  // Ensure chart resizes when container size changes (e.g., auto-fit layouts)
   useEffect(() => {
     if (instanceRef.current) {
       instanceRef.current.resize();
     }
   }, [containerSize.width, containerSize.height]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (instanceRef.current) {
-        console.log('EChartsContainer: Disposing chart instance');
-        const isWordCloud = chartType && (
-          chartType.includes('wordcloud') || 
-          chartType.includes('word-cloud')
-        );
-        
+        detachGraphEdgeLegendListener();
+        detachHeatmapZoomListener();
         try {
           if (isWordCloud) {
-            // Safe disposal for word cloud
             instanceRef.current.clear();
             setTimeout(() => {
               if (instanceRef.current) {
@@ -308,18 +422,12 @@ const EChartsContainer = ({
             instanceRef.current.dispose();
             instanceRef.current = null;
           }
-        } catch (err) {
-          console.warn('EChartsContainer: Error during cleanup:', err);
+        } catch {
           instanceRef.current = null;
         }
       }
     };
-  }, [chartType]);
-
-  const isWordCloud = chartType && (
-    chartType.includes('wordcloud') || 
-    chartType.includes('word-cloud')
-  );
+  }, [isWordCloud]);
 
   const containerClasses = [
     'echarts-container',
@@ -329,7 +437,9 @@ const EChartsContainer = ({
     error ? 'has-error' : '',
     loading ? 'is-loading' : '',
     className
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={`chart-container-wrapper ${hasZoom ? 'has-zoom' : ''}`} data-chart-type={chartType}>
@@ -339,12 +449,11 @@ const EChartsContainer = ({
         style={{
           width,
           height: isDynamicHeight ? '100%' : height,
-          // Ensure word cloud has proper minimum dimensions
           minHeight: isWordCloud ? '300px' : undefined,
           ...style
         }}
       >
-        {loading && (
+        {loading && !hasRenderedRef.current && (
           <div className="echarts-loading">
             <div className="loading-spinner"></div>
             <p>Loading {isWordCloud ? 'word cloud' : 'chart'}...</p>

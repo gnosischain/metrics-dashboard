@@ -51,13 +51,13 @@ body:not(.dark-mode) {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D0D7DE;
+  background: var(--chart-axis-line);
   border-radius: 5px;
   border: 2px solid var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ADBAC7;
+  background: var(--color-border-hover);
 }
 
 /* ==================
@@ -74,7 +74,7 @@ body:not(.dark-mode) {
    ================== */
 
 ::selection {
-  background-color: rgba(9, 105, 218, 0.2);
+  background-color: var(--color-focus-ring);
   color: var(--color-text-primary);
 }
 

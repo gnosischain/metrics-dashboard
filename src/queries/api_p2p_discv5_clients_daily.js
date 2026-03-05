@@ -2,6 +2,7 @@ const metric = {
   id: 'api_p2p_discv5_clients_daily',
   name: 'DiscV5 Peer Distribution',
   description: 'Distribution of peers dialable in DiscV5 protocol',
+  metricDescription: 'Daily distribution of DiscV5 peers by client implementation. Metric filter lets you switch between count and share views.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

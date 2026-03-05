@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_yields_lending_activity_counts_weekly',
   name: 'Aave V3 Lenders & Borrowers Count',
   description: 'Weekly unique lenders and borrowers count',
+  metricDescription: 'Weekly unique lender and borrower counts by token and protocol. Token filter isolates participation dynamics for a selected asset.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

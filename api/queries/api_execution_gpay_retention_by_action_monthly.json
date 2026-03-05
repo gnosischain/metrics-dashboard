@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_retention_by_action_monthly",
+  "query": "SELECT action, x, y, retention_pct, value_abs, amount_retention_pct, value_usd\n    FROM dbt.api_execution_gpay_retention_by_action_monthly\n    ORDER BY\n      if(action = 'Payment', 0, 1),\n      y ASC,\n      x ASC"
+}

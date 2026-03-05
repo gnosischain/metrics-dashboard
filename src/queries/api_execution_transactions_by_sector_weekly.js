@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_by_sector_weekly',
   name: 'Transactions by Sector',
   description: 'Weekly transactions per sector',
+  metricDescription: 'Weekly transaction counts by sector. Smooths daily noise to highlight medium-term activity trends.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

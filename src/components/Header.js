@@ -1,5 +1,9 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
+import HeaderResourcesMenu from './HeaderResourcesMenu';
+import MetricSearchBar from './MetricSearchBar';
+import { HEADER_RESOURCE_LINKS } from '../config/headerLinks';
+import { withBaseUrl } from '../utils/env';
 
 /**
  * Enhanced Header component for the dashboard with logo and indexing status
@@ -9,6 +13,7 @@ import ThemeToggle from './ThemeToggle';
  * @param {Function} props.toggleTheme - Function to toggle theme
  * @param {boolean} props.showIndexingAlert - Whether to show the indexing alert
  * @param {string} props.indexingMessage - Custom message for indexing alert
+ * @param {Array} props.resourceLinks - Optional resource links for the top-bar menu
  * @returns {JSX.Element} Header component
  */
 const Header = ({ 
@@ -16,15 +21,19 @@ const Header = ({
   isDarkMode, 
   toggleTheme,
   showIndexingAlert = false,
-  indexingMessage = "Data is being indexed. Some metrics may not be fully updated."
+  indexingMessage = "Data is being indexed. Some metrics may not be fully updated.",
+  resourceLinks = HEADER_RESOURCE_LINKS,
+  searchIndex = [],
+  onSearchSelect = null,
+  searchEnabled = false
 }) => {
   // Different logo URLs for light and dark mode
   //const logoUrl = isDarkMode 
   //  ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
   //  : "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/Black/PNG/Gnosis.png";
   const logoUrl = isDarkMode 
-    ? process.env.PUBLIC_URL + "/imgs/Gnosis_white.png"
-    : process.env.PUBLIC_URL + "/imgs/Gnosis_black.png";
+    ? withBaseUrl('/imgs/Gnosis_white.png')
+    : withBaseUrl('/imgs/Gnosis_black.png');
 
   return (
     <header className="dashboard-header">
@@ -52,6 +61,14 @@ const Header = ({
       </div>
       
       <div className="header-actions">
+        {searchEnabled && typeof onSearchSelect === 'function' && (
+          <MetricSearchBar
+            searchIndex={searchIndex}
+            onSelect={onSearchSelect}
+            searchEnabled={searchEnabled}
+          />
+        )}
+        <HeaderResourcesMenu resourceLinks={resourceLinks} />
         <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       </div>
     </header>

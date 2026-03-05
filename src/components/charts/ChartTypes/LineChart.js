@@ -1,5 +1,4 @@
 import { BaseChart } from './BaseChart';
-import { generateColorPalette } from '../../../utils';
 
 export class LineChart extends BaseChart {
   static getOptions(data, config, isDarkMode) {
@@ -31,7 +30,7 @@ export class LineChart extends BaseChart {
         timeContext: timeAnalysis
       };
       
-      const colors = generateColorPalette(processedData.series.length, isDarkMode);
+      const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series.length, isDarkMode);
 
       const chartOptions = {
         ...this.getBaseOptions(isDarkMode),

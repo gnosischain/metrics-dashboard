@@ -1,12 +1,132 @@
 import { formatValue } from '../../../utils';
+import { DARK_MODE_COLORS, DEFAULT_COLORS, generateColorPalette } from '../../../utils/colors';
 
 export class BaseChart {
+  static isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  static deepMerge(base, override) {
+    if (!override) return base;
+
+    const output = { ...base };
+
+    Object.entries(override).forEach(([key, value]) => {
+      if (BaseChart.isPlainObject(value) && BaseChart.isPlainObject(base?.[key])) {
+        output[key] = BaseChart.deepMerge(base[key], value);
+      } else {
+        output[key] = value;
+      }
+    });
+
+    return output;
+  }
+
+  static parseDateValue(value) {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value) || Math.abs(value) < 1000000000) {
+        return null;
+      }
+
+      const numericValue = Math.abs(value) < 1000000000000 ? value * 1000 : value;
+      const numericDate = new Date(numericValue);
+      return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    let normalized = value.trim();
+    if (!normalized) return null;
+
+    if (/^\d{10}(\d{3})?$/.test(normalized)) {
+      const numericValue =
+        normalized.length === 10 ? Number(normalized) * 1000 : Number(normalized);
+      const numericDate = new Date(numericValue);
+      return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+    }
+
+    if (/^\d{4}-\d{2}$/.test(normalized)) {
+      normalized = `${normalized}-01T00:00:00Z`;
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      normalized = `${normalized}T00:00:00Z`;
+    } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(normalized)) {
+      normalized = normalized.includes(' ') ? normalized.replace(' ', 'T') : normalized;
+    } else {
+      return null;
+    }
+
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  static formatDateByGranularity(date, granularity, forTooltip = false) {
+    const sharedOptions = { timeZone: 'UTC' };
+
+    if (granularity === 'sub-daily' || granularity === 'hourly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        day: 'numeric',
+        ...(forTooltip ? { year: 'numeric' } : {}),
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(date);
+    }
+
+    if (granularity === 'daily' || granularity === 'weekly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        day: 'numeric',
+        ...(forTooltip ? { year: 'numeric' } : {})
+      }).format(date);
+    }
+
+    if (granularity === 'monthly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        month: 'short',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    if (granularity === 'yearly') {
+      return new Intl.DateTimeFormat('en-US', {
+        ...sharedOptions,
+        year: 'numeric'
+      }).format(date);
+    }
+
+    return forTooltip
+      ? new Intl.DateTimeFormat('en-US', {
+          ...sharedOptions,
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).format(date)
+      : new Intl.DateTimeFormat('en-US', {
+          ...sharedOptions,
+          month: 'short',
+          day: 'numeric'
+        }).format(date);
+  }
+
   static getBaseOptions(isDarkMode) {
     return {
       backgroundColor: 'transparent',
       textStyle: {
-        color: isDarkMode ? '#e5e7eb' : '#374151',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        color: isDarkMode ? '#E2E8F0' : '#334155',
+        fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
       },
       animation: true,
       animationDuration: 750,
@@ -14,19 +134,147 @@ export class BaseChart {
     };
   }
 
+  static normalizeColorHex(color) {
+    return typeof color === 'string' ? color.trim().toLowerCase() : '';
+  }
+
+  static isColorInPalette(color, palette = []) {
+    const needle = BaseChart.normalizeColorHex(color);
+    if (!needle) return false;
+    return palette.some(candidate => BaseChart.normalizeColorHex(candidate) === needle);
+  }
+
+  static fillPaletteWithFallback(primaryPalette, fallbackPalette, count) {
+    const targetCount = Math.max(1, Number.isFinite(count) ? count : 1);
+    const result = [...(Array.isArray(primaryPalette) ? primaryPalette : [])].filter(Boolean);
+    const seen = new Set(result.map(color => BaseChart.normalizeColorHex(color)).filter(Boolean));
+
+    const tryAppend = (color) => {
+      const normalized = BaseChart.normalizeColorHex(color);
+      if (!normalized || seen.has(normalized)) return;
+      result.push(color);
+      seen.add(normalized);
+    };
+
+    if (Array.isArray(fallbackPalette)) {
+      fallbackPalette.forEach(tryAppend);
+    }
+
+    return result.slice(0, targetCount);
+  }
+
+  static resolveSeriesPalette(config = {}, count = 1, isDarkMode = false) {
+    const normalizedCount = Math.max(1, Number.isFinite(count) ? count : 1);
+    const standardPalette = isDarkMode ? DARK_MODE_COLORS : DEFAULT_COLORS;
+    const highContrast = config?.highContrastPalette === true || config?.highContrast === true;
+    const generatedPalette = generateColorPalette(normalizedCount, isDarkMode, highContrast);
+
+    if (Array.isArray(config?.colors) && config.colors.filter(Boolean).length > 0) {
+      const explicitPalette = config.colors.filter(Boolean);
+      if (explicitPalette.length >= normalizedCount) {
+        return explicitPalette.slice(0, normalizedCount);
+      }
+
+      const withStandardFallback = BaseChart.fillPaletteWithFallback(
+        explicitPalette,
+        standardPalette,
+        normalizedCount
+      );
+
+      if (withStandardFallback.length >= normalizedCount) {
+        return withStandardFallback;
+      }
+
+      return BaseChart.fillPaletteWithFallback(
+        withStandardFallback,
+        generatedPalette,
+        normalizedCount
+      );
+    }
+
+    const dashboardPalette = config?.dashboardPalette;
+    const dashboardSeries = isDarkMode
+      ? dashboardPalette?.seriesDark
+      : dashboardPalette?.seriesLight;
+    if (Array.isArray(dashboardSeries) && dashboardSeries.filter(Boolean).length > 0) {
+      const dashboardSeriesPalette = dashboardSeries.filter(Boolean);
+      if (dashboardSeriesPalette.length >= normalizedCount) {
+        return dashboardSeriesPalette.slice(0, normalizedCount);
+      }
+
+      const withStandardFallback = BaseChart.fillPaletteWithFallback(
+        dashboardSeriesPalette,
+        standardPalette,
+        normalizedCount
+      );
+
+      if (withStandardFallback.length >= normalizedCount) {
+        return withStandardFallback;
+      }
+
+      return BaseChart.fillPaletteWithFallback(
+        withStandardFallback,
+        generatedPalette,
+        normalizedCount
+      );
+    }
+
+    return generatedPalette;
+  }
+
+  static resolveHeatmapScale(config = {}, isDarkMode = false) {
+    const defaultScale = isDarkMode
+      ? ['#001a33', '#003366', '#006699', '#0099cc', '#33ccff', '#66ffff', '#99ffff']
+      : ['#ffffff', '#e6f3ff', '#cce7ff', '#99d6ff', '#66c2ff', '#3399ff', '#0080ff'];
+
+    const metricThemeScale = isDarkMode ? config?.heatmapScaleDark : config?.heatmapScaleLight;
+    if (Array.isArray(metricThemeScale) && metricThemeScale.filter(Boolean).length > 0) {
+      return metricThemeScale.filter(Boolean);
+    }
+
+    if (Array.isArray(config?.heatmapScale) && config.heatmapScale.filter(Boolean).length > 0) {
+      return config.heatmapScale.filter(Boolean);
+    }
+
+    const visualMapScale = config?.visualMap?.inRange?.color;
+    if (Array.isArray(visualMapScale) && visualMapScale.filter(Boolean).length > 0) {
+      return visualMapScale.filter(Boolean);
+    }
+
+    const dashboardPalette = config?.dashboardPalette;
+    const dashboardScale = isDarkMode
+      ? dashboardPalette?.heatmapScaleDark
+      : dashboardPalette?.heatmapScaleLight;
+    if (Array.isArray(dashboardScale) && dashboardScale.filter(Boolean).length > 0) {
+      return dashboardScale.filter(Boolean);
+    }
+
+    return defaultScale;
+  }
+
   static getAxisConfig(isDarkMode, type = 'category', config = {}) {
     const baseConfig = {
       axisLine: {
+        show: true,
         lineStyle: {
-          color: isDarkMode ? '#4b5563' : '#d1d5db'
+          color: isDarkMode ? '#475569' : '#CBD5E1'
         }
       },
+      axisTick: {
+        show: true,
+        alignWithLabel: type === 'category'
+      },
       axisLabel: {
-        color: isDarkMode ? '#9ca3af' : '#6b7280'
+        show: true,
+        color: isDarkMode ? '#94A3B8' : '#64748B',
+        hideOverlap: true,
+        showMinLabel: true,
+        showMaxLabel: true
       },
       splitLine: {
+        show: type === 'value',
         lineStyle: {
-          color: isDarkMode ? '#374151' : '#f3f4f6',
+          color: isDarkMode ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.24)',
           type: 'dashed'
         }
       }
@@ -35,12 +283,12 @@ export class BaseChart {
     if (type === 'value') {
       baseConfig.axisLabel.formatter = (value) => BaseChart.formatAxisValue(value, config);
     } else if (type === 'category') {
-      baseConfig.axisLabel.formatter = (value) => 
+      baseConfig.axisLabel.formatter = (value) =>
         BaseChart.formatTimeSeriesLabel(value, config.timeContext);
     }
 
-    const axisOverrides = (type === 'value') ? config.yAxis : config.xAxis;
-    return { ...baseConfig, ...(axisOverrides || {}) };
+    const axisOverrides = type === 'value' ? config.yAxis : config.xAxis;
+    return BaseChart.deepMerge(baseConfig, axisOverrides || {});
   }
 
   static formatAxisValue(value, config = {}) {
@@ -102,65 +350,94 @@ export class BaseChart {
   }
 
   static analyzeTimeGranularity(categories) {
-    if (!categories || categories.length < 2) {
-      return { granularity: 'unknown', shouldRemoveTime: false };
+    if (!categories || categories.length === 0) {
+      return { granularity: 'unknown', shouldRemoveTime: false, isTimeSeries: false };
     }
 
-    const sampleSize = Math.min(10, categories.length);
-    const timeFormats = [];
-    
-    for (let i = 0; i < sampleSize; i++) {
-      const timeStr = String(categories[i]);
-      
-      if (timeStr.match(/\d{4}-\d{2}-\d{2}/)) {
-        if (timeStr.includes(' ')) {
-          const timePart = timeStr.split(' ')[1];
-          if (timePart) {
-            timeFormats.push(timePart);
-          }
-        } else {
-          timeFormats.push('date-only');
+    const sample = categories.slice(0, 30);
+    const parsedDates = [];
+    let hasExplicitTime = false;
+
+    sample.forEach((value) => {
+      if (typeof value === 'string') {
+        const normalized = value.trim();
+        if (/\d{2}:\d{2}(:\d{2})?/.test(normalized)) {
+          hasExplicitTime = true;
         }
+      }
+
+      const parsed = BaseChart.parseDateValue(value);
+      if (parsed) {
+        parsedDates.push(parsed);
+      }
+    });
+
+    if (parsedDates.length < 2) {
+      if (parsedDates.length === 1) {
+        const singleGranularity = hasExplicitTime ? 'sub-daily' : 'daily';
+        return {
+          granularity: singleGranularity,
+          shouldRemoveTime: !hasExplicitTime,
+          isTimeSeries: true
+        };
+      }
+
+      return { granularity: 'unknown', shouldRemoveTime: false, isTimeSeries: false };
+    }
+
+    const timestamps = [...new Set(parsedDates.map((date) => date.getTime()))].sort((a, b) => a - b);
+    let minStep = Infinity;
+
+    for (let i = 1; i < timestamps.length; i++) {
+      const diff = timestamps[i] - timestamps[i - 1];
+      if (diff > 0 && diff < minStep) {
+        minStep = diff;
       }
     }
 
-    if (timeFormats.length === 0) {
-      return { granularity: 'unknown', shouldRemoveTime: false };
+    if (!Number.isFinite(minStep)) {
+      minStep = 24 * 60 * 60 * 1000;
     }
 
-    const hasDateOnly = timeFormats.includes('date-only');
-    const hasZeroTime = timeFormats.some(t => t === '00:00:00');
-    const hasNonZeroTime = timeFormats.some(t => t !== '00:00:00' && t !== 'date-only');
-    
-    if (hasNonZeroTime) {
-      return { granularity: 'sub-daily', shouldRemoveTime: false };
-    }
-    
-    if (hasDateOnly || (hasZeroTime && !hasNonZeroTime)) {
-      return { granularity: 'daily', shouldRemoveTime: true };
+    const HOUR = 60 * 60 * 1000;
+    const DAY = 24 * HOUR;
+    const MONTH_APPROX = 28 * DAY;
+    const YEAR_APPROX = 365 * DAY;
+
+    let granularity = 'daily';
+    if (minStep < DAY || hasExplicitTime) {
+      granularity = 'sub-daily';
+    } else if (minStep >= YEAR_APPROX - 30 * DAY) {
+      granularity = 'yearly';
+    } else if (minStep >= MONTH_APPROX) {
+      granularity = 'monthly';
+    } else if (minStep >= 6 * DAY) {
+      granularity = 'weekly';
     }
 
-    return { granularity: 'unknown', shouldRemoveTime: false };
+    return {
+      granularity,
+      shouldRemoveTime: granularity !== 'sub-daily' && granularity !== 'hourly',
+      isTimeSeries: true
+    };
   }
 
   static formatTimeSeriesLabel(value, context = {}) {
-    if (typeof value !== 'string') {
+    const date = BaseChart.parseDateValue(value);
+    if (!date) {
       return value;
     }
 
-    if (context.shouldRemoveTime === false) {
-      return value;
-    }
-
-    if (context.shouldRemoveTime === true || value.includes(' 00:00:00')) {
-      return value.split(' ')[0];
-    }
-
-    return value;
+    const granularity = context.granularity || 'unknown';
+    return BaseChart.formatDateByGranularity(date, granularity, false);
   }
 
   static formatTimeSeriesInTooltip(dateValue, context = {}) {
-    return this.formatTimeSeriesLabel(dateValue, context);
+    const parsed = BaseChart.parseDateValue(dateValue);
+    if (!parsed) return dateValue;
+
+    const granularity = context.granularity || 'unknown';
+    return BaseChart.formatDateByGranularity(parsed, granularity, true);
   }
 
   static createTimeSeriesAwareTooltipFormatter(config = {}) {
@@ -193,7 +470,8 @@ export class BaseChart {
       ? BaseChart.formatTimeSeriesInTooltip(axisValue, config.timeContext)
       : '';
 
-    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.3);">${formattedDate}</div>`;
+    const dividerColor = config.isDarkMode ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.4)';
+    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid ${dividerColor};">${formattedDate}</div>`;
     let total = 0;
 
     const items = params
@@ -245,7 +523,7 @@ export class BaseChart {
 
     if (config.showTotal && items.length > 1) {
       tooltip += `
-        <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.3);">
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid ${dividerColor};">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-weight:600;">Total</span>
             <span style="font-weight:600;margin-left:16px;">${fmt(total)}</span>
@@ -260,22 +538,21 @@ export class BaseChart {
   static getGridConfig(config = {}) {
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
+    const hasZoom = config.dataZoom || config.enableZoom;
     
     let bottomMargin, topMargin;
     
     if (isDynamicHeight) {
-      if (config.dataZoom || config.enableZoom) {
-        // *** FIX: Reduced bottom margin to bring zoom slider closer to the chart ***
-        bottomMargin = '30px'; 
+      if (hasZoom) {
+        bottomMargin = isSmallCard ? '44px' : '52px';
         topMargin = isSmallCard ? '5%' : '8%';
       } else {
         bottomMargin = '20px';
         topMargin = isSmallCard ? '5%' : '8%';
       }
     } else {
-      if (config.dataZoom || config.enableZoom) {
-        // *** FIX: Reduced percentage for fixed-height charts as well ***
-        bottomMargin = '12%'; 
+      if (hasZoom) {
+        bottomMargin = isSmallCard ? '48px' : '56px';
         topMargin = isSmallCard ? '8%' : '10%';
       } else {
         bottomMargin = isSmallCard ? '8%' : '3%';
@@ -305,7 +582,7 @@ export class BaseChart {
       top: 'top',
       left: 'center',
       textStyle: {
-        color: isDarkMode ? '#e5e7eb' : '#374151'
+        color: isDarkMode ? '#CBD5E1' : '#334155'
       },
       itemGap: 20,
       ...config.legend
@@ -318,7 +595,7 @@ export class BaseChart {
       axisPointer: {
         type: 'cross',
         label: {
-          backgroundColor: config.isDarkMode ? '#374151' : '#6b7280',
+          backgroundColor: config.isDarkMode ? '#334155' : '#475569',
           formatter: (params) => {
             if (params.axisDimension === 'x') {
               return BaseChart.formatTimeSeriesLabel(params.value, config.timeContext);
@@ -327,11 +604,15 @@ export class BaseChart {
           }
         }
       },
-      backgroundColor: config.isDarkMode ? '#1f2937' : '#ffffff',
-      borderColor: config.isDarkMode ? '#374151' : '#e5e7eb',
+      backgroundColor: config.isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+      borderColor: config.isDarkMode ? '#334155' : '#E2E8F0',
       borderWidth: 1,
+      borderRadius: 8,
+      extraCssText: config.isDarkMode
+        ? 'box-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);'
+        : 'box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.3);',
       textStyle: {
-        color: config.isDarkMode ? '#e5e7eb' : '#374151'
+        color: config.isDarkMode ? '#E2E8F0' : '#0F172A'
       },
       padding: [10, 14],
       ...config.tooltip
@@ -355,34 +636,41 @@ export class BaseChart {
           type: 'slider',
           xAxisIndex: [0],
           filterMode: 'filter',
-          bottom: isDynamicHeight ? 5 : (isSmallCard ? 12 : 10),
-          height: isSmallCard ? 18 : 20,
+          bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
+          height: isSmallCard ? 10 : 12,
+          showDetail: false,
+          showDataShadow: false,
+          brushSelect: false,
+          borderColor: 'transparent',
+          backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+          fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
           labelFormatter: (value, valueStr) => {
             return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
           },
+          handleSize: '95%',
           handleStyle: {
-            color: config.isDarkMode ? '#58A6FF' : '#0969DA',
-            borderColor: config.isDarkMode ? '#58A6FF' : '#0969DA'
+            color: config.isDarkMode ? '#818CF8' : '#4F46E5',
+            borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
           },
           textStyle: {
-            color: config.isDarkMode ? '#9ca3af' : '#6b7280'
+            color: config.isDarkMode ? '#94A3B8' : '#64748B'
           },
           dataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#4b5563' : '#d1d5db' },
-            areaStyle: { color: config.isDarkMode ? '#374151' : '#f3f4f6' }
+            lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
+            areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
           },
           selectedDataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#58A6FF' : '#0969DA' },
-            areaStyle: { color: config.isDarkMode ? 'rgba(88, 166, 255, 0.2)' : 'rgba(9, 105, 218, 0.2)' }
+            lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
+            areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
           }
         }
       ]
     };
 
     if (config.defaultZoom) {
-      dataZoomConfig.dataZoom.forEach(zoom => {
-        zoom.start = config.defaultZoom.start || 0;
-        zoom.end = config.defaultZoom.end || 100;
+      dataZoomConfig.dataZoom.forEach((zoom) => {
+        zoom.start = config.defaultZoom.start ?? 0;
+        zoom.end = config.defaultZoom.end ?? 100;
       });
     }
 

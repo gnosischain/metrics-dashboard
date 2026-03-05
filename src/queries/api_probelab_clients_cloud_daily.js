@@ -2,6 +2,7 @@ const metric = {
   id: 'api_probelab_clients_cloud_daily',
   name: 'Cloud Distribution',
   description: 'Clients per cloud provider',
+  metricDescription: 'Daily client distribution by cloud provider, with client filter. Tracks hosting concentration risk across infrastructure providers.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

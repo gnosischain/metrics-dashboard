@@ -33,7 +33,7 @@ const GlobalFilterWidget = ({
       <div className="global-filter-widget-content">
         {/* Filter dropdown */}
         {fieldName && onGlobalFilterChange && (
-          <div className="global-filter-widget-group">
+          <div className={`global-filter-widget-group${tabConfig?.globalFilterVertical ? ' vertical' : ''}`}>
             <label className="global-filter-label" htmlFor="global-filter-select">
               {label}:
             </label>
@@ -49,6 +49,8 @@ const GlobalFilterWidget = ({
                   onSelectLabel={onGlobalFilterChange}
                   labelField={fieldName}
                   idPrefix="global-filter"
+                  searchable={!!tabConfig?.searchable}
+                  placeholder={tabConfig?.searchPlaceholder || ''}
                 />
               ) : (
                 <div className="global-filter-error">No options available</div>

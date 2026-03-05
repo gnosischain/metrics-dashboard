@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_tokens_volume_daily',
   name: 'Transfer Volume',
   description: 'Daily transfer volume per token',
+  metricDescription: 'Daily transfer volume per token with token filter and unit toggle. Compare native token flow versus USD-normalized activity.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: false,

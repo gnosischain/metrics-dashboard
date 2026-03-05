@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_by_sector_hourly',
   name: 'Transactions per Sector',
   description: 'Hourly number Transactions per Sector, Last 2 days',
+  metricDescription: 'Hourly transaction counts by sector for the recent 48-hour window. Captures near-real-time sector demand changes.',
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: false,

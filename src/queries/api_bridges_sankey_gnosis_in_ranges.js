@@ -2,6 +2,7 @@ const metric = {
   id: 'api_bridges_sankey_gnosis_in_ranges',
   name: 'Bridge Flows: Gnosis Inbound',
   description: 'Total inbound flows by period',
+  metricDescription: 'Inbound bridge flows into Gnosis split by selected time window. Use the range filter to compare route composition across periods.',
   chartType: 'sankey',
   format: 'formatCurrency',
   enableFiltering: true,

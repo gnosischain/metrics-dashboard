@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_churn_monthly",
+  "query": "SELECT scope, toDate(month) AS date, 'New' AS label, new_users AS value\n    FROM dbt.api_execution_gpay_churn_monthly\n\n    UNION ALL\n\n    SELECT scope, toDate(month) AS date, 'Retained' AS label, retained_users AS value\n    FROM dbt.api_execution_gpay_churn_monthly\n\n    UNION ALL\n\n    SELECT scope, toDate(month) AS date, 'Returning' AS label, returning_users AS value\n    FROM dbt.api_execution_gpay_churn_monthly\n\n    UNION ALL\n\n    SELECT scope, toDate(month) AS date, 'Churned' AS label, churned_users AS value\n    FROM dbt.api_execution_gpay_churn_monthly\n\n    ORDER BY\n      if(scope = 'Payment', 0, 1),\n      date ASC,\n      multiIf(\n        label = 'New', 1,\n        label = 'Retained', 2,\n        label = 'Returning', 3,\n        label = 'Churned', 4,\n        99\n      )"
+}

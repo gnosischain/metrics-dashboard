@@ -5,12 +5,15 @@
  * and exports them as an array.
  */
 
-// Use webpack require.context to dynamically import all files in this directory
-// excluding this index.js file itself
-const requireContext = require.context('./', false, /\.js$/);
-const queryModules = requireContext.keys()
-  .filter(key => key !== './index.js')  // Exclude this file
-  .map(key => requireContext(key).default); // Get the default export from each file
+const queryModuleEntries = Object.entries(
+  import.meta.glob('./*.js', { eager: true })
+)
+  .filter(([path]) => !path.endsWith('/index.js'))
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath));
+
+const queryModules = queryModuleEntries
+  .map(([, moduleExports]) => moduleExports?.default)
+  .filter(Boolean);
 
 console.log(`Loaded ${queryModules.length} metric queries dynamically`);
 

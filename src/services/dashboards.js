@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import metricsService from './metrics';
+import { resolveDashboardPalette } from '../utils/dashboardPalettes';
 
 /**
  * Service for handling dashboard configuration and layouts
@@ -69,6 +70,7 @@ class DashboardService {
       order: dashboardConfig.order || 999,
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
+      palette: resolveDashboardPalette(dashboardConfig.palette)
     };
     
     console.log('DashboardService: Created dashboard object:', dashboard);
@@ -122,6 +124,11 @@ class DashboardService {
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
+          searchable: tab.searchable || false, // Enable searchable filter input
+          globalFilterVertical: tab.globalFilterVertical || false, // Stack label above filter input
+          searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
+          resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
+          defaultResolution: tab.defaultResolution || 'weekly', // Default resolution
           metrics: (tab.metrics || []).map(metric => {
             console.log('DashboardService: Processing tab metric:', metric);
             

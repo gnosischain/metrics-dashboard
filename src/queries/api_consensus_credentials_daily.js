@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_consensus_credentials_daily',
-  name: 'Withdrawl Credentials Type',
-  description: 'Validatorsasdasdt',
+  name: 'Withdrawal Credentials Type',
+  description: 'Distribution of withdrawal credential types across validators',
   chartType: 'area', 
   isTimeSeries: true,
   enableZoom: true,

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_transactions_active_accounts_by_sector_hourly',
   name: 'Initiator Accounts by Sector',
   description: 'Hourly active accounts per sector, Last 2 days',
+  metricDescription: 'Hourly unique initiator accounts by sector for the recent 48-hour window. Useful for short-term activity shifts.',
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: false,

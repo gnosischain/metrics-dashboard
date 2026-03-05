@@ -106,6 +106,28 @@
   margin-top: var(--spacing-xs);
 }
 
+.chart-modal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.chart-modal-header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.chart-modal-header-controls > * {
+  flex-shrink: 0;
+}
+
 /* ==================
    TEXT WIDGET MODAL SPECIFIC STYLES
    ================== */
@@ -301,6 +323,28 @@
     flex-direction: column;
     align-items: flex-start;
     padding: var(--spacing-md);
+  }
+
+  .chart-modal-header {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .chart-modal-title {
+    min-width: 0;
+    flex: 1 1 220px;
+  }
+
+  .chart-modal-controls {
+    margin-left: auto;
+    justify-content: flex-end;
+    align-self: flex-start;
+  }
+
+  .chart-modal-header-controls {
+    flex-wrap: nowrap;
   }
   
   .modal-content {

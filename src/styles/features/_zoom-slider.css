@@ -226,7 +226,7 @@
 }
 
 .dark-mode .zoom-btn:hover {
-  background-color: rgba(88, 166, 255, 0.1);
+  background-color: var(--color-accent-soft);
   color: var(--primary-blue);
   border-color: var(--primary-blue);
 }
@@ -238,7 +238,7 @@
 }
 
 .dark-mode .zoom-reset:hover {
-  background-color: rgba(88, 166, 255, 0.1);
+  background-color: var(--color-accent-soft);
   color: var(--primary-blue);
   border-color: var(--primary-blue);
 }

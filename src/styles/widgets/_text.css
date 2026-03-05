@@ -100,7 +100,7 @@
 }
 
 .text-widget tbody tr:hover {
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
 }
 
 .text-widget tbody tr:last-child td {
@@ -110,7 +110,7 @@
 /* Code in tables */
 .text-widget td code,
 .text-widget th code {
-  background-color: rgba(9, 105, 218, 0.1);
+  background-color: var(--color-accent-soft);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -175,7 +175,7 @@
   border-left: 4px solid var(--primary-blue);
   margin: 0.5rem 0;
   padding: 0.5rem 1rem 0.75rem 1rem;
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   border-radius: 0 8px 8px 0;
 }
 
@@ -198,7 +198,7 @@
    ================== */
 
 .text-widget code {
-  background-color: rgba(9, 105, 218, 0.1);
+  background-color: var(--color-accent-soft);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -266,7 +266,7 @@
    ================== */
 
 .dark-mode .text-widget h3 {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget table {
@@ -284,18 +284,18 @@
 }
 
 .dark-mode .text-widget tbody tr:hover {
-  background-color: rgba(88, 166, 255, 0.1);
+  background-color: var(--color-accent-soft);
 }
 
 .dark-mode .text-widget td code,
 .dark-mode .text-widget th code {
-  background-color: rgba(88, 166, 255, 0.15);
-  color: #58A6FF;
+  background-color: var(--color-hover-background-strong);
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget code {
-  background-color: rgba(88, 166, 255, 0.15);
-  color: #58A6FF;
+  background-color: var(--color-hover-background-strong);
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget pre {
@@ -304,20 +304,20 @@
 }
 
 .dark-mode .text-widget blockquote {
-  background-color: rgba(88, 166, 255, 0.1);
-  border-left-color: #58A6FF;
+  background-color: var(--color-accent-soft);
+  border-left-color: var(--primary-blue);
 }
 
 .dark-mode .text-widget blockquote strong {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget ul > li::before {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget a {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 /* ==================

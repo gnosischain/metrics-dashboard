@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_user_lifetime_tenure_days",
+  "query": "SELECT wallet_address, tenure_days AS value\n    FROM dbt.api_execution_gpay_user_lifetime_metrics"
+}

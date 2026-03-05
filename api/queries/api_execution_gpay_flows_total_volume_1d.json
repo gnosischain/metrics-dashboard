@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_flows_total_volume_1d",
+  "query": "SELECT CONCAT('+$',toString(floor(SUM(amount_usd)/1000)), 'K')  AS total_usd FROM dbt.api_execution_gpay_flows_snapshot\n    WHERE window = '1D'"
+}

@@ -2,6 +2,7 @@ const metric = {
   id: 'api_execution_yields_lending_daily',
   name: 'Aave V3 Lending & Borrow APY',
   description: 'Daily lending and borrow APY',
+  metricDescription: 'Daily lending APY and variable borrow APY by token and protocol. Token filter isolates rate dynamics for a selected asset.',
   chartType: 'line',
   isTimeSeries: true,
   stacked: false,

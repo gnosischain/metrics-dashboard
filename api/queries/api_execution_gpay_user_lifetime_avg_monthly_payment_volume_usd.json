@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gpay_user_lifetime_avg_monthly_payment_volume_usd",
+  "query": "SELECT wallet_address, avg_monthly_payment_volume_usd AS value\n    FROM dbt.api_execution_gpay_user_lifetime_metrics"
+}

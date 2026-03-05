@@ -40,7 +40,7 @@
   border-left: 4px solid var(--primary-blue);
   padding: 1rem 1.5rem;
   margin: 1.5rem 0;
-  background-color: rgba(9, 105, 218, 0.05);
+  background-color: var(--color-accent-softer);
   border-radius: 0 var(--border-radius-base) var(--border-radius-base) 0;
   font-style: normal;
   color: var(--color-text-primary);
@@ -113,7 +113,7 @@
 }
 
 .text-widget p strong {
-  background: linear-gradient(to bottom, transparent 60%, rgba(9, 105, 218, 0.2) 60%);
+  background: linear-gradient(to bottom, transparent 60%, var(--color-focus-ring) 60%);
   padding: 0 2px;
 }
 
@@ -122,7 +122,7 @@
    ================== */
 
 .text-widget blockquote:has(> p:first-child:contains("📝")) {
-  background-color: rgba(9, 105, 218, 0.08);
+  background-color: var(--color-hover-background);
   border-left-color: var(--primary-blue);
 }
 
@@ -151,24 +151,24 @@
    ================== */
 
 .dark-mode .text-widget blockquote {
-  background-color: rgba(88, 166, 255, 0.08);
+  background-color: var(--color-accent-softer);
   border-left-color: var(--primary-blue);
 }
 
 .dark-mode .text-widget blockquote strong {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget p strong {
-  background: linear-gradient(to bottom, transparent 60%, rgba(88, 166, 255, 0.3) 60%);
+  background: linear-gradient(to bottom, transparent 60%, var(--color-focus-ring) 60%);
 }
 
 .dark-mode .text-widget ul li::before {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget ul li > strong:first-child {
-  color: #58A6FF;
+  color: var(--primary-blue);
 }
 
 .dark-mode .text-widget hr {

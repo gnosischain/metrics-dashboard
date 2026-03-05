@@ -66,7 +66,7 @@
 
 .legend-item:hover {
   background-color: #EFF3F7;
-  border-color: #ADBAC7;
+  border-color: var(--color-border-hover);
 }
 
 .legend-item:active {
@@ -162,7 +162,7 @@
 
 .legend-btn:hover {
   background-color: #EFF3F7;
-  border-color: #ADBAC7;
+  border-color: var(--color-border-hover);
   transform: scale(1.1);
 }
 
@@ -267,7 +267,7 @@
 }
 
 .dark-mode .legend-item:hover {
-  background-color: rgba(88, 166, 255, 0.15);
+  background-color: var(--color-hover-background-strong);
 }
 
 .dark-mode .legend-item-label {
@@ -296,7 +296,7 @@
 }
 
 .dark-mode .legend-action-btn:hover {
-  background-color: rgba(88, 166, 255, 0.08);
+  background-color: var(--color-accent-softer);
   color: var(--primary-blue);
   border-color: var(--primary-blue);
 }

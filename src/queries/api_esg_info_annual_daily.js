@@ -2,6 +2,7 @@ const metric = {
   id: 'api_esg_info_annual_daily',
   name: 'Annualized Estimations',
   description: 'Emission/Energy annualized daily estimations',
+  metricDescription: 'Annualized emissions and energy projections derived from daily estimates. Bands communicate uncertainty in node count and energy assumptions.',
   chartType: 'quantileBands', 
   isTimeSeries: true,
   enableZoom: true,

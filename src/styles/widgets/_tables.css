@@ -1,4 +1,4 @@
-/* Modern Table Widget Styles - Add this to your CSS file or create modern-table.css */
+/* Modern Table Widget Styles */
 
 /* ==================
    Modern Table Base Styles
@@ -8,17 +8,19 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .table-widget.dark {
-  background: #1a1a1a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-base);
 }
 
 /* ==================
@@ -26,112 +28,109 @@
    ================== */
 
 /* Table Container */
-.tabulator {
+.table-widget .tabulator {
   background: transparent !important;
   border: none !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: var(--font-family-base) !important;
   font-size: 14px !important;
-  line-height: 1.5 !important;
-  height: 100% !important; /* Ensure full height usage */
+  line-height: var(--line-height-base) !important;
+  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
 }
 
 /* Table Holder - ensure it grows to fill available space */
-.tabulator .tabulator-tableHolder {
+.table-widget .tabulator .tabulator-tableHolder {
   background: transparent !important;
   flex: 1 !important;
   overflow-y: auto !important;
 }
 
 /* Header Styling */
-.tabulator .tabulator-header {
-  background: #f8fafc !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+.table-widget .tabulator .tabulator-header {
+  background: var(--color-accent-softer) !important;
+  border-bottom: 1px solid var(--color-border) !important;
   border-radius: 0 !important;
-  font-weight: 600 !important;
-  color: #475569 !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--color-text-secondary) !important;
   padding: 0 !important;
-  flex-shrink: 0 !important; /* Prevent header from shrinking */
+  flex-shrink: 0 !important;
 }
 
-.tabulator .tabulator-col {
+.table-widget .tabulator .tabulator-col {
   background: transparent !important;
-  border-right: 1px solid #e2e8f0 !important;
+  border-right: 1px solid var(--color-border) !important;
   padding: 0 !important;
   position: relative !important;
 }
 
-.tabulator .tabulator-col:last-child {
+.table-widget .tabulator .tabulator-col:last-child {
   border-right: none !important;
 }
 
-.tabulator .tabulator-col-content {
-  padding: 16px 20px !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
+.table-widget .tabulator .tabulator-col-content {
+  padding: 10px 12px !important;
+  font-weight: var(--font-weight-semibold) !important;
+  font-size: var(--font-size-xs) !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  color: #64748b !important;
+  letter-spacing: 0.06em !important;
+  color: var(--color-text-tertiary) !important;
 }
 
-/* Remove default header border radius */
-.tabulator .tabulator-header .tabulator-col:first-child {
+.table-widget .tabulator .tabulator-header .tabulator-col:first-child {
   border-radius: 0 !important;
 }
 
-.tabulator .tabulator-header .tabulator-col:last-child {
+.table-widget .tabulator .tabulator-header .tabulator-col:last-child {
   border-radius: 0 !important;
 }
 
 /* Row Styling */
-.tabulator .tabulator-table {
+.table-widget .tabulator .tabulator-table {
   background: transparent !important;
-  color: #334155 !important;
-  height: 100% !important; /* Allow table to fill container */
+  color: var(--color-text-secondary) !important;
+  height: 100% !important;
 }
 
-.tabulator .tabulator-row {
-  background: #ffffff !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  transition: all 0.2s ease !important;
-  min-height: 52px !important;
+.table-widget .tabulator .tabulator-row {
+  background: var(--color-surface) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base) !important;
+  min-height: 40px !important;
 }
 
-.tabulator .tabulator-row:hover {
-  background: #f8fafc !important;
+.table-widget .tabulator .tabulator-row:hover {
+  background: var(--color-accent-softer) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-.tabulator .tabulator-row:last-child {
+.table-widget .tabulator .tabulator-row:last-child {
   border-bottom: none !important;
 }
 
 /* Cell Styling */
-.tabulator .tabulator-cell {
+.table-widget .tabulator .tabulator-cell {
   border-right: none !important;
-  padding: 16px 20px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: #334155 !important;
+  padding: 10px 12px !important;
+  font-size: var(--font-size-sm) !important;
+  font-weight: var(--font-weight-medium) !important;
+  color: var(--color-text-secondary) !important;
   vertical-align: middle !important;
 }
 
-/* Alternating row colors for better readability */
-.tabulator .tabulator-row:nth-child(even) {
-  background: #fafbfc !important;
+.table-widget .tabulator .tabulator-row:nth-child(even) {
+  background: rgba(148, 163, 184, 0.06) !important;
 }
 
-.tabulator .tabulator-row:nth-child(even):hover {
-  background: #f1f5f9 !important;
+.table-widget .tabulator .tabulator-row:nth-child(even):hover {
+  background: var(--color-accent-softer) !important;
 }
 
 /* ==================
    Full Height Table Support
    ================== */
 
-/* When table should use full card height */
 .metric-card .card-content {
   display: flex !important;
   flex-direction: column !important;
@@ -139,13 +138,11 @@
   overflow: hidden !important;
 }
 
-/* Ensure table widget fills the card content */
 .metric-card .card-content .table-widget {
   flex: 1 !important;
   min-height: 0 !important;
 }
 
-/* For grid items with specific height (like minHeight: 750px) */
 .grid-item[style*="minHeight"] .table-widget,
 .grid-item[style*="min-height"] .table-widget {
   height: 100% !important;
@@ -155,103 +152,167 @@
    Modern Pagination Styling (when enabled)
    ================== */
 
-.tabulator .tabulator-footer {
-  background: #ffffff !important;
-  border-top: 1px solid #e2e8f0 !important;
-  padding: 16px 20px !important;
-  display: flex !important;
+.table-widget .tabulator .tabulator-footer {
+  background: var(--color-surface) !important;
+  border-top: 1px solid var(--color-border) !important;
+  padding: 8px 10px !important;
+  display: block !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  min-height: 60px !important;
-  flex-shrink: 0 !important; /* Prevent footer from shrinking */
+  min-height: 46px !important;
+  flex-shrink: 0 !important;
 }
 
-.tabulator .tabulator-paginator {
+.table-widget .tabulator .tabulator-footer .tabulator-footer-contents {
   display: flex !important;
   align-items: center !important;
+  justify-content: flex-start !important;
   gap: 8px !important;
+  width: 100% !important;
+  padding: 0 !important;
 }
 
-.tabulator .tabulator-page {
-  background: #ffffff !important;
-  border: 1px solid #d1d5db !important;
-  color: #374151 !important;
-  padding: 8px 12px !important;
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
+.table-widget .tabulator .tabulator-paginator {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  text-align: right !important;
+  flex: 0 0 auto !important;
+  gap: 6px !important;
+}
+
+.table-widget .tabulator .tabulator-page {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+  padding: 4px 8px !important;
+  border-radius: var(--border-radius-base) !important;
+  font-weight: var(--font-weight-medium) !important;
+  font-size: var(--font-size-xs) !important;
+  line-height: 1.2 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  min-width: 40px !important;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast) !important;
+  min-width: 28px !important;
   text-align: center !important;
 }
 
-.tabulator .tabulator-page:hover {
-  background: #f3f4f6 !important;
-  border-color: #9ca3af !important;
+.table-widget .tabulator .tabulator-page:hover {
+  background: var(--color-accent-softer) !important;
+  border-color: var(--color-border-hover) !important;
   transform: translateY(-1px) !important;
 }
 
-.tabulator .tabulator-page.active {
-  background: #3b82f6 !important;
-  border-color: #3b82f6 !important;
+.table-widget .tabulator .tabulator-page.active {
+  background: var(--primary-blue) !important;
+  border-color: var(--primary-blue) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 6px 14px -8px rgba(79, 70, 229, 0.6) !important;
 }
 
-.tabulator .tabulator-page[data-page="first"],
-.tabulator .tabulator-page[data-page="prev"],
-.tabulator .tabulator-page[data-page="next"],
-.tabulator .tabulator-page[data-page="last"] {
-  background: #f8fafc !important;
-  border-color: #d1d5db !important;
-  font-weight: 600 !important;
+.table-widget .tabulator .tabulator-page[data-page="first"],
+.table-widget .tabulator .tabulator-page[data-page="prev"],
+.table-widget .tabulator .tabulator-page[data-page="next"],
+.table-widget .tabulator .tabulator-page[data-page="last"] {
+  background: var(--color-accent-softer) !important;
+  border-color: var(--color-border) !important;
+  font-weight: var(--font-weight-semibold) !important;
 }
 
-.tabulator .tabulator-page[data-page="first"]:hover,
-.tabulator .tabulator-page[data-page="prev"]:hover,
-.tabulator .tabulator-page[data-page="next"]:hover,
-.tabulator .tabulator-page[data-page="last"]:hover {
-  background: #e2e8f0 !important;
-  border-color: #94a3b8 !important;
+.table-widget .tabulator .tabulator-page[data-page="first"]:hover,
+.table-widget .tabulator .tabulator-page[data-page="prev"]:hover,
+.table-widget .tabulator .tabulator-page[data-page="next"]:hover,
+.table-widget .tabulator .tabulator-page[data-page="last"]:hover {
+  background: var(--color-accent-soft) !important;
+  border-color: var(--color-border-hover) !important;
 }
 
-/* Page Size Selector */
-.tabulator .tabulator-page-size {
+.table-widget .tabulator .tabulator-page-size {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  font-size: 14px !important;
-  color: #64748b !important;
-  font-weight: 500 !important;
+  font-size: var(--font-size-sm) !important;
+  color: var(--color-text-tertiary) !important;
+  font-weight: var(--font-weight-medium) !important;
 }
 
-.tabulator .tabulator-page-size select {
-  background: #ffffff !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 6px !important;
+.table-widget .tabulator .tabulator-page-size select {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--border-radius-base) !important;
   padding: 6px 12px !important;
-  font-size: 14px !important;
-  color: #374151 !important;
+  font-size: var(--font-size-sm) !important;
+  color: var(--color-text-secondary) !important;
   cursor: pointer !important;
   outline: none !important;
-  transition: all 0.2s ease !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
 }
 
-.tabulator .tabulator-page-size select:hover {
-  border-color: #9ca3af !important;
+.table-widget .tabulator .tabulator-page-size select:hover {
+  border-color: var(--color-border-hover) !important;
 }
 
-.tabulator .tabulator-page-size select:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+.table-widget .tabulator .tabulator-page-size select:focus {
+  border-color: var(--primary-blue) !important;
+  box-shadow: 0 0 0 3px var(--color-focus-ring) !important;
 }
 
-/* Row Counter */
-.tabulator .tabulator-counter {
-  font-size: 14px !important;
-  color: #64748b !important;
-  font-weight: 500 !important;
+.table-widget .tabulator .tabulator-counter {
+  font-size: var(--font-size-xs) !important;
+  color: var(--color-text-tertiary) !important;
+  font-weight: var(--font-weight-medium) !important;
+}
+
+/* ==================
+   Semantic Link + Chip Styles
+   ================== */
+
+.table-widget .table-link {
+  color: var(--primary-blue) !important;
+  text-decoration: none !important;
+  font-weight: var(--font-weight-semibold) !important;
+  border-bottom: 1px solid transparent !important;
+  transition: color var(--transition-fast), border-color var(--transition-fast) !important;
+}
+
+.table-widget .table-link:hover {
+  color: var(--primary-blue-hover) !important;
+  border-bottom-color: var(--primary-blue-hover) !important;
+}
+
+.table-widget .table-link:focus-visible {
+  outline: 2px solid var(--color-focus-ring) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--border-radius-sm) !important;
+}
+
+.table-widget .action-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  border: 1px solid transparent;
+}
+
+.table-widget .action-chip--in {
+  color: var(--color-success);
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.24);
+}
+
+.table-widget .action-chip--out {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.24);
+}
+
+.table-widget .action-chip--neutral {
+  color: var(--color-text-secondary);
+  background: var(--color-accent-softer);
+  border-color: var(--color-border);
 }
 
 /* ==================
@@ -259,70 +320,97 @@
    ================== */
 
 .table-widget.dark .tabulator .tabulator-header {
-  background: #374151 !important;
-  border-bottom: 1px solid #4b5563 !important;
+  background: var(--color-accent-softer) !important;
+  border-bottom: 1px solid var(--color-border) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-col {
-  border-right: 1px solid #4b5563 !important;
+  border-right: 1px solid var(--color-border) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-col-content {
-  color: #d1d5db !important;
+  color: var(--color-text-tertiary) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-row {
-  background: #1f2937 !important;
-  border-bottom: 1px solid #374151 !important;
-  color: #f3f4f6 !important;
+  background: var(--color-surface) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-row:hover {
-  background: #374151 !important;
+  background: var(--color-accent-softer) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-row:nth-child(even) {
-  background: #111827 !important;
+  background: rgba(2, 6, 23, 0.3) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-row:nth-child(even):hover {
-  background: #374151 !important;
+  background: var(--color-accent-softer) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-cell {
-  color: #f3f4f6 !important;
+  color: var(--color-text-primary) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-footer {
-  background: #1f2937 !important;
-  border-top: 1px solid #4b5563 !important;
+  background: var(--color-surface) !important;
+  border-top: 1px solid var(--color-border) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-page {
-  background: #374151 !important;
-  border-color: #4b5563 !important;
-  color: #d1d5db !important;
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-page:hover {
-  background: #4b5563 !important;
-  border-color: #6b7280 !important;
+  background: var(--color-accent-soft) !important;
+  border-color: var(--color-border-hover) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-page.active {
-  background: #3b82f6 !important;
-  border-color: #3b82f6 !important;
+  background: var(--primary-blue) !important;
+  border-color: var(--primary-blue) !important;
   color: #ffffff !important;
 }
 
 .table-widget.dark .tabulator .tabulator-page-size select {
-  background: #374151 !important;
-  border-color: #4b5563 !important;
-  color: #d1d5db !important;
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-counter {
-  color: #9ca3af !important;
+  color: var(--color-text-tertiary) !important;
+}
+
+.table-widget.dark .table-link {
+  color: var(--primary-blue) !important;
+}
+
+.table-widget.dark .table-link:hover {
+  color: var(--primary-blue-hover) !important;
+  border-bottom-color: var(--primary-blue-hover) !important;
+}
+
+.table-widget.dark .action-chip--in {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.table-widget.dark .action-chip--out {
+  color: #fda4af;
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.36);
+}
+
+.table-widget.dark .action-chip--neutral {
+  color: var(--color-text-primary);
+  background: var(--color-accent-softer);
+  border-color: var(--color-border);
 }
 
 /* ==================
@@ -330,23 +418,35 @@
    ================== */
 
 @media (max-width: 768px) {
-  .tabulator .tabulator-cell {
-    padding: 12px 16px !important;
+  .table-widget .tabulator .tabulator-cell {
+    padding: 8px 10px !important;
     font-size: 13px !important;
   }
-  
-  .tabulator .tabulator-col-content {
-    padding: 12px 16px !important;
-    font-size: 12px !important;
+
+  .table-widget .tabulator .tabulator-col-content {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
   }
-  
-  .tabulator .tabulator-footer {
-    padding: 12px 16px !important;
+
+  .table-widget .tabulator .tabulator-footer {
+    padding: 12px 14px !important;
     flex-direction: column !important;
     gap: 12px !important;
+    display: flex !important;
   }
-  
-  .tabulator .tabulator-paginator {
+
+  .table-widget .tabulator .tabulator-footer .tabulator-footer-contents {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .table-widget .tabulator .tabulator-paginator {
+    margin-left: 0 !important;
+    justify-content: center !important;
+  }
+
+  .table-widget .tabulator .tabulator-paginator {
     flex-wrap: wrap !important;
     justify-content: center !important;
   }
@@ -356,89 +456,71 @@
    Special Data Type Styling
    ================== */
 
-/* Numeric columns */
-.tabulator .tabulator-cell[data-type="number"] {
+.table-widget .tabulator .tabulator-cell[data-type="number"] {
   text-align: right !important;
   font-variant-numeric: tabular-nums !important;
   font-feature-settings: "tnum" !important;
 }
 
-/* Code/Hash columns */
-.tabulator .tabulator-cell[data-field*="digest"],
-.tabulator .tabulator-cell[data-field*="hash"],
-.tabulator .tabulator-cell[data-field*="version"] {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
-  font-size: 13px !important;
-  background: #f1f5f9 !important;
-  border-radius: 4px !important;
+.table-widget .tabulator .tabulator-cell[data-field*="digest"],
+.table-widget .tabulator .tabulator-cell[data-field*="hash"],
+.table-widget .tabulator .tabulator-cell[data-field*="version"] {
+  font-family: var(--font-family-mono) !important;
+  font-size: 12px !important;
+  background: var(--color-accent-softer) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--border-radius-sm) !important;
   padding: 4px 8px !important;
   margin: 8px 0 !important;
   display: inline-block !important;
 }
 
-.table-widget.dark .tabulator .tabulator-cell[data-field*="digest"],
-.table-widget.dark .tabulator .tabulator-cell[data-field*="hash"],
-.table-widget.dark .tabulator .tabulator-cell[data-field*="version"] {
-  background: #374151 !important;
-  color: #e5e7eb !important;
-}
-
-/* Time columns */
-.tabulator .tabulator-cell[data-field*="time"],
-.tabulator .tabulator-cell[data-field*="date"] {
+.table-widget .tabulator .tabulator-cell[data-field*="time"],
+.table-widget .tabulator .tabulator-cell[data-field*="date"] {
   font-variant-numeric: tabular-nums !important;
-  color: #6b7280 !important;
-}
-
-.table-widget.dark .tabulator .tabulator-cell[data-field*="time"],
-.table-widget.dark .tabulator .tabulator-cell[data-field*="date"] {
-  color: #9ca3af !important;
+  color: var(--color-text-tertiary) !important;
 }
 
 /* ==================
    Loading and Empty States
    ================== */
 
-.tabulator .tabulator-placeholder {
+.table-widget .tabulator .tabulator-placeholder {
   background: transparent !important;
-  color: #6b7280 !important;
+  color: var(--color-text-tertiary) !important;
   font-size: 16px !important;
-  padding: 40px 20px !important;
+  padding: 36px 20px !important;
   text-align: center !important;
-  font-weight: 500 !important;
-}
-
-.table-widget.dark .tabulator .tabulator-placeholder {
-  color: #9ca3af !important;
+  font-weight: var(--font-weight-medium) !important;
 }
 
 /* ==================
    Scrollbar Styling
    ================== */
 
-.tabulator .tabulator-tableHolder::-webkit-scrollbar {
+.table-widget .tabulator .tabulator-tableHolder::-webkit-scrollbar {
   width: 6px !important;
   height: 6px !important;
 }
 
-.tabulator .tabulator-tableHolder::-webkit-scrollbar-track {
+.table-widget .tabulator .tabulator-tableHolder::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
+.table-widget .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover) !important;
   border-radius: 3px !important;
-  transition: background 0.2s ease !important;
+  transition: background var(--transition-fast) !important;
 }
 
-.tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8 !important;
+.table-widget .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb {
-  background: #4b5563 !important;
+  background: var(--color-border-hover) !important;
 }
 
 .table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
-  background: #6b7280 !important;
+  background: var(--color-text-tertiary) !important;
 }
