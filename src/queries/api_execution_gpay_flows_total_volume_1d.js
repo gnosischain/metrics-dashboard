@@ -2,6 +2,10 @@ const metric = {
   id: 'api_execution_gpay_flows_total_volume_1d',
   name: 'Last Day',
   description: 'Total flow',
+  metricDescription: `
+  Total USD volume of all transfers involving Gnosis Pay wallets in the last 1 day. 
+  Includes payments, deposits, withdrawals, cashback, and all other token movements.
+  `,
   chartType: 'numberDisplay',
   variant: 'standard',
   format: null,

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_gpay_kpi_mau_latest',
   name: 'MAU',
   description: 'Latest month',
-  metricDescription: 'Monthly active users (any action) in the latest completed month.',
+  metricDescription: 'Distinct wallets with any Gnosis Pay activity (payments, deposits, withdrawals, cashback) in the latest completed calendar month.',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumber',

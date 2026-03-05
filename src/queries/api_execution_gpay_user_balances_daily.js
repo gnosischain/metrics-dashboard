@@ -1,7 +1,13 @@
+
 const metric = {
   id: 'api_execution_gpay_user_balances_daily',
   name: 'Balance by Token',
   description: 'Daily wallet balance by token',
+  metricDescription: `
+  Daily balance history by token for the selected wallet. 
+  Toggle between native token units and USD value. 
+  Stacked bars show composition across EURe, GBPe, USDC.e, and GNO.
+  `,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

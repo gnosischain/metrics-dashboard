@@ -2,6 +2,10 @@ const metric = {
   id: 'api_execution_gpay_volume_7d',
   name: 'Payments Volume',
   description: 'Last 7 days',
+  metricDescription: `
+  Total card payment volume in USD in the last 7 days. 
+  
+  The change percentage compares to the prior 7-day window.`,
   chartType: 'numberDisplay',
   variant: 'default',
   format: null,

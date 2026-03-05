@@ -2,7 +2,15 @@ const metric = {
   id: 'api_execution_gpay_kpi_flows_monthly',
   name: 'Monthly Financial KPIs',
   description: 'Payments, deposits, withdrawals, net flow',
-  metricDescription: 'Monthly financial aggregates from Gnosis Pay activity, including net flow.',
+  metricDescription: `
+  Monthly financial aggregates:
+   - __Payment Volume:__ card spend, 
+   - __Deposits:__ fiat top-ups + crypto deposits, 
+   - __Withdrawals:__ fiat off-ramps + crypto withdrawals
+   - __Net Flow:__ deposits minus withdrawals. 
+  
+  All values in USD.
+  `,
   chartType: 'line',
   isTimeSeries: true,
   enableZoom: true,

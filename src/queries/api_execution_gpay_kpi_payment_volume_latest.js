@@ -2,7 +2,10 @@ const metric = {
   id: 'api_execution_gpay_kpi_payment_volume_latest',
   name: 'Payment Volume',
   description: 'Latest month (USD)',
-  metricDescription: 'Total payment volume in USD for the latest completed month.',
+  metricDescription: `
+  Total card payment volume in USD for the latest completed month. 
+  
+  Includes only wallet-to-merchant transfers (card spend at point of sale).`,
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatCurrency',

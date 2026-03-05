@@ -2,7 +2,14 @@ const metric = {
   id: 'api_execution_gpay_churn_rates_monthly',
   name: 'Churn and Retention Rates',
   description: 'Monthly lifecycle rates',
-  metricDescription: 'Monthly churn and retention rates. Filter by scope (Payment vs Any activity).',
+  metricDescription: `
+  Monthly churn and retention rates 
+
+  - __Churn rate:__ percentage of current month active users who are not active the following month
+  - __Retention rate:__ percentage of the previous month active users who remain active in the current month
+  
+  Filter by scope: __Payment__ (card spend only) vs __Any__ (all activity types).
+  `,
   chartType: 'line',
   isTimeSeries: true,
   enableZoom: true,
