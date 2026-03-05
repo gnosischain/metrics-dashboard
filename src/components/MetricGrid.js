@@ -266,9 +266,9 @@ const MetricGrid = ({
                 )}
                 globalFilterField={tabConfig?.globalFilterField}
                 globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
-                selectedUnit={hasUnitToggle ? selectedUnit : null}
+                selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
-                enableUnitToggle={!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields)}
+                enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}
               />
             </div>
           );
