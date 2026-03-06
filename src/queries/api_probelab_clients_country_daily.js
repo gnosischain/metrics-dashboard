@@ -2,7 +2,10 @@ const metric = {
   id: 'api_probelab_clients_country_daily',
   name: 'Country Distribution',
   description: 'Client per country',
-  metricDescription: 'Daily client distribution by country, with client filter. Highlights geographic concentration and diversification trends.',
+  metricDescription: `
+  Daily peer distribution by country from ProbeLab crawls, based on IP geolocation.
+
+  Geographic diversity strengthens network resilience against regional outages or regulatory actions. Use the client filter to examine where specific implementations are concentrated.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

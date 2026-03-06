@@ -82,21 +82,8 @@ tabs:
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 1060px
-  - name: Methodology
-    order: 4
-    icon: 📝
-    iconClass: file-text
-    metrics:
-      - id: text_network_protocols_overview
-        gridRow: 1 / span 1
-        gridColumn: 1 / span 12
-        minHeight: 800px
-      - id: text_network_methodology
-        gridRow: 2
-        gridColumn: 1 / span 12
-        minHeight: 4300px
   - name: Probelab
-    order: 5
+    order: 4
     icon: 🔬
     iconClass: search
     metrics:
@@ -124,3 +111,25 @@ tabs:
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 500px
+  - name: Methodology
+    order: 5
+    icon: 📝
+    iconClass: file-text
+    metrics:
+      - id: text_network_protocols_overview
+        gridRow: 1 / span 1
+        gridColumn: 1 / span 12
+        minHeight: 800px
+      - id: text_network_methodology
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 4300px
+  - name: Glossary
+    order: 6
+    icon: 📖
+    iconClass: book-open
+    metrics:
+      - id: text_network_glossary
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 1200px

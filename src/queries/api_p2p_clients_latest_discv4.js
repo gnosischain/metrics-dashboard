@@ -1,6 +1,10 @@
 const metric = {
   id: 'api_p2p_clients_latest_discv4',
   name: 'DiscV4 peers',
+  metricDescription: `
+  Total unique DiscV4 peers discovered in the last day crawls.
+
+  The change percentage compares to the count from 7 days ago.`,
   format: 'formatNumber',
   labelField: 'country',
   valueField: 'discv4_count',

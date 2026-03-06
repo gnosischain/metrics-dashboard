@@ -2,7 +2,10 @@ const metric = {
   id: 'api_probelab_clients_quic_daily',
   name: 'Clients QUIC Support',
   description: '7DMA distribution',
-  metricDescription: '7-day average distribution of QUIC support by client, with client filter. Indicates transport-protocol adoption by implementation.',
+  metricDescription: `
+  7-day moving average of QUIC transport protocol support across consensus clients, sourced from ProbeLab crawls.
+
+  QUIC offers lower-latency peer connections compared to TCP. Use the client filter to compare adoption rates by implementation.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

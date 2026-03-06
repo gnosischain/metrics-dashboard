@@ -2,7 +2,16 @@ const metric = {
   id: 'api_p2p_discv4_clients_daily',
   name: 'DiscV4 Peer Distribution',
   description: 'Distribution of peers dialable in DiscV4 protocol',
-  metricDescription: 'Daily distribution of DiscV4 peers by client implementation. Metric filter lets you switch between count and share views.',
+  metricDescription: `
+  Last day distribution of DiscV4 peers, stacked by category.
+
+  Use the metric filter to switch between:
+
+  - __Clients:__ execution-layer client implementation
+  - __Platform:__ operating system
+  - __Provider:__ hosting provider or ISP
+  - __Country:__ geographic location via IP geolocation
+  `,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,
