@@ -11,30 +11,30 @@ GnosisPay:
   iconClass: credit-card
   palette: gnosis-pay
   source: /dashboards/gnosis-pay.yml
+Tokens:
+  name: Tokens
+  order: 30
+  icon: 🪙
+  iconClass: coins
+  source: /dashboards/tokens.yml
 OnChainActivity:
   name: OnChain Activity
-  order: 20
+  order: 30
   icon: ⛓️
   iconClass: link
   source: /dashboards/onchain-activity.yml
 Consensus:
   name: Consensus
-  order: 30
+  order: 40
   icon: 🔄
   iconClass: check-circle
   source: /dashboards/consensus.yml
 Network:
   name: Network
-  order: 40
+  order: 50
   icon: 🌐
   iconClass: globe
   source: /dashboards/network.yml
-Tokens:
-  name: Tokens
-  order: 50
-  icon: 🪙
-  iconClass: coins
-  source: /dashboards/tokens.yml
 Bridges:
   name: Bridges
   order: 60

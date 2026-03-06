@@ -2,7 +2,16 @@ const metric = {
   id: 'api_execution_gpay_churn_monthly',
   name: 'Lifecycle Segments',
   description: 'New, retained, returning, churned',
-  metricDescription: 'Monthly lifecycle segmentation. Filter by scope (Payment vs Any activity).',
+  metricDescription: `
+  Monthly user lifecycle segmentation:
+
+  - __New:__ first month of activity
+  - __Retained:__ active in both current and previous month
+  - __Returning:__ previously active, had an inactive gap, now active again
+  - __Churned:__ active this month but not the following
+    
+  Filter by scope: __Payment__ (card spend only) vs __Any__ (all activity types).
+  `,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

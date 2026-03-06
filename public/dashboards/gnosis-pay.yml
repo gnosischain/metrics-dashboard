@@ -108,13 +108,13 @@ tabs:
         gridRow: 5
         gridColumn: 7 / span 6
         minHeight: 500px
-      - id: api_execution_gpay_retention_by_action_monthly
-        gridRow: 6
-        gridColumn: 1 / span 6
-        minHeight: 500px
       - id: api_execution_gpay_retention_by_action_users_monthly
         gridRow: 6
-        gridColumn: 7 / span 6
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: api_execution_gpay_retention_by_action_monthly
+        gridRow: 7
+        gridColumn: 1 / span 12
         minHeight: 500px
 
   - name: Cashback
@@ -166,12 +166,12 @@ tabs:
         minHeight: 450px
       - id: api_execution_gpay_cashback_cohort_retention_monthly
         gridRow: 8
-        gridColumn: 1 / span 6
-        minHeight: 500px
+        gridColumn: 1 / span 12
+        minHeight: 450px
       - id: api_execution_gpay_cashback_cohort_retention_users_monthly
-        gridRow: 8
-        gridColumn: 7 / span 6
-        minHeight: 500px
+        gridRow: 9
+        gridColumn: 1 / span 12
+        minHeight: 450px
 
   - name: Balances
     order: 5
@@ -308,3 +308,14 @@ tabs:
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 500px
+
+  - name: Glossary
+    order: 8
+    icon: 📝
+    iconClass: file-text
+    metrics:
+      - id: text_gpay_glossary
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 3200px
+

@@ -2,7 +2,13 @@ const metric = {
   id: 'api_execution_gpay_cashback_cohort_retention_monthly',
   name: 'Cashback Cohort Retention',
   description: 'Payment retention after first cashback',
-  metricDescription: 'Cohort heatmap where cohorts are defined by first cashback month.',
+  metricDescription: `Each row is a cohort of users grouped by the month they first received cashback. Each column is a calendar month. The heatmap tracks their subsequent payment activity.
+
+- % — What percentage of the cohort made a payment that month.
+- \\# — How many users from the cohort made a payment.
+- $ — Total payment volume (USD) from that cohort.
+
+Example: if the Jun 2024 row shows 45% in Oct 2024, it means 45% of users who first received cashback in Jun 2024 were still making payments in Oct 2024.`,
   chartType: 'heatmap',
   xField: 'x',
   yField: 'y',

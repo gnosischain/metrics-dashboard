@@ -2,7 +2,9 @@ const metric = {
   id: 'api_execution_gpay_cashback_total',
   name: 'Total Cashback',
   description: 'All-time',
-  metricDescription: 'All-time GNO cashback distributed to Gnosis Pay users. Toggle between native GNO amount and USD equivalent.',
+  metricDescription: `
+  All-time GNO cashback distributed to Gnosis Pay users. 
+  Toggle between native GNO amount and USD equivalent.`,
   chartType: 'numberDisplay',
   variant: 'default',
   valueField: 'value',

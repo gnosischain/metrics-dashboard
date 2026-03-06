@@ -2,7 +2,15 @@ const metric = {
   id: 'api_execution_gpay_kpi_activity_monthly',
   name: 'Monthly User Activity',
   description: 'MAU by activity type',
-  metricDescription: 'Monthly active users split into overall MAU and activity-specific MAU cohorts.',
+  metricDescription: `
+  Monthly active users over time. 
+
+  - __MAU:__ all distinct active wallets. 
+  - __Payment MAU:__ wallets with card spend. 
+  - __Deposit MAU:__ wallets with fiat top-ups or crypto deposits. 
+  - __Withdrawal MAU:__ wallets with fiat off-ramps or crypto withdrawals. 
+  - __Cashback MAU:__ wallets that received GNO rewards.
+  `,
   chartType: 'line',
   isTimeSeries: true,
   enableZoom: true,
