@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_sdai_apy',
   name: 'sDAI Yield',
-  description: 'Current sDAI yield',
+  description: 'Current APY',
+  metricDescription: 'Current annual percentage yield on sDAI (Savings DAI) on Gnosis Chain, reflecting the DSR set by MakerDAO governance.',
   format: 'formatPercentage',
   valueField: 'value',
   chartType: 'numberDisplay',

@@ -1,7 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_sdai_supply',
   name: 'sDAI Supply',
-  description: 'Total sDAI supply on Gnosis Chain',
+  description: 'On Gnosis Chain',
+  metricDescription: 'Total sDAI supply on Gnosis Chain. Reflects DAI deposited into the savings vault and bridged.',
   format: 'formatValue',
   valueField: 'value',
   chartType: 'numberDisplay',
