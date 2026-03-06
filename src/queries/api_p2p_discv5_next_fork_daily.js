@@ -2,7 +2,12 @@ const metric = {
   id: 'api_p2p_discv5_next_fork_daily',
   name: 'CL Next Forks Distribution',
   description: 'Distribution for Broadcasted next forks (Consensus Layer)',
-  metricDescription: 'Daily distribution of next-fork announcements from DiscV5 peers. Useful for monitoring upgrade readiness before fork events.',
+  metricDescription: `
+  Daily distribution of the __next__ fork version announced by DiscV5 peers.
+
+  Peers broadcast the fork they plan to transition to, allowing the network to gauge upgrade readiness before a hard fork event.
+
+  A rising count for the upcoming fork signals that node operators are updating their software ahead of the transition.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

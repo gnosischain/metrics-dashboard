@@ -2,7 +2,10 @@ const metric = {
   id: 'api_probelab_clients_cloud_daily',
   name: 'Cloud Distribution',
   description: 'Clients per cloud provider',
-  metricDescription: 'Daily client distribution by cloud provider, with client filter. Tracks hosting concentration risk across infrastructure providers.',
+  metricDescription: `
+  Daily peer distribution by hosting provider from ProbeLab crawls.
+
+  Providers are classified as cloud (AWS, Hetzner, OVH, etc.) or __Home/Office__ (residential ISPs). High concentration on a single provider is a centralization risk. Use the client filter to see provider preferences by implementation.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

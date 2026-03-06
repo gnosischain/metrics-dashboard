@@ -1,6 +1,10 @@
 const metric = {
   id: 'api_p2p_crawls_latest_discv5',
   name: 'DiscV5 crawls',
+  metricDescription: `
+  Number of completed DiscV5 crawl sessions in the last day.
+
+  The change percentage compares to the crawl count from 7 days ago.`,
   format: 'formatNumber',
   labelField: 'country',
   valueField: 'discv5_crawls',

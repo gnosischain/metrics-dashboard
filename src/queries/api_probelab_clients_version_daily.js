@@ -2,7 +2,10 @@ const metric = {
   id: 'api_probelab_clients_version_daily',
   name: 'Client Version',
   description: 'Versions per client distribution',
-  metricDescription: 'Daily distribution of client semantic versions, with client filter. Helps track upgrade adoption and version fragmentation.',
+  metricDescription: `
+  Daily distribution of client software versions from ProbeLab crawls.
+
+  Use the client filter to focus on a specific implementation (e.g., Lighthouse, Teku). Helps track upgrade adoption speed and identify version fragmentation across the network.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

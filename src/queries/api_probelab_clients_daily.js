@@ -2,7 +2,10 @@ const metric = {
   id: 'api_probelab_clients_daily',
   name: 'Client Distribution',
   description: 'Daily consensus clients',
-  metricDescription: 'Daily distribution of consensus clients from Probelab crawls. Use it to monitor client share evolution over time.',
+  metricDescription: `
+  Daily distribution of consensus-layer clients observed by ProbeLab's Nebula crawler.
+
+  Healthy networks target no single client exceeding 33% share to prevent correlated failures. Use this chart to monitor client diversity trends over time.`,
   chartType: 'bar', 
   isTimeSeries: true,
   enableZoom: true,

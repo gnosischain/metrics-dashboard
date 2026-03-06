@@ -1,6 +1,10 @@
 const metric = {
   id: 'api_p2p_visits_latest_discv5',
   name: 'DiscV5 peer visits',
+  metricDescription: `
+  Total connection attempts (visits) to DiscV5 peers in the last day crawls.
+
+  The percentage shown is the share of visits that completed without dial or crawl errors.`,
   format: 'formatNumber',
   labelField: 'country',
   valueField: 'discv5_total_visits',
