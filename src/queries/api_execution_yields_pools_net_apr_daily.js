@@ -1,8 +1,14 @@
 const metric = {
   id: 'api_execution_yields_pools_net_apr_daily',
-  name: 'Pool Net APR',
-  description: '7-day trailing net APR by pool',
-  metricDescription: '7-day trailing net APR (fee revenue minus estimated impermanent loss) by pool for the selected token. Solid line is net APR, dashed lines show gross fee APR and IL breakdown. IL uses the constant-product model as a lower bound.',
+  name: 'Net APR',
+  description: '7-day trailing by pool',
+  metricDescription: `Net APR by pool for the selected token.
+
+- **Net APR** (solid) — what LPs actually earn: fees minus impermanent loss, annualised
+- **Fee APR** (dashed) — gross fee revenue earned by the pool, annualised
+- **IL** (dashed) — impermanent loss from swap rebalancing, annualised (negative = loss)
+
+All values use a 7-day trailing window. IL is a pool-level estimate derived from aggregate swap flows, not from individual LP position tracking.`,
   chartType: 'line',
   isTimeSeries: true,
   stacked: false,
