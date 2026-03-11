@@ -192,6 +192,15 @@ const MetricWidget = ({
     };
   }, [effectiveUnit, metricConfig, resolveFormat]);
 
+  // Resolve the display label for the active unit (dynamic from data or static)
+  const resolvedUnitLabel = useMemo(() => {
+    const unitFields = metricConfig?.unitFields;
+    if (!effectiveUnit || !unitFields) return null;
+    const unitConfig = unitFields[effectiveUnit];
+    if (!unitConfig) return null;
+    return (unitConfig.labelField && data?.data?.[0]?.[unitConfig.labelField]) || unitConfig.label || effectiveUnit;
+  }, [effectiveUnit, metricConfig, data]);
+
   const valueModeOptions = useMemo(() => {
     if (!Array.isArray(metricConfig?.valueModeOptions)) {
       return [];
@@ -677,7 +686,7 @@ const MetricWidget = ({
 
   const chartRenderConfig = useMemo(() => {
     const metricHasValueField = !!widgetConfig.config?.valueField;
-    return {
+    const baseConfig = {
       ...widgetConfig.config,
       dashboardPalette,
       ...(!metricHasValueField ? { yField: effectiveValueConfig.yField } : {}),
@@ -687,6 +696,11 @@ const MetricWidget = ({
       visualMapPercentile: effectiveValueConfig.visualMapPercentile,
       enableZoom: widgetConfig.enableZoom
     };
+    // Override yAxis name with the resolved unit label (e.g. "USD", "EURE", "SDAI")
+    if (resolvedUnitLabel && baseConfig.yAxis) {
+      baseConfig.yAxis = { ...baseConfig.yAxis, name: resolvedUnitLabel };
+    }
+    return baseConfig;
   }, [
     widgetConfig.config,
     dashboardPalette,
@@ -695,7 +709,8 @@ const MetricWidget = ({
     effectiveValueConfig.valueField,
     effectiveValueConfig.format,
     effectiveValueConfig.visualMapCenter,
-    effectiveValueConfig.visualMapPercentile
+    effectiveValueConfig.visualMapPercentile,
+    resolvedUnitLabel
   ]);
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
@@ -749,7 +764,7 @@ const MetricWidget = ({
         <div className="resolution-toggle">
           {Object.entries(
             baseMetricConfig?.unitFields
-              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, v.label || k]))
+              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, (v.labelField && data?.data?.[0]?.[v.labelField]) || v.label || k]))
               : UNIT_LABELS
           ).map(([key, label]) => (
             <button

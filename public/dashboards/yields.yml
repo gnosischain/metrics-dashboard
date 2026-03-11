@@ -98,7 +98,11 @@ tabs:
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 450px
-      - id: api_execution_yields_pools_net_apr_daily
+      - id: api_execution_yields_pools_tvl_token_daily
         gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_yields_pools_net_apr_daily
+        gridRow: 5
         gridColumn: 1 / span 12
         minHeight: 450px
