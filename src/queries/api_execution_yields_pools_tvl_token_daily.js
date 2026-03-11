@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_yields_pools_tvl_token_daily',
   name: 'TVL by Token',
-  description: 'Pool TVL broken down by token over time',
+  description: 'Daily by token',
   metricDescription: 'Stacked area showing each token\'s contribution to pool TVL.\n'
     + 'Denomination toggle: USD or either pool token (cross-rate computed server-side).\n'
     + 'Select a pool from the dropdown to see its composition.',
