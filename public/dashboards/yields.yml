@@ -80,29 +80,45 @@ tabs:
         minHeight: 60px
       - id: api_execution_yields_pools_tvl_latest
         gridRow: 2
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 200px
       - id: api_execution_yields_pools_volume_7d
         gridRow: 2
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 200px
       - id: api_execution_yields_pools_fees_7d
         gridRow: 2
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 3
+        minHeight: 200px
+      - id: api_execution_yields_pools_lps_count_7d
+        gridRow: 2
+        gridColumn: 10 / span 3
         minHeight: 200px
       - id: api_execution_yields_pools_tvl_by_pool_latest
         gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 450px
-      - id: api_execution_yields_pools_volume_daily
+      - id: api_execution_yields_pools_tvl_token_daily
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 450px
-      - id: api_execution_yields_pools_tvl_token_daily
-        gridRow: 4
-        gridColumn: 1 / span 12
-        minHeight: 450px
       - id: api_execution_yields_pools_net_apr_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_yields_pools_lp_activity_daily
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_yields_pools_fees_usd_daily
         gridRow: 5
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 4
+        minHeight: 450px
+      - id: api_execution_yields_pools_swap_count_daily
+        gridRow: 5
+        gridColumn: 5 / span 4
+        minHeight: 450px
+      - id: api_execution_yields_pools_volume_daily
+        gridRow: 5
+        gridColumn: 9 / span 4
         minHeight: 450px
