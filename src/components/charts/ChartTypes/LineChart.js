@@ -30,17 +30,7 @@ export class LineChart extends BaseChart {
         timeContext: timeAnalysis
       };
       
-      // For multiYFields, assign the same color to all series in the same group
-      const hasGroups = processedData.series.some(s => s._group);
-      let colors;
-      let colorIndexMap;
-      if (hasGroups) {
-        const groups = [...new Set(processedData.series.map(s => s._group))];
-        colors = this.resolveSeriesPalette(enhancedConfig, groups.length, isDarkMode);
-        colorIndexMap = new Map(groups.map((g, i) => [g, i]));
-      } else {
-        colors = this.resolveSeriesPalette(enhancedConfig, processedData.series.length, isDarkMode);
-      }
+      const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series.length, isDarkMode);
 
       const chartOptions = {
         ...this.getBaseOptions(isDarkMode),
@@ -57,7 +47,7 @@ export class LineChart extends BaseChart {
         },
         
         series: processedData.series.map((series, index) => {
-          const colorIdx = colorIndexMap ? colorIndexMap.get(series._group) : index;
+          const colorIdx = index;
           const seriesOpts = {
             name: series.name,
             type: 'line',
