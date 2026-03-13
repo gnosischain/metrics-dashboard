@@ -334,7 +334,7 @@ const MetricWidget = ({
       // Let server use its default date range (365 days) for full data.
       // Server-side global filter reduces data transfer significantly.
       const params = {};
-      if (globalFilterField && globalFilterValue) {
+      if (hasGlobalFilter && globalFilterField && globalFilterValue) {
         params.filterField = globalFilterField;
         params.filterValue = globalFilterValue;
       }
