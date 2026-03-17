@@ -32,8 +32,37 @@ const metric = {
         minWidth: 200,
         widthGrow: 3,
         sorter: "string",
-        formatter: "plaintext",
-        headerFilter: false
+        headerFilter: false,
+        formatter: function(cell) {
+          const name = cell.getValue();
+          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
+
+          const safeName = String(name || '-')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+          if (!address) return safeName;
+
+          const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(address)}`;
+          return `<a class="table-link" href="${href}" target="_blank" rel="noopener noreferrer">${safeName}</a>`;
+        },
+        cellClick: function(_event, cell) {
+          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
+          if (!address) return;
+
+          const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(address)}`;
+          if (typeof window !== 'undefined') {
+            window.open(href, '_blank', 'noopener,noreferrer');
+          }
+        },
+        tooltip: function(cell) {
+          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
+          if (!address) return false;
+          return `Open ${address.slice(0, 10)}... on Blockscout`;
+        }
       },
       {
         title: "Yield",
@@ -82,6 +111,38 @@ const metric = {
         }
       },
       {
+        title: "Total Supplied",
+        field: "total_supplied",
+        minWidth: 120,
+        widthGrow: 1.5,
+        sorter: "number",
+        hozAlign: "right",
+        headerFilter: false,
+        formatter: function(cell) {
+          const val = cell.getValue();
+          if (val === null || val === undefined || val === 0) return "-";
+          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
+          return "$" + val.toFixed(0);
+        }
+      },
+      {
+        title: "Total Borrowed",
+        field: "total_borrowed",
+        minWidth: 120,
+        widthGrow: 1.5,
+        sorter: "number",
+        hozAlign: "right",
+        headerFilter: false,
+        formatter: function(cell) {
+          const val = cell.getValue();
+          if (val === null || val === undefined || val === 0) return "-";
+          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
+          return "$" + val.toFixed(0);
+        }
+      },
+      {
         title: "Fees 7D",
         field: "fees_7d",
         minWidth: 110,
@@ -98,6 +159,37 @@ const metric = {
         }
       },
       {
+        title: "Est. IL",
+        field: "il_apr_7d",
+        minWidth: 90,
+        widthGrow: 1,
+        sorter: "number",
+        hozAlign: "right",
+        headerFilter: false,
+        formatter: function(cell) {
+          const val = cell.getValue();
+          if (val === null || val === undefined) return "-";
+          return "<span style='color:#e53e3e'>" + val.toFixed(2) + "%</span>";
+        }
+      },
+      {
+        title: "Util %",
+        field: "utilization_rate",
+        minWidth: 90,
+        widthGrow: 1,
+        sorter: "number",
+        hozAlign: "right",
+        headerFilter: false,
+        formatter: function(cell) {
+          const val = cell.getValue();
+          if (val === null || val === undefined) return "-";
+          const pct = val.toFixed(1);
+          if (val >= 85) return "<span style='color:#e53e3e;font-weight:600'>" + pct + "%</span>";
+          if (val >= 70) return "<span style='color:#d69e2e;font-weight:600'>" + pct + "%</span>";
+          return pct + "%";
+        }
+      },
+      {
         title: "Protocol",
         field: "protocol",
         minWidth: 120,
@@ -109,7 +201,7 @@ const metric = {
     ]
   },
   
-  query: `SELECT type, name, yield_pct, yield_label, borrow_apy, tvl, fees_7d, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+  query: `SELECT type, name, address, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, il_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
 };
 
 export default metric;
