@@ -28,11 +28,11 @@ tabs:
         gridRow: 2
         gridColumn: 9 / span 4
         minHeight: 150px
-      - id: historical_yield_sdai
+      - id: api_execution_yields_opportunities_latest
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
-      - id: api_execution_yields_opportunities_latest
+      - id: historical_yield_sdai
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 450px
