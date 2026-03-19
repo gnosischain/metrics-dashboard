@@ -15,6 +15,7 @@ const metric = {
     responsiveLayout: 'collapse',
     height: '100%',
     movableColumns: false,
+    hideEmptyColumns: true,
     
     columns: [
       {

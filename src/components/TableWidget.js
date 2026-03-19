@@ -279,15 +279,24 @@ const generateColumns = (data, config, format, isDarkMode) => {
   
   // Use custom columns if provided in config (this handles your explicit column definitions)
   if (config.columns && Array.isArray(config.columns)) {
-    return config.columns.map(col => ({
-      title: col.title || col.field,
-      field: col.field,
-      width: col.width,
-      sorter: col.sorter || 'string',
-      formatter: col.formatter || 'plaintext',
-      headerFilter: col.headerFilter === true, // Only enable if explicitly true
-      ...col // Allow custom properties to override
-    }));
+    return config.columns
+      .filter(col => {
+        // When hideEmptyColumns is enabled, drop columns where every row is empty
+        if (!config.hideEmptyColumns) return true;
+        return data.some(row => {
+          const val = row[col.field];
+          return val !== null && val !== undefined && val !== 0 && val !== '';
+        });
+      })
+      .map(col => ({
+        title: col.title || col.field,
+        field: col.field,
+        width: col.width,
+        sorter: col.sorter || 'string',
+        formatter: col.formatter || 'plaintext',
+        headerFilter: col.headerFilter === true, // Only enable if explicitly true
+        ...col // Allow custom properties to override
+      }));
   }
 
   // Auto-generate columns from data (fallback)
