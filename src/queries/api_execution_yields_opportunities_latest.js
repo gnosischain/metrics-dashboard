@@ -160,8 +160,8 @@ const metric = {
         }
       },
       {
-        title: "Est. IL",
-        field: "il_apr_7d",
+        title: "LVR 7D",
+        field: "lvr_apr_7d",
         minWidth: 90,
         widthGrow: 1,
         sorter: "number",
@@ -170,7 +170,8 @@ const metric = {
         formatter: function(cell) {
           const val = cell.getValue();
           if (val === null || val === undefined) return "-";
-          return "<span style='color:#e53e3e'>" + val.toFixed(2) + "%</span>";
+          const color = val >= 0 ? '#38a169' : '#e53e3e';
+          return "<span style='color:" + color + "'>" + val.toFixed(2) + "%</span>";
         }
       },
       {
@@ -202,7 +203,7 @@ const metric = {
     ]
   },
   
-  query: `SELECT type, name, address, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, il_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+  query: `SELECT type, name, address, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
 };
 
 export default metric;
