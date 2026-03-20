@@ -1,3 +1,5 @@
+import { getTokenIconHtml, getTokenIconsFromName } from '../utils/tokenIcons.js';
+
 const metric = {
   id: 'api_execution_yields_opportunities_latest',
   name: 'Yield Opportunities',
@@ -36,7 +38,8 @@ const metric = {
         headerFilter: false,
         formatter: function(cell) {
           const name = cell.getValue();
-          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
+          const row = cell.getRow()?.getData?.() || {};
+          const address = String(row.address || '').trim();
 
           const safeName = String(name || '-')
             .replace(/&/g, '&amp;')
@@ -45,10 +48,15 @@ const metric = {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
 
-          if (!address) return safeName;
+          const icons = row.type === 'LP'
+            ? getTokenIconsFromName(name)
+            : (getTokenIconHtml(row.token) || getTokenIconsFromName(name));
+          const iconSpan = icons ? `<span style="margin-right:6px;white-space:nowrap;">${icons}</span>` : '';
+
+          if (!address) return `<span style="display:inline-flex;align-items:center;">${iconSpan}${safeName}</span>`;
 
           const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(address)}`;
-          return `<a class="table-link" href="${href}" target="_blank" rel="noopener noreferrer">${safeName}</a>`;
+          return `<span style="display:inline-flex;align-items:center;">${iconSpan}<a class="table-link" href="${href}" target="_blank" rel="noopener noreferrer">${safeName}</a></span>`;
         },
         cellClick: function(_event, cell) {
           const address = String(cell.getRow()?.getData?.()?.address || '').trim();
@@ -203,7 +211,7 @@ const metric = {
     ]
   },
   
-  query: `SELECT type, name, address, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+  query: `SELECT type, token, name, address, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
 };
 
 export default metric;
