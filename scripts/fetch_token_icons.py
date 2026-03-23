@@ -1,18 +1,16 @@
 """
-Fetch token icons from CoinGecko for all tokens in the Gnosis tokens_whitelist.
-Downloads PNGs to public/imgs/tokens/ and writes a mapping.json summary.
-All icons are cropped to a circular mask for consistent rendering.
+Fetch token icons from CoinGecko for Gnosis Chain tokens.
+Downloads PNGs to public/imgs/tokens/ with circular masks applied.
+Self-contained — no external CSV dependency.
 
 Usage:
     pip install Pillow
     cd metrics-dashboard
     python scripts/fetch_token_icons.py
 
-Requires: Python 3.8+, Pillow (pip install Pillow).
-Expects dbt-cerebro to be a sibling directory of metrics-dashboard.
+Requires: Python 3.8+, Pillow.
 """
 
-import csv
 import json
 import os
 import time
@@ -21,8 +19,6 @@ import urllib.error
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-
-SEEDS_CSV = os.path.join(REPO_ROOT, '..', 'dbt-cerebro', 'seeds', 'tokens_whitelist.csv')
 OUTPUT_DIR = os.path.join(REPO_ROOT, 'public', 'imgs', 'tokens')
 
 COINGECKO_BASE = "https://api.coingecko.com/api/v3"
@@ -30,9 +26,56 @@ PLATFORM = "xdai"
 DELAY_SECONDS = 10
 MAX_RETRIES = 4
 RETRY_BASE_WAIT = 30
+ICON_SIZE = 64
 
 NATIVE_ADDR = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
+# ── Token list (synced from dbt-cerebro/seeds/tokens_whitelist.csv) ──────────
+# To add a new token: append a (address, symbol) tuple below.
+TOKENS = [
+    ("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "xDAI"),
+    ("0xcb444e90d8198415266c6a2724b7900fb12fc56e", "EURe"),
+    ("0x420CA0f9B9b604cE0fd9C18EF134C705e5Fa3430", "EURe"),
+    ("0x5Cb9073902F2035222B9749F8fB0c9BFe5527108", "GBPe"),
+    ("0x8E34bfEC4f6Eb781f9743D9b4af99CD23F9b7053", "GBPe"),
+    ("0x9c58bacc331c9aa871afd802db6379a98e80cedb", "GNO"),
+    ("0xA4eF9Da5BA71Cc0D2e5E877a910A37eC43420445", "sGNO"),
+    ("0x5671b0B8aC13DC7813D36B99C21c53F6cd376a14", "spGNO"),
+    ("0xA1Fa064A85266E2Ca82DEe5C5CcEC84DF445760e", "aGnoGNO"),
+    ("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d", "WxDAI"),
+    ("0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533", "aGnoWXDAI"),
+    ("0xaf204776c7245bF4147c2612BF6e5972Ee483701", "sDAI"),
+    ("0x7a5c3860a77a8DC1b225BD46d0fb2ac1C6D191BC", "aGnosDAI"),
+    ("0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1", "WETH"),
+    ("0x8e5bBbb09Ed1ebdE8674Cda39A0c169401db4252", "WBTC"),
+    ("0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0", "USDC.e"),
+    ("0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83", "USDC"),
+    ("0xc6B7AcA6DE8a6044E0e32d0c841a89244A10D284", "aGnoUSDC"),
+    ("0xEdBC7449a9b594CA4E053D9737EC5Dc4CbCcBfb2", "aGnoEURe"),
+    ("0xC0333cb85B59a788d8C7CAe5e1Fd6E229A3E5a65", "aGnoUSDCe"),
+    ("0x5850D127a04ed0B4F1FCDFb051b3409FB9Fe6B90", "spUSDC"),
+    ("0xA34DB0ee8F84C4B90ed268dF5aBbe7Dcd3c277ec", "spUSDC.e"),
+    ("0x4ECaBa5870353805a9F068101A40E0f32ed605C6", "USDT"),
+    ("0x08B0cAebE352c3613302774Cd9B82D08afd7bDC4", "spUSDT"),
+    ("0x177127622c4A00F3d409B75571e12cB3c8973d3c", "COW"),
+    ("0x4d18815D14fe5c3304e87B3FA18318baa5c23820", "SAFE"),
+    ("0xFECB3F7c54E2CAAE9dC6Ac9060A822D47E053760", "BRLA"),
+    ("0x0a06c8354a6cc1a07549a38701eac205942e3ac6", "BRZ"),
+    ("0x1e2c4fb7ede391d116e6b41cd0608260e8801d59", "bCSPX"),
+    ("0x14a5f2872396802c3cc8942a39ab3e4118ee5038", "bTSLA"),
+    ("0xac28c9178acc8ba4a11a29e013a3a2627086e422", "bMSTR"),
+    ("0x52d134c6db5889fad3542a09eaf7aa90c0fdf9e4", "bIBTA"),
+    ("0xa34c5e0abe843e10461e2c9586ea03e55dbcc495", "bNVDA"),
+    ("0xbbcb0356bb9e6b3faa5cbf9e5f36185d53403ac9", "bCOIN"),
+    ("0x2f123cf3f37ce3328cc9b5b8415f9ec5109b45e7", "bC3M"),
+    ("0xca30c93b02514f86d5c86a6e375e3a330b435fb5", "bIB01"),
+    ("0x20c64dee8fda5269a78f2d5bdba861ca1d83df7a", "bHIGH"),
+    ("0xd4dd9e2f021bb459d5a5f6c24c12fe09c5d45553", "ZCHF"),
+    ("0x6165946250dd04740ab1409217e95a4f38374fe9", "svZCHF"),
+    ("0x8aD3c73F833d3F9A523aB01476625F269aEB7Cf0", "TSLAX"),
+]
+
+# Well-known tokens → CoinGecko coin ID (avoids contract lookup failures)
 COINGECKO_ID_OVERRIDES = {
     "xDAI":      "xdai",
     "WxDAI":     "xdai",
@@ -48,6 +91,7 @@ COINGECKO_ID_OVERRIDES = {
     "ZCHF":      "frankencoin",
 }
 
+# Derivative tokens that reuse the icon of their underlying asset
 ICON_REUSE = {
     "aGnoGNO":    "GNO",
     "sGNO":       "GNO",
@@ -64,11 +108,8 @@ ICON_REUSE = {
 }
 
 
-ICON_SIZE = 64
-
-
 def make_circular(path):
-    """Apply a circular mask to a PNG so it renders as a circle everywhere."""
+    """Apply a circular alpha mask so the icon renders as a circle everywhere."""
     from PIL import Image, ImageDraw
     img = Image.open(path).convert("RGBA").resize((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
     mask = Image.new("L", (ICON_SIZE, ICON_SIZE), 0)
@@ -116,18 +157,8 @@ def get_image_url_by_contract(address):
 
 
 def main():
-    seeds_path = os.path.normpath(SEEDS_CSV)
     output_path = os.path.normpath(OUTPUT_DIR)
-
-    if not os.path.exists(seeds_path):
-        print(f"ERROR: tokens_whitelist.csv not found at: {seeds_path}")
-        print("Make sure dbt-cerebro is a sibling directory of metrics-dashboard.")
-        return
-
     os.makedirs(output_path, exist_ok=True)
-
-    with open(seeds_path, newline="", encoding="utf-8") as f:
-        tokens = list(csv.DictReader(f))
 
     mapping_path = os.path.join(output_path, "mapping.json")
     if os.path.exists(mapping_path):
@@ -138,17 +169,14 @@ def main():
 
     already_done = {v["symbol"] for v in mapping.values()}
     downloaded = {v["symbol"]: v["icon_file"] for v in mapping.values()}
-    remaining = [t for t in tokens if t["symbol"].strip() not in already_done]
+    remaining = [(a, s) for a, s in TOKENS if s not in already_done]
 
-    print(f"Seeds CSV:  {seeds_path}")
     print(f"Output dir: {output_path}")
-    print(f"Found {len(tokens)} tokens ({len(already_done)} already downloaded, {len(remaining)} remaining)\n")
+    print(f"Found {len(TOKENS)} tokens ({len(already_done)} already downloaded, {len(remaining)} remaining)\n")
 
     stats = {"ok": 0, "reused": 0, "missed": 0, "error": 0, "skipped": len(already_done)}
 
-    for i, row in enumerate(remaining, 1):
-        addr = row["address"].strip()
-        symbol = row["symbol"].strip()
+    for i, (addr, symbol) in enumerate(remaining, 1):
         tag = f"[{i}/{len(remaining)}] {symbol}"
 
         if symbol in ICON_REUSE:
@@ -214,7 +242,7 @@ def main():
     print(f"  Reused:     {stats['reused']}")
     print(f"  Missed:     {stats['missed']}")
     print(f"  Errors:     {stats['error']}")
-    print(f"  Total:      {stats['skipped'] + stats['ok'] + stats['reused']}/{len(tokens)}")
+    print(f"  Total:      {stats['skipped'] + stats['ok'] + stats['reused']}/{len(TOKENS)}")
     print(f"  Mapping:    {mapping_path}")
 
 
