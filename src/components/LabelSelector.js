@@ -15,7 +15,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
  * @param {boolean}  props.searchable      - Enable search/filter input (default false)
  * @param {string}   props.placeholder     - Placeholder for the search input
  */
-const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'label', idPrefix, searchable = false, placeholder = '' }) => {
+const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'label', idPrefix, searchable = false, placeholder = '', iconMap = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [searchText, setSearchText] = useState('');
@@ -144,6 +144,17 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   const selectId = `${idPrefix}-label-selector`;
   const displayValue = selectedLabel || placeholder || '';
 
+  const renderLabel = (label) => {
+    const iconUrl = iconMap?.[label];
+    if (!iconUrl) return label;
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+        <img src={iconUrl} alt="" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        {label}
+      </span>
+    );
+  };
+
   return (
     <div
       className="label-selector title-level"
@@ -158,7 +169,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          <span className="custom-dropdown-value">{displayValue}</span>
+          <span className="custom-dropdown-value">{renderLabel(displayValue)}</span>
         </button>
 
         {isOpen && !searchable && (
@@ -184,7 +195,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
                 }
                 onClick={() => selectItem(label)}
               >
-                {label}
+                {renderLabel(label)}
               </li>
             ))}
           </ul>
@@ -207,7 +218,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
             </div>
             {selectedLabel && (
               <div className="custom-dropdown-selected-badge">
-                <span className="custom-dropdown-selected-value">{selectedLabel}</span>
+                <span className="custom-dropdown-selected-value">{renderLabel(selectedLabel)}</span>
               </div>
             )}
             <ul
@@ -232,7 +243,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
                   }
                   onClick={() => selectItem(label)}
                 >
-                  {label}
+                  {renderLabel(label)}
                 </li>
               ))}
               {filteredLabels.length === 0 && (
