@@ -4,8 +4,33 @@
 
 import { BaseChart } from './BaseChart';
 import { formatValue } from '../../../utils';
+import { getTokenIconUrl } from '../../../utils/tokenIcons.js';
 
 export class PieChart extends BaseChart {
+  static buildTokenRichStyles(names) {
+    const rich = {};
+    for (const name of names) {
+      const url = getTokenIconUrl(name);
+      if (url) {
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        rich[key] = {
+          backgroundColor: { image: url },
+          width: 16,
+          height: 16,
+          borderRadius: 8,
+        };
+      }
+    }
+    return rich;
+  }
+
+  static formatLabelWithIcon(name, suffix) {
+    const url = getTokenIconUrl(name);
+    if (!url) return suffix ? `${name}: ${suffix}` : name;
+    const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+    return suffix ? `{${key}|} ${name}: ${suffix}` : `{${key}|} ${name}`;
+  }
+
   static getOptions(data, config, isDarkMode) {
     if (!this.validateData(data)) {
       return this.getEmptyChartOptions(isDarkMode);
@@ -14,6 +39,7 @@ export class PieChart extends BaseChart {
     const processedData = this.processData(data, config);
     const colors = this.resolveSeriesPalette(config, processedData.data.length, isDarkMode);
     const totalValue = processedData.data.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const tokenRichStyles = this.buildTokenRichStyles(processedData.data.map(d => d.name));
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -52,15 +78,16 @@ export class PieChart extends BaseChart {
           color: isDarkMode ? '#e5e7eb' : '#374151',
           formatter: (params) => {
             if (config.pieLabelValue === false) {
-              return params.name;
+              return PieChart.formatLabelWithIcon(params.name, null);
             }
             if (config.useAbbreviatedLabels) {
-              const formattedValue = formatValue(params.value, config.format);
-              return `${params.name}: ${formattedValue}`;
+              return PieChart.formatLabelWithIcon(params.name, formatValue(params.value, config.format));
             }
-            return config.showPercentage 
-              ? `${params.name}: ${params.percent}%` 
-              : `${params.name}: ${params.value}`;
+            const suffix = config.showPercentage ? `${params.percent}%` : `${params.value}`;
+            return PieChart.formatLabelWithIcon(params.name, suffix);
+          },
+          rich: {
+            ...tokenRichStyles
           }
         },
         labelLine: {

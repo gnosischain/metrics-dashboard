@@ -1,12 +1,14 @@
 """
 Fetch token icons from CoinGecko for all tokens in the Gnosis tokens_whitelist.
 Downloads PNGs to public/imgs/tokens/ and writes a mapping.json summary.
+All icons are cropped to a circular mask for consistent rendering.
 
 Usage:
+    pip install Pillow
     cd metrics-dashboard
     python scripts/fetch_token_icons.py
 
-Requires: Python 3.8+ (stdlib only, no pip dependencies).
+Requires: Python 3.8+, Pillow (pip install Pillow).
 Expects dbt-cerebro to be a sibling directory of metrics-dashboard.
 """
 
@@ -60,6 +62,20 @@ ICON_REUSE = {
     "spUSDT":     "USDT",
     "svZCHF":     "ZCHF",
 }
+
+
+ICON_SIZE = 64
+
+
+def make_circular(path):
+    """Apply a circular mask to a PNG so it renders as a circle everywhere."""
+    from PIL import Image, ImageDraw
+    img = Image.open(path).convert("RGBA").resize((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
+    mask = Image.new("L", (ICON_SIZE, ICON_SIZE), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, ICON_SIZE, ICON_SIZE), fill=255)
+    result = Image.new("RGBA", (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
+    result.paste(img, mask=mask)
+    result.save(path)
 
 
 def fetch_json(url):
@@ -144,6 +160,7 @@ def main():
                 with open(src, "rb") as sf:
                     with open(dst, "wb") as df:
                         df.write(sf.read())
+                make_circular(dst)
                 mapping[addr] = {"symbol": symbol, "icon_file": fname, "source": f"reused from {parent}"}
                 downloaded[symbol] = fname
                 stats["reused"] += 1
@@ -169,6 +186,7 @@ def main():
 
             if img_url:
                 download_image(img_url, dest)
+                make_circular(dest)
                 mapping[addr] = {"symbol": symbol, "icon_file": fname, "source": "coingecko"}
                 downloaded[symbol] = fname
                 stats["ok"] += 1

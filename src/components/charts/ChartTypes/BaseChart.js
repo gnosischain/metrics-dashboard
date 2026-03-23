@@ -1,5 +1,6 @@
 import { formatValue } from '../../../utils';
 import { DARK_MODE_COLORS, DEFAULT_COLORS, generateColorPalette } from '../../../utils/colors';
+import { getTokenIconHtml } from '../../../utils/tokenIcons.js';
 
 export class BaseChart {
   static isPlainObject(value) {
@@ -488,10 +489,14 @@ export class BaseChart {
       if (config.showTotal && typeof p.value === 'number') {
         total += p.value;
       }
+      const tokenIcon = getTokenIconHtml(seriesName, 14);
+      const indicator = tokenIcon
+        ? `${tokenIcon}<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:6px;flex-shrink:0;"></div>`
+        : `<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>`;
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
           <div style="display:flex;align-items:center;flex:1;min-width:0;">
-            <div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>
+            ${indicator}
             <span style="margin-right:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${seriesName}</span>
           </div>
           <span style="font-weight:600;white-space:nowrap;">${formattedValue}</span>

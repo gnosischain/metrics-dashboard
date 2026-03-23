@@ -1,3 +1,5 @@
+import { getTokenIconHtml } from '../utils/tokenIcons.js';
+
 const metric = {
   id: 'api_execution_gpay_user_activity',
   name: 'Transaction History',
@@ -135,9 +137,17 @@ const metric = {
       {
         title: 'Token',
         field: 'symbol',
-        minWidth: 100,
+        minWidth: 120,
         sorter: 'string',
-        formatter: 'plaintext'
+        formatter: function(cell) {
+          const symbol = cell.getValue();
+          if (!symbol) return '-';
+          const icon = getTokenIconHtml(symbol);
+          const safe = String(symbol).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          return icon
+            ? `<span style="display:inline-flex;align-items:center;gap:6px;">${icon}${safe}</span>`
+            : safe;
+        }
       },
       {
         title: 'Amount',
