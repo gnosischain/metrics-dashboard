@@ -193,14 +193,7 @@ const MetricWidget = ({
     };
   }, [effectiveUnit, metricConfig, resolveFormat]);
 
-  // Resolve the display label for the active unit (dynamic from data or static)
-  const resolvedUnitLabel = useMemo(() => {
-    const unitFields = metricConfig?.unitFields;
-    if (!effectiveUnit || !unitFields) return null;
-    const unitConfig = unitFields[effectiveUnit];
-    if (!unitConfig) return null;
-    return (unitConfig.labelField && data?.data?.[0]?.[unitConfig.labelField]) || unitConfig.label || effectiveUnit;
-  }, [effectiveUnit, metricConfig, data]);
+  // resolvedUnitLabel is defined after filteredData (see below)
 
   const valueModeOptions = useMemo(() => {
     if (!Array.isArray(metricConfig?.valueModeOptions)) {
@@ -542,6 +535,15 @@ const MetricWidget = ({
     selectedLabel
   ]);
 
+  // Resolve the display label for the active unit (dynamic from filtered data or static)
+  const resolvedUnitLabel = useMemo(() => {
+    const unitFields = metricConfig?.unitFields;
+    if (!effectiveUnit || !unitFields) return null;
+    const unitConfig = unitFields[effectiveUnit];
+    if (!unitConfig) return null;
+    return (unitConfig.labelField && filteredData?.data?.[0]?.[unitConfig.labelField]) || unitConfig.label || effectiveUnit;
+  }, [effectiveUnit, metricConfig, filteredData]);
+
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
     if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !filteredData?.data) {
@@ -767,7 +769,7 @@ const MetricWidget = ({
         <div className="resolution-toggle">
           {Object.entries(
             baseMetricConfig?.unitFields
-              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, (v.labelField && data?.data?.[0]?.[v.labelField]) || v.label || k]))
+              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, (v.labelField && filteredData?.data?.[0]?.[v.labelField]) || v.label || k]))
               : UNIT_LABELS
           ).map(([key, label]) => (
             <button
