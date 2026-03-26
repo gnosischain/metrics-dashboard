@@ -21,7 +21,8 @@ export class BarChart extends BaseChart {
     // Add time context to config
     const enhancedConfig = {
       ...config,
-      timeContext: timeAnalysis
+      timeContext: timeAnalysis,
+      _seriesNames: processedData.series?.map(s => s.name) || []
     };
     
     const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series?.length || 1, isDarkMode);

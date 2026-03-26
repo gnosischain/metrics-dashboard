@@ -1,6 +1,6 @@
 import { formatValue } from '../../../utils';
 import { DARK_MODE_COLORS, DEFAULT_COLORS, generateColorPalette } from '../../../utils/colors';
-import { getTokenIconHtml } from '../../../utils/tokenIcons.js';
+import { getTokenIconHtml, getTokenIconUrl } from '../../../utils/tokenIcons.js';
 
 export class BaseChart {
   static isPlainObject(value) {
@@ -581,7 +581,25 @@ export class BaseChart {
       return { show: false };
     }
 
-    return {
+    // Build rich text styles for token icons in legend
+    const seriesNames = config._seriesNames || [];
+    const rich = {};
+    let hasIcons = false;
+    for (const name of seriesNames) {
+      const url = getTokenIconUrl(name);
+      if (url) {
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        rich[key] = {
+          backgroundColor: { image: url },
+          width: 14,
+          height: 14,
+          borderRadius: 7,
+        };
+        hasIcons = true;
+      }
+    }
+
+    const legendConfig = {
       show: true,
       type: 'scroll',
       orient: 'horizontal',
@@ -590,11 +608,23 @@ export class BaseChart {
       textStyle: {
         color: isDarkMode ? '#CBD5E1' : '#334155',
         fontSize: 12,
-        fontWeight: 400
+        fontWeight: 400,
+        ...(hasIcons ? { rich } : {})
       },
       itemGap: 20,
       ...config.legend
     };
+
+    if (hasIcons) {
+      legendConfig.formatter = (name) => {
+        const url = getTokenIconUrl(name);
+        if (!url) return name;
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        return `{${key}|} ${name}`;
+      };
+    }
+
+    return legendConfig;
   }
 
   static getTooltipConfig(config = {}) {

@@ -76,15 +76,15 @@ export class PieChart extends BaseChart {
         },
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
+          fontSize: 12,
           formatter: (params) => {
             if (config.pieLabelValue === false) {
               return PieChart.formatLabelWithIcon(params.name, null);
             }
-            if (config.useAbbreviatedLabels) {
-              return PieChart.formatLabelWithIcon(params.name, formatValue(params.value, config.format));
+            if (config.showPercentage) {
+              return PieChart.formatLabelWithIcon(params.name, `${params.percent}%`);
             }
-            const suffix = config.showPercentage ? `${params.percent}%` : `${params.value}`;
-            return PieChart.formatLabelWithIcon(params.name, suffix);
+            return PieChart.formatLabelWithIcon(params.name, formatValue(params.value, config.format));
           },
           rich: {
             ...tokenRichStyles
@@ -99,20 +99,39 @@ export class PieChart extends BaseChart {
       
       tooltip: {
         trigger: 'item',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+        borderWidth: 1,
+        borderRadius: 8,
+        textStyle: {
+          color: isDarkMode ? '#E2E8F0' : '#0F172A',
+          fontSize: 13
+        },
+        padding: [10, 14],
         formatter: (params) => {
           const value = formatValue(params.value, config.format);
-          return `${params.name}<br/><strong>${value}</strong> (${params.percent}%)`;
+          return `<div style="font-weight:600;margin-bottom:4px;">${params.name}</div><div>${value} <span style="opacity:0.7;">(${params.percent}%)</span></div>`;
         }
       },
-      
+
       legend: {
         show: config.showLegend !== false,
         type: 'scroll',
         orient: config.legendOrient || 'horizontal',
         bottom: config.legendOrient === 'vertical' ? 'center' : 0,
         right: config.legendOrient === 'vertical' ? 0 : 'center',
+        formatter: (name) => {
+          const url = getTokenIconUrl(name);
+          if (!url) return name;
+          const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+          return `{${key}|} ${name}`;
+        },
         textStyle: {
-          color: isDarkMode ? '#e5e7eb' : '#374151'
+          color: isDarkMode ? '#e5e7eb' : '#374151',
+          fontSize: 12,
+          rich: {
+            ...tokenRichStyles
+          }
         }
       }
     };
