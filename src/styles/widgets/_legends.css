@@ -55,8 +55,8 @@
               border-color var(--transition-base),
               opacity var(--transition-base);
   user-select: none;
-  background-color: var(--color-background);
-  border: 1px solid var(--color-border);
+  background-color: transparent;
+  border: 1px solid transparent;
   white-space: nowrap;
   flex-shrink: 0;
   overflow: hidden;
@@ -65,12 +65,12 @@
 }
 
 .legend-item:hover {
-  background-color: #EFF3F7;
-  border-color: var(--color-border-hover);
+  background-color: var(--color-accent-softer);
+  border-color: var(--color-border);
 }
 
 .legend-item:active {
-  transform: scale(0.98);
+  opacity: 0.8;
 }
 
 /* ==================
@@ -155,15 +155,13 @@
   align-items: center;
   font-size: 14px;
   font-weight: var(--font-weight-bold);
-  transition: background-color var(--transition-base), 
-              transform var(--transition-fast), 
+  transition: background-color var(--transition-base),
               border-color var(--transition-base);
 }
 
 .legend-btn:hover {
-  background-color: #EFF3F7;
+  background-color: var(--color-accent-softer);
   border-color: var(--color-border-hover);
-  transform: scale(1.1);
 }
 
 .legend-btn:active {

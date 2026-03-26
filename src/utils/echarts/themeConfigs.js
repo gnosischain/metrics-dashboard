@@ -17,7 +17,8 @@ export const LIGHT_THEME = {
   },
   legend: {
     textStyle: {
-      color: '#334155'
+      color: '#334155',
+      fontSize: 12
     }
   },
   tooltip: {
@@ -40,7 +41,8 @@ export const LIGHT_THEME = {
       }
     },
     axisLabel: {
-      color: '#64748B'
+      color: '#64748B',
+      fontSize: 11
     },
     splitLine: {
       lineStyle: {
@@ -56,7 +58,8 @@ export const LIGHT_THEME = {
       }
     },
     axisLabel: {
-      color: '#64748B'
+      color: '#64748B',
+      fontSize: 11
     },
     splitLine: {
       lineStyle: {
@@ -80,7 +83,8 @@ export const DARK_THEME = {
   },
   legend: {
     textStyle: {
-      color: '#CBD5E1'
+      color: '#CBD5E1',
+      fontSize: 12
     }
   },
   tooltip: {
@@ -94,7 +98,7 @@ export const DARK_THEME = {
     }
   },
   grid: {
-    borderColor: '#334155'
+    borderColor: '#2a2d35'
   },
   categoryAxis: {
     axisLine: {
@@ -103,7 +107,8 @@ export const DARK_THEME = {
       }
     },
     axisLabel: {
-      color: '#94A3B8'
+      color: '#94A3B8',
+      fontSize: 11
     },
     splitLine: {
       lineStyle: {
@@ -119,7 +124,8 @@ export const DARK_THEME = {
       }
     },
     axisLabel: {
-      color: '#94A3B8'
+      color: '#94A3B8',
+      fontSize: 11
     },
     splitLine: {
       lineStyle: {

@@ -256,18 +256,19 @@ export class BaseChart {
   static getAxisConfig(isDarkMode, type = 'category', config = {}) {
     const baseConfig = {
       axisLine: {
-        show: true,
+        show: type === 'category',
         lineStyle: {
           color: isDarkMode ? '#475569' : '#CBD5E1'
         }
       },
       axisTick: {
-        show: true,
-        alignWithLabel: type === 'category'
+        show: false
       },
       axisLabel: {
         show: true,
         color: isDarkMode ? '#94A3B8' : '#64748B',
+        fontSize: 11,
+        fontWeight: 400,
         hideOverlap: true,
         showMinLabel: true,
         showMaxLabel: true
@@ -490,9 +491,9 @@ export class BaseChart {
         total += p.value;
       }
       const tokenIcon = getTokenIconHtml(seriesName, 14);
-      const indicator = tokenIcon
-        ? `${tokenIcon}<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:6px;flex-shrink:0;"></div>`
-        : `<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>`;
+      const colorDot = `<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:${tokenIcon ? '6px' : '8px'};flex-shrink:0;"></div>`;
+      const iconWithGap = tokenIcon ? `<span style="margin-right:4px;display:inline-flex;align-items:center;">${tokenIcon}</span>` : '';
+      const indicator = `${colorDot}${iconWithGap}`;
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
           <div style="display:flex;align-items:center;flex:1;min-width:0;">
@@ -561,13 +562,13 @@ export class BaseChart {
         topMargin = isSmallCard ? '8%' : '10%';
       } else {
         bottomMargin = isSmallCard ? '8%' : '3%';
-        topMargin = isSmallCard ? '6%' : '10%';
+        topMargin = isSmallCard ? '4%' : '6%';
       }
     }
 
     return {
       left: '3%',
-      right: '50px',
+      right: '3%',
       bottom: bottomMargin,
       top: topMargin,
       containLabel: true,
@@ -587,7 +588,9 @@ export class BaseChart {
       top: 'top',
       left: 'center',
       textStyle: {
-        color: isDarkMode ? '#CBD5E1' : '#334155'
+        color: isDarkMode ? '#CBD5E1' : '#334155',
+        fontSize: 12,
+        fontWeight: 400
       },
       itemGap: 20,
       ...config.legend
@@ -619,7 +622,7 @@ export class BaseChart {
       textStyle: {
         color: config.isDarkMode ? '#E2E8F0' : '#0F172A'
       },
-      padding: [10, 14],
+      padding: [12, 16],
       ...config.tooltip
     };
   }
