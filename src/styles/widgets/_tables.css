@@ -72,8 +72,7 @@
   padding: 10px 12px !important;
   font-weight: var(--font-weight-semibold) !important;
   font-size: var(--font-size-xs) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
+  letter-spacing: 0.01em !important;
   color: var(--color-text-tertiary) !important;
 }
 

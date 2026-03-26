@@ -1,4 +1,4 @@
-import { getTokenIconHtml, getTokenIconsFromName } from '../utils/tokenIcons.js';
+import { getTokenIconHtml, getTokenIconsFromName, formatTokenName } from '../utils/tokenIcons.js';
 
 const metric = {
   id: 'api_execution_yields_opportunities_latest',
@@ -21,6 +21,16 @@ const metric = {
     
     columns: [
       {
+        title: "",
+        field: "address",
+        visible: false
+      },
+      {
+        title: "",
+        field: "token",
+        visible: false
+      },
+      {
         title: "Type",
         field: "type",
         minWidth: 80,
@@ -41,7 +51,10 @@ const metric = {
           const row = cell.getRow()?.getData?.() || {};
           const address = String(row.address || '').trim();
 
-          const safeName = String(name || '-')
+          // Strip address suffix like "• a17f43" or "• 0x..." and fix token casing
+          const cleanName = String(name || '-').replace(/\s*[•·]\s*[a-fA-F0-9x]{4,}$/,'').trim();
+          const displayName = formatTokenName(cleanName);
+          const safeName = displayName
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -51,7 +64,7 @@ const metric = {
           const icons = row.type === 'LP'
             ? getTokenIconsFromName(name)
             : (getTokenIconHtml(row.token) || getTokenIconsFromName(name));
-          const iconSpan = icons ? `<span style="margin-right:6px;white-space:nowrap;">${icons}</span>` : '';
+          const iconSpan = icons ? `<span style="margin-right:8px;flex-shrink:0;">${icons}</span>` : '';
 
           if (!address) return `<span style="display:inline-flex;align-items:center;">${iconSpan}${safeName}</span>`;
 

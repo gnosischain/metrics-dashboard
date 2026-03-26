@@ -40,8 +40,6 @@
   font-size: 0.75rem;
   color: var(--color-text-tertiary);
   font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 /* ==================

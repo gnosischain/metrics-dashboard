@@ -80,7 +80,25 @@ export function getTokenIconsFromName(name) {
       found.push(resolved);
     }
   }
-  return found.map(s => getTokenIconHtml(s)).join(' ');
+  const imgs = found.map((s, i) => {
+    const ml = i > 0 ? 'margin-left:-4px;' : '';
+    const url = TOKEN_ICON_URLS[s];
+    const escaped = s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    return `<img src="${url}" alt="${escaped}" style="display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover;${ml}border:1.5px solid var(--color-surface, #fff);position:relative;z-index:${found.length - i};" />`;
+  }).join('');
+  return `<span style="display:inline-flex;align-items:center;flex-shrink:0;">${imgs}</span>`;
+}
+
+/**
+ * Replace token symbols in a string with their properly-cased display names.
+ * E.g. "WETH/WXDAI" → "WETH/WxDAI", "USDC.E/SDAI" → "USDC.e/sDAI"
+ */
+export function formatTokenName(name) {
+  if (!name) return name;
+  return name.replace(/[A-Za-z][A-Za-z0-9.]*(?=[\/\s•,]|$)/g, (match) => {
+    const resolved = resolveSymbol(match);
+    return resolved || match;
+  });
 }
 
 export default TOKEN_ICON_URLS;
