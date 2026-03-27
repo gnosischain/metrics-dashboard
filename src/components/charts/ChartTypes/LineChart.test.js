@@ -89,4 +89,19 @@ describe('LineChart dashboard palette fallback', () => {
     expect(options.series[1].lineStyle.color).toBe('#4F46E5');
     expect(options.series[2].lineStyle.color).toBe('#10B981');
   });
+
+  it('reserves extra top grid space when a top legend is visible', () => {
+    const options = LineChart.getOptions(
+      data,
+      {
+        xField: 'date',
+        yField: 'value',
+        seriesField: 'label'
+      },
+      false
+    );
+
+    expect(options.legend.show).toBe(true);
+    expect(options.grid.top).toBe('52px');
+  });
 });

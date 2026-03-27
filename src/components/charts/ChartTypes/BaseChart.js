@@ -546,6 +546,21 @@ export class BaseChart {
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
     // When hideSlider is set (global time range buttons), treat as no-zoom for grid spacing
     const hasZoom = (config.dataZoom || config.enableZoom) && !config.hideSlider;
+    const legendItemCount =
+      Number.isFinite(config._legendItemCount)
+        ? config._legendItemCount
+        : Array.isArray(config._seriesNames)
+          ? config._seriesNames.length
+          : Array.isArray(config.legend?.data)
+            ? config.legend.data.length
+            : 0;
+    const legendTop = config.legend?.top ?? config.legendPosition ?? 'top';
+    const hasTopLegend =
+      config.enableLegend !== false &&
+      legendItemCount > 1 &&
+      legendTop !== 'bottom' &&
+      legendTop !== 'middle' &&
+      legendTop !== 'center';
     
     let bottomMargin, topMargin;
     
@@ -565,6 +580,10 @@ export class BaseChart {
         bottomMargin = isSmallCard ? '8%' : '3%';
         topMargin = isSmallCard ? '4%' : '6%';
       }
+    }
+
+    if (hasTopLegend) {
+      topMargin = isSmallCard ? '44px' : '52px';
     }
 
     return {
