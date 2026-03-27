@@ -8,9 +8,15 @@ import InfoPopover from './InfoPopover';
 import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
+import { filterDataByTimeRange } from '../utils/dates';
 
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
 const UNIT_LABELS = { native: 'Native', usd: 'USD' };
+
+const getDisplayUnitLabel = (unitKey, unitConfig, firstRow) => {
+  if (!unitKey) return null;
+  return (unitConfig?.labelField && firstRow?.[unitConfig.labelField]) || unitConfig?.label || UNIT_LABELS[unitKey] || unitKey;
+};
 
 const MetricWidget = ({
   metricId,
@@ -24,7 +30,8 @@ const MetricWidget = ({
   selectedUnit = null,
   dashboardPalette = null,
   enableResolutionToggle = false,
-  enableUnitToggle = false
+  enableUnitToggle = false,
+  globalTimeRange = null
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,36 +103,38 @@ const MetricWidget = ({
         valueField,
         enableFiltering = false, 
         enableZoom = false,
-        variant, 
+        variant,
         cardVariant,
         changeData,
         fontSize,
         titleFontSize,
         resolutions,
-        localFilterFields
+        localFilterFields,
+        timeRanges,
+        defaultTimeRange = 'ALL'
     } = metricConfig;
 
     let widgetType = 'chart';
     if (chartType === 'text') widgetType = 'text';
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
     if (chartType === 'table') widgetType = 'table';
-    
+
     const resolvedCardVariant = chartType === 'numberDisplay'
       ? (cardVariant || 'outline')
       : (cardVariant || 'default');
 
-    return { 
-      type: widgetType, 
-      chartType, 
-      title: name, 
-      description, 
+    return {
+      type: widgetType,
+      chartType,
+      title: name,
+      description,
       metricDescription,
-      format, 
-      color, 
-      labelField, 
-      valueField, 
-      enableFiltering, 
-      enableZoom, 
+      format,
+      color,
+      labelField,
+      valueField,
+      enableFiltering,
+      enableZoom,
       variant,
       cardVariant: resolvedCardVariant,
       changeData,
@@ -133,7 +142,9 @@ const MetricWidget = ({
       titleFontSize,
       resolutions,
       localFilterFields,
-      config: metricConfig 
+      timeRanges,
+      defaultTimeRange,
+      config: metricConfig
     };
   }, [metricConfig]);
 
@@ -535,23 +546,42 @@ const MetricWidget = ({
     selectedLabel
   ]);
 
+  // Per-widget time range state (used when no global time range is active)
+  const LOCAL_TIME_RANGES = ['1M', '3M', '6M', '1Y', '2Y', 'ALL'];
+  const showLocalTimeRange = widgetConfig.enableZoom && !globalTimeRange;
+  const [localTimeRange, setLocalTimeRange] = useState('ALL');
+
+  // Effective time range: global overrides local
+  const effectiveTimeRange = globalTimeRange || (showLocalTimeRange ? localTimeRange : null);
+  const hasTimeRangeZoom = widgetConfig.enableZoom && !!effectiveTimeRange;
+
+  // Filter data by time range (the single source of truth for charts, tables, numbers)
+  const timeFilteredData = useMemo(() => {
+    if (!filteredData?.data || !effectiveTimeRange || effectiveTimeRange === 'ALL') {
+      return filteredData;
+    }
+    const xField = widgetConfig.config?.xField || widgetConfig.config?.categoryField || 'date';
+    const filtered = filterDataByTimeRange(filteredData.data, effectiveTimeRange, xField);
+    return { ...filteredData, data: filtered };
+  }, [filteredData, effectiveTimeRange, widgetConfig.config?.xField, widgetConfig.config?.categoryField]);
+
   // Resolve the display label for the active unit (dynamic from filtered data or static)
   const resolvedUnitLabel = useMemo(() => {
     const unitFields = metricConfig?.unitFields;
     if (!effectiveUnit || !unitFields) return null;
     const unitConfig = unitFields[effectiveUnit];
     if (!unitConfig) return null;
-    return (unitConfig.labelField && filteredData?.data?.[0]?.[unitConfig.labelField]) || unitConfig.label || effectiveUnit;
-  }, [effectiveUnit, metricConfig, filteredData]);
+    return getDisplayUnitLabel(effectiveUnit, unitConfig, timeFilteredData?.data?.[0]);
+  }, [effectiveUnit, metricConfig, timeFilteredData]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
-    if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !filteredData?.data) {
+    if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !timeFilteredData?.data) {
       return { showChange: false };
     }
 
     const changeConfig = widgetConfig.changeData;
-    const dataArray = Array.isArray(filteredData.data) ? filteredData.data : [filteredData.data];
+    const dataArray = Array.isArray(timeFilteredData.data) ? timeFilteredData.data : [timeFilteredData.data];
     
     if (dataArray.length === 0) return { showChange: false };
 
@@ -599,7 +629,7 @@ const MetricWidget = ({
       changeType,
       changePeriod
     };
-  }, [widgetConfig, filteredData]);
+  }, [widgetConfig, timeFilteredData]);
 
   const handleRefresh = useCallback(() => {
     fetchData();
@@ -697,7 +727,8 @@ const MetricWidget = ({
       format: effectiveValueConfig.format,
       visualMapCenter: effectiveValueConfig.visualMapCenter,
       visualMapPercentile: effectiveValueConfig.visualMapPercentile,
-      enableZoom: widgetConfig.enableZoom
+      enableZoom: widgetConfig.enableZoom,
+      ...(hasTimeRangeZoom ? { hideSlider: true } : {})
     };
     // Override yAxis name with the resolved unit label (e.g. "USD", "EURE", "SDAI")
     if (resolvedUnitLabel && baseConfig.yAxis) {
@@ -713,13 +744,14 @@ const MetricWidget = ({
     effectiveValueConfig.format,
     effectiveValueConfig.visualMapCenter,
     effectiveValueConfig.visualMapPercentile,
-    resolvedUnitLabel
+    resolvedUnitLabel,
+    hasTimeRangeZoom
   ]);
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
   const showUnitSelector = supportsLocalUnitToggle;
 
-  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
+  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton || showLocalTimeRange) ? (
     <>
       {showMultiLocalDropdowns && multiLocalFilterFields.map((fieldName) => {
         const labels = localFilterOptionsByField[fieldName] || [];
@@ -765,11 +797,25 @@ const MetricWidget = ({
           ))}
         </div>
       )}
+      {showLocalTimeRange && (
+        <div className="resolution-toggle">
+          {LOCAL_TIME_RANGES.map(range => (
+            <button
+              key={range}
+              type="button"
+              className={`resolution-btn${localTimeRange === range ? ' active' : ''}`}
+              onClick={() => setLocalTimeRange(range)}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+      )}
       {showUnitSelector && !hasGroupedUnits && (
         <div className="resolution-toggle">
           {Object.entries(
             baseMetricConfig?.unitFields
-              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, (v.labelField && filteredData?.data?.[0]?.[v.labelField]) || v.label || k]))
+              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, getDisplayUnitLabel(k, v, timeFilteredData?.data?.[0])]))
               : UNIT_LABELS
           ).map(([key, label]) => (
             <button
@@ -873,7 +919,7 @@ const MetricWidget = ({
         return <TextWidget content={data?.content || 'No content available'} minimal={true} />;
       
       case 'number':
-        const value = filteredData?.data?.[0]?.[effectiveValueConfig.valueField] || 0;
+        const value = timeFilteredData?.data?.[0]?.[effectiveValueConfig.valueField] || 0;
         return (
           <NumberWidget
             value={value}
@@ -895,8 +941,8 @@ const MetricWidget = ({
       case 'table':
         return (
           <TableWidget 
-            data={filteredData?.data || []} 
-            config={metricConfig.tableConfig || {}} 
+            data={timeFilteredData?.data || []}
+            config={metricConfig.tableConfig || {}}
             minimal={true}
             isDarkMode={isDarkMode}
             format={widgetConfig.format}
@@ -906,7 +952,7 @@ const MetricWidget = ({
       case 'chart':
         return (
           <EChartsContainer
-            data={filteredData?.data || []}
+            data={timeFilteredData?.data || []}
             chartType={widgetConfig.chartType}
             config={chartRenderConfig}
             isDarkMode={isDarkMode}

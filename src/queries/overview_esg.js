@@ -4,7 +4,6 @@ const metric = {
   valueField: 'value',
   chartType: 'number',
   format: null,
-  titleFontSize: '1.3rem', 
   fontSize: '2.6rem',    
   query: `SELECT  CONCAT(toString(round(annual_co2_tonnes_projected)), 't') AS value FROM dbt.api_esg_carbon_emissions_annualised_latest`
 };

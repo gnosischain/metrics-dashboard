@@ -1,6 +1,35 @@
 import React from 'react';
 import formatters from '../utils/formatters';
 
+const normalizeDurationLabel = (value) => {
+  if (typeof value !== 'string') return '';
+  const trimmedValue = value.trim();
+  const dayMatch = trimmedValue.match(/^(\d+)\s*d(?:ays?)?$/i);
+  if (dayMatch) {
+    return `${dayMatch[1]} days`;
+  }
+  return trimmedValue;
+};
+
+const normalizeChangePeriod = (value = '') => {
+  if (typeof value !== 'string') return [];
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return [];
+
+  const versusPriorMatch = trimmedValue.match(/^vs prior\s+(.+)$/i);
+  if (versusPriorMatch) {
+    return ['vs prior', normalizeDurationLabel(versusPriorMatch[1])];
+  }
+
+  const symmetricWindowMatch = trimmedValue.match(/^(\d+)\s*d(?:ays?)?\s+vs prior\s+(\d+)\s*d(?:ays?)?$/i);
+  if (symmetricWindowMatch && symmetricWindowMatch[1] === symmetricWindowMatch[2]) {
+    return ['vs prior', `${symmetricWindowMatch[1]} days`];
+  }
+
+  return [trimmedValue];
+};
+
 /**
  * Component to display a metric as a large number with optional change indicators
  * @param {Object} props - Component props
@@ -68,17 +97,15 @@ const NumberWidget = ({
     return `${sign}${numericChange.toFixed(2)}%`;
   }, [changeValue]);
 
+  const changePeriodLines = React.useMemo(() => normalizeChangePeriod(changePeriod), [changePeriod]);
+
   // Determine arrow direction and colors
   const getChangeStyles = () => {
     const baseStyles = {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.25rem',
       fontSize: '0.75rem',
       fontWeight: '500',
       padding: '0.125rem 0.375rem',
-      borderRadius: '0.25rem',
-      whiteSpace: 'nowrap'
+      borderRadius: '0.25rem'
     };
 
     switch (changeType) {
@@ -102,19 +129,6 @@ const NumberWidget = ({
         };
     }
   };
-
-  // Render arrow icon
-  const ArrowIcon = ({ direction }) => (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-      {direction === 'up' ? (
-        <path d="M6 2l4 4H7v4H5V6H2l4-4z" />
-      ) : direction === 'down' ? (
-        <path d="M6 10L2 6h3V2h2v4h3l-4 4z" />
-      ) : (
-        <circle cx="6" cy="6" r="1" />
-      )}
-    </svg>
-  );
 
   // Compact variant (horizontal layout)
   if (variant === 'compact') {
@@ -145,10 +159,13 @@ const NumberWidget = ({
           {/* Change indicator */}
           {showChange && formattedChange && (
             <span className="compact-change-indicator" style={getChangeStyles()}>
-              <ArrowIcon direction={changeType === 'positive' ? 'up' : changeType === 'negative' ? 'down' : 'neutral'} />
-              {formattedChange}
-              {changePeriod && (
-                <span className="change-period">{changePeriod}</span>
+              <span className="change-value">{formattedChange}</span>
+              {changePeriodLines.length > 0 && (
+                <span className="change-period">
+                  {changePeriodLines.map((line, index) => (
+                    <span key={`${line}-${index}`} className="change-period-line">{line}</span>
+                  ))}
+                </span>
               )}
             </span>
           )}
@@ -157,21 +174,36 @@ const NumberWidget = ({
     );
   }
 
-  // Default variant (vertical layout - existing behavior)
+  // Default variant
   return (
     <div className="number-widget">
-      <div 
-        className="number-value" 
-        style={{ 
-          color: adjustedColor,
-          ...(fontSize && { fontSize })
-        }}
-      >
-        {formattedValue}
+      <div className="number-value-row">
+        <div
+          className="number-value"
+          style={{
+            color: adjustedColor,
+            ...(fontSize && { fontSize })
+          }}
+        >
+          {formattedValue}
+        </div>
+        {/* Change indicator inline with number */}
+        {showChange && formattedChange && (
+          <span className="number-change" style={getChangeStyles()}>
+            <span className="change-value">{formattedChange}</span>
+            {changePeriodLines.length > 0 && (
+              <span className="change-period">
+                {changePeriodLines.map((line, index) => (
+                  <span key={`${line}-${index}`} className="change-period-line">{line}</span>
+                ))}
+              </span>
+            )}
+          </span>
+        )}
       </div>
       {label && (
-        <div 
-          className="number-label" 
+        <div
+          className="number-label"
           style={{
             color: 'var(--color-text-secondary)',
             fontSize: '0.9rem',
@@ -179,19 +211,6 @@ const NumberWidget = ({
           }}
         >
           {label}
-        </div>
-      )}
-      
-      {/* Change indicator for default variant */}
-      {showChange && formattedChange && (
-        <div className="number-change-container" style={{ marginTop: '0.5rem' }}>
-          <span className="number-change" style={getChangeStyles()}>
-            <ArrowIcon direction={changeType === 'positive' ? 'up' : changeType === 'negative' ? 'down' : 'neutral'} />
-            {formattedChange}
-            {changePeriod && (
-              <span className="change-period"> {changePeriod}</span>
-            )}
-          </span>
         </div>
       )}
     </div>

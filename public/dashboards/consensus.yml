@@ -7,11 +7,11 @@ tabs:
       - id: api_consensus_info_active_ongoing_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_staked_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_graffiti
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
@@ -24,6 +24,7 @@ tabs:
     order: 2
     icon: ↔️
     iconClass: gauge
+    timeRanges: true
     metrics:
       - id: api_consensus_blocks_daily
         gridRow: 1
@@ -41,23 +42,24 @@ tabs:
     order: 3
     icon: 📈
     iconClass: yield
+    timeRanges: true
     metrics:
       - id: api_consensus_info_apy_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_deposits_cnt_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_withdrawls_cnt_latest
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_staked_latest
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_validators_apy_dist_daily
         gridRow: 2
         gridColumn: 1 / span 9
@@ -78,15 +80,16 @@ tabs:
     order: 4
     icon: 👷
     iconClass: validator
+    timeRanges: true
     metrics:
       - id: api_consensus_info_active_ongoing_latest
         gridRow: 1
         gridColumn: 3 / span 4
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_active_stake_latest
         gridRow: 1
         gridColumn: 7 / span 4
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_validators_active_daily
         gridRow: 2
         gridColumn: 1 / span 6
@@ -107,23 +110,24 @@ tabs:
     order: 5
     icon: ⏱️
     iconClass: stopwatch
+    timeRanges: true
     metrics:
       - id: api_consensus_info_active_ongoing_latest
         gridRow: 1
         gridColumn: 1 / span 2
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_deposits_cnt_latest
         gridRow: 1
         gridColumn: 3 / span 2
-        minHeight: 130px
+        minHeight: 100px
       - id: api_consensus_info_withdrawls_cnt_latest
         gridRow: 1
         gridColumn: 5 / span 2
-        minHeight: 130px
+        minHeight: 100px
       - id: text_consensus_validators_status
         gridRow: 1 / span 3
         gridColumn: 7 / span 7
-        minHeight: 1070px
+        minHeight: 1024px
       - id: api_consensus_validators_status_daily
         gridRow: 2
         gridColumn: 1 / span 6

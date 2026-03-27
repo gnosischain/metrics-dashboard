@@ -49,6 +49,30 @@
   width: 100%;
 }
 
+.metrics-grid-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  padding: 0 0 0.5rem 0;
+}
+
+.metrics-grid-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  max-width: 100%;
+}
+
+.metrics-grid-toolbar-label {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 .metrics-grid-positioned {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -205,6 +229,10 @@
    ================== */
 
 @media (max-width: 767px) {
+  .metrics-grid-toolbar {
+    justify-content: flex-end;
+  }
+
   .metrics-grid-positioned {
     display: flex;
     flex-direction: column;
@@ -219,6 +247,11 @@
     position: relative !important;
     margin-top: var(--spacing-sm) !important;
     min-height: 450px !important;
+  }
+
+  .metrics-grid-positioned .grid-item:has(.number-widget),
+  .metrics-grid-positioned .grid-item:has(.number-display-card) {
+    min-height: 100px !important;
   }
   
   /* Force single column on mobile */

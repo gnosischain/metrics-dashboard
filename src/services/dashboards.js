@@ -122,6 +122,7 @@ class DashboardService {
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
+          globalControlsPlacement: tab.globalControlsPlacement || 'grid', // Render global controls in-grid or in the top toolbar
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
@@ -129,6 +130,8 @@ class DashboardService {
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
           resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
           defaultResolution: tab.defaultResolution || 'weekly', // Default resolution
+          timeRanges: tab.timeRanges || false, // Global time range buttons (true for defaults, or array)
+          defaultTimeRange: tab.defaultTimeRange || 'ALL', // Default selected time range
           metrics: (tab.metrics || []).map(metric => {
             console.log('DashboardService: Processing tab metric:', metric);
             

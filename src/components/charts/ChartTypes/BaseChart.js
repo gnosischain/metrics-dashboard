@@ -544,7 +544,8 @@ export class BaseChart {
   static getGridConfig(config = {}) {
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
-    const hasZoom = config.dataZoom || config.enableZoom;
+    // When hideSlider is set (global time range buttons), treat as no-zoom for grid spacing
+    const hasZoom = (config.dataZoom || config.enableZoom) && !config.hideSlider;
     
     let bottomMargin, topMargin;
     
@@ -659,53 +660,72 @@ export class BaseChart {
 
   static getDataZoomConfig(config = {}) {
     if (!config.dataZoom && !config.enableZoom) return {};
-    
+
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
-    
-    const dataZoomConfig = {
-      dataZoom: [
-        {
-          type: 'inside',
-          xAxisIndex: [0],
-          filterMode: 'filter'
-        },
-        {
-          type: 'slider',
-          xAxisIndex: [0],
-          filterMode: 'filter',
-          bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
-          height: isSmallCard ? 10 : 12,
-          showDetail: false,
-          showDataShadow: false,
-          brushSelect: false,
-          borderColor: 'transparent',
-          backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-          fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
-          labelFormatter: (value, valueStr) => {
-            return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
-          },
-          handleSize: '95%',
-          handleStyle: {
-            color: config.isDarkMode ? '#818CF8' : '#4F46E5',
-            borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
-          },
-          textStyle: {
-            color: config.isDarkMode ? '#94A3B8' : '#64748B'
-          },
-          dataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
-            areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
-          },
-          selectedDataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
-            areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
-          }
-        }
-      ]
-    };
 
-    if (config.defaultZoom) {
+    const zoomComponents = [];
+
+    if (config.hideSlider) {
+      // Global time range mode: non-interactive inside zoom just for start/end filtering
+      zoomComponents.push({
+        type: 'inside',
+        xAxisIndex: [0],
+        filterMode: 'filter',
+        zoomLock: true,    // disable scroll-to-zoom
+        moveOnMouseMove: false,
+        moveOnMouseWheel: false,
+        preventDefaultMouseMove: false
+      });
+    } else {
+      // Normal interactive inside zoom
+      zoomComponents.push({
+        type: 'inside',
+        xAxisIndex: [0],
+        filterMode: 'filter'
+      });
+    }
+
+    // Only add slider when hideSlider is not set (time range buttons replace it)
+    if (!config.hideSlider) {
+      zoomComponents.push({
+        type: 'slider',
+        xAxisIndex: [0],
+        filterMode: 'filter',
+        bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
+        height: isSmallCard ? 10 : 12,
+        showDetail: false,
+        showDataShadow: false,
+        brushSelect: false,
+        borderColor: 'transparent',
+        backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+        fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
+        labelFormatter: (value, valueStr) => {
+          return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
+        },
+        handleSize: '95%',
+        handleStyle: {
+          color: config.isDarkMode ? '#818CF8' : '#4F46E5',
+          borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
+        },
+        textStyle: {
+          color: config.isDarkMode ? '#94A3B8' : '#64748B'
+        },
+        dataBackground: {
+          lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
+          areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
+        },
+        selectedDataBackground: {
+          lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
+          areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
+        }
+      });
+    }
+
+    const dataZoomConfig = { dataZoom: zoomComponents };
+
+    // Apply defaultZoom only when no time-range filter is active (hideSlider means filtered data)
+    if (!config.hideSlider && config.defaultZoom) {
       dataZoomConfig.dataZoom.forEach((zoom) => {
         zoom.start = config.defaultZoom.start ?? 0;
         zoom.end = config.defaultZoom.end ?? 100;

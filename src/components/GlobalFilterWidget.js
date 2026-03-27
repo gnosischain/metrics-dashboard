@@ -3,8 +3,8 @@ import LabelSelector from './LabelSelector';
 import TOKEN_ICON_URLS from '../utils/tokenIcons.js';
 
 /**
- * GlobalFilterWidget - renders the global filter dropdown and unit toggle
- * as a grid-positioned card, rather than a fixed header above the grid.
+ * GlobalFilterWidget - renders the shared global filter dropdown and unit toggle
+ * either as an in-grid control card or as part of the top toolbar.
  *
  * @param {Object} props
  * @param {Object} props.tabConfig - Tab configuration (globalFilterField, unitToggle, etc.)
@@ -15,6 +15,7 @@ import TOKEN_ICON_URLS from '../utils/tokenIcons.js';
  * @param {boolean} props.hasUnitToggle - Whether to show Native/USD toggle
  * @param {string} props.selectedUnit - Currently selected unit ('native' or 'usd')
  * @param {Function} props.onUnitChange - Handler for unit toggle
+ * @param {string} props.placement - Control placement ('grid' or 'top')
  */
 const GlobalFilterWidget = ({
   tabConfig,
@@ -25,16 +26,18 @@ const GlobalFilterWidget = ({
   hasUnitToggle,
   selectedUnit,
   onUnitChange,
+  placement = 'grid'
 }) => {
   const fieldName = tabConfig?.globalFilterField || '';
   const label = tabConfig?.globalFilterLabel || (fieldName.charAt(0).toUpperCase() + fieldName.slice(1));
+  const isVertical = placement === 'grid' && tabConfig?.globalFilterVertical;
 
   return (
-    <div className="global-filter-widget">
+    <div className={`global-filter-widget global-filter-widget--${placement}`}>
       <div className="global-filter-widget-content">
         {/* Filter dropdown */}
         {fieldName && onGlobalFilterChange && (
-          <div className={`global-filter-widget-group${tabConfig?.globalFilterVertical ? ' vertical' : ''}`}>
+          <div className={`global-filter-widget-group${isVertical ? ' vertical' : ''}`}>
             <label className="global-filter-label" htmlFor="global-filter-select">
               {label}:
             </label>

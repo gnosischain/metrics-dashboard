@@ -15,15 +15,16 @@ vi.mock('../utils', () => ({
 }));
 
 vi.mock('./MetricWidget', () => ({
-  default: () => <div data-testid="metric-widget"></div>
+  default: ({ metricId }) => <div data-testid="metric-widget" data-metric-id={metricId}></div>
 }));
 
 vi.mock('./GlobalFilterWidget', () => ({
-  default: ({ globalFilterOptions = [], loadingGlobalFilter }) => (
+  default: ({ globalFilterOptions = [], loadingGlobalFilter, placement = 'grid' }) => (
     <div
       data-testid="global-filter-widget"
       data-options={globalFilterOptions.join(',')}
       data-loading={loadingGlobalFilter ? 'true' : 'false'}
+      data-placement={placement}
     ></div>
   )
 }));
@@ -63,6 +64,8 @@ describe('MetricGrid global filter behavior', () => {
     await waitFor(() => {
       expect(onGlobalFilterChange).toHaveBeenCalledWith('GNO');
     });
+
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'grid');
   });
 
   it('ignores stale async option responses from previous tab context', async () => {
@@ -116,5 +119,67 @@ describe('MetricGrid global filter behavior', () => {
     });
 
     expect(onGlobalFilterChange).not.toHaveBeenCalledWith('OldToken');
+  });
+
+  it('renders top-level global controls in the toolbar when placement is top', async () => {
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ token: 'BRLA' }, { token: 'GNO' }]
+    });
+
+    const onGlobalFilterChange = vi.fn();
+
+    render(
+      <MetricGrid
+        metrics={[
+          { id: 'global_filter', gridRow: '1', gridColumn: '1' },
+          { id: 'token_metric', enableFiltering: true, labelField: 'token', gridRow: '2', gridColumn: '1' }
+        ]}
+        tabConfig={{
+          id: 'per-token-breakdown',
+          globalFilterField: 'token',
+          globalControlsPlacement: 'top',
+          unitToggle: true,
+          timeRanges: true
+        }}
+        globalFilterValue={null}
+        onGlobalFilterChange={onGlobalFilterChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(onGlobalFilterChange).toHaveBeenCalledWith('BRLA');
+    });
+
+    expect(screen.getByText('Date range')).toBeInTheDocument();
+    expect(screen.getAllByTestId('global-filter-widget')).toHaveLength(1);
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
+  });
+
+  it('renders top-level global controls without a date-range group when time ranges are disabled', async () => {
+    metricsService.getMetricData.mockResolvedValueOnce({
+      data: [{ token: 'BRLA' }]
+    });
+
+    render(
+      <MetricGrid
+        metrics={[
+          { id: 'global_filter', gridRow: '1', gridColumn: '1' },
+          { id: 'token_metric', enableFiltering: true, labelField: 'token', gridRow: '2', gridColumn: '1' }
+        ]}
+        tabConfig={{
+          id: 'top-only-filter',
+          globalFilterField: 'token',
+          globalControlsPlacement: 'top'
+        }}
+        globalFilterValue={null}
+        onGlobalFilterChange={vi.fn()}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
+    });
+
+    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
   });
 });

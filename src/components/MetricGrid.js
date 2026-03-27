@@ -5,20 +5,9 @@ import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
 
 /**
- * Enhanced MetricGrid component with proper fixed row heights and global filter support.
- *
- * The global filter is rendered as a positioned grid item via a `global_filter`
- * pseudo-metric in dashboard.yml, allowing full control over its size and
- * location alongside other metric widgets.
- *
- * @param {Object} props - Component props
- * @param {Array} props.metrics - Array of metric configurations
- * @param {boolean} props.isDarkMode - Whether dark mode is active
- * @param {Object} props.tabConfig - Tab configuration object (may contain globalFilterField)
- * @param {string} props.globalFilterValue - Currently selected global filter value
- * @param {Function} props.onGlobalFilterChange - Handler for global filter changes
- * @param {Object|null} props.dashboardPalette - Active dashboard palette definition
- * @returns {JSX.Element} Grid component
+ * Enhanced MetricGrid component with proper fixed row heights and shared
+ * global-control support. Tabs can render the global filter bundle either
+ * inside the grid (`global_filter` pseudo-metric) or in the top toolbar.
  */
 const MetricGrid = ({
   metrics,
@@ -35,9 +24,28 @@ const MetricGrid = ({
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
   const hasUnitToggle = tabConfig?.unitToggle === true;
+  const globalControlsPlacement = tabConfig?.globalControlsPlacement || 'grid';
 
   // Whether per-chart resolution toggles are enabled for this tab
   const hasResolutionToggle = tabConfig?.resolutionToggle === true;
+
+  // Global time range — only when explicitly enabled in tab YAML (timeRanges: true)
+  // Per-widget range buttons handle individual charts automatically
+  const DEFAULT_TIME_RANGES = ['1M', '3M', '6M', '1Y', '2Y', 'ALL'];
+  const timeRanges = Array.isArray(tabConfig?.timeRanges) ? tabConfig.timeRanges
+    : tabConfig?.timeRanges === true ? DEFAULT_TIME_RANGES
+    : null;
+  const [selectedTimeRange, setSelectedTimeRange] = useState(
+    tabConfig?.defaultTimeRange || 'ALL'
+  );
+
+  useEffect(() => {
+    setSelectedUnit(tabConfig?.defaultUnit || 'native');
+  }, [tabConfig?.id, tabConfig?.defaultUnit]);
+
+  useEffect(() => {
+    setSelectedTimeRange(tabConfig?.defaultTimeRange || 'ALL');
+  }, [tabConfig?.id, tabConfig?.defaultTimeRange]);
 
   // Keep a ref of the latest global filter value to avoid stale-closure overwrites
   useEffect(() => {
@@ -87,7 +95,13 @@ const MetricGrid = ({
   };
 
   // Check if this tab has a global filter
-  const hasGlobalFilter = tabConfig?.globalFilterField && onGlobalFilterChange;
+  const hasGlobalFilter = !!(tabConfig?.globalFilterField && onGlobalFilterChange);
+  const showTopGlobalControls = globalControlsPlacement === 'top' && (hasGlobalFilter || hasUnitToggle);
+  const showToolbar = !!timeRanges || showTopGlobalControls;
+  const positionedMetrics = useMemo(
+    () => (globalControlsPlacement === 'top' ? metrics.filter(metric => metric.id !== 'global_filter') : metrics),
+    [metrics, globalControlsPlacement]
+  );
 
   // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
   const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);
@@ -194,16 +208,54 @@ const MetricGrid = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField]);
 
-  const { templateRows } = processGridStructure(metrics);
+  const { templateRows } = processGridStructure(positionedMetrics);
 
   const gridStyle = {
     gridTemplateRows: templateRows.join(' ')
   };
 
+  const globalFilterWidgetProps = {
+    tabConfig,
+    globalFilterOptions,
+    globalFilterValue,
+    onGlobalFilterChange,
+    loadingGlobalFilter,
+    hasUnitToggle,
+    selectedUnit,
+    onUnitChange: setSelectedUnit
+  };
+
   return (
     <div className="metrics-grid-container">
+      {showToolbar && (
+        <div className="metrics-grid-toolbar">
+          {timeRanges && (
+            <div className="metrics-grid-toolbar-group">
+              <div className="metrics-grid-toolbar-label">Date range</div>
+              <div className="resolution-toggle">
+                {timeRanges.map(range => (
+                  <button
+                    key={range}
+                    type="button"
+                    className={`resolution-btn${selectedTimeRange === range ? ' active' : ''}`}
+                    onClick={() => setSelectedTimeRange(range)}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {showTopGlobalControls && (
+            <GlobalFilterWidget
+              {...globalFilterWidgetProps}
+              placement="top"
+            />
+          )}
+        </div>
+      )}
       <div className="metrics-grid-positioned" style={gridStyle}>
-        {metrics.map(metric => {
+        {positionedMetrics.map(metric => {
           // Create inline style for grid positioning
           const metricStyle = {};
           
@@ -230,14 +282,8 @@ const MetricGrid = ({
                 style={metricStyle}
               >
                 <GlobalFilterWidget
-                  tabConfig={tabConfig}
-                  globalFilterOptions={globalFilterOptions}
-                  globalFilterValue={globalFilterValue}
-                  onGlobalFilterChange={onGlobalFilterChange}
-                  loadingGlobalFilter={loadingGlobalFilter}
-                  hasUnitToggle={hasUnitToggle}
-                  selectedUnit={selectedUnit}
-                  onUnitChange={setSelectedUnit}
+                  {...globalFilterWidgetProps}
+                  placement="grid"
                 />
               </div>
             );
@@ -269,6 +315,7 @@ const MetricGrid = ({
                 selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
                 enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}
+                globalTimeRange={timeRanges ? selectedTimeRange : null}
               />
             </div>
           );

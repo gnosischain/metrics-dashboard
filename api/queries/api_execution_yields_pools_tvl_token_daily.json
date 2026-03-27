@@ -1,4 +1,4 @@
 {
   "id": "api_execution_yields_pools_tvl_token_daily",
-  "query": "SELECT date, token, label, series, tvl_usd, tvl_in_token0, tvl_in_token1, token0_symbol, token1_symbol, token_amount FROM dbt.api_execution_yields_pools_tvl_token_daily WHERE date >= '{from}' AND date <= '{to}' ORDER BY date, token, label, series"
+  "query": "SELECT\n      date,\n      token,\n      label,\n      series,\n      tvl_usd,\n      tvl_in_token0,\n      tvl_in_token1,\n      token0_symbol,\n      token1_symbol,\n      token_amount\n    FROM dbt.api_execution_yields_pools_tvl_token_daily\n    ORDER BY date ASC, token, label, series"
 }
