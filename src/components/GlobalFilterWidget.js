@@ -1,6 +1,6 @@
 import React from 'react';
 import LabelSelector from './LabelSelector';
-import TOKEN_ICON_URLS from '../utils/tokenIcons.js';
+import TOKEN_ICON_URLS, { formatTokenSymbol } from '../utils/tokenIcons.js';
 
 /**
  * GlobalFilterWidget - renders the shared global filter dropdown and unit toggle
@@ -56,6 +56,7 @@ const GlobalFilterWidget = ({
                   searchable={!!tabConfig?.searchable}
                   placeholder={tabConfig?.searchPlaceholder || ''}
                   iconMap={fieldName === 'token' ? TOKEN_ICON_URLS : null}
+                  formatLabel={fieldName === 'token' ? formatTokenSymbol : null}
                 />
               ) : (
                 <div className="global-filter-error">No options available</div>

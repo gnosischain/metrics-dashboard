@@ -15,7 +15,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
  * @param {boolean}  props.searchable      - Enable search/filter input (default false)
  * @param {string}   props.placeholder     - Placeholder for the search input
  */
-const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'label', idPrefix, searchable = false, placeholder = '', iconMap = null }) => {
+const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'label', idPrefix, searchable = false, placeholder = '', iconMap = null, formatLabel = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [searchText, setSearchText] = useState('');
@@ -145,12 +145,13 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   const displayValue = selectedLabel || placeholder || '';
 
   const renderLabel = (label) => {
+    const displayText = formatLabel ? formatLabel(label) : label;
     const iconUrl = iconMap?.[label];
-    if (!iconUrl) return label;
+    if (!iconUrl) return displayText;
     return (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
         <img src={iconUrl} alt="" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-        {label}
+        {displayText}
       </span>
     );
   };

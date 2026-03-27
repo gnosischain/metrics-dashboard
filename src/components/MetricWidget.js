@@ -3,7 +3,7 @@ import * as echarts from 'echarts';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
-import TOKEN_ICON_URLS from '../utils/tokenIcons.js';
+import TOKEN_ICON_URLS, { formatTokenSymbol } from '../utils/tokenIcons.js';
 import InfoPopover from './InfoPopover';
 import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
@@ -772,6 +772,7 @@ const MetricWidget = ({
             labelField={fieldName}
             idPrefix={`${metricId}-${fieldName}`}
             iconMap={fieldName === 'token' ? TOKEN_ICON_URLS : null}
+            formatLabel={fieldName === 'token' ? formatTokenSymbol : null}
           />
         );
       })}
@@ -781,6 +782,7 @@ const MetricWidget = ({
           selectedLabel={selectedLabelForDropdown}
           onSelectLabel={onLabelSelect}
           iconMap={widgetConfig?.labelField === 'token' ? TOKEN_ICON_URLS : null}
+          formatLabel={widgetConfig?.labelField === 'token' ? formatTokenSymbol : null}
         />
       )}
       {showResolutionSelector && (
