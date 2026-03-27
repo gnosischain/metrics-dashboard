@@ -4,11 +4,11 @@ const metric = {
   description: '7-day trailing by pool',
   metricDescription: `Net APR by pool for the selected token.
 
-- **Net APR** (solid) — what LPs actually earn: fees minus impermanent loss, annualised
+- **Net APR** (solid) — what LPs actually earn: fees minus LVR, annualised
 - **Fee APR** (dashed) — gross fee revenue earned by the pool, annualised
-- **IL** (dashed) — impermanent loss from swap rebalancing, annualised (negative = loss)
+- **LVR** (dashed) — Loss Versus Rebalancing: the cost of arbitrage rebalancing, annualised (negative = loss)
 
-All values use a 7-day trailing window. IL is a pool-level estimate derived from aggregate swap flows, not from individual LP position tracking.`,
+All values use a 7-day trailing window. LVR is a pool-level estimate derived from aggregate swap flows, not from individual LP position tracking.`,
   chartType: 'line',
   isTimeSeries: true,
   stacked: false,
@@ -37,12 +37,12 @@ All values use a 7-day trailing window. IL is a pool-level estimate derived from
   multiYFields: [
     { field: 'net_apr_7d', label: 'Net APR' },
     { field: 'fee_apr_7d', label: 'Fee APR' },
-    { field: 'lvr_apr_7d', label: 'IL' }
+    { field: 'lvr_apr_7d', label: 'LVR' }
   ],
   seriesStyleMap: {
     'Net APR': { color: '#91cc75', lineStyle: { width: 2.5 } },
     'Fee APR': { color: '#5470c6', lineStyle: { type: 'dashed', opacity: 0.55, width: 1.5 }, symbolSize: 0 },
-    'IL':      { color: '#ee6666', lineStyle: { type: 'dashed', opacity: 0.55, width: 1.5 }, symbolSize: 0 }
+    'LVR':     { color: '#ee6666', lineStyle: { type: 'dashed', opacity: 0.55, width: 1.5 }, symbolSize: 0 }
   },
   query: `
     SELECT
