@@ -39,12 +39,13 @@ const ICON_FILES = {
   'bHIGH':     'bhigh.png',
 };
 
-const TOKEN_ICON_URLS = Object.fromEntries(
-  Object.entries(ICON_FILES).map(([symbol, file]) => [
-    symbol,
-    withBaseUrl(`/imgs/tokens/${file}`)
-  ])
-);
+const TOKEN_ICON_URLS = {};
+for (const [symbol, file] of Object.entries(ICON_FILES)) {
+  const url = withBaseUrl(`/imgs/tokens/${file}`);
+  TOKEN_ICON_URLS[symbol] = url;
+  const upper = symbol.toUpperCase();
+  if (upper !== symbol) TOKEN_ICON_URLS[upper] = url;
+}
 
 // Case-insensitive lookup: "usdc.e" → "USDC.e", "eure" → "EURe", etc.
 const SYMBOL_BY_LOWER = Object.fromEntries(
@@ -55,6 +56,11 @@ function resolveSymbol(input) {
   if (!input) return null;
   if (TOKEN_ICON_URLS[input]) return input;
   return SYMBOL_BY_LOWER[input.toLowerCase()] || null;
+}
+
+export function formatTokenSymbol(input) {
+  if (!input) return input;
+  return SYMBOL_BY_LOWER[input.toLowerCase()] || input;
 }
 
 export function getTokenIconUrl(symbol) {
