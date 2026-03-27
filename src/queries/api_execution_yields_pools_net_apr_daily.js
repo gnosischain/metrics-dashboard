@@ -37,7 +37,7 @@ All values use a 7-day trailing window. IL is a pool-level estimate derived from
   multiYFields: [
     { field: 'net_apr_7d', label: 'Net APR' },
     { field: 'fee_apr_7d', label: 'Fee APR' },
-    { field: 'il_apr_7d', label: 'IL' }
+    { field: 'lvr_apr_7d', label: 'IL' }
   ],
   seriesStyleMap: {
     'Net APR': { color: '#91cc75', lineStyle: { width: 2.5 } },
@@ -51,7 +51,7 @@ All values use a 7-day trailing window. IL is a pool-level estimate derived from
       label AS pool,
       net_apr_7d,
       fee_apr_7d,
-      il_apr_7d
+      lvr_apr_7d
     FROM dbt.api_execution_yields_pools_net_apr_daily
     ORDER BY date ASC, token, pool
   `,
