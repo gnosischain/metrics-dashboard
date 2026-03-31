@@ -27,7 +27,7 @@ const metric = {
   grid: {
     left: 70  
   },
-  query: `SELECT * FROM dbt.api_execution_yields_lending_daily`,
+  query: `SELECT * FROM dbt.api_execution_lending_daily`,
 };
 
 export default metric;

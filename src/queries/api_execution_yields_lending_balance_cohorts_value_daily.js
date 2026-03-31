@@ -28,7 +28,7 @@ const metric = {
       label,
       value_native,
       value_usd
-    FROM dbt.api_execution_yields_lending_balance_cohorts_value_daily
+    FROM dbt.api_execution_lending_balance_cohorts_value_daily
   `,
 };
 

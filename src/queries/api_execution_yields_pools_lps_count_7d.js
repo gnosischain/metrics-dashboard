@@ -14,7 +14,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs prior 7 days'
   },
-  query: `SELECT * FROM dbt.api_execution_yields_pools_lps_count_7d`,
+  query: `SELECT * FROM dbt.api_execution_pools_lps_count_7d`,
 };
 
 export default metric;

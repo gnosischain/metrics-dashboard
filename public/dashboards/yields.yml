@@ -55,8 +55,8 @@ tabs:
         minHeight: 140px
       - id: api_execution_yields_lending_tvl_by_token_latest
         gridRow: 1 / span 2
-        gridColumn: 9 / span 4
-        minHeight: 299px
+        gridColumn: 7 / span 6
+        minHeight: 291px
       - id: api_execution_yields_lending_balance_cohorts_holders_daily
         gridRow: 3
         gridColumn: 1 / span 6

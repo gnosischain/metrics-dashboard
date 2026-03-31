@@ -39,7 +39,7 @@ const metric = {
       label AS pool,
       type,
       value
-    FROM dbt.api_execution_yields_pools_lp_activity_daily
+    FROM dbt.api_execution_pools_lp_activity_daily
     ORDER BY date ASC, token, pool, type
   `,
 };

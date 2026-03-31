@@ -11,7 +11,7 @@ const metric = {
   donut: true,
   showLabels: true,
   sortByValue: 'desc',
-  query: `SELECT token, value FROM dbt.api_execution_yields_lending_tvl_by_token_latest`,
+  query: `SELECT token, value FROM dbt.api_execution_lending_tvl_by_token_latest`,
 };
 
 export default metric;

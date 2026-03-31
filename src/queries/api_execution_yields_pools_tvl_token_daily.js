@@ -44,7 +44,7 @@ const metric = {
       token0_symbol,
       token1_symbol,
       token_amount
-    FROM dbt.api_execution_yields_pools_tvl_token_daily
+    FROM dbt.api_execution_pools_tvl_token_daily
     ORDER BY date ASC, token, label, series
   `,
 };

@@ -15,7 +15,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs prior 7 days'
   },
-  query: `SELECT token, value, change_pct FROM dbt.api_execution_yields_pools_volume_7d`,
+  query: `SELECT token, value, change_pct FROM dbt.api_execution_pools_volume_7d`,
 };
 
 export default metric;

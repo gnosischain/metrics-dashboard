@@ -12,7 +12,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs 7 days ago'
   },
-  query: `SELECT value, change_pct FROM dbt.api_execution_yields_overview_lp_tvl`,
+  query: `SELECT value, change_pct FROM  dbt.api_execution_yields_overview_lp_tvl`,
 };
 
 export default metric;
