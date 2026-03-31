@@ -12,7 +12,7 @@ const metric = {
   seriesField: 'label',
   enableFiltering: true,
   labelField: 'token',
-  unitFilterField: 'cohort_unit',
+  globalFilterField: 'token',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
   showTotal: true,

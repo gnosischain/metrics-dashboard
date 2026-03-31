@@ -7,8 +7,7 @@ const metric = {
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',
-  enableFiltering: true,
-  labelField: 'token',
+  enableFiltering: false,
   changeData: {
     enabled: true,
     field: 'change_pct',

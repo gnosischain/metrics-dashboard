@@ -311,7 +311,10 @@ const MetricGrid = ({
                   (metric.globalFilterField === tabConfig.globalFilterField)
                 )}
                 globalFilterField={tabConfig?.globalFilterField}
-                globalFilterValue={globalFilterValue || globalFilterOptions[0] || null}
+                globalFilterValue={hasGlobalFilter && (
+                  (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
+                  (metric.globalFilterField === tabConfig.globalFilterField)
+                ) ? (globalFilterValue || globalFilterOptions[0] || null) : null}
                 selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
                 enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}

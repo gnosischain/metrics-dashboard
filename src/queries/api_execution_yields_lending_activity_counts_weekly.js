@@ -12,6 +12,7 @@ const metric = {
   seriesField: 'activity_type',
   enableFiltering: true,
   labelField: 'token',
+  globalFilterField: 'token',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
   barWidth: 'auto',

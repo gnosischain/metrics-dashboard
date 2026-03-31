@@ -12,6 +12,7 @@ const metric = {
   seriesField: 'apy_type',
   enableFiltering: true,
   labelField: 'token',
+  globalFilterField: 'token',
   format: 'formatNumber',
   tooltipOrder: 'valueDesc',
   smooth: true,

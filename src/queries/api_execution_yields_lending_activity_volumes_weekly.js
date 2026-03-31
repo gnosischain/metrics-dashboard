@@ -12,6 +12,7 @@ const metric = {
   seriesField: 'volume_type',
   enableFiltering: true,
   labelField: 'token',
+  globalFilterField: 'token',
   format: 'formatValue',
   tooltipOrder: 'valueDesc',
   barWidth: 'auto',
