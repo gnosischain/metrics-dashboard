@@ -146,20 +146,18 @@ const MetricGrid = ({
   // Secondary global filter support (cascading from primary)
   const hasSecondaryGlobalFilter = !!(tabConfig?.secondaryGlobalFilterField && onSecondaryGlobalFilterChange);
 
-  const metricsForSecondaryFilter = useMemo(() => {
-    if (!hasSecondaryGlobalFilter) return [];
+  const metricForSecondaryOptions = useMemo(() => {
+    if (!hasSecondaryGlobalFilter) return null;
     const secondaryField = tabConfig.secondaryGlobalFilterField;
-    return realMetrics.filter(m => m.enableFiltering && m.labelField === secondaryField);
+    const candidates = realMetrics.filter(m => m.enableFiltering && m.labelField === secondaryField);
+    if (candidates.length === 0) return null;
+    const totalMetric = candidates.find(m => m.id.includes('_total'));
+    return totalMetric || candidates[0];
   }, [realMetrics, hasSecondaryGlobalFilter, tabConfig?.secondaryGlobalFilterField]);
 
-  const secondaryFilterMetricIds = useMemo(
-    () => metricsForSecondaryFilter.map(m => m.id).join(','),
-    [metricsForSecondaryFilter]
-  );
-
-  // Fetch secondary filter options from all qualifying metrics and union — re-runs when the primary (token) filter changes (the cascade)
+  // Fetch secondary filter options from a single representative metric — re-runs when the primary filter changes (the cascade)
   useEffect(() => {
-    if (!hasSecondaryGlobalFilter || metricsForSecondaryFilter.length === 0) {
+    if (!hasSecondaryGlobalFilter || !metricForSecondaryOptions) {
       setSecondaryGlobalFilterOptions([]);
       setLoadingSecondaryGlobalFilter(false);
       return;
@@ -177,23 +175,17 @@ const MetricGrid = ({
           params.filterField = tabConfig.globalFilterField;
           params.filterValue = globalFilterValue;
         }
-        const results = await Promise.all(
-          metricsForSecondaryFilter.map(m =>
-            metricsService.getMetricData(m.id, params).catch(() => null)
-          )
-        );
+        const result = await metricsService.getMetricData(metricForSecondaryOptions.id, params);
 
         if (cancelled) return;
 
         const allValues = new Set();
-        results.forEach(result => {
-          if (result?.data && Array.isArray(result.data)) {
-            result.data.forEach(item => {
-              const value = item[tabConfig.secondaryGlobalFilterField];
-              if (value) allValues.add(value);
-            });
-          }
-        });
+        if (result?.data && Array.isArray(result.data)) {
+          result.data.forEach(item => {
+            const value = item[tabConfig.secondaryGlobalFilterField];
+            if (value) allValues.add(value);
+          });
+        }
 
         const sortedOptions = Array.from(allValues).sort();
         setSecondaryGlobalFilterOptions(sortedOptions);
@@ -222,7 +214,7 @@ const MetricGrid = ({
     fetchSecondaryOptions();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSecondaryGlobalFilter, secondaryFilterMetricIds, tabConfig?.secondaryGlobalFilterField, globalFilterValue]);
+  }, [hasSecondaryGlobalFilter, metricForSecondaryOptions?.id, tabConfig?.secondaryGlobalFilterField, globalFilterValue]);
 
   // Fetch filter options from a single metric for speed (much faster than fetching all)
   useEffect(() => {

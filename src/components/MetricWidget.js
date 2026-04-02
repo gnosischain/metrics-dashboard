@@ -903,21 +903,10 @@ const MetricWidget = ({
   ) : undefined;
 
   // Early returns must come AFTER all hooks
-  if (loading && !data) {
-    return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
-        subtitle={widgetConfig.description}
-        headerControls={headerControls}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
-      >
-        <MetricWidgetSkeleton variant={widgetConfig.type} />
-      </Card>
-    );
-  }
+  const showSkeleton = (loading && !data) ||
+    (data && isSecondaryGlobalFilterForThisField && !secondaryGlobalFilterValue);
 
-  if (data && isSecondaryGlobalFilterForThisField && !secondaryGlobalFilterValue) {
+  if (showSkeleton) {
     return (
       <Card 
         minimal={minimal} 
