@@ -31,7 +31,10 @@ const MetricWidget = ({
   dashboardPalette = null,
   enableResolutionToggle = false,
   enableUnitToggle = false,
-  globalTimeRange = null
+  globalTimeRange = null,
+  hasSecondaryGlobalFilter = false,
+  secondaryGlobalFilterField = null,
+  secondaryGlobalFilterValue = null
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -279,12 +282,18 @@ const MetricWidget = ({
   }, [hasGlobalFilter, widgetConfig?.labelField, globalFilterField]);
   
   // Check if this widget should show a secondary filter (different field than global filter)
+  // Suppressed when a secondary global filter is handling this widget's labelField instead
+  const isSecondaryGlobalFilterForThisField = hasSecondaryGlobalFilter &&
+    !!secondaryGlobalFilterField &&
+    widgetConfig?.labelField === secondaryGlobalFilterField;
+
   const shouldShowSecondaryFilter = useMemo(() => {
-    return widgetConfig?.enableFiltering && 
-      globalFilterField && 
-      widgetConfig?.labelField && 
-      widgetConfig.labelField !== globalFilterField;
-  }, [widgetConfig?.enableFiltering, widgetConfig?.labelField, globalFilterField]);
+    return widgetConfig?.enableFiltering &&
+      globalFilterField &&
+      widgetConfig?.labelField &&
+      widgetConfig.labelField !== globalFilterField &&
+      !isSecondaryGlobalFilterForThisField;
+  }, [widgetConfig?.enableFiltering, widgetConfig?.labelField, globalFilterField, isSecondaryGlobalFilterForThisField]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -517,6 +526,15 @@ const MetricWidget = ({
       return data;
     }
     
+    // If this widget's secondary filter is managed globally, apply that value client-side
+    if (isSecondaryGlobalFilterForThisField) {
+      if (!secondaryGlobalFilterValue) return data;
+      return {
+        ...data,
+        data: data.data.filter(item => item[widgetConfig.labelField] === secondaryGlobalFilterValue)
+      };
+    }
+
     // If this widget uses a secondary filter (different field), apply that filter client-side
     if (shouldShowSecondaryFilter) {
       if (!selectedLabel) return data;
@@ -525,7 +543,7 @@ const MetricWidget = ({
         data: data.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
       };
     }
-    
+
     // Fallback: original logic for widgets without global filter (local filter only)
     if (!effectiveSelectedLabel) return data;
     return {
@@ -543,7 +561,9 @@ const MetricWidget = ({
     selectedLocalFilters,
     isGlobalFilterForThisField,
     shouldShowSecondaryFilter,
-    selectedLabel
+    selectedLabel,
+    isSecondaryGlobalFilterForThisField,
+    secondaryGlobalFilterValue
   ]);
 
   // Per-widget time range state (used when no global time range is active)
@@ -671,8 +691,9 @@ const MetricWidget = ({
   // 1. Not using global filter for this field, OR
   // 2. Using a secondary filter (different field than global filter)
   const showLocalDropdown = !hasMultiLocalFilters &&
-    widgetConfig.enableFiltering && 
-    !isGlobalFilterForThisField && 
+    widgetConfig.enableFiltering &&
+    !isGlobalFilterForThisField &&
+    !isSecondaryGlobalFilterForThisField &&
     (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
 
   const showMultiLocalDropdowns = hasMultiLocalFilters &&
@@ -896,6 +917,20 @@ const MetricWidget = ({
     );
   }
 
+  if (data && isSecondaryGlobalFilterForThisField && !secondaryGlobalFilterValue) {
+    return (
+      <Card 
+        minimal={minimal} 
+        title={widgetConfig.title} 
+        subtitle={widgetConfig.description}
+        headerControls={headerControls}
+        chartType={widgetConfig.chartType}
+      >
+        <MetricWidgetSkeleton variant={widgetConfig.type} />
+      </Card>
+    );
+  }
+
   if (error) {
     return (
       <Card 
@@ -952,6 +987,13 @@ const MetricWidget = ({
         );
       
       case 'chart':
+        if (isSecondaryGlobalFilterForThisField && secondaryGlobalFilterValue && (timeFilteredData?.data?.length ?? 0) === 0) {
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-tertiary)', fontSize: '14px' }}>
+              No data available
+            </div>
+          );
+        }
         return (
           <EChartsContainer
             data={timeFilteredData?.data || []}

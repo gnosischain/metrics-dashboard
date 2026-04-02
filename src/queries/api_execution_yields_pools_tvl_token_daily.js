@@ -13,7 +13,7 @@ const metric = {
   smooth: true,
   enableZoom: true,
   enableFiltering: true,
-  labelField: 'label',
+  labelField: 'pool',
   globalFilterField: 'token',
   tooltipOrder: 'valueDesc',
   unitFields: {
@@ -36,7 +36,7 @@ const metric = {
     SELECT
       date,
       token,
-      label,
+      label AS pool,
       series,
       tvl_usd,
       tvl_in_token0,
@@ -45,7 +45,7 @@ const metric = {
       token1_symbol,
       token_amount
     FROM dbt.api_execution_pools_tvl_token_daily
-    ORDER BY date ASC, token, label, series
+    ORDER BY date ASC, token, pool, series
   `,
 };
 

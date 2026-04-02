@@ -15,11 +15,16 @@ const MetricGrid = ({
   tabConfig = null,
   globalFilterValue = null,
   onGlobalFilterChange = null,
+  secondaryGlobalFilterValue = null,
+  onSecondaryGlobalFilterChange = null,
   dashboardPalette = null
 }) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
   const globalFilterValueRef = useRef(globalFilterValue);
+  const [secondaryGlobalFilterOptions, setSecondaryGlobalFilterOptions] = useState([]);
+  const [loadingSecondaryGlobalFilter, setLoadingSecondaryGlobalFilter] = useState(false);
+  const secondaryGlobalFilterValueRef = useRef(secondaryGlobalFilterValue);
   
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
@@ -47,10 +52,14 @@ const MetricGrid = ({
     setSelectedTimeRange(tabConfig?.defaultTimeRange || 'ALL');
   }, [tabConfig?.id, tabConfig?.defaultTimeRange]);
 
-  // Keep a ref of the latest global filter value to avoid stale-closure overwrites
+  // Keep refs of latest filter values to avoid stale-closure overwrites
   useEffect(() => {
     globalFilterValueRef.current = globalFilterValue;
   }, [globalFilterValue]);
+
+  useEffect(() => {
+    secondaryGlobalFilterValueRef.current = secondaryGlobalFilterValue;
+  }, [secondaryGlobalFilterValue]);
 
   // Process metrics to determine grid structure and row heights
   const processGridStructure = (metrics) => {
@@ -133,6 +142,87 @@ const MetricGrid = ({
     const totalMetric = metricsForGlobalFilter.find(m => m.id.includes('_total'));
     return totalMetric || metricsForGlobalFilter[0];
   }, [metricsForGlobalFilter]);
+
+  // Secondary global filter support (cascading from primary)
+  const hasSecondaryGlobalFilter = !!(tabConfig?.secondaryGlobalFilterField && onSecondaryGlobalFilterChange);
+
+  const metricsForSecondaryFilter = useMemo(() => {
+    if (!hasSecondaryGlobalFilter) return [];
+    const secondaryField = tabConfig.secondaryGlobalFilterField;
+    return realMetrics.filter(m => m.enableFiltering && m.labelField === secondaryField);
+  }, [realMetrics, hasSecondaryGlobalFilter, tabConfig?.secondaryGlobalFilterField]);
+
+  const secondaryFilterMetricIds = useMemo(
+    () => metricsForSecondaryFilter.map(m => m.id).join(','),
+    [metricsForSecondaryFilter]
+  );
+
+  // Fetch secondary filter options from all qualifying metrics and union — re-runs when the primary (token) filter changes (the cascade)
+  useEffect(() => {
+    if (!hasSecondaryGlobalFilter || metricsForSecondaryFilter.length === 0) {
+      setSecondaryGlobalFilterOptions([]);
+      setLoadingSecondaryGlobalFilter(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchSecondaryOptions = async () => {
+      setSecondaryGlobalFilterOptions([]);
+      setLoadingSecondaryGlobalFilter(true);
+      try {
+        const { from, to } = getDateRange('90d');
+        const params = { from, to };
+        if (globalFilterValue && tabConfig.globalFilterField) {
+          params.filterField = tabConfig.globalFilterField;
+          params.filterValue = globalFilterValue;
+        }
+        const results = await Promise.all(
+          metricsForSecondaryFilter.map(m =>
+            metricsService.getMetricData(m.id, params).catch(() => null)
+          )
+        );
+
+        if (cancelled) return;
+
+        const allValues = new Set();
+        results.forEach(result => {
+          if (result?.data && Array.isArray(result.data)) {
+            result.data.forEach(item => {
+              const value = item[tabConfig.secondaryGlobalFilterField];
+              if (value) allValues.add(value);
+            });
+          }
+        });
+
+        const sortedOptions = Array.from(allValues).sort();
+        setSecondaryGlobalFilterOptions(sortedOptions);
+
+        const latestValue = secondaryGlobalFilterValueRef.current;
+        if (!onSecondaryGlobalFilterChange) return;
+
+        if (sortedOptions.length === 0) {
+          if (latestValue) onSecondaryGlobalFilterChange(null);
+          return;
+        }
+
+        if (!latestValue || !sortedOptions.includes(latestValue)) {
+          onSecondaryGlobalFilterChange(sortedOptions[0]);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching secondary filter options:', error);
+          setSecondaryGlobalFilterOptions([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingSecondaryGlobalFilter(false);
+      }
+    };
+
+    fetchSecondaryOptions();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSecondaryGlobalFilter, secondaryFilterMetricIds, tabConfig?.secondaryGlobalFilterField, globalFilterValue]);
 
   // Fetch filter options from a single metric for speed (much faster than fetching all)
   useEffect(() => {
@@ -252,6 +342,17 @@ const MetricGrid = ({
               placement="top"
             />
           )}
+          {hasSecondaryGlobalFilter && (
+            <GlobalFilterWidget
+              tabConfig={{ globalFilterField: tabConfig.secondaryGlobalFilterField }}
+              globalFilterOptions={secondaryGlobalFilterOptions}
+              globalFilterValue={secondaryGlobalFilterValue}
+              onGlobalFilterChange={onSecondaryGlobalFilterChange}
+              loadingGlobalFilter={loadingSecondaryGlobalFilter}
+              hasUnitToggle={false}
+              placement="top"
+            />
+          )}
         </div>
       )}
       <div className="metrics-grid-positioned" style={gridStyle}>
@@ -295,13 +396,13 @@ const MetricGrid = ({
               className="grid-item"
               style={metricStyle}
             >
-              <MetricWidget 
-                metricId={metric.id} 
+              <MetricWidget
+                metricId={metric.id}
                 isDarkMode={isDarkMode}
                 dashboardPalette={dashboardPalette}
                 globalSelectedLabel={
-                  hasGlobalFilter && 
-                  metric.enableFiltering && 
+                  hasGlobalFilter &&
+                  metric.enableFiltering &&
                   metric.labelField === tabConfig.globalFilterField
                     ? (globalFilterValue || globalFilterOptions[0] || null)
                     : null
@@ -315,6 +416,9 @@ const MetricGrid = ({
                   (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
                   (metric.globalFilterField === tabConfig.globalFilterField)
                 ) ? (globalFilterValue || globalFilterOptions[0] || null) : null}
+                hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
+                secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
+                secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? (secondaryGlobalFilterValue || secondaryGlobalFilterOptions[0] || null) : null}
                 selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
                 enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}

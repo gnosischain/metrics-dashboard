@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [tabMetrics, setTabMetrics] = useState([]);
   const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
   const [tabFilters, setTabFilters] = useState({}); // Store filter state per dashboard+tab: { `${dashboardId}:${tabId}`: selectedValue }
+  const [tabSecondaryFilters, setTabSecondaryFilters] = useState({}); // Secondary (cascading) filter state per tab
   const [isLoading, setIsLoading] = useState(true);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -321,8 +322,19 @@ const Dashboard = () => {
     }
   }, [activeTabFilterKey]);
 
+  // Handle secondary (cascading) filter change for a tab
+  const handleSecondaryGlobalFilterChange = useCallback((selectedValue) => {
+    if (activeTabFilterKey) {
+      setTabSecondaryFilters(prev => ({
+        ...prev,
+        [activeTabFilterKey]: selectedValue
+      }));
+    }
+  }, [activeTabFilterKey]);
+
   // Get current global filter value for active tab
   const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;
+  const currentSecondaryGlobalFilter = activeTabFilterKey ? tabSecondaryFilters[activeTabFilterKey] || null : null;
   const searchIndex = useMemo(() => buildMetricSearchIndex(dashboards), [dashboards]);
   
   // Toggle sidebar collapsed state
@@ -392,12 +404,14 @@ const Dashboard = () => {
             <div className="loading-indicator">Initializing dashboard...</div>
           ) : activeDashboard && activeTab ? (
             <div className="tab-content">
-              <MetricGrid 
+              <MetricGrid
                 metrics={tabMetrics}
                 isDarkMode={isDarkMode}
                 tabConfig={activeTabConfig}
                 globalFilterValue={currentGlobalFilter}
                 onGlobalFilterChange={handleGlobalFilterChange}
+                secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
+                onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
                 dashboardPalette={activeDashboardPalette}
               />
             </div>
