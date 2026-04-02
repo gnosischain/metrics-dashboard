@@ -320,25 +320,22 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
       .replace(/\{to\}/g, toStr);
 
     // Optionally apply server-side filtering by wrapping the query.
-    // This is intentionally opt-in and guarded for backward compatibility.
+    // The client (MetricGrid) only sends filterField/filterValue for metrics
+    // that explicitly declare support via globalFilterField or enableFiltering,
+    // so we trust the request and always apply the filter.
     if (effectiveFilterProvided || effectiveFilter2Provided) {
-      // Heuristic guard: only apply if the query text mentions the filter field at all
-      // (prevents obvious "Unknown identifier" cases).
-      const lowerQuery = processedQuery.toLowerCase();
-      const mentionsField = effectiveFilterProvided && lowerQuery.includes(filterField.toLowerCase());
-      const mentionsField2 = effectiveFilter2Provided && lowerQuery.includes(filterField2.toLowerCase());
-
       const conditions = [];
-      if (effectiveFilterProvided && mentionsField) {
+      if (effectiveFilterProvided) {
         const valueEscaped = escapeSqlString(filterValue);
         conditions.push(`${filterField} = '${valueEscaped}'`);
       }
-      if (effectiveFilter2Provided && mentionsField2) {
+      if (effectiveFilter2Provided) {
         const valueEscaped2 = escapeSqlString(filterValue2);
         conditions.push(`${filterField2} = '${valueEscaped2}'`);
       }
 
       if (conditions.length > 0) {
+        const lowerQuery = processedQuery.toLowerCase();
         // Preserve ORDER BY (and any trailing LIMIT) by hoisting it to the outer query.
         const orderByIdx = lowerQuery.lastIndexOf('order by');
         const innerQuery = orderByIdx >= 0 ? processedQuery.slice(0, orderByIdx) : processedQuery;
