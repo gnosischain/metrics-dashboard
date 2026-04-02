@@ -18,6 +18,7 @@ const metric = {
     height: '100%',
     movableColumns: false,
     hideEmptyColumns: true,
+    searchFields: ['protocol', 'token', 'name', 'type'],
     
     columns: [
       {

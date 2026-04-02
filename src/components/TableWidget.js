@@ -14,137 +14,106 @@ import formatters from '../utils/formatters';
  * @param {string} props.format - Value formatter to use
  * @returns {JSX.Element} Table widget component
  */
-const TableWidget = ({ 
-  data = [], 
-  config = {}, 
-  isDarkMode = false, 
+const TableWidget = ({
+  data = [],
+  config = {},
+  isDarkMode = false,
   height = '400px',
   title,
   format
 }) => {
   const tableRef = useRef(null);
-  const [table, setTable] = useState(null);
+  const tableInstanceRef = useRef(null); // use ref, not state, to avoid re-render loops
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Memoize config to prevent unnecessary re-renders
   const memoizedConfig = useMemo(() => config, [config]);
 
+  // Filter data by search term across configured searchFields
+  const filteredData = useMemo(() => {
+    if (!searchTerm || !config.searchFields || config.searchFields.length === 0) return data;
+    const term = searchTerm.toLowerCase();
+    return data.filter(row =>
+      config.searchFields.some(field => {
+        const val = row[field];
+        return val != null && String(val).toLowerCase().includes(term);
+      })
+    );
+  }, [data, searchTerm, config.searchFields]);
+
   // Calculate optimal height based on data and pagination
   const calculateOptimalHeight = (data, config) => {
     if (!data || data.length === 0) return '200px';
-    
+
     const paginationSize = config.paginationSize || 10;
-    const headerHeight = 40; // Approximate header height
-    const rowHeight = 35; // Approximate row height
+    const headerHeight = 40;
+    const rowHeight = 35;
     const paginationHeight = config.pagination !== false ? 50 : 0;
-    const filterHeight = 0; // No filters since we're disabling them
-    
-    // Calculate rows to show (either all data or pagination size)
-    const visibleRows = config.pagination !== false 
+
+    const visibleRows = config.pagination !== false
       ? Math.min(data.length, paginationSize)
       : data.length;
-    
-    const calculatedHeight = headerHeight + (visibleRows * rowHeight) + paginationHeight + filterHeight;
-    
-    // Add some padding and ensure minimum height
+
+    const calculatedHeight = headerHeight + (visibleRows * rowHeight) + paginationHeight;
     return Math.max(calculatedHeight + 20, 200) + 'px';
   };
 
   // Clean up table instance on unmount
   useEffect(() => {
     return () => {
-      if (table) {
+      if (tableInstanceRef.current) {
         try {
-          table.destroy();
+          tableInstanceRef.current.destroy();
+          tableInstanceRef.current = null;
         } catch (e) {
           console.warn('Error destroying table:', e);
         }
       }
     };
-  }, [table]);
+  }, []);
 
-  // Main effect to create/update table
+  // Effect 1: Create/rebuild table when structure changes (config, theme, height, format).
+  // Does NOT depend on filteredData — search never triggers a rebuild.
   useEffect(() => {
-    if (!tableRef.current) {
-      console.log('TableWidget: tableRef.current is null');
-      return;
-    }
-    
-    if (!data) {
-      console.log('TableWidget: data is null/undefined');
+    if (!tableRef.current) return;
+    if (!data || data.length === 0) {
+      setError('No data available for table');
       return;
     }
 
     try {
       setError(null);
-      
-      console.log('TableWidget: Creating table with data:', data);
-      console.log('TableWidget: Config:', memoizedConfig);
-      console.log('TableWidget: tableRef.current:', tableRef.current);
-      
-      // Destroy existing table if it exists
-      if (table) {
-        console.log('TableWidget: Destroying existing table');
-        table.destroy();
+
+      // Destroy existing table
+      if (tableInstanceRef.current) {
+        tableInstanceRef.current.destroy();
+        tableInstanceRef.current = null;
       }
 
-      // Process and validate data
       const processedData = processTableData(data, memoizedConfig);
-      
-      console.log('TableWidget: Processed data:', processedData);
-      
       if (!processedData || processedData.length === 0) {
-        console.log('TableWidget: No processed data available');
         setError('No data available for table');
         return;
       }
 
-      // Generate columns configuration
       const columns = generateColumns(processedData, memoizedConfig, format, isDarkMode);
-      
-      console.log('TableWidget: Generated columns:', columns);
-      
-      // Calculate optimal height if height is 'auto'
-      const tableHeight = height === 'auto' || height === '100%' 
+      const tableHeight = height === 'auto' || height === '100%'
         ? calculateOptimalHeight(processedData, memoizedConfig)
         : height;
-        
-      // Create table configuration with improved height handling
       const tableConfig = createTableConfig(processedData, columns, memoizedConfig, isDarkMode, tableHeight);
-      
-      console.log('TableWidget: Final table config:', tableConfig);
-      
-      // Create new table instance
-      console.log('TableWidget: About to create Tabulator instance');
+
       const newTable = new Tabulator(tableRef.current, tableConfig);
-      
-      console.log('TableWidget: Tabulator instance created:', newTable);
-      
-      // Handle table built event
+
       newTable.on('tableBuilt', () => {
-        console.log('TableWidget: Table built successfully');
-        
-        // Check if pagination exists
-        const paginationElement = tableRef.current.querySelector('.tabulator-footer');
-        if (paginationElement) {
-          console.log('TableWidget: Pagination element found:', paginationElement);
-        } else {
-          console.warn('TableWidget: Pagination element NOT found');
-        }
-        
-        // Auto-resize to fit content if needed
         if (height === 'auto' || memoizedConfig.autoResize) {
           setTimeout(() => {
             try {
-              // Get actual content height
               const tableElement = tableRef.current;
-              const tabulatorTable = tableElement.querySelector('.tabulator');
-              
+              const tabulatorTable = tableElement?.querySelector('.tabulator');
               if (tabulatorTable) {
                 const actualHeight = tabulatorTable.scrollHeight;
                 const containerHeight = tableElement.offsetHeight;
-                
-                // If there's significant difference, adjust
                 if (Math.abs(actualHeight - containerHeight) > 20) {
                   tableElement.style.height = Math.min(actualHeight + 20, 600) + 'px';
                   newTable.redraw();
@@ -155,43 +124,34 @@ const TableWidget = ({
             }
           }, 100);
         }
-        
-        // Force a redraw to ensure visibility
         setTimeout(() => {
-          try {
-            newTable.redraw();
-            console.log('TableWidget: Table redrawn');
-          } catch (e) {
-            console.warn('TableWidget: Error redrawing table:', e);
-          }
+          try { newTable.redraw(); } catch (e) { /* ignore */ }
         }, 100);
       });
 
-      // Handle pagination events
-      newTable.on('paginationInitialized', () => {
-        console.log('TableWidget: Pagination initialized');
-      });
+      newTable.on('dataLoadError', () => setError('Failed to load table data'));
+      newTable.on('tableBuildError', () => setError('Failed to build table'));
 
-      // Handle table errors
-      newTable.on('dataLoadError', (error) => {
-        console.error('TableWidget: Table data load error:', error);
-        setError('Failed to load table data');
-      });
+      tableInstanceRef.current = newTable;
 
-      // Handle table build error
-      newTable.on('tableBuildError', (error) => {
-        console.error('TableWidget: Table build error:', error);
-        setError('Failed to build table');
-      });
-
-      setTable(newTable);
-      
-    } catch (error) {
-      console.error('TableWidget: Error creating table:', error);
-      setError('Failed to create table: ' + error.message);
+    } catch (err) {
+      console.error('TableWidget: Error creating table:', err);
+      setError('Failed to create table: ' + err.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, memoizedConfig, isDarkMode, height, format]); // Intentionally excluding 'table' to prevent infinite loop
+  }, [data, memoizedConfig, isDarkMode, height, format]);
+
+  // Effect 2: Update table data cheaply when search filter changes.
+  // Calls setData() — no DOM rebuild, no fan noise.
+  useEffect(() => {
+    if (!tableInstanceRef.current) return;
+    try {
+      const processed = processTableData(filteredData, memoizedConfig);
+      tableInstanceRef.current.setData(processed);
+    } catch (e) {
+      console.warn('TableWidget: Error updating table data:', e);
+    }
+  }, [filteredData, memoizedConfig]);
 
   if (error) {
     return (
@@ -205,18 +165,59 @@ const TableWidget = ({
     );
   }
 
+  const showSearch = config.searchFields && config.searchFields.length > 0;
+
   return (
-    <div className={`table-widget ${isDarkMode ? 'dark' : ''}`} style={{ 
+    <div className={`table-widget ${isDarkMode ? 'dark' : ''}`} style={{
       height: height === '100%' ? '100%' : 'auto',
-      width: '100%', 
+      width: '100%',
       minHeight: '200px',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <div 
-        ref={tableRef} 
+      {showSearch && (
+        <div style={{
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          flexShrink: 0
+        }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: isDarkMode ? '#8b949e' : '#9ca3af' }}>
+            <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5"/>
+            <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder={`Search by ${config.searchFields.join(', ')}...`}
+            style={{
+              flex: 1,
+              maxWidth: '320px',
+              padding: '6px 10px',
+              fontSize: '13px',
+              border: `1px solid ${isDarkMode ? '#30363d' : '#d1d5db'}`,
+              borderRadius: '6px',
+              background: isDarkMode ? '#161b22' : '#fff',
+              color: isDarkMode ? '#e6edf3' : '#1f2937',
+              outline: 'none'
+            }}
+          />
+          {searchTerm && (
+            <span style={{
+              color: isDarkMode ? '#8b949e' : '#6b7280',
+              fontSize: '12px'
+            }}>
+              {filteredData.length} of {data.length} rows
+            </span>
+          )}
+        </div>
+      )}
+      <div
+        ref={tableRef}
         className={`tabulator-table modern-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
-        style={{ 
+        style={{
           height: height,
           width: '100%',
           minHeight: '200px',
