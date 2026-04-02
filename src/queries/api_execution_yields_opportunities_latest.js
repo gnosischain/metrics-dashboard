@@ -88,7 +88,7 @@ const metric = {
         }
       },
       {
-        title: "Fee",
+        title: "Fee Tier",
         field: "fee_pct",
         minWidth: 80,
         widthGrow: 0.8,
@@ -102,8 +102,8 @@ const metric = {
         }
       },
       {
-        title: "Yield",
-        field: "yield_pct",
+        title: "Yield APR",
+        field: "yield_apr",
         minWidth: 130,
         widthGrow: 1.5,
         sorter: "number",
@@ -112,9 +112,21 @@ const metric = {
         formatter: function(cell) {
           const val = cell.getValue();
           if (val === null || val === undefined) return "-";
-          const row = cell.getRow().getData();
-          const label = row.yield_label || '';
-          return val.toFixed(2) + "% " + label;
+          return val.toFixed(2) + "%";
+        }
+      },
+      {
+        title: "Yield APY",
+        field: "yield_apy",
+        minWidth: 130,
+        widthGrow: 1.5,
+        sorter: "number",
+        hozAlign: "right",
+        headerFilter: false,
+        formatter: function(cell) {
+          const val = cell.getValue();
+          if (val === null || val === undefined) return "-";
+          return val.toFixed(2) + "%";
         }
       },
       {
@@ -239,7 +251,7 @@ const metric = {
     ]
   },
   
-  query: `SELECT type, token, name, address, fee_pct, yield_pct, yield_label, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+  query: `SELECT type, token, name, address, fee_pct, yield_apr, yield_apy, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
 };
 
 export default metric;
