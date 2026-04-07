@@ -24,6 +24,7 @@ const TableWidget = ({
 }) => {
   const tableRef = useRef(null);
   const tableInstanceRef = useRef(null); // use ref, not state, to avoid re-render loops
+  const tableBuiltRef = useRef(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -66,6 +67,7 @@ const TableWidget = ({
         try {
           tableInstanceRef.current.destroy();
           tableInstanceRef.current = null;
+          tableBuiltRef.current = false;
         } catch (e) {
           console.warn('Error destroying table:', e);
         }
@@ -89,6 +91,7 @@ const TableWidget = ({
       if (tableInstanceRef.current) {
         tableInstanceRef.current.destroy();
         tableInstanceRef.current = null;
+        tableBuiltRef.current = false;
       }
 
       const processedData = processTableData(data, memoizedConfig);
@@ -106,6 +109,7 @@ const TableWidget = ({
       const newTable = new Tabulator(tableRef.current, tableConfig);
 
       newTable.on('tableBuilt', () => {
+        tableBuiltRef.current = true;
         if (height === 'auto' || memoizedConfig.autoResize) {
           setTimeout(() => {
             try {
@@ -143,8 +147,10 @@ const TableWidget = ({
 
   // Effect 2: Update table data cheaply when search filter changes.
   // Calls setData() — no DOM rebuild, no fan noise.
+  // Guard: only call setData after Tabulator fires `tableBuilt` to avoid
+  // race conditions where the layout module is still null.
   useEffect(() => {
-    if (!tableInstanceRef.current) return;
+    if (!tableInstanceRef.current || !tableBuiltRef.current) return;
     try {
       const processed = processTableData(filteredData, memoizedConfig);
       tableInstanceRef.current.setData(processed);
