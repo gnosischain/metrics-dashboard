@@ -224,6 +224,15 @@ const MetricGrid = ({
       return;
     }
 
+    // Tabs flagged with requireExplicitFilter (freeform paste UX) skip the eager
+    // options fetch entirely and never auto-select a default value. The user
+    // must type/paste a value before any card fetches data.
+    if (tabConfig?.requireExplicitFilter) {
+      setGlobalFilterOptions([]);
+      setLoadingGlobalFilter(false);
+      return;
+    }
+
     let cancelled = false;
 
     const fetchGlobalFilterOptions = async () => {

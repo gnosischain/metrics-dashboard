@@ -84,7 +84,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
     setFocusedIndex(filteredLabels.length > 0 ? 0 : -1);
   }, [searchText, filteredLabels.length]);
 
-  if (!labels || labels.length === 0) {
+  if ((!labels || labels.length === 0) && !searchable) {
     return null;
   }
 
@@ -129,6 +129,9 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
         lastInteractionRef.current = 'keyboard';
         if (focusedIndex >= 0 && focusedIndex < filteredLabels.length) {
           selectItem(filteredLabels[focusedIndex]);
+        } else if (searchable && searchText.trim()) {
+          // Freeform mode: accept the typed value even if it's not in the options list.
+          selectItem(searchText.trim());
         }
         break;
       case 'Escape':

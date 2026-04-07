@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_token_count_daily",
+  "query": "SELECT date, token_count AS value FROM dbt.api_execution_circles_v2_total_supply_daily"
+}
