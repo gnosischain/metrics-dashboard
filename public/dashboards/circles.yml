@@ -76,46 +76,64 @@ tabs:
     icon: 👤
     iconClass: user
     globalFilterField: avatar
-    globalFilterLabel: Avatar Address
+    globalFilterLabel: Avatar
+    globalFilterDisplayField: display_name
+    globalFilterSourceMetric: api_execution_circles_v2_avatar_search
     searchable: true
     requireExplicitFilter: true
-    searchPlaceholder: Paste avatar address (0x...)
+    searchPlaceholder: Search by name or paste address (0x...)
     globalFilterVertical: true
     timeRanges: true
     metrics:
-      - id: api_execution_circles_v2_avatar_total_balance_latest
+      - id: api_execution_circles_v2_avatar_metadata
         gridRow: 1
+        gridColumn: 1 / span 9
+        minHeight: 160px
+      - id: global_filter
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 160px
+      - id: api_execution_circles_v2_avatar_total_balance_latest
+        gridRow: 2
         gridColumn: 1 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_avatar_trusts_given_latest
-        gridRow: 1
+        gridRow: 2
         gridColumn: 4 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_avatar_trusts_received_latest
-        gridRow: 1
+        gridRow: 2
         gridColumn: 7 / span 3
         minHeight: 110px
-      - id: global_filter
-        gridRow: 1
+      - id: api_execution_circles_v2_avatar_tokens_held_count
+        gridRow: 2
         gridColumn: 10 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_avatar_balances_daily
         gridRow: 3
-        gridColumn: 1 / span 8
+        gridColumn: 1 / span 12
         minHeight: 450px
-      - id: api_execution_circles_v2_avatar_holdings_by_token
-        gridRow: 3
-        gridColumn: 9 / span 4
-        minHeight: 450px
-      - id: api_execution_circles_v2_avatar_trusts_daily
+      - id: api_execution_circles_v2_avatar_mint_activity_daily
         gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 320px
+      - id: api_execution_circles_v2_avatar_holdings_by_token
+        gridRow: 5
+        gridColumn: 1 / span 6
+        minHeight: 380px
+      - id: api_execution_circles_v2_avatar_token_distribution
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 380px
+      - id: api_execution_circles_v2_avatar_trusts_daily
+        gridRow: 6
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_circles_v2_avatar_trust_relations
-        gridRow: 4
+        gridRow: 6
         gridColumn: 7 / span 6
         minHeight: 450px
-      - id: api_execution_circles_v2_avatar_metadata
-        gridRow: 5
+      - id: api_execution_circles_v2_avatar_metadata_history
+        gridRow: 7
         gridColumn: 1 / span 12
-        minHeight: 300px
+        minHeight: 360px

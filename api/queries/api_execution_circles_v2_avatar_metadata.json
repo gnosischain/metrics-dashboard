@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_avatar_metadata",
-  "query": "SELECT avatar, avatar_type, invited_by, name, token_id, registered_at\n    FROM dbt.api_execution_circles_v2_avatar_metadata"
+  "query": "SELECT\n      avatar,\n      avatar_type,\n      invited_by,\n      name,\n      registered_at,\n      metadata_name,\n      metadata_image_url,\n      metadata_preview_image_url\n    FROM dbt.api_execution_circles_v2_avatar_metadata"
 }

@@ -5,6 +5,26 @@ import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
 
 /**
+ * Resolve the effective global filter value to pass to a panel.
+ *
+ * - If the user has actively picked a value, use it (it is always a string).
+ * - Otherwise, fall back to the first option in the list — but ONLY when the
+ *   tab does not flag `requireExplicitFilter`. Tabs that require an explicit
+ *   pick (e.g. the Avatar tab's search-by-name+address) must stay blank
+ *   until the user actually picks something.
+ * - When falling back to an option, support both legacy string-array options
+ *   and the new `{ label, value }` object array by extracting `.value`.
+ */
+const resolveGlobalFilterValue = (currentValue, options, tabConfig) => {
+  if (currentValue) return currentValue;
+  if (tabConfig?.requireExplicitFilter) return null;
+  const first = options && options.length > 0 ? options[0] : null;
+  if (!first) return null;
+  if (typeof first === 'object') return first.value || null;
+  return first;
+};
+
+/**
  * Enhanced MetricGrid component with proper fixed row heights and shared
  * global-control support. Tabs can render the global filter bundle either
  * inside the grid (`global_filter` pseudo-metric) or in the top toolbar.
@@ -135,13 +155,19 @@ const MetricGrid = ({
     return realMetrics.filter(m => m.enableFiltering);
   }, [realMetrics, hasGlobalFilter, tabConfig?.globalFilterField]);
 
-  // Get a single metric to use for fetching filter options (prefer "total" metrics as they're usually smaller)
+  // Get a single metric to use for fetching filter options (prefer "total" metrics as they're usually smaller).
+  // When tabConfig.globalFilterSourceMetric is set, use that instead — this lets a tab pin a dedicated
+  // lightweight lookup mart (e.g. avatar search) regardless of which panel metrics happen to be on the tab.
   const metricForOptions = useMemo(() => {
+    if (!hasGlobalFilter) return null;
+    if (tabConfig?.globalFilterSourceMetric) {
+      return { id: tabConfig.globalFilterSourceMetric, __synthetic: true };
+    }
     if (metricsForGlobalFilter.length === 0) return null;
     // Prefer a "total" metric as it's usually smaller and faster
     const totalMetric = metricsForGlobalFilter.find(m => m.id.includes('_total'));
     return totalMetric || metricsForGlobalFilter[0];
-  }, [metricsForGlobalFilter]);
+  }, [metricsForGlobalFilter, hasGlobalFilter, tabConfig?.globalFilterSourceMetric]);
 
   // Secondary global filter support (cascading from primary)
   const hasSecondaryGlobalFilter = !!(tabConfig?.secondaryGlobalFilterField && onSecondaryGlobalFilterChange);
@@ -227,7 +253,12 @@ const MetricGrid = ({
     // Tabs flagged with requireExplicitFilter (freeform paste UX) skip the eager
     // options fetch entirely and never auto-select a default value. The user
     // must type/paste a value before any card fetches data.
-    if (tabConfig?.requireExplicitFilter) {
+    //
+    // Exception: when the tab also pins a `globalFilterSourceMetric`, we DO load
+    // that lookup eagerly so the search input can match against the option list,
+    // but we still leave `globalFilterValue` unset so no panel auto-fetches.
+    const hasPinnedSource = !!tabConfig?.globalFilterSourceMetric;
+    if (tabConfig?.requireExplicitFilter && !hasPinnedSource) {
       setGlobalFilterOptions([]);
       setLoadingGlobalFilter(false);
       return;
@@ -247,25 +278,62 @@ const MetricGrid = ({
         if (cancelled) {
           return;
         }
-        
-        // Extract unique values
-        const allValues = new Set();
-        if (result?.data && Array.isArray(result.data)) {
-          result.data.forEach(item => {
-            const value = item[tabConfig.globalFilterField];
-            if (value) {
-              allValues.add(value);
-            }
+
+        const valueField = tabConfig.globalFilterField;
+        const displayField = tabConfig.globalFilterDisplayField;
+        const rows = (result?.data && Array.isArray(result.data)) ? result.data : [];
+
+        let sortedOptions;
+        if (displayField) {
+          // Build `{ label, value, sublabel }` objects so the search input can
+          // match either the display name OR the address, and the dropdown
+          // shows the human-friendly label while still passing the address as
+          // the filter value.
+          const seen = new Map();
+          for (const item of rows) {
+            const value = item[valueField];
+            if (!value || seen.has(value)) continue;
+            const display = item[displayField];
+            const labelText = display && String(display).trim()
+              ? String(display).trim()
+              : String(value);
+            seen.set(value, {
+              label: labelText,
+              value: String(value),
+              // Show the address (truncated) as a sublabel when we have a name,
+              // so the user can verify the address before picking.
+              sublabel: display && String(display).trim()
+                ? `${String(value).slice(0, 10)}…${String(value).slice(-6)}`
+                : '',
+            });
+          }
+          sortedOptions = Array.from(seen.values()).sort((a, b) => {
+            const al = (a.label || '').toLowerCase();
+            const bl = (b.label || '').toLowerCase();
+            if (al && bl && al !== bl) return al < bl ? -1 : 1;
+            return (a.value || '').localeCompare(b.value || '');
           });
+        } else {
+          // Backwards-compatible string-array path.
+          const allValues = new Set();
+          for (const item of rows) {
+            const value = item[valueField];
+            if (value) allValues.add(value);
+          }
+          sortedOptions = Array.from(allValues).sort();
         }
 
-        // Convert to sorted array
-        const sortedOptions = Array.from(allValues).sort();
         setGlobalFilterOptions(sortedOptions);
 
         // Ensure selected filter is valid for the current tab options.
         const latestValue = globalFilterValueRef.current;
         if (!onGlobalFilterChange) {
+          return;
+        }
+
+        // Tabs that require explicit filter never auto-select, even when we
+        // do load the option list (search-by-name use case).
+        if (tabConfig?.requireExplicitFilter) {
           return;
         }
 
@@ -276,8 +344,11 @@ const MetricGrid = ({
           return;
         }
 
-        if (!latestValue || !sortedOptions.includes(latestValue)) {
-          onGlobalFilterChange(sortedOptions[0]);
+        // Check membership against the option's value (object) or itself (string).
+        const optionValueOf = (o) => (o && typeof o === 'object') ? o.value : o;
+        const valuesSet = new Set(sortedOptions.map(optionValueOf));
+        if (!latestValue || !valuesSet.has(latestValue)) {
+          onGlobalFilterChange(optionValueOf(sortedOptions[0]));
         }
       } catch (error) {
         if (!cancelled) {
@@ -297,7 +368,7 @@ const MetricGrid = ({
     };
     // Only refetch when metrics change, not when filter value changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField]);
+  }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField, tabConfig?.globalFilterDisplayField, tabConfig?.globalFilterSourceMetric, tabConfig?.requireExplicitFilter]);
 
   const { templateRows } = processGridStructure(positionedMetrics);
 
@@ -405,7 +476,7 @@ const MetricGrid = ({
                   hasGlobalFilter &&
                   metric.enableFiltering &&
                   metric.labelField === tabConfig.globalFilterField
-                    ? (globalFilterValue || globalFilterOptions[0] || null)
+                    ? resolveGlobalFilterValue(globalFilterValue, globalFilterOptions, tabConfig)
                     : null
                 }
                 hasGlobalFilter={hasGlobalFilter && (
@@ -416,10 +487,10 @@ const MetricGrid = ({
                 globalFilterValue={hasGlobalFilter && (
                   (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
                   (metric.globalFilterField === tabConfig.globalFilterField)
-                ) ? (globalFilterValue || globalFilterOptions[0] || null) : null}
+                ) ? resolveGlobalFilterValue(globalFilterValue, globalFilterOptions, tabConfig) : null}
                 hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
                 secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
-                secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? (secondaryGlobalFilterValue || secondaryGlobalFilterOptions[0] || null) : null}
+                secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? resolveGlobalFilterValue(secondaryGlobalFilterValue, secondaryGlobalFilterOptions, { requireExplicitFilter: tabConfig?.requireExplicitFilter }) : null}
                 selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
                 enableResolutionToggle={hasResolutionToggle}
                 enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}

@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_avatar_holdings_by_token",
-  "query": "SELECT avatar, token_address, balance, balance_demurraged\n    FROM dbt.api_execution_circles_v2_avatar_balances_latest"
+  "query": "SELECT avatar, token_address, is_wrapped, balance, balance_demurraged\n    FROM dbt.api_execution_circles_v2_avatar_balances_latest"
 }

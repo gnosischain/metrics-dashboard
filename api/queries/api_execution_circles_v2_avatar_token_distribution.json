@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_avatar_token_distribution",
+  "query": "SELECT avatar, holder_category, holder_count, balance, balance_demurraged\n    FROM dbt.api_execution_circles_v2_avatar_token_distribution"
+}
