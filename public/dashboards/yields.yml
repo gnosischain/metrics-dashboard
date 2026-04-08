@@ -131,3 +131,54 @@ tabs:
         gridRow: 4
         gridColumn: 9 / span 4
         minHeight: 450px
+
+  - name: User Portfolio
+    order: 4
+    icon: "👤"
+    iconClass: "user"
+    globalFilterField: wallet_address
+    globalFilterLabel: Wallet
+    searchable: true
+    searchPlaceholder: Paste wallet address...
+    globalControlsPlacement: top
+    metrics:
+      - id: api_execution_yields_user_kpi_total_lp_fees
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 110px
+      - id: api_execution_yields_user_kpi_lending_balance
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 110px
+      - id: api_execution_yields_user_kpi_active_lp_positions
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 110px
+      - id: api_execution_yields_user_kpi_active_lending_positions
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 110px
+      - id: api_execution_yields_user_lp_positions
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+        tabGroup: positions
+        tabLabel: LP Positions
+      - id: api_execution_yields_user_lending_positions
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+        tabGroup: positions
+        tabLabel: Lending Positions
+      - id: api_execution_yields_user_fee_collections_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_yields_user_lending_balances_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_yields_user_activity
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 450px

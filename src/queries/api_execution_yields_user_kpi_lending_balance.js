@@ -1,0 +1,17 @@
+const metric = {
+  id: 'api_execution_yields_user_kpi_lending_balance',
+  name: 'Lending Balance',
+  description: 'Current (USD)',
+  metricDescription: 'Current total supply balance across all Aave V3 reserves for the selected wallet.',
+  chartType: 'numberDisplay',
+  variant: 'default',
+  format: 'formatCurrency',
+  valueField: 'value',
+  globalFilterField: 'wallet_address',
+  query: `
+    SELECT wallet_address, total_lending_balance_usd AS value
+    FROM dbt.api_execution_yields_user_kpis
+  `,
+};
+
+export default metric;

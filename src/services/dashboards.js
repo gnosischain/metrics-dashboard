@@ -90,13 +90,15 @@ class DashboardService {
           // Get base metric config (may be undefined for pseudo-metrics like global_filter)
           const metricConfig = metricsService.getMetricConfig(metric.id);
           
-          // Return metric with grid positioning properties
+          // Return metric with grid positioning + layout properties
           return {
             ...metricConfig,
             id: metric.id,
             gridRow: metric.gridRow,
             gridColumn: metric.gridColumn,
-            minHeight: metric.minHeight
+            minHeight: metric.minHeight,
+            tabGroup: metric.tabGroup || null,
+            tabLabel: metric.tabLabel || null
           };
         }),
         // Flag to indicate this is a default tab (no tabs UI)
@@ -122,6 +124,7 @@ class DashboardService {
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
+          secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field
           globalControlsPlacement: tab.globalControlsPlacement || 'grid', // Render global controls in-grid or in the top toolbar
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
@@ -138,13 +141,15 @@ class DashboardService {
             // Get base metric config (may be undefined for pseudo-metrics like global_filter)
             const metricConfig = metricsService.getMetricConfig(metric.id);
             
-            // Return metric with grid positioning properties
+            // Return metric with grid positioning + layout properties
             return {
               ...metricConfig,
               id: metric.id,
               gridRow: metric.gridRow,
               gridColumn: metric.gridColumn,
-              minHeight: metric.minHeight
+              minHeight: metric.minHeight,
+              tabGroup: metric.tabGroup || null,
+              tabLabel: metric.tabLabel || null
             };
           })
         };

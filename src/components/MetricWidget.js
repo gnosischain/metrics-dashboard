@@ -34,7 +34,8 @@ const MetricWidget = ({
   globalTimeRange = null,
   hasSecondaryGlobalFilter = false,
   secondaryGlobalFilterField = null,
-  secondaryGlobalFilterValue = null
+  secondaryGlobalFilterValue = null,
+  headerActions = null
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -772,8 +773,9 @@ const MetricWidget = ({
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
   const showUnitSelector = supportsLocalUnitToggle;
 
-  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton || showLocalTimeRange) ? (
+  const headerControls = (headerActions || showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton || showLocalTimeRange) ? (
     <>
+      {headerActions}
       {showMultiLocalDropdowns && multiLocalFilterFields.map((fieldName) => {
         const labels = localFilterOptionsByField[fieldName] || [];
         if (labels.length === 0) {

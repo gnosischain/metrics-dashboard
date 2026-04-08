@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_user_lending_positions",
+  "query": "SELECT user_address AS wallet_address, reserve_address, symbol, balance, balance_usd, supply_apy, protocol\n    FROM dbt.api_execution_yields_user_lending_positions"
+}
