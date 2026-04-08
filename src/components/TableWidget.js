@@ -159,19 +159,7 @@ const TableWidget = ({
     }
   }, [filteredData, memoizedConfig]);
 
-  if (error) {
-    return (
-      <div className="table-error" style={{ 
-        padding: '2rem', 
-        textAlign: 'center',
-        color: isDarkMode ? '#CF222E' : '#D73A49'
-      }}>
-        {error}
-      </div>
-    );
-  }
-
-  const showSearch = config.searchFields && config.searchFields.length > 0;
+  const showSearch = !error && config.searchFields && config.searchFields.length > 0;
 
   return (
     <div className={`table-widget ${isDarkMode ? 'dark' : ''}`} style={{
@@ -181,6 +169,15 @@ const TableWidget = ({
       display: 'flex',
       flexDirection: 'column'
     }}>
+      {error && (
+        <div className="table-error" style={{
+          padding: '2rem',
+          textAlign: 'center',
+          color: isDarkMode ? '#8b949e' : '#6b7280'
+        }}>
+          {error}
+        </div>
+      )}
       {showSearch && (
         <div style={{
           padding: '8px 12px',
@@ -224,11 +221,11 @@ const TableWidget = ({
         ref={tableRef}
         className={`tabulator-table modern-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
         style={{
-          height: height,
+          height: error ? 0 : height,
           width: '100%',
-          minHeight: '200px',
+          minHeight: error ? 0 : '200px',
           flex: 'none',
-          overflow: 'auto'
+          overflow: error ? 'hidden' : 'auto'
         }}
       />
     </div>
