@@ -401,13 +401,18 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       };
     }
   
+    // Apply initial sort if configured
+    if (config.initialSort) {
+      baseConfig.initialSort = config.initialSort;
+    }
+
     // Merge with custom config, but protect critical pagination settings
     const customConfig = { ...config.tabulatorConfig };
     // Don't let custom config override our pagination settings
     delete customConfig.pagination;
     delete customConfig.paginationSize;
     delete customConfig.height; // Don't override height
-    
+
     return { ...baseConfig, ...customConfig };
   };
 

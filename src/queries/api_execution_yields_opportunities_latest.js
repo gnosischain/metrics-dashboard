@@ -19,6 +19,7 @@ const metric = {
     movableColumns: false,
     hideEmptyColumns: true,
     searchFields: ['protocol', 'token', 'name', 'type'],
+    initialSort: [{ column: 'tvl', dir: 'desc' }],
     
     columns: [
       {
@@ -88,10 +89,10 @@ const metric = {
         }
       },
       {
-        title: "Fee Tier",
-        field: "fee_pct",
-        minWidth: 80,
-        widthGrow: 0.8,
+        title: "Yield APR",
+        field: "yield_apr",
+        minWidth: 130,
+        widthGrow: 1.5,
         sorter: "number",
         hozAlign: "right",
         headerFilter: false,
@@ -102,10 +103,10 @@ const metric = {
         }
       },
       {
-        title: "Yield APR",
-        field: "yield_apr",
-        minWidth: 130,
-        widthGrow: 1.5,
+        title: "Fee Tier",
+        field: "fee_pct",
+        minWidth: 80,
+        widthGrow: 0.8,
         sorter: "number",
         hozAlign: "right",
         headerFilter: false,

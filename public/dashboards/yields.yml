@@ -37,7 +37,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 450px
 
-  - name: Lending yields
+  - name: Lending
     order: 2
     icon: "💰"
     iconClass: "lending"
@@ -78,7 +78,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
 
-  - name: Pool Yields
+  - name: Pools
     order: 3
     icon: "📊"
     iconClass: "pool"
