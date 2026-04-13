@@ -209,18 +209,19 @@ const metric = {
         }
       },
       {
-        title: "LVR 7D",
-        field: "lvr_apr_7d",
-        minWidth: 90,
-        widthGrow: 1,
+        title: "Vol 7D",
+        field: "volume_usd_7d",
+        minWidth: 110,
+        widthGrow: 1.5,
         sorter: "number",
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
           const val = cell.getValue();
-          if (val === null || val === undefined) return "-";
-          const color = val >= 0 ? '#38a169' : '#e53e3e';
-          return "<span style='color:" + color + "'>" + val.toFixed(2) + "%</span>";
+          if (val === null || val === undefined || val === 0) return "-";
+          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
+          return "$" + val.toFixed(0);
         }
       },
       {
@@ -252,7 +253,7 @@ const metric = {
     ]
   },
   
-  query: `SELECT type, token, name, address, fee_pct, yield_apr, yield_apy, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, lvr_apr_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+  query: `SELECT type, token, name, address, fee_pct, yield_apr, yield_apy, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, volume_usd_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
 };
 
 export default metric;
