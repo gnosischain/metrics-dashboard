@@ -113,27 +113,31 @@ tabs:
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
-      - id: api_execution_circles_v2_avatar_mint_activity_daily
-        gridRow: 4
-        gridColumn: 1 / span 12
-        minHeight: 320px
       - id: api_execution_circles_v2_avatar_holdings_by_token
-        gridRow: 5
+        gridRow: 4
         gridColumn: 1 / span 6
         minHeight: 380px
       - id: api_execution_circles_v2_avatar_token_distribution
-        gridRow: 5
+        gridRow: 4
         gridColumn: 7 / span 6
         minHeight: 380px
       - id: api_execution_circles_v2_avatar_trusts_daily
-        gridRow: 6
+        gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 450px
+      - id: api_execution_circles_v2_avatar_mint_activity_daily
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 320px
+      - id: api_execution_circles_v2_avatar_trust_network
+        gridRow: 6
+        gridColumn: 1 / span 6
+        minHeight: 560px
       - id: api_execution_circles_v2_avatar_trust_relations
         gridRow: 6
         gridColumn: 7 / span 6
-        minHeight: 450px
+        minHeight: 560px
       - id: api_execution_circles_v2_avatar_metadata_history
-        gridRow: 7
+        gridRow: 8
         gridColumn: 1 / span 12
         minHeight: 360px
