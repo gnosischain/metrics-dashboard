@@ -45,4 +45,37 @@ Custom:
 
     expect(custom.palette).toEqual(GNOSIS_PAY_PALETTE);
   });
+
+  it('preserves combined tab filter metadata when YAML mixes old and new dashboard fields', () => {
+    const yaml = `
+Merged:
+  name: Merged
+  order: 1
+  tabs:
+    - name: User Pools
+      order: 1
+      globalFilterField: avatar
+      globalFilterLabel: Avatar
+      secondaryGlobalFilterField: pool
+      globalFilterDisplayField: display_name
+      globalFilterSourceMetric: api_execution_circles_v2_avatar_search
+      requireExplicitFilter: true
+      metrics:
+        - id: overview_transactions
+`;
+
+    const loaded = dashboardsService.loadFromYaml(yaml);
+    expect(loaded).toBe(true);
+
+    const tab = dashboardsService.getTab('merged', 'user-pools');
+
+    expect(tab).toMatchObject({
+      globalFilterField: 'avatar',
+      globalFilterLabel: 'Avatar',
+      secondaryGlobalFilterField: 'pool',
+      globalFilterDisplayField: 'display_name',
+      globalFilterSourceMetric: 'api_execution_circles_v2_avatar_search',
+      requireExplicitFilter: true
+    });
+  });
 });

@@ -45,6 +45,7 @@ const MetricGrid = ({
   const [secondaryGlobalFilterOptions, setSecondaryGlobalFilterOptions] = useState([]);
   const [loadingSecondaryGlobalFilter, setLoadingSecondaryGlobalFilter] = useState(false);
   const secondaryGlobalFilterValueRef = useRef(secondaryGlobalFilterValue);
+  const [tabGroupSelections, setTabGroupSelections] = useState({});
   
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
@@ -131,6 +132,24 @@ const MetricGrid = ({
     () => (globalControlsPlacement === 'top' ? metrics.filter(metric => metric.id !== 'global_filter') : metrics),
     [metrics, globalControlsPlacement]
   );
+  const tabGroups = useMemo(() => {
+    const groups = {};
+    positionedMetrics.forEach(metric => {
+      if (!metric.tabGroup) return;
+      if (!groups[metric.tabGroup]) groups[metric.tabGroup] = [];
+      groups[metric.tabGroup].push(metric);
+    });
+    return groups;
+  }, [positionedMetrics]);
+  const renderedMetrics = useMemo(() => {
+    const seenGroups = new Set();
+    return positionedMetrics.filter(metric => {
+      if (!metric.tabGroup) return true;
+      if (seenGroups.has(metric.tabGroup)) return false;
+      seenGroups.add(metric.tabGroup);
+      return true;
+    });
+  }, [positionedMetrics]);
 
   // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
   const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);
@@ -370,7 +389,7 @@ const MetricGrid = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField, tabConfig?.globalFilterDisplayField, tabConfig?.globalFilterSourceMetric, tabConfig?.requireExplicitFilter]);
 
-  const { templateRows } = processGridStructure(positionedMetrics);
+  const { templateRows } = processGridStructure(renderedMetrics);
 
   const gridStyle = {
     gridTemplateRows: templateRows.join(' ')
@@ -387,37 +406,46 @@ const MetricGrid = ({
     onUnitChange: setSelectedUnit
   };
 
-  const renderMetricWidget = (metric, extraHeaderActions = null) => (
-    <MetricWidget
-      metricId={metric.id}
-      isDarkMode={isDarkMode}
-      dashboardPalette={dashboardPalette}
-      globalSelectedLabel={
-        hasGlobalFilter &&
-        metric.enableFiltering &&
-        metric.labelField === tabConfig.globalFilterField
-          ? (globalFilterValue || globalFilterOptions[0] || null)
-          : null
-      }
-      hasGlobalFilter={hasGlobalFilter && (
-        (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
-        (metric.globalFilterField === tabConfig.globalFilterField)
-      )}
-      globalFilterField={tabConfig?.globalFilterField}
-      globalFilterValue={hasGlobalFilter && (
-        (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
-        (metric.globalFilterField === tabConfig.globalFilterField)
-      ) ? (globalFilterValue || globalFilterOptions[0] || null) : null}
-      hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
-      secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
-      secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? (secondaryGlobalFilterValue || secondaryGlobalFilterOptions[0] || null) : null}
-      selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
-      enableResolutionToggle={hasResolutionToggle}
-      enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}
-      globalTimeRange={timeRanges ? selectedTimeRange : null}
-      headerActions={extraHeaderActions}
-    />
-  );
+  const renderMetricWidget = (metric, extraHeaderActions = null) => {
+    const resolvedGlobalFilterValue = resolveGlobalFilterValue(globalFilterValue, globalFilterOptions, tabConfig);
+    const resolvedSecondaryGlobalFilterValue = resolveGlobalFilterValue(
+      secondaryGlobalFilterValue,
+      secondaryGlobalFilterOptions,
+      { requireExplicitFilter: tabConfig?.requireExplicitFilter }
+    );
+
+    return (
+      <MetricWidget
+        metricId={metric.id}
+        isDarkMode={isDarkMode}
+        dashboardPalette={dashboardPalette}
+        globalSelectedLabel={
+          hasGlobalFilter &&
+          metric.enableFiltering &&
+          metric.labelField === tabConfig.globalFilterField
+            ? resolvedGlobalFilterValue
+            : null
+        }
+        hasGlobalFilter={hasGlobalFilter && (
+          (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
+          (metric.globalFilterField === tabConfig.globalFilterField)
+        )}
+        globalFilterField={tabConfig?.globalFilterField}
+        globalFilterValue={hasGlobalFilter && (
+          (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
+          (metric.globalFilterField === tabConfig.globalFilterField)
+        ) ? resolvedGlobalFilterValue : null}
+        hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
+        secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
+        secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? resolvedSecondaryGlobalFilterValue : null}
+        selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
+        enableResolutionToggle={hasResolutionToggle}
+        enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}
+        globalTimeRange={timeRanges ? selectedTimeRange : null}
+        headerActions={extraHeaderActions}
+      />
+    );
+  };
 
   return (
     <div className="metrics-grid-container">
@@ -521,34 +549,7 @@ const MetricGrid = ({
               className="grid-item"
               style={metricStyle}
             >
-              <MetricWidget
-                metricId={metric.id}
-                isDarkMode={isDarkMode}
-                dashboardPalette={dashboardPalette}
-                globalSelectedLabel={
-                  hasGlobalFilter &&
-                  metric.enableFiltering &&
-                  metric.labelField === tabConfig.globalFilterField
-                    ? resolveGlobalFilterValue(globalFilterValue, globalFilterOptions, tabConfig)
-                    : null
-                }
-                hasGlobalFilter={hasGlobalFilter && (
-                  (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
-                  (metric.globalFilterField === tabConfig.globalFilterField)
-                )}
-                globalFilterField={tabConfig?.globalFilterField}
-                globalFilterValue={hasGlobalFilter && (
-                  (metric.enableFiltering && metric.labelField === tabConfig.globalFilterField) ||
-                  (metric.globalFilterField === tabConfig.globalFilterField)
-                ) ? resolveGlobalFilterValue(globalFilterValue, globalFilterOptions, tabConfig) : null}
-                hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
-                secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
-                secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? resolveGlobalFilterValue(secondaryGlobalFilterValue, secondaryGlobalFilterOptions, { requireExplicitFilter: tabConfig?.requireExplicitFilter }) : null}
-                selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
-                enableResolutionToggle={hasResolutionToggle}
-                enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}
-                globalTimeRange={timeRanges ? selectedTimeRange : null}
-              />
+              {renderMetricWidget(metric)}
             </div>
           );
         })}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import MetricGrid from './MetricGrid';
 import metricsService from '../services/metrics';
@@ -15,18 +16,29 @@ vi.mock('../utils', () => ({
 }));
 
 vi.mock('./MetricWidget', () => ({
-  default: ({ metricId }) => <div data-testid="metric-widget" data-metric-id={metricId}></div>
+  default: ({ metricId, headerActions }) => (
+    <div data-testid="metric-widget" data-metric-id={metricId}>
+      <span>{metricId}</span>
+      {headerActions}
+    </div>
+  )
 }));
 
 vi.mock('./GlobalFilterWidget', () => ({
-  default: ({ globalFilterOptions = [], loadingGlobalFilter, placement = 'grid' }) => (
-    <div
-      data-testid="global-filter-widget"
-      data-options={globalFilterOptions.join(',')}
-      data-loading={loadingGlobalFilter ? 'true' : 'false'}
-      data-placement={placement}
-    ></div>
-  )
+  default: ({ globalFilterOptions = [], loadingGlobalFilter, placement = 'grid' }) => {
+    const serializedOptions = globalFilterOptions
+      .map(option => (option && typeof option === 'object') ? option.value : option)
+      .join(',');
+
+    return (
+      <div
+        data-testid="global-filter-widget"
+        data-options={serializedOptions}
+        data-loading={loadingGlobalFilter ? 'true' : 'false'}
+        data-placement={placement}
+      ></div>
+    );
+  }
 }));
 
 const createDeferred = () => {
@@ -181,5 +193,28 @@ describe('MetricGrid global filter behavior', () => {
     });
 
     expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+  });
+
+  it('renders one card per tab group and switches the active grouped metric from header controls', async () => {
+    render(
+      <MetricGrid
+        metrics={[
+          { id: 'positions_open', name: 'Open positions', tabGroup: 'positions', tabLabel: 'Open', gridRow: '1', gridColumn: '1 / span 6' },
+          { id: 'positions_closed', name: 'Closed positions', tabGroup: 'positions', tabLabel: 'Closed', gridRow: '1', gridColumn: '1 / span 6' },
+          { id: 'totals_metric', name: 'Totals', gridRow: '2', gridColumn: '1 / span 6' }
+        ]}
+        tabConfig={{ id: 'pools' }}
+      />
+    );
+
+    expect(screen.getAllByTestId('metric-widget')).toHaveLength(2);
+    expect(screen.getByText('positions_open')).toBeInTheDocument();
+    expect(screen.queryByText('positions_closed')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Closed' }));
+
+    expect(screen.getAllByTestId('metric-widget')).toHaveLength(2);
+    expect(screen.getByText('positions_closed')).toBeInTheDocument();
+    expect(screen.queryByText('positions_open')).not.toBeInTheDocument();
   });
 });

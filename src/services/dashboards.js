@@ -124,6 +124,7 @@ class DashboardService {
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
+          secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field
           globalFilterDisplayField: tab.globalFilterDisplayField || null, // Optional column to use as the display label in the search dropdown (e.g. metadata_name); the value column stays globalFilterField
           globalFilterSourceMetric: tab.globalFilterSourceMetric || null, // Optional metric ID to use for the options fetch; defaults to first panel metric. Lets a tab pin a dedicated lightweight lookup mart.
           globalControlsPlacement: tab.globalControlsPlacement || 'grid', // Render global controls in-grid or in the top toolbar
