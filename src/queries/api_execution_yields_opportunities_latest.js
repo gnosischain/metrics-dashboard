@@ -87,6 +87,37 @@ export const buildOpportunityHref = (row = {}) => {
   return `?${params.toString()}`;
 };
 
+const isPlainSameTabNavigationEvent = (event) => {
+  if (!event) {
+    return true;
+  }
+
+  return !event.defaultPrevented
+    && Number(event.button ?? 0) === 0
+    && !event.metaKey
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey;
+};
+
+export const navigateOpportunityInApp = (href, event) => {
+  if (!href || typeof window === 'undefined' || !isPlainSameTabNavigationEvent(event)) {
+    return false;
+  }
+
+  event?.preventDefault?.();
+
+  const nextUrl = href.startsWith('?') ? `${window.location.pathname}${href}` : href;
+  const currentUrl = `${window.location.pathname}${window.location.search}`;
+  if (nextUrl === currentUrl) {
+    return false;
+  }
+
+  window.history.pushState({}, '', href);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  return true;
+};
+
 export const buildSparklineSvg = (values, { stroke = '#2563eb' } = {}) => {
   const normalizedValues = normalizeTrendValues(values);
   if (normalizedValues.length < 2) {
@@ -143,15 +174,7 @@ const formatOpportunityNameCell = (cell) => {
 
 const handleOpportunityNameClick = (event, cell) => {
   const href = buildOpportunityHref(cell.getRow()?.getData?.() || {});
-  if (!href || typeof window === 'undefined') {
-    return;
-  }
-
-  if (event?.target?.closest?.('a')) {
-    return;
-  }
-
-  window.location.assign(href);
+  navigateOpportunityInApp(href, event);
 };
 
 const getOpportunityTooltip = (cell) => {
