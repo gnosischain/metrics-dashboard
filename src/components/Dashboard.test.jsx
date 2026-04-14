@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import Dashboard from './Dashboard';
 
@@ -26,7 +26,14 @@ vi.mock('./IconComponent', () => ({
 }));
 
 vi.mock('./MetricGrid', () => ({
-  default: ({ metrics = [] }) => {
+  default: ({
+    metrics = [],
+    tabConfig,
+    globalFilterValue,
+    onGlobalFilterChange,
+    secondaryGlobalFilterValue,
+    onSecondaryGlobalFilterChange
+  }) => {
     useEffect(() => {
       metricGridLifecycle.mounts += 1;
       return () => {
@@ -34,13 +41,35 @@ vi.mock('./MetricGrid', () => ({
       };
     }, []);
 
-    return <div data-testid="metric-grid">metrics:{metrics.length}</div>;
+    return (
+      <div
+        data-testid="metric-grid"
+        data-tab-id={tabConfig?.id || ''}
+        data-global-filter={globalFilterValue || ''}
+        data-secondary-filter={secondaryGlobalFilterValue || ''}
+      >
+        metrics:{metrics.length}
+        {typeof onGlobalFilterChange === 'function' && (
+          <button type="button" onClick={() => onGlobalFilterChange('WETH')}>
+            Set Global Filter
+          </button>
+        )}
+        {typeof onSecondaryGlobalFilterChange === 'function' && (
+          <button type="button" onClick={() => onSecondaryGlobalFilterChange('Pool Beta')}>
+            Set Secondary Filter
+          </button>
+        )}
+      </div>
+    );
   }
 }));
 
 vi.mock('./TabNavigation', () => ({
   default: ({ activeDashboard, onNavigation }) => (
     <div>
+      <button type="button" onClick={() => onNavigation(activeDashboard, 'tab-1')}>
+        Go Tab 1
+      </button>
       <button type="button" onClick={() => onNavigation(activeDashboard, 'tab-2')}>
         Go Tab 2
       </button>
@@ -77,10 +106,19 @@ vi.mock('../services/dashboards', () => ({
         ? [{ id: 'metric-2' }, { id: 'metric-3' }]
         : [{ id: 'metric-1' }]
     ),
-    getTab: vi.fn((_dashboardId, tabId) => ({
-      id: tabId,
-      globalFilterField: null
-    }))
+    getTab: vi.fn((_dashboardId, tabId) => (
+      tabId === 'tab-1'
+        ? {
+          id: 'tab-1',
+          globalFilterField: 'token',
+          secondaryGlobalFilterField: 'pool'
+        }
+        : {
+          id: 'tab-2',
+          globalFilterField: null,
+          secondaryGlobalFilterField: null
+        }
+    ))
   }
 }));
 
@@ -99,6 +137,8 @@ describe('Dashboard rendering behavior', () => {
         removeListener: vi.fn()
       }))
     });
+
+    window.history.replaceState({}, '', '/');
   });
 
   it('does not remount MetricGrid component when changing tabs', async () => {
@@ -132,6 +172,59 @@ describe('Dashboard rendering behavior', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:2');
+    });
+  });
+
+  it('initializes dashboard, tab, and filters from the URL', async () => {
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1&token=GNO&pool=Pool%20Alpha');
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-global-filter', 'GNO');
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-secondary-filter', 'Pool Alpha');
+    });
+  });
+
+  it('syncs filter params into the URL, clears stale params on tab changes, and restores popstate state', async () => {
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1&token=GNO&pool=Pool%20Alpha');
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-global-filter', 'GNO');
+      expect(window.location.search).toContain('token=GNO');
+      expect(window.location.search).toContain('pool=Pool+Alpha');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set Global Filter' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set Secondary Filter' }));
+
+    await waitFor(() => {
+      expect(window.location.search).toContain('token=WETH');
+      expect(window.location.search).toContain('pool=Pool+Beta');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go Tab 2' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-2');
+      expect(window.location.search).toContain('dashboard=dashboard-a');
+      expect(window.location.search).toContain('tab=tab-2');
+      expect(window.location.search).not.toContain('token=');
+      expect(window.location.search).not.toContain('pool=');
+    });
+
+    await act(async () => {
+      window.history.pushState({}, '', '/?dashboard=dashboard-a&tab=tab-1&token=USDC&pool=Pool%20Gamma');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-global-filter', 'USDC');
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-secondary-filter', 'Pool Gamma');
     });
   });
 });

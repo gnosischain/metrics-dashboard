@@ -127,16 +127,30 @@ function getDefaultQueries() {
   };
 }
 
-// Load all queries at startup
-const allQueries = loadQueries();
-const availableMetrics = Object.keys(allQueries);
+const startupQueries = loadQueries();
+const startupMetricIds = Object.keys(startupQueries);
 
-console.log(`Loaded ${availableMetrics.length} metric queries: ${availableMetrics.join(', ')}`);
+console.log(`Loaded ${startupMetricIds.length} metric queries: ${startupMetricIds.join(', ')}`);
+
+function getActiveQueries(isLocalDevRuntime = false) {
+  if (isLocalDevRuntime) {
+    const queries = loadQueries();
+    return {
+      queries,
+      availableMetrics: Object.keys(queries)
+    };
+  }
+
+  return {
+    queries: startupQueries,
+    availableMetrics: startupMetricIds
+  };
+}
 
 // Check and refresh cache if needed (runs on server start)
 (async () => {
   try {
-    await cronManager.checkAndRefreshIfNeeded(allQueries);
+    await cronManager.checkAndRefreshIfNeeded(startupQueries);
   } catch (error) {
     console.error('Error checking/refreshing cache:', error);
   }
@@ -169,6 +183,8 @@ module.exports = async (req, res) => {
   }
   
   try {
+    const { queries: activeQueries, availableMetrics } = getActiveQueries(isLocalDevRuntime);
+
     // Parse metric ID from URL path or query parameters
     let metricId = req.query.metricId; // For /api/metrics?metricId=xxx requests
     
@@ -202,16 +218,16 @@ module.exports = async (req, res) => {
     // Force cache refresh if explicitly requested
     if (req.query.refreshCache === 'true') {
       if (metricId) {
-        await cronManager.refreshMetricCache(metricId, allQueries);
+        await cronManager.refreshMetricCache(metricId, activeQueries);
       } else {
-        await cronManager.refreshAllCaches(allQueries);
+        await cronManager.refreshAllCaches(activeQueries);
       }
     }
     
     // If a specific metric is requested
     if (metricId) {
       console.log(`Processing request for specific metric: ${metricId}`);
-      const metricData = await fetchMetricData(metricId, useMock, useCached, {
+      const metricData = await fetchMetricData(metricId, activeQueries, availableMetrics, useMock, useCached, {
         from: requestFrom,
         to: requestTo,
         filterField: requestFilterField,
@@ -225,7 +241,7 @@ module.exports = async (req, res) => {
     // If all metrics are requested
     else {
       console.log('Processing request for all metrics');
-      const allMetricsData = await fetchAllMetricsData(useMock, useCached);
+      const allMetricsData = await fetchAllMetricsData(activeQueries, availableMetrics, useMock, useCached);
       return res.status(200).json(allMetricsData);
     }
   } catch (error) {
@@ -246,9 +262,9 @@ module.exports = async (req, res) => {
  * @param {boolean} useCached - Whether to use cached data
  * @returns {Promise<Array>} Array of data points
  */
-async function fetchMetricData(metricId, useMock = false, useCached = true, opts = {}) {
+async function fetchMetricData(metricId, queries, availableMetrics, useMock = false, useCached = true, opts = {}) {
   // Get the query for this metric
-  const query = allQueries[metricId];
+  const query = queries[metricId];
   
   if (!query) {
     const error = new Error(`Unknown metric: ${metricId}. Available metrics: ${availableMetrics.join(', ')}`);
@@ -410,7 +426,7 @@ async function fetchMetricData(metricId, useMock = false, useCached = true, opts
  * @param {boolean} useCached - Whether to use cached data
  * @returns {Promise<Object>} Object with metric data
  */
-async function fetchAllMetricsData(useMock = false, useCached = true) {
+async function fetchAllMetricsData(queries, availableMetrics, useMock = false, useCached = true) {
   // Get all metric IDs
   const metricIds = availableMetrics;
   
@@ -418,7 +434,7 @@ async function fetchAllMetricsData(useMock = false, useCached = true) {
   
   // Fetch each metric in parallel
   const promises = metricIds.map(metricId => 
-    fetchMetricData(metricId, useMock, useCached)
+    fetchMetricData(metricId, queries, availableMetrics, useMock, useCached)
       .then(data => ({ [metricId]: data }))
       .catch(error => {
         console.error(`Error fetching ${metricId}:`, error);

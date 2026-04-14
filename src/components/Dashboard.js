@@ -7,6 +7,63 @@ import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 import { buildMetricSearchIndex } from '../utils/metricSearch';
 
+const getTabFilterKeyFor = (dashboardId, tabId) => {
+  if (!dashboardId || !tabId) return null;
+  return `${dashboardId}:${tabId}`;
+};
+
+const resolveLocationState = (dashboards, search = window.location.search) => {
+  if (!Array.isArray(dashboards) || dashboards.length === 0) {
+    return null;
+  }
+
+  const params = new URLSearchParams(search);
+  const dashboardParam = params.get('dashboard');
+  const tabParam = params.get('tab');
+  const matchedDashboard = dashboards.find(dashboard => dashboard.id === dashboardParam) || dashboards[0];
+  const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
+  const resolvedTabId = tabParam && dashboardTabs.some(tab => tab.id === tabParam)
+    ? tabParam
+    : (dashboardTabs[0]?.id || '');
+  const tabConfig = resolvedTabId ? dashboardsService.getTab(matchedDashboard.id, resolvedTabId) : null;
+  const globalFilterField = tabConfig?.globalFilterField || null;
+  const secondaryGlobalFilterField = tabConfig?.secondaryGlobalFilterField || null;
+
+  return {
+    dashboardId: matchedDashboard.id,
+    tabId: resolvedTabId,
+    globalFilterField,
+    globalFilterValue: globalFilterField ? params.get(globalFilterField) : null,
+    secondaryGlobalFilterField,
+    secondaryGlobalFilterValue: secondaryGlobalFilterField ? params.get(secondaryGlobalFilterField) : null
+  };
+};
+
+const getKnownFilterFields = (dashboards = []) => {
+  const fields = new Set();
+
+  dashboards.forEach((dashboard) => {
+    const dashboardTabs = Array.isArray(dashboard?.tabs) && dashboard.tabs.length > 0
+      ? dashboard.tabs
+      : dashboardsService.getDashboardTabs(dashboard.id);
+
+    dashboardTabs.forEach((tab) => {
+      const resolvedTab = (tab?.globalFilterField || tab?.secondaryGlobalFilterField)
+        ? tab
+        : dashboardsService.getTab(dashboard.id, tab.id);
+
+      if (resolvedTab?.globalFilterField) {
+        fields.add(resolvedTab.globalFilterField);
+      }
+      if (resolvedTab?.secondaryGlobalFilterField) {
+        fields.add(resolvedTab.secondaryGlobalFilterField);
+      }
+    });
+  });
+
+  return Array.from(fields);
+};
+
 /**
  * Main Dashboard component with dashboard and tabbed interface
  * @returns {JSX.Element} Dashboard component
@@ -16,8 +73,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('');
   const [dashboards, setDashboards] = useState([]);
   const [tabs, setTabs] = useState([]);
-  const [tabMetrics, setTabMetrics] = useState([]);
-  const [activeTabConfig, setActiveTabConfig] = useState(null); // Store current tab config for global filter
   const [tabFilters, setTabFilters] = useState({}); // Store filter state per dashboard+tab: { `${dashboardId}:${tabId}`: selectedValue }
   const [tabSecondaryFilters, setTabSecondaryFilters] = useState({}); // Secondary (cascading) filter state per tab
   const [isLoading, setIsLoading] = useState(true);
@@ -28,13 +83,31 @@ const Dashboard = () => {
   });
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const sidebarRef = useRef(null);
+  const hasSyncedUrlRef = useRef(false);
+  const suppressNextHistoryPushRef = useRef(false);
+  const lastSyncedLocationRef = useRef({
+    dashboardId: '',
+    tabId: '',
+    globalFilterField: null,
+    globalFilterValue: null,
+    secondaryGlobalFilterField: null,
+    secondaryGlobalFilterValue: null
+  });
 
   const getTabFilterKey = useCallback((dashboardId, tabId) => {
-    if (!dashboardId || !tabId) return null;
-    return `${dashboardId}:${tabId}`;
+    return getTabFilterKeyFor(dashboardId, tabId);
   }, []);
 
   const activeTabFilterKey = getTabFilterKey(activeDashboard, activeTab);
+  const activeTabConfig = useMemo(
+    () => (activeDashboard && activeTab ? dashboardsService.getTab(activeDashboard, activeTab) : null),
+    [activeDashboard, activeTab]
+  );
+  const tabMetrics = useMemo(
+    () => (activeDashboard && activeTab ? dashboardsService.getTabMetrics(activeDashboard, activeTab) : []),
+    [activeDashboard, activeTab]
+  );
+  const knownFilterFields = useMemo(() => getKnownFilterFields(dashboards), [dashboards]);
   
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -169,26 +242,28 @@ const Dashboard = () => {
         
         setDashboards(allDashboards);
         
-        // Set initial dashboard from URL if provided
         if (allDashboards.length > 0) {
-          const params = new URLSearchParams(window.location.search);
-          const dashboardParam = params.get('dashboard');
-          const tabParam = params.get('tab');
-          const matchedDashboard = allDashboards.find(d => d.id === dashboardParam);
+          const locationState = resolveLocationState(allDashboards, window.location.search);
+          if (locationState) {
+            const filterKey = getTabFilterKeyFor(locationState.dashboardId, locationState.tabId);
+            setActiveDashboard(locationState.dashboardId);
+            setActiveTab(locationState.tabId);
 
-          if (matchedDashboard) {
-            setActiveDashboard(matchedDashboard.id);
+            if (filterKey) {
+              if (locationState.globalFilterField) {
+                setTabFilters(prev => ({
+                  ...prev,
+                  [filterKey]: locationState.globalFilterValue || null
+                }));
+              }
 
-            const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
-            const matchedTab = tabParam && dashboardTabs.some(t => t.id === tabParam)
-              ? tabParam
-              : (dashboardTabs[0]?.id || '');
-
-            if (matchedTab) {
-              setActiveTab(matchedTab);
+              if (locationState.secondaryGlobalFilterField) {
+                setTabSecondaryFilters(prev => ({
+                  ...prev,
+                  [filterKey]: locationState.secondaryGlobalFilterValue || null
+                }));
+              }
             }
-          } else {
-            setActiveDashboard(allDashboards[0].id);
           }
         }
       } catch (error) {
@@ -203,19 +278,57 @@ const Dashboard = () => {
     loadDashboards();
   }, []);
 
-  // Keep URL in sync with navigation state
-  useEffect(() => {
-    if (!activeDashboard) return;
-    const params = new URLSearchParams(window.location.search);
-    params.set('dashboard', activeDashboard);
-    if (activeTab) {
-      params.set('tab', activeTab);
-    } else {
-      params.delete('tab');
+  const applyLocationState = useCallback((search) => {
+    const locationState = resolveLocationState(dashboards, search);
+    if (!locationState) {
+      return;
     }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [activeDashboard, activeTab]);
+
+    const filterKey = getTabFilterKey(locationState.dashboardId, locationState.tabId);
+
+    setActiveDashboard(locationState.dashboardId);
+    setActiveTab(locationState.tabId);
+
+    if (!filterKey) {
+      return;
+    }
+
+    setTabFilters((prev) => {
+      const next = { ...prev };
+      if (locationState.globalFilterField) {
+        next[filterKey] = locationState.globalFilterValue || null;
+      } else {
+        delete next[filterKey];
+      }
+      return next;
+    });
+
+    setTabSecondaryFilters((prev) => {
+      const next = { ...prev };
+      if (locationState.secondaryGlobalFilterField) {
+        next[filterKey] = locationState.secondaryGlobalFilterValue || null;
+      } else {
+        delete next[filterKey];
+      }
+      return next;
+    });
+  }, [dashboards, getTabFilterKey]);
+
+  useEffect(() => {
+    if (!configLoaded || dashboards.length === 0) {
+      return undefined;
+    }
+
+    const handlePopState = () => {
+      suppressNextHistoryPushRef.current = true;
+      applyLocationState(window.location.search);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [applyLocationState, configLoaded, dashboards.length]);
   
   // Update tabs when active dashboard changes
   useEffect(() => {
@@ -250,18 +363,6 @@ const Dashboard = () => {
         setActiveTab('');
     }
   }, [activeDashboard, dashboards]);
-  
-  // Update metrics when active tab changes
-  useEffect(() => {
-    if (activeDashboard && activeTab) {
-      const metricsForTab = dashboardsService.getTabMetrics(activeDashboard, activeTab);
-      const tabConfig = dashboardsService.getTab(activeDashboard, activeTab);
-      setTabMetrics(metricsForTab);
-      setActiveTabConfig(tabConfig);
-    } else {
-      setActiveTabConfig(null);
-    }
-  }, [activeDashboard, activeTab]);
   
   // Change the active dashboard and tab
   const handleNavigation = useCallback((dashboardId, tabId) => {
@@ -336,6 +437,76 @@ const Dashboard = () => {
   const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;
   const currentSecondaryGlobalFilter = activeTabFilterKey ? tabSecondaryFilters[activeTabFilterKey] || null : null;
   const searchIndex = useMemo(() => buildMetricSearchIndex(dashboards), [dashboards]);
+
+  // Keep URL in sync with the current dashboard, tab, and active filters.
+  useEffect(() => {
+    if (!configLoaded || dashboards.length === 0 || !activeDashboard) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('dashboard', activeDashboard);
+
+    if (activeTab) {
+      params.set('tab', activeTab);
+    } else {
+      params.delete('tab');
+    }
+
+    knownFilterFields.forEach((fieldName) => {
+      params.delete(fieldName);
+    });
+
+    if (activeTabConfig?.globalFilterField && currentGlobalFilter) {
+      params.set(activeTabConfig.globalFilterField, currentGlobalFilter);
+    }
+
+    if (activeTabConfig?.secondaryGlobalFilterField && currentSecondaryGlobalFilter) {
+      params.set(activeTabConfig.secondaryGlobalFilterField, currentSecondaryGlobalFilter);
+    }
+
+    const search = params.toString();
+    const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    const nextLocationState = {
+      dashboardId: activeDashboard,
+      tabId: activeTab,
+      globalFilterField: activeTabConfig?.globalFilterField || null,
+      globalFilterValue: currentGlobalFilter,
+      secondaryGlobalFilterField: activeTabConfig?.secondaryGlobalFilterField || null,
+      secondaryGlobalFilterValue: currentSecondaryGlobalFilter
+    };
+
+    const previousLocationState = lastSyncedLocationRef.current;
+    const didNavigationChange = previousLocationState.dashboardId !== nextLocationState.dashboardId
+      || previousLocationState.tabId !== nextLocationState.tabId;
+
+    const shouldReplace = !hasSyncedUrlRef.current
+      || suppressNextHistoryPushRef.current
+      || !didNavigationChange;
+
+    if (nextUrl !== currentUrl) {
+      if (shouldReplace) {
+        window.history.replaceState({}, '', nextUrl);
+      } else {
+        window.history.pushState({}, '', nextUrl);
+      }
+    }
+
+    hasSyncedUrlRef.current = true;
+    suppressNextHistoryPushRef.current = false;
+    lastSyncedLocationRef.current = nextLocationState;
+  }, [
+    configLoaded,
+    dashboards.length,
+    activeDashboard,
+    activeTab,
+    activeTabConfig?.globalFilterField,
+    activeTabConfig?.secondaryGlobalFilterField,
+    currentGlobalFilter,
+    currentSecondaryGlobalFilter,
+    knownFilterFields
+  ]);
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {

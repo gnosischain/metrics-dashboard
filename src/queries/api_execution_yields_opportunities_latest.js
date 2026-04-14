@@ -1,5 +1,191 @@
 import { getTokenIconHtml, getTokenIconsFromName, formatTokenName } from '../utils/tokenIcons.js';
 
+const OPPORTUNITY_NAME_SUFFIX_PATTERN = /\s*[•·]\s*[a-fA-F0-9x]{4,}$/;
+
+const escapeHtml = (value) => String(value || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const formatPercentage = (value, { hideZero = false } = {}) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  if (hideZero && Number(value) === 0) return "-";
+  return Number(value).toFixed(2) + "%";
+};
+
+const formatCompactCurrency = (value) => {
+  if (value === null || value === undefined || Number(value) === 0 || Number.isNaN(Number(value))) return "-";
+  const numericValue = Number(value);
+  if (numericValue >= 1e6) return "$" + (numericValue / 1e6).toFixed(1) + "M";
+  if (numericValue >= 1e3) return "$" + (numericValue / 1e3).toFixed(1) + "K";
+  return "$" + numericValue.toFixed(0);
+};
+
+const normalizeTrendValues = (values) => (
+  (() => {
+    if (Array.isArray(values)) {
+      return values;
+    }
+
+    if (typeof values === 'string') {
+      const trimmed = values.trim();
+      if (!trimmed) {
+        return [];
+      }
+
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch (_error) {
+          // Fall through to a simple comma split.
+        }
+      }
+
+      return trimmed.split(',').map(value => value.trim());
+    }
+
+    return [];
+  })()
+    .map(value => Number(value))
+    .filter(value => Number.isFinite(value))
+);
+
+const getTrendSortValue = (values) => {
+  const normalizedValues = normalizeTrendValues(values);
+  return normalizedValues.length > 0 ? normalizedValues[normalizedValues.length - 1] : Number.NEGATIVE_INFINITY;
+};
+
+export const cleanOpportunityName = (name) => String(name || '-')
+  .replace(OPPORTUNITY_NAME_SUFFIX_PATTERN, '')
+  .trim();
+
+export const buildOpportunityHref = (row = {}) => {
+  const token = String(row.token || '').trim();
+  if (!token) {
+    return null;
+  }
+
+  const params = new URLSearchParams({ dashboard: 'yields', token });
+
+  if (String(row.type || '').trim() === 'LP') {
+    const poolKey = String(row.pool_key || cleanOpportunityName(row.name) || '').trim();
+    if (!poolKey || poolKey === '-') {
+      return null;
+    }
+
+    params.set('tab', 'pools');
+    params.set('pool', poolKey);
+    return `?${params.toString()}`;
+  }
+
+  params.set('tab', 'lending');
+  return `?${params.toString()}`;
+};
+
+export const buildSparklineSvg = (values, { stroke = '#2563eb' } = {}) => {
+  const normalizedValues = normalizeTrendValues(values);
+  if (normalizedValues.length < 2) {
+    return "-";
+  }
+
+  const width = 92;
+  const height = 28;
+  const padding = 2;
+  const minValue = Math.min(...normalizedValues);
+  const maxValue = Math.max(...normalizedValues);
+  const valueRange = maxValue - minValue || 1;
+  const drawableWidth = width - (padding * 2);
+  const drawableHeight = height - (padding * 2);
+
+  const points = normalizedValues.map((value, index) => {
+    const x = padding + ((drawableWidth * index) / (normalizedValues.length - 1));
+    const y = padding + (drawableHeight - (((value - minValue) / valueRange) * drawableHeight));
+    return `${x.toFixed(2)},${y.toFixed(2)}`;
+  }).join(' ');
+
+  const lastX = padding + drawableWidth;
+  const lastY = padding + (drawableHeight - (((normalizedValues[normalizedValues.length - 1] - minValue) / valueRange) * drawableHeight));
+  const latestValue = normalizedValues[normalizedValues.length - 1];
+
+  return [
+    `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" `,
+    `xmlns="http://www.w3.org/2000/svg" role="img" aria-label="14 day rate trend ending at ${latestValue.toFixed(2)}%">`,
+    `<polyline points="${points}" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`,
+    `<circle cx="${lastX.toFixed(2)}" cy="${lastY.toFixed(2)}" r="2.5" fill="${stroke}" />`,
+    `</svg>`
+  ].join('');
+};
+
+const formatOpportunityNameCell = (cell) => {
+  const name = cell.getValue();
+  const row = cell.getRow()?.getData?.() || {};
+  const cleanName = cleanOpportunityName(name);
+  const displayName = formatTokenName(cleanName);
+  const safeName = escapeHtml(displayName);
+  const href = buildOpportunityHref(row);
+
+  const icons = row.type === 'LP'
+    ? getTokenIconsFromName(cleanName)
+    : (getTokenIconHtml(row.token) || getTokenIconsFromName(cleanName));
+  const iconSpan = icons ? `<span style="margin-right:8px;flex-shrink:0;">${icons}</span>` : '';
+
+  if (!href) {
+    return `<span style="display:inline-flex;align-items:center;">${iconSpan}${safeName}</span>`;
+  }
+
+  return `<span style="display:inline-flex;align-items:center;">${iconSpan}<a class="table-link" href="${href}">${safeName}</a></span>`;
+};
+
+const handleOpportunityNameClick = (event, cell) => {
+  const href = buildOpportunityHref(cell.getRow()?.getData?.() || {});
+  if (!href || typeof window === 'undefined') {
+    return;
+  }
+
+  if (event?.target?.closest?.('a')) {
+    return;
+  }
+
+  window.location.assign(href);
+};
+
+const getOpportunityTooltip = (cell) => {
+  const row = cell.getRow()?.getData?.() || {};
+  const href = buildOpportunityHref(row);
+  if (!href) return false;
+
+  if (String(row.type || '').trim() === 'LP') {
+    const poolKey = String(row.pool_key || cleanOpportunityName(row.name) || '').trim();
+    return poolKey ? `Open ${poolKey} in Yields > Pools` : 'Open pool view';
+  }
+
+  const token = String(row.token || '').trim();
+  return token ? `Open ${token} in Yields > Lending` : 'Open lending view';
+};
+
+const formatTrendCell = (cell) => {
+  const row = cell.getRow()?.getData?.() || {};
+  const stroke = row.type === 'LP' ? '#2563eb' : '#16a34a';
+  return buildSparklineSvg(cell.getValue(), { stroke });
+};
+
+const getTrendTooltip = (cell) => {
+  const row = cell.getRow()?.getData?.() || {};
+  const values = normalizeTrendValues(cell.getValue());
+  if (values.length < 2) {
+    return false;
+  }
+
+  const latestValue = values[values.length - 1];
+  const label = row.type === 'LP' ? 'APR' : 'APY';
+  return `${label} 14D trend • latest ${latestValue.toFixed(2)}%`;
+};
+
 const metric = {
   id: 'api_execution_yields_opportunities_latest',
   name: 'Yield Opportunities',
@@ -8,7 +194,7 @@ const metric = {
   chartType: 'table',
   enableFiltering: true,
   labelField: 'type',
-  
+
   tableConfig: {
     layout: 'fitColumns',
     pagination: true,
@@ -20,7 +206,7 @@ const metric = {
     hideEmptyColumns: true,
     searchFields: ['protocol', 'token', 'name', 'type'],
     initialSort: [{ column: 'tvl', dir: 'desc' }],
-    
+
     columns: [
       {
         title: "",
@@ -30,6 +216,11 @@ const metric = {
       {
         title: "",
         field: "token",
+        visible: false
+      },
+      {
+        title: "",
+        field: "pool_key",
         visible: false
       },
       {
@@ -48,44 +239,21 @@ const metric = {
         widthGrow: 3,
         sorter: "string",
         headerFilter: false,
-        formatter: function(cell) {
-          const name = cell.getValue();
-          const row = cell.getRow()?.getData?.() || {};
-          const address = String(row.address || '').trim();
-
-          // Strip address suffix like "• a17f43" or "• 0x..." and fix token casing
-          const cleanName = String(name || '-').replace(/\s*[•·]\s*[a-fA-F0-9x]{4,}$/,'').trim();
-          const displayName = formatTokenName(cleanName);
-          const safeName = displayName
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-
-          const icons = row.type === 'LP'
-            ? getTokenIconsFromName(name)
-            : (getTokenIconHtml(row.token) || getTokenIconsFromName(name));
-          const iconSpan = icons ? `<span style="margin-right:8px;flex-shrink:0;">${icons}</span>` : '';
-
-          if (!address) return `<span style="display:inline-flex;align-items:center;">${iconSpan}${safeName}</span>`;
-
-          const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(address)}`;
-          return `<span style="display:inline-flex;align-items:center;">${iconSpan}<a class="table-link" href="${href}" target="_blank" rel="noopener noreferrer">${safeName}</a></span>`;
-        },
-        cellClick: function(_event, cell) {
-          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
-          if (!address) return;
-
-          const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(address)}`;
-          if (typeof window !== 'undefined') {
-            window.open(href, '_blank', 'noopener,noreferrer');
-          }
-        },
-        tooltip: function(cell) {
-          const address = String(cell.getRow()?.getData?.()?.address || '').trim();
-          if (!address) return false;
-          return `Open ${address.slice(0, 10)}... on Blockscout`;
+        formatter: formatOpportunityNameCell,
+        cellClick: handleOpportunityNameClick,
+        tooltip: getOpportunityTooltip
+      },
+      {
+        title: "APR 14D",
+        field: "rate_trend_14d",
+        minWidth: 130,
+        widthGrow: 1.4,
+        hozAlign: "center",
+        headerFilter: false,
+        formatter: formatTrendCell,
+        tooltip: getTrendTooltip,
+        sorter: function(a, b) {
+          return getTrendSortValue(a) - getTrendSortValue(b);
         }
       },
       {
@@ -97,9 +265,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined) return "-";
-          return val.toFixed(2) + "%";
+          return formatPercentage(cell.getValue());
         }
       },
       {
@@ -111,9 +277,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined) return "-";
-          return val.toFixed(2) + "%";
+          return formatPercentage(cell.getValue());
         }
       },
       {
@@ -125,9 +289,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined) return "-";
-          return val.toFixed(2) + "%";
+          return formatPercentage(cell.getValue());
         }
       },
       {
@@ -139,9 +301,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          return val.toFixed(2) + "%";
+          return formatPercentage(cell.getValue(), { hideZero: true });
         }
       },
       {
@@ -153,11 +313,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
-          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
-          return "$" + val.toFixed(0);
+          return formatCompactCurrency(cell.getValue());
         }
       },
       {
@@ -169,11 +325,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
-          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
-          return "$" + val.toFixed(0);
+          return formatCompactCurrency(cell.getValue());
         }
       },
       {
@@ -185,11 +337,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
-          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
-          return "$" + val.toFixed(0);
+          return formatCompactCurrency(cell.getValue());
         }
       },
       {
@@ -201,11 +349,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
-          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
-          return "$" + val.toFixed(0);
+          return formatCompactCurrency(cell.getValue());
         }
       },
       {
@@ -217,11 +361,7 @@ const metric = {
         hozAlign: "right",
         headerFilter: false,
         formatter: function(cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return "-";
-          if (val >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
-          if (val >= 1e3) return "$" + (val / 1e3).toFixed(1) + "K";
-          return "$" + val.toFixed(0);
+          return formatCompactCurrency(cell.getValue());
         }
       },
       {
@@ -235,9 +375,9 @@ const metric = {
         formatter: function(cell) {
           const val = cell.getValue();
           if (val === null || val === undefined) return "-";
-          const pct = val.toFixed(1);
-          if (val >= 85) return "<span style='color:#e53e3e;font-weight:600'>" + pct + "%</span>";
-          if (val >= 70) return "<span style='color:#d69e2e;font-weight:600'>" + pct + "%</span>";
+          const pct = Number(val).toFixed(1);
+          if (Number(val) >= 85) return "<span style='color:#e53e3e;font-weight:600'>" + pct + "%</span>";
+          if (Number(val) >= 70) return "<span style='color:#d69e2e;font-weight:600'>" + pct + "%</span>";
           return pct + "%";
         }
       },
@@ -252,8 +392,28 @@ const metric = {
       }
     ]
   },
-  
-  query: `SELECT type, token, name, address, fee_pct, yield_apr, yield_apy, borrow_apy, tvl, total_supplied, total_borrowed, fees_7d, volume_usd_7d, utilization_rate, protocol FROM dbt.api_execution_yields_opportunities_latest`,
+
+  query: `
+    SELECT
+      type,
+      token,
+      name,
+      address,
+      pool_key,
+      rate_trend_14d,
+      fee_pct,
+      yield_apr,
+      yield_apy,
+      borrow_apy,
+      tvl,
+      total_supplied,
+      total_borrowed,
+      fees_7d,
+      volume_usd_7d,
+      utilization_rate,
+      protocol
+    FROM dbt.api_execution_yields_opportunities_latest
+  `,
 };
 
 export default metric;
