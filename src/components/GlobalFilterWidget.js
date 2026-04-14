@@ -46,10 +46,10 @@ const GlobalFilterWidget = ({
                 <div className="global-filter-loading">
                   <div className="loading-spinner" style={{ width: '16px', height: '16px', margin: 0 }}></div>
                 </div>
-              ) : globalFilterOptions.length > 0 ? (
+              ) : (globalFilterOptions.length > 0 || tabConfig?.searchable) ? (
                 <LabelSelector
                   labels={globalFilterOptions}
-                  selectedLabel={globalFilterValue || globalFilterOptions[0] || ''}
+                  selectedLabel={globalFilterValue || (globalFilterOptions.length > 0 ? globalFilterOptions[0] : '')}
                   onSelectLabel={onGlobalFilterChange}
                   labelField={fieldName}
                   idPrefix="global-filter"

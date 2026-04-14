@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_avatar_trusts_given_latest",
+  "query": "SELECT avatar, trusts_given_count, trusts_received_count\n    FROM dbt.api_execution_circles_v2_avatar_trusts_summary"
+}

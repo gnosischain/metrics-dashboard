@@ -240,33 +240,15 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
             height={pixelSize}
             viewBox="0 0 32 32"
             fill={color}
+            stroke="none"
+            role="img"
+            aria-label="Circles"
           >
-            <defs>
-              <clipPath id="circles-left-half">
-                <rect x="0" y="0" width="16" height="32" />
-              </clipPath>
-              <clipPath id="circles-right-half">
-                <rect x="16" y="0" width="16" height="32" />
-              </clipPath>
-            </defs>
-
-            {/* Left arc (half-donut) */}
+            {/* Solid filled C-shape matching the Circles brand logo */}
             <path
-              clipPath="url(#circles-left-half)"
               fillRule="evenodd"
-              d="
-                M16 4
-                a12 12 0 1 1 0 24
-                a12 12 0 1 1 0-24
-                Z
-                M16 9
-                a7 7 0 1 0 0 14
-                a7 7 0 1 0 0-14
-                Z"
+              d="M28 9 A14 14 0 1 0 28 23 L21.5 19 A6.5 6.5 0 1 1 21.5 13 Z"
             />
-
-            {/* Right disk (semicircle) */}
-            <circle cx="16" cy="16" r="6" clipPath="url(#circles-right-half)" />
           </svg>
         ),
         'bot': (

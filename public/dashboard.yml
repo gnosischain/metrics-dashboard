@@ -11,6 +11,12 @@ GnosisPay:
   iconClass: credit-card
   palette: gnosis-pay
   source: /dashboards/gnosis-pay.yml
+Circles:
+  name: Circles
+  order: 25
+  icon: 🔵
+  iconClass: circles
+  source: /dashboards/circles.yml
 Tokens:
   name: Tokens
   order: 30

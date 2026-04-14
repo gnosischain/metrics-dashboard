@@ -376,6 +376,8 @@ export class GraphChart extends BaseChart {
     const targetNameField = config.targetNameField || targetIdField;
     const sourceGroupField = config.sourceGroupField || null;
     const targetGroupField = config.targetGroupField || null;
+    const sourceImageField = config.sourceImageField || null;
+    const targetImageField = config.targetImageField || null;
     const valueField = config.valueField || config.yField || 'value';
     const edgeStyleField = config.edgeStyleField || null;
     const dateField = config.dateField || null;
@@ -388,7 +390,14 @@ export class GraphChart extends BaseChart {
     const edgeStyles = new Set();
     const nodeLinkCount = new Map();
 
-    const ensureNode = (nodeId, nodeName, categoryValue) => {
+    const isUsableImage = (url) => {
+      if (typeof url !== 'string') return false;
+      const trimmed = url.trim();
+      if (!trimmed) return false;
+      return /^https?:\/\//i.test(trimmed) || /^data:image\//i.test(trimmed);
+    };
+
+    const ensureNode = (nodeId, nodeName, categoryValue, imageUrl) => {
       if (!nodeMap.has(nodeId)) {
         nodeMap.set(nodeId, {
           id: nodeId,
@@ -399,7 +408,8 @@ export class GraphChart extends BaseChart {
           inValue: 0,
           outValue: 0,
           x: null,
-          y: null
+          y: null,
+          imageUrl: isUsableImage(imageUrl) ? String(imageUrl).trim() : null
         });
       }
 
@@ -409,6 +419,9 @@ export class GraphChart extends BaseChart {
       }
       if (categoryValue && !existingNode.category) {
         existingNode.category = String(categoryValue);
+      }
+      if (!existingNode.imageUrl && isUsableImage(imageUrl)) {
+        existingNode.imageUrl = String(imageUrl).trim();
       }
 
       return existingNode;
@@ -430,9 +443,11 @@ export class GraphChart extends BaseChart {
       const targetName = row?.[targetNameField];
       const sourceCategory = sourceGroupField ? row?.[sourceGroupField] : null;
       const targetCategory = targetGroupField ? row?.[targetGroupField] : null;
+      const sourceImage = sourceImageField ? row?.[sourceImageField] : null;
+      const targetImage = targetImageField ? row?.[targetImageField] : null;
 
-      const sourceNode = ensureNode(sourceId, sourceName, sourceCategory);
-      const targetNode = ensureNode(targetId, targetName, targetCategory);
+      const sourceNode = ensureNode(sourceId, sourceName, sourceCategory, sourceImage);
+      const targetNode = ensureNode(targetId, targetName, targetCategory, targetImage);
 
       if (sourceCategory) categories.add(String(sourceCategory));
       if (targetCategory) categories.add(String(targetCategory));
@@ -501,29 +516,111 @@ export class GraphChart extends BaseChart {
     const maxNodeSize = config.networkConfig?.maxNodeSize || 40;
     const maxNodeValue = nodes.length > 0 ? Math.max(...nodes.map((node) => node.value)) : 0;
 
+    // Concentric layout: when `concentricLayoutField` + `concentricLayers`
+    // are set, group nodes by category and place each category on a
+    // dedicated ring at a fixed radius. Used by the Circles trust
+    // network panel where mutual / given / received edges form clear
+    // rings around the focal avatar.
+    const concentricField = config.concentricLayoutField || null;
+    const concentricLayersConfig = Array.isArray(config.networkConfig?.concentricLayers)
+      ? config.networkConfig.concentricLayers
+      : null;
+    const useConcentric = concentricField && concentricLayersConfig && concentricLayersConfig.length > 0;
+
     const centerX = 400;
     const centerY = 300;
-    const radius = 200;
 
-    nodes.forEach((node, index) => {
-      const ratio = maxNodeValue > 0 ? node.value / maxNodeValue : 0;
-      node.symbolSize = minNodeSize + ratio * (maxNodeSize - minNodeSize);
+    if (useConcentric) {
+      // Build layer index from config: { 'Mutual': 1, 'Trust given': 2, ... }
+      const layerOf = new Map();
+      concentricLayersConfig.forEach((layerName, index) => {
+        layerOf.set(String(layerName), index);
+      });
 
-      const angle = (index / Math.max(nodes.length, 1)) * 2 * Math.PI;
-      node.x = centerX + radius * Math.cos(angle);
-      node.y = centerY + radius * Math.sin(angle);
+      const baseRadius = Number.isFinite(config.networkConfig?.concentricBaseRadius)
+        ? config.networkConfig.concentricBaseRadius
+        : 110;
+      const ringStep = Number.isFinite(config.networkConfig?.concentricRingStep)
+        ? config.networkConfig.concentricRingStep
+        : 110;
 
-      const linkCount = nodeLinkCount.get(node.id) || 0;
-      const centralityFactor = Math.min(linkCount / 10, 1);
-      node.x = node.x * (1 - centralityFactor * 0.5) + centerX * centralityFactor * 0.5;
-      node.y = node.y * (1 - centralityFactor * 0.5) + centerY * centralityFactor * 0.5;
+      // Group nodes by their layer index. The "centre" (layer 0) is
+      // pinned to (centerX, centerY). All other layers are evenly
+      // distributed around their ring.
+      const nodesByLayer = new Map();
+      nodes.forEach((node) => {
+        const layerName = node.category != null ? String(node.category) : '';
+        const layerIndex = layerOf.has(layerName) ? layerOf.get(layerName) : (concentricLayersConfig.length);
+        if (!nodesByLayer.has(layerIndex)) {
+          nodesByLayer.set(layerIndex, []);
+        }
+        nodesByLayer.get(layerIndex).push(node);
+      });
+
+      nodesByLayer.forEach((layerNodes, layerIndex) => {
+        if (layerIndex === 0 || layerNodes.length === 1) {
+          // Centre layer (or single-node layer) → pin to centre.
+          layerNodes.forEach((node) => {
+            node.x = centerX;
+            node.y = centerY;
+            node.fixed = true;
+            const ratio = maxNodeValue > 0 ? node.value / maxNodeValue : 0;
+            node.symbolSize = minNodeSize + ratio * (maxNodeSize - minNodeSize);
+          });
+          return;
+        }
+
+        const radius = baseRadius + (layerIndex - 1) * ringStep;
+        const step = (2 * Math.PI) / layerNodes.length;
+        // Stagger each ring's start angle slightly so adjacent rings'
+        // nodes don't line up radially and overlap each other's labels.
+        const angleOffset = layerIndex * 0.18;
+
+        layerNodes.forEach((node, idx) => {
+          const angle = angleOffset + idx * step;
+          node.x = centerX + radius * Math.cos(angle);
+          node.y = centerY + radius * Math.sin(angle);
+          node.fixed = true;
+          const ratio = maxNodeValue > 0 ? node.value / maxNodeValue : 0;
+          node.symbolSize = minNodeSize + ratio * (maxNodeSize - minNodeSize);
+        });
+      });
+    } else {
+      // Original force-directed initial circular layout.
+      const radius = 200;
+      nodes.forEach((node, index) => {
+        const ratio = maxNodeValue > 0 ? node.value / maxNodeValue : 0;
+        node.symbolSize = minNodeSize + ratio * (maxNodeSize - minNodeSize);
+
+        const angle = (index / Math.max(nodes.length, 1)) * 2 * Math.PI;
+        node.x = centerX + radius * Math.cos(angle);
+        node.y = centerY + radius * Math.sin(angle);
+
+        const linkCount = nodeLinkCount.get(node.id) || 0;
+        const centralityFactor = Math.min(linkCount / 10, 1);
+        node.x = node.x * (1 - centralityFactor * 0.5) + centerX * centralityFactor * 0.5;
+        node.y = node.y * (1 - centralityFactor * 0.5) + centerY * centralityFactor * 0.5;
+      });
+    }
+
+    // Per-node image symbols. When a node has an `imageUrl` (set from
+    // sourceImageField / targetImageField on the row), assign it as the
+    // node's ECharts symbol so the avatar's profile picture renders in
+    // place of a plain circle. Base64 data URLs and https URLs are
+    // both supported via ECharts' `image://` prefix.
+    nodes.forEach((node) => {
+      if (node.imageUrl) {
+        node.symbol = `image://${node.imageUrl}`;
+        node.symbolKeepAspect = true;
+      }
     });
 
     return {
       nodes,
       links,
       categories: Array.from(categories).map((name) => ({ name })),
-      edgeStyles: Array.from(edgeStyles)
+      edgeStyles: Array.from(edgeStyles),
+      useConcentric
     };
   }
 
@@ -536,6 +633,7 @@ export class GraphChart extends BaseChart {
 
     const processedData = this.processData(rows, config);
     let { nodes, links } = processedData;
+    const useConcentric = !!processedData.useConcentric;
     const { categories, edgeStyles } = processedData;
     if (nodes.length === 0 || links.length === 0) {
       return this.getEmptyChartOptions(isDarkMode);
@@ -597,6 +695,12 @@ export class GraphChart extends BaseChart {
       }
     }));
 
+    // edgeStyleColors lets a panel pin a deterministic colour per edge
+    // style value (e.g. {'Mutual': '#f59e0b', 'Trust given': '#22c55e'}).
+    // Falls back to the auto-generated palette ordering when not set.
+    const explicitEdgeStyleColors = isPlainObject(config.edgeStyleColors)
+      ? config.edgeStyleColors
+      : null;
     const edgeStylePalette = this.resolveSeriesPalette(config, Math.max(edgeStyles.length, 1), isDarkMode);
     const edgeLineTypes = Array.isArray(networkConfig.edgeLineTypes) && networkConfig.edgeLineTypes.length > 0
       ? networkConfig.edgeLineTypes
@@ -604,7 +708,8 @@ export class GraphChart extends BaseChart {
 
     const edgeStyleVisuals = edgeStyles.reduce((acc, styleValue, index) => {
       acc[styleValue] = {
-        color: edgeStylePalette[index % edgeStylePalette.length],
+        color: (explicitEdgeStyleColors && explicitEdgeStyleColors[styleValue])
+          || edgeStylePalette[index % edgeStylePalette.length],
         type: normalizeLineType(edgeLineTypes[index % edgeLineTypes.length])
       };
       return acc;
@@ -824,18 +929,24 @@ export class GraphChart extends BaseChart {
       series: [{
         id: mainSeriesId,
         type: 'graph',
-        layout: 'force',
+        // When the panel uses concentric layout, every node already
+        // has a fixed (x, y) position so we run with `layout: 'none'`
+        // and skip the force simulation entirely. Otherwise fall back
+        // to the existing force-directed behaviour.
+        layout: useConcentric ? 'none' : 'force',
         animation: true,
         animationDuration: 500,
         animationEasingUpdate: 'cubicOut',
-        force: {
-          initLayout: forceInitLayout,
-          repulsion: Number.isFinite(networkConfig.chargeStrength) ? Math.abs(networkConfig.chargeStrength) : 300,
-          gravity: Number.isFinite(networkConfig.centerStrength) ? networkConfig.centerStrength : 0.1,
-          edgeLength: Number.isFinite(networkConfig.linkDistance) ? networkConfig.linkDistance : 100,
-          layoutAnimation: true,
-          friction: 0.3
-        },
+        ...(useConcentric ? {} : {
+          force: {
+            initLayout: forceInitLayout,
+            repulsion: Number.isFinite(networkConfig.chargeStrength) ? Math.abs(networkConfig.chargeStrength) : 300,
+            gravity: Number.isFinite(networkConfig.centerStrength) ? networkConfig.centerStrength : 0.1,
+            edgeLength: Number.isFinite(networkConfig.linkDistance) ? networkConfig.linkDistance : 100,
+            layoutAnimation: true,
+            friction: 0.3
+          },
+        }),
         edgeSymbol: networkConfig.showArrows === false ? ['none', 'none'] : ['none', 'arrow'],
         edgeSymbolSize: Array.isArray(networkConfig.edgeSymbolSize) && networkConfig.edgeSymbolSize.length === 2
           ? networkConfig.edgeSymbolSize

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_holder_count_by_type_daily",
+  "query": "SELECT date, label, holder_count AS value FROM dbt.api_execution_circles_v2_supply_by_holder_type_daily"
+}

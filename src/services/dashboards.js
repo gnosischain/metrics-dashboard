@@ -124,11 +124,13 @@ class DashboardService {
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
-          secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field
+          globalFilterDisplayField: tab.globalFilterDisplayField || null, // Optional column to use as the display label in the search dropdown (e.g. metadata_name); the value column stays globalFilterField
+          globalFilterSourceMetric: tab.globalFilterSourceMetric || null, // Optional metric ID to use for the options fetch; defaults to first panel metric. Lets a tab pin a dedicated lightweight lookup mart.
           globalControlsPlacement: tab.globalControlsPlacement || 'grid', // Render global controls in-grid or in the top toolbar
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
+          requireExplicitFilter: tab.requireExplicitFilter || false, // Skip auto-selection of a default value; cards stay empty until user picks. When combined with globalFilterSourceMetric, the option list is still loaded so search works.
           globalFilterVertical: tab.globalFilterVertical || false, // Stack label above filter input
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
           resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
