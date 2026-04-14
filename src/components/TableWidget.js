@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import formatters from '../utils/formatters';
@@ -25,11 +25,32 @@ const TableWidget = ({
   const tableRef = useRef(null);
   const tableInstanceRef = useRef(null); // use ref, not state, to avoid re-render loops
   const tableBuiltRef = useRef(false);
+  const observedSizeRef = useRef({ width: 0, height: 0 });
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Memoize config to prevent unnecessary re-renders
   const memoizedConfig = useMemo(() => config, [config]);
+
+  const redrawTable = useCallback((force = true) => {
+    if (!tableInstanceRef.current || !tableBuiltRef.current) return;
+    try {
+      tableInstanceRef.current.redraw(force);
+    } catch (e) {
+      console.warn('TableWidget: Error redrawing table:', e);
+    }
+  }, []);
+
+  const scheduleRedraw = useCallback((force = true, delay = 0) => {
+    if (typeof window === 'undefined') {
+      redrawTable(force);
+      return;
+    }
+
+    window.setTimeout(() => {
+      redrawTable(force);
+    }, delay);
+  }, [redrawTable]);
 
   // Filter data by search term across configured searchFields
   const filteredData = useMemo(() => {
@@ -49,7 +70,7 @@ const TableWidget = ({
 
     const paginationSize = config.paginationSize || 10;
     const headerHeight = 40;
-    const rowHeight = 35;
+    const rowHeight = config.rowHeight || 35;
     const paginationHeight = config.pagination !== false ? 50 : 0;
 
     const visibleRows = config.pagination !== false
@@ -68,6 +89,7 @@ const TableWidget = ({
           tableInstanceRef.current.destroy();
           tableInstanceRef.current = null;
           tableBuiltRef.current = false;
+          observedSizeRef.current = { width: 0, height: 0 };
         } catch (e) {
           console.warn('Error destroying table:', e);
         }
@@ -78,6 +100,19 @@ const TableWidget = ({
   // Effect 1: Create/rebuild table when structure changes (config, theme, height, format).
   // Does NOT depend on filteredData — search never triggers a rebuild.
   useEffect(() => {
+    // Always tear down the previous Tabulator instance first. If data is
+    // about to clear, we must not leave stale grid DOM (including headers)
+    // sitting below the empty-state message.
+    if (tableInstanceRef.current) {
+      try {
+        tableInstanceRef.current.destroy();
+      } catch (e) {
+        console.warn('TableWidget: Error destroying previous table:', e);
+      }
+      tableInstanceRef.current = null;
+      tableBuiltRef.current = false;
+    }
+
     if (!tableRef.current) return;
     if (!data || data.length === 0) {
       setError('No data available for table');
@@ -86,13 +121,6 @@ const TableWidget = ({
 
     try {
       setError(null);
-
-      // Destroy existing table
-      if (tableInstanceRef.current) {
-        tableInstanceRef.current.destroy();
-        tableInstanceRef.current = null;
-        tableBuiltRef.current = false;
-      }
 
       const processedData = processTableData(data, memoizedConfig);
       if (!processedData || processedData.length === 0) {
@@ -110,6 +138,7 @@ const TableWidget = ({
 
       newTable.on('tableBuilt', () => {
         tableBuiltRef.current = true;
+        scheduleRedraw(true, 0);
         if (height === 'auto' || memoizedConfig.autoResize) {
           setTimeout(() => {
             try {
@@ -128,9 +157,7 @@ const TableWidget = ({
             }
           }, 100);
         }
-        setTimeout(() => {
-          try { newTable.redraw(); } catch (e) { /* ignore */ }
-        }, 100);
+        scheduleRedraw(true, 100);
       });
 
       newTable.on('dataLoadError', () => setError('Failed to load table data'));
@@ -143,7 +170,7 @@ const TableWidget = ({
       setError('Failed to create table: ' + err.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, memoizedConfig, isDarkMode, height, format]);
+  }, [data, memoizedConfig, isDarkMode, height, format, scheduleRedraw]);
 
   // Effect 2: Update table data cheaply when search filter changes.
   // Calls setData() — no DOM rebuild, no fan noise.
@@ -153,11 +180,54 @@ const TableWidget = ({
     if (!tableInstanceRef.current || !tableBuiltRef.current) return;
     try {
       const processed = processTableData(filteredData, memoizedConfig);
-      tableInstanceRef.current.setData(processed);
+      Promise.resolve(tableInstanceRef.current.setData(processed))
+        .finally(() => {
+          scheduleRedraw(true, 0);
+          scheduleRedraw(true, 60);
+        });
     } catch (e) {
       console.warn('TableWidget: Error updating table data:', e);
     }
-  }, [filteredData, memoizedConfig]);
+  }, [filteredData, memoizedConfig, scheduleRedraw]);
+
+  useEffect(() => {
+    if (!tableRef.current || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries.find((candidate) => candidate?.contentRect) || entries[0];
+      const width = Math.round(entry?.contentRect?.width || 0);
+      const measuredHeight = Math.round(entry?.contentRect?.height || 0);
+
+      if (width <= 0 || measuredHeight <= 0) {
+        return;
+      }
+
+      const previous = observedSizeRef.current;
+      if (previous.width === width && previous.height === measuredHeight) {
+        return;
+      }
+
+      observedSizeRef.current = { width, height: measuredHeight };
+      scheduleRedraw(true, 0);
+    });
+
+    const elementsToObserve = [
+      tableRef.current,
+      tableRef.current.parentElement,
+      tableRef.current.closest('.table-widget')
+    ].filter(Boolean);
+
+    const seen = new Set();
+    elementsToObserve.forEach((element) => {
+      if (seen.has(element)) return;
+      seen.add(element);
+      observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [scheduleRedraw]);
 
   const showSearch = !error && config.searchFields && config.searchFields.length > 0;
 
@@ -217,17 +287,19 @@ const TableWidget = ({
           )}
         </div>
       )}
-      <div
-        ref={tableRef}
-        className={`tabulator-table modern-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
-        style={{
-          height: error ? 0 : height,
-          width: '100%',
-          minHeight: error ? 0 : '200px',
-          flex: 'none',
-          overflow: error ? 'hidden' : 'auto'
-        }}
-      />
+      {!error && (
+        <div
+          ref={tableRef}
+          className={`tabulator-table modern-table ${isDarkMode ? 'tabulator-dark' : 'tabulator-light'}`}
+          style={{
+            height,
+            width: '100%',
+            minHeight: '200px',
+            flex: 'none',
+            overflow: 'auto'
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -345,6 +417,7 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       // Other settings - FIXED: Use selectableRows instead of selectable
       movableColumns: config.movableColumns !== false,
       resizableRows: config.resizableRows || false,
+      rowHeight: config.rowHeight,
       selectableRows: config.selectableRows || config.selectable || false, // FIXED: Use selectableRows
       reactiveData: config.reactiveData !== false,
       debugInvalidOptions: false,
@@ -359,6 +432,10 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
         console.log('TableWidget: Data count:', this.getDataCount());
         console.log('TableWidget: Page size:', this.getPageSize());
         console.log('TableWidget: Page max:', this.getPageMax());
+
+        if (config.pagination === false) {
+          return;
+        }
         
         // Force pagination to be visible
         const paginationElement = this.element.querySelector('.tabulator-footer');
@@ -384,6 +461,9 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       
       renderComplete: function() {
         console.log('TableWidget: Render complete');
+        if (config.pagination === false) {
+          return;
+        }
         // Ensure pagination is visible after render
         const paginationElement = this.element.querySelector('.tabulator-footer');
         if (paginationElement) {

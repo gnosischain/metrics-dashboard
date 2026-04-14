@@ -58,7 +58,7 @@ const metric = {
       {
         title: 'Type',
         field: 'is_wrapped',
-        width: 70,
+        width: 100,
         hozAlign: 'center',
         headerHozAlign: 'center',
         sorter: 'boolean',

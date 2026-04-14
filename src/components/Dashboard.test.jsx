@@ -148,8 +148,10 @@ describe('Dashboard rendering behavior', () => {
       expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:1');
     });
 
-    expect(metricGridLifecycle.mounts).toBe(1);
-    expect(metricGridLifecycle.unmounts).toBe(0);
+    await waitFor(() => {
+      expect(metricGridLifecycle.mounts).toBe(1);
+      expect(metricGridLifecycle.unmounts).toBe(0);
+    });
 
     fireEvent.click(screen.getByRole('button', { name: 'Go Tab 2' }));
 
@@ -157,8 +159,10 @@ describe('Dashboard rendering behavior', () => {
       expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:2');
     });
 
-    expect(metricGridLifecycle.mounts).toBe(1);
-    expect(metricGridLifecycle.unmounts).toBe(0);
+    await waitFor(() => {
+      expect(metricGridLifecycle.mounts).toBe(1);
+      expect(metricGridLifecycle.unmounts).toBe(0);
+    });
   });
 
   it('navigates to dashboard tab when selecting a search result', async () => {

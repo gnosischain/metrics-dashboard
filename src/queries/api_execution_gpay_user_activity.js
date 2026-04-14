@@ -14,7 +14,7 @@ const metric = {
     pagination: true,
     paginationSize: 100,
     paginationSizeSelector: false,
-    responsiveLayout: 'collapse',
+    responsiveLayout: false,
     height: '100%',
     rowHeight: 40,
     movableColumns: false,
@@ -25,7 +25,7 @@ const metric = {
         title: 'Timestamp',
         field: 'timestamp',
         minWidth: 175,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: function(cell) {
           const value = cell.getValue();
           const txHash = String(cell.getRow()?.getData?.()?.transaction_hash || '').trim();

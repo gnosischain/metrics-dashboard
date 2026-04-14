@@ -117,6 +117,7 @@ const metric = {
   tableConfig: {
     layout: 'fitColumns',
     pagination: false,
+    responsiveLayout: false,
     height: '100%',
     rowHeight: 56,
     movableColumns: false,
@@ -150,14 +151,14 @@ const metric = {
         title: 'Valid From',
         field: 'valid_from',
         width: 160,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: formatDateTime,
       },
       {
         title: 'Valid To',
         field: 'valid_to',
         width: 160,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: formatValidTo,
       },
       {
