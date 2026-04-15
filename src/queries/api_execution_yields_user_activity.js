@@ -30,7 +30,7 @@ const metric = {
         title: 'Timestamp',
         field: 'block_timestamp',
         minWidth: 160,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: function(cell) {
           const value = cell.getValue();
           const txHash = String(cell.getRow()?.getData?.()?.transaction_hash || '').trim();

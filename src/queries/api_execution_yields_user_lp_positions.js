@@ -134,7 +134,7 @@ const metric = {
         field: 'entry_date',
         minWidth: 95,
         widthGrow: 0.8,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: function(cell) {
           const val = cell.getValue();
           if (!val) return '-';
@@ -146,7 +146,7 @@ const metric = {
         field: 'last_action_date',
         minWidth: 95,
         widthGrow: 0.8,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: function(cell) {
           const val = cell.getValue();
           if (!val) return '-';
