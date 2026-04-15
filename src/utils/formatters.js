@@ -134,6 +134,16 @@ export const formatCurrencyCompact = (value) => {
   return '$' + v.toFixed(0);
 };
 
+export const formatNumberCompact = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0';
+  const v = Number(value);
+  if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(1) + 'B';
+  if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+  if (v % 1 !== 0) return v.toFixed(2);
+  return String(v);
+};
+
 // Export all formatters as default object for easier imports
 const formatters = {
   formatNumber,
@@ -146,7 +156,8 @@ const formatters = {
   formatNumberWithUSD,
   formatNumberWithGNO,
   formatCurrency,
-  formatCurrencyCompact
+  formatCurrencyCompact,
+  formatNumberCompact
 };
 
 export default formatters;

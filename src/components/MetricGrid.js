@@ -104,7 +104,7 @@ const MetricGrid = ({
         
         const rowEnd = rowStart + rowSpan - 1;
         maxRow = Math.max(maxRow, rowEnd);
-        
+
         // If this is a single row item, record its height
         if (rowSpan === 1 && metric.minHeight) {
           rowHeights[rowStart] = metric.minHeight;

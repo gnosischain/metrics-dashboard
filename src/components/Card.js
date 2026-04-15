@@ -20,7 +20,7 @@ const Card = forwardRef(({
 
   const toggleExpand = () => setIsExpanded(!isExpanded);
   
-  const isNumberDisplay = chartType === 'numberDisplay';
+  const isNumberDisplay = chartType === 'numberDisplay' || chartType === 'kpi';
   const cardVariantClass = cardVariant && cardVariant !== 'default'
     ? `card-variant-${cardVariant}`
     : '';

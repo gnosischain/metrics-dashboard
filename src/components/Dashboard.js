@@ -389,18 +389,33 @@ const Dashboard = () => {
       if (window.innerWidth <= 768) {
         setMobileExpanded(false);
       }
-    } 
+    }
     // Just changing tabs within the same dashboard
     else if (tabId !== activeTab) {
       // Just update the tab
       setActiveTab(tabId);
-      
+
       // On mobile, automatically close the sidebar after navigation
       if (window.innerWidth <= 768) {
         setMobileExpanded(false);
       }
     }
   }, [activeDashboard, activeTab, dashboards]);
+
+  // Listen for overview KPI tile clicks (sector launcher).
+  // Dispatched by src/components/NumberWidget.js via MetricWidget's onLinkClick.
+  useEffect(() => {
+    const handleOverviewNavigate = (event) => {
+      const detail = event?.detail || {};
+      const { dashboardId, tabId } = detail;
+      if (!dashboardId) return;
+      handleNavigation(dashboardId, tabId || null);
+    };
+    window.addEventListener('overview:navigate', handleOverviewNavigate);
+    return () => {
+      window.removeEventListener('overview:navigate', handleOverviewNavigate);
+    };
+  }, [handleNavigation]);
   
   // Get active dashboard name
   const activeDashboardConfig = useMemo(

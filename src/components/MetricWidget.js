@@ -121,9 +121,10 @@ const MetricWidget = ({
     let widgetType = 'chart';
     if (chartType === 'text') widgetType = 'text';
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
+    if (chartType === 'kpi') widgetType = 'kpi';
     if (chartType === 'table') widgetType = 'table';
 
-    const resolvedCardVariant = chartType === 'numberDisplay'
+    const resolvedCardVariant = (chartType === 'numberDisplay' || chartType === 'kpi')
       ? (cardVariant || 'outline')
       : (cardVariant || 'default');
 
@@ -965,7 +966,60 @@ const MetricWidget = ({
             minimal={true}
           />
         );
-      
+
+      case 'kpi': {
+        // Time-series input: last row is the headline value, compute delta vs first row.
+        const rows = Array.isArray(timeFilteredData?.data) ? timeFilteredData.data : [];
+        const sparkField = metricConfig?.sparklineField || effectiveValueConfig.valueField || 'value';
+        const numericValues = rows
+          .map((r) => (r && r[sparkField] != null ? Number(r[sparkField]) : null))
+          .filter((n) => Number.isFinite(n));
+
+        const latest = numericValues.length > 0 ? numericValues[numericValues.length - 1] : 0;
+        const earliest = numericValues.length > 0 ? numericValues[0] : 0;
+        // Only compute a delta when we have at least two datapoints to compare.
+        const deltaPct = numericValues.length >= 2 && earliest !== 0 && Number.isFinite(earliest)
+          ? ((latest - earliest) / Math.abs(earliest)) * 100
+          : null;
+        const deltaType = deltaPct == null
+          ? 'neutral'
+          : (deltaPct > 0 ? 'positive' : (deltaPct < 0 ? 'negative' : 'neutral'));
+        const deltaStr = deltaPct == null ? '' : `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(2)}%`;
+
+        const linkTo = metricConfig?.linkTo || null;
+        const onLinkClick = linkTo
+          ? (dashboardId) => {
+              // Use a custom event that Dashboard.js listens for — a synthetic
+              // popstate does not reliably trigger React's popstate handler
+              // across all browsers, so we dispatch an explicit navigation
+              // event that Dashboard wires to its handleNavigation.
+              window.dispatchEvent(new CustomEvent('overview:navigate', {
+                detail: { dashboardId, tabId: metricConfig?.linkToTab || null }
+              }));
+            }
+          : null;
+
+        return (
+          <NumberWidget
+            value={latest}
+            format={effectiveValueConfig.format}
+            color={widgetConfig.color}
+            label={metricConfig?.kpiLabel || undefined}
+            isDarkMode={isDarkMode}
+            variant="kpi"
+            showChange={deltaPct != null}
+            changeValue={deltaStr}
+            changeType={deltaType}
+            changePeriod={metricConfig?.changePeriod || ''}
+            fontSize={widgetConfig.fontSize}
+            dashboardPalette={dashboardPalette}
+            sparkline={numericValues}
+            linkTo={linkTo}
+            onLinkClick={onLinkClick}
+          />
+        );
+      }
+
       case 'table':
         return (
           <TableWidget 

@@ -46,11 +46,40 @@ const normalizeChangePeriod = (value = '') => {
  * @param {Object|null} props.dashboardPalette - Dashboard-level palette overrides
  * @returns {JSX.Element} Number widget component
  */
-const NumberWidget = ({ 
-  value, 
-  format = 'formatNumber', 
-  color = '#4F46E5', 
-  label, 
+/**
+ * Build an inline SVG sparkline path (~100×28) from an array of numeric values.
+ * Normalised so min=bottom and max=top within the viewBox.
+ */
+const buildSparklinePaths = (values, width = 120, height = 32) => {
+  if (!Array.isArray(values) || values.length < 2) return null;
+  const nums = values.map((v) => (typeof v === 'number' && Number.isFinite(v) ? v : Number(v)))
+    .filter((n) => Number.isFinite(n));
+  if (nums.length < 2) return null;
+
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const range = max - min || 1;
+  const stepX = width / (nums.length - 1);
+
+  const points = nums.map((v, i) => {
+    const x = i * stepX;
+    const y = height - ((v - min) / range) * (height - 2) - 1;
+    return [x, y];
+  });
+
+  const linePath = points
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`)
+    .join(' ');
+  const areaPath = `${linePath} L${width.toFixed(2)},${height.toFixed(2)} L0,${height.toFixed(2)} Z`;
+
+  return { linePath, areaPath, width, height };
+};
+
+const NumberWidget = ({
+  value,
+  format = 'formatNumber',
+  color = '#4F46E5',
+  label,
   isDarkMode = false,
   variant = 'default',
   changeValue,
@@ -58,7 +87,10 @@ const NumberWidget = ({
   showChange = false,
   changePeriod = '',
   fontSize,
-  dashboardPalette = null
+  dashboardPalette = null,
+  sparkline = null,
+  linkTo = null,
+  onLinkClick = null
 }) => {
   // Apply formatting if specified
   const formattedValue = format && formatters[format] 
@@ -172,6 +204,71 @@ const NumberWidget = ({
         </div>
       </div>
     );
+  }
+
+  // KPI variant — big number + delta chip + inline sparkline (Artemis-style tile)
+  if (variant === 'kpi') {
+    const sparkPaths = buildSparklinePaths(sparkline);
+    const sparkStrokeColor = changeType === 'negative'
+      ? (isDarkMode ? '#F85149' : '#cf222e')
+      : changeType === 'positive'
+      ? (isDarkMode ? '#3FB950' : '#1a7f37')
+      : adjustedColor;
+
+    const body = (
+      <div className="kpi-tile">
+        <div className="kpi-tile-top">
+          <span
+            className="kpi-tile-value"
+            style={{
+              color: adjustedColor,
+              ...(fontSize && { fontSize })
+            }}
+          >
+            {formattedValue}
+          </span>
+          {showChange && formattedChange && (
+            <span className="kpi-tile-change" style={getChangeStyles()}>
+              <span className="change-value">{formattedChange}</span>
+              {changePeriodLines.length > 0 && (
+                <span className="change-period">
+                  {changePeriodLines.map((line, index) => (
+                    <span key={`${line}-${index}`} className="change-period-line">{line}</span>
+                  ))}
+                </span>
+              )}
+            </span>
+          )}
+        </div>
+        {sparkPaths && (
+          <svg
+            className="kpi-tile-sparkline"
+            viewBox={`0 0 ${sparkPaths.width} ${sparkPaths.height}`}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d={sparkPaths.areaPath} fill={sparkStrokeColor} opacity={isDarkMode ? 0.18 : 0.12} />
+            <path d={sparkPaths.linePath} fill="none" stroke={sparkStrokeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+        {label && <div className="kpi-tile-label">{label}</div>}
+      </div>
+    );
+
+    if (linkTo && typeof onLinkClick === 'function') {
+      return (
+        <button
+          type="button"
+          className="kpi-tile-link"
+          onClick={() => onLinkClick(linkTo)}
+          aria-label={`Open ${label || linkTo} dashboard`}
+        >
+          {body}
+          <span className="kpi-tile-arrow" aria-hidden="true">→</span>
+        </button>
+      );
+    }
+    return body;
   }
 
   // Default variant
