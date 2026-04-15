@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_live_trades",
+  "query": "SELECT\n      block_timestamp,\n      transaction_hash,\n      token_sold,\n      amount_sold,\n      token_bought,\n      amount_bought,\n      trade_usd,\n      via,\n      hops,\n      trader,\n      aggregator\n    FROM dbt.api_execution_live_trades\n    LIMIT 200"
+}
