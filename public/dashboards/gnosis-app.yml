@@ -182,8 +182,44 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 420px
 
-  - name: KPI
+  - name: Token Offers
     order: 7
+    icon: 🎁
+    iconClass: gift
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_execution_gnosis_app_kpi_token_offer_claims_7d
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_token_offer_claimers_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_token_offer_volume_7d
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_token_offer_claims_weekly_chart
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_execution_gnosis_app_token_offer_claims_by_offer_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_token_offer_claims_cohort_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_token_offer_offers_leaderboard
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 420px
+
+  - name: KPI
+    order: 8
     icon: 🎯
     iconClass: gauge
     timeRanges: true

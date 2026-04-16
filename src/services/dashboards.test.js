@@ -56,6 +56,7 @@ Merged:
       order: 1
       globalFilterField: avatar
       globalFilterLabel: Avatar
+      globalControlsPlacement: top
       secondaryGlobalFilterField: pool
       globalFilterDisplayField: display_name
       globalFilterSourceMetric: api_execution_circles_v2_avatar_search
@@ -66,6 +67,8 @@ Merged:
         description: Search by name or paste an avatar address to load user cards.
         emptyResultsTitle: No Circles user found
         emptyResultsDescription: Try another name or avatar address.
+        validatingTitle: Checking user...
+        validatingDescription: Looking up Circles data for this selection.
         iconClass: user
       metrics:
         - id: overview_transactions
@@ -81,6 +84,8 @@ Merged:
         description: Paste a wallet address to load balances and activity cards.
         emptyResultsTitle: This wallet is not a Gnosis Pay wallet
         emptyResultsDescription: Try another wallet address.
+        validatingTitle: Checking wallet...
+        validatingDescription: Looking up Gnosis Pay activity for this wallet.
         iconClass: user
       metrics:
         - id: overview_transactions
@@ -95,6 +100,7 @@ Merged:
     expect(circlesTab).toMatchObject({
       globalFilterField: 'avatar',
       globalFilterLabel: 'Avatar',
+      globalControlsPlacement: 'top',
       secondaryGlobalFilterField: 'pool',
       globalFilterDisplayField: 'display_name',
       globalFilterSourceMetric: 'api_execution_circles_v2_avatar_search',
@@ -105,6 +111,8 @@ Merged:
         description: 'Search by name or paste an avatar address to load user cards.',
         emptyResultsTitle: 'No Circles user found',
         emptyResultsDescription: 'Try another name or avatar address.',
+        validatingTitle: 'Checking user...',
+        validatingDescription: 'Looking up Circles data for this selection.',
         iconClass: 'user'
       }
     });
@@ -115,11 +123,14 @@ Merged:
       searchable: true,
       requireExplicitFilter: true,
       explicitFilterValidationMetric: 'api_execution_gpay_user_lifetime_tenure_days',
+      globalControlsPlacement: null,
       emptyState: {
         title: 'Explore your Gnosis Pay portfolio',
         description: 'Paste a wallet address to load balances and activity cards.',
         emptyResultsTitle: 'This wallet is not a Gnosis Pay wallet',
         emptyResultsDescription: 'Try another wallet address.',
+        validatingTitle: 'Checking wallet...',
+        validatingDescription: 'Looking up Gnosis Pay activity for this wallet.',
         iconClass: 'user'
       }
     });

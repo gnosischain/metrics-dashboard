@@ -21,6 +21,14 @@ const DEFAULT_EXPLICIT_FILTER_EMPTY_STATE = {
   iconClass: 'user'
 };
 
+const resolveGlobalControlsPlacement = (tabConfig, requiresExplicitFilterValidation) => {
+  if (tabConfig?.globalControlsPlacement) {
+    return tabConfig.globalControlsPlacement;
+  }
+
+  return requiresExplicitFilterValidation ? 'top' : 'grid';
+};
+
 const resolveExplicitFilterEmptyState = (tabConfig, validationState) => {
   const emptyState = {
     ...DEFAULT_EXPLICIT_FILTER_EMPTY_STATE,
@@ -38,8 +46,8 @@ const resolveExplicitFilterEmptyState = (tabConfig, validationState) => {
   if (validationState === EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING) {
     return {
       iconClass: emptyState.iconClass,
-      title: 'Checking wallet...',
-      description: 'Looking up portfolio activity for this address.'
+      title: emptyState.validatingTitle || 'Checking selection...',
+      description: emptyState.validatingDescription || 'Looking up data for this selection.'
     };
   }
 
@@ -94,16 +102,16 @@ const MetricGrid = ({
   const [tabGroupSelections, setTabGroupSelections] = useState({});
   const [explicitFilterValidationState, setExplicitFilterValidationState] = useState(EXPLICIT_FILTER_VALIDATION_STATES.IDLE);
   const explicitFilterValidationRequestRef = useRef(0);
-  
-  // Unit toggle state (Native/USD)
-  const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
-  const hasUnitToggle = tabConfig?.unitToggle === true;
-  const globalControlsPlacement = tabConfig?.globalControlsPlacement || 'grid';
   const requiresExplicitFilterValidation = !!(
     tabConfig?.requireExplicitFilter &&
     tabConfig?.explicitFilterValidationMetric &&
     tabConfig?.globalFilterField
   );
+  const globalControlsPlacement = resolveGlobalControlsPlacement(tabConfig, requiresExplicitFilterValidation);
+
+  // Unit toggle state (Native/USD)
+  const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
+  const hasUnitToggle = tabConfig?.unitToggle === true;
   const explicitFilterEmptyState = useMemo(
     () => resolveExplicitFilterEmptyState(tabConfig, explicitFilterValidationState),
     [tabConfig, explicitFilterValidationState]
@@ -241,7 +249,11 @@ const MetricGrid = ({
   // Check if this tab has a global filter
   const hasGlobalFilter = !!(tabConfig?.globalFilterField && onGlobalFilterChange);
   const showTopGlobalControls = globalControlsPlacement === 'top' && (hasGlobalFilter || hasUnitToggle);
-  const showToolbar = !!timeRanges || showTopGlobalControls;
+  const showTimeRangeControls = !!timeRanges && (
+    !requiresExplicitFilterValidation ||
+    explicitFilterValidationState === EXPLICIT_FILTER_VALIDATION_STATES.VALID
+  );
+  const showToolbar = showTimeRangeControls || showTopGlobalControls;
   const positionedMetrics = useMemo(
     () => (globalControlsPlacement === 'top' ? metrics.filter(metric => metric.id !== 'global_filter') : metrics),
     [metrics, globalControlsPlacement]
@@ -577,7 +589,7 @@ const MetricGrid = ({
     <div className="metrics-grid-container">
       {showToolbar && (
         <div className="metrics-grid-toolbar">
-          {timeRanges && (
+          {showTimeRangeControls && (
             <div className="metrics-grid-toolbar-group">
               <div className="metrics-grid-toolbar-label">Date range</div>
               <div className="resolution-toggle">

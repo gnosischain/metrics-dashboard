@@ -248,6 +248,53 @@ describe('MetricGrid global filter behavior', () => {
     expect(metricsService.getMetricData).not.toHaveBeenCalled();
   });
 
+  it('defaults future explicit-filter tabs to the top toolbar and hides date range until validation succeeds', async () => {
+    const validationRequest = createDeferred();
+
+    metricsService.getMetricData.mockImplementationOnce(() => validationRequest.promise);
+
+    render(
+      <MetricGrid
+        metrics={[
+          { id: 'portfolio_metric', name: 'Portfolio', gridRow: '1', gridColumn: '1 / span 12' }
+        ]}
+        tabConfig={{
+          id: 'future-user-tab',
+          globalFilterField: 'wallet_address',
+          requireExplicitFilter: true,
+          explicitFilterValidationMetric: 'portfolio_validation_metric',
+          timeRanges: true,
+          emptyState: {
+            validatingTitle: 'Checking selection...',
+            validatingDescription: 'Looking up data for this selection.'
+          }
+        }}
+        globalFilterValue="0xabc"
+        onGlobalFilterChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid-empty-state')).toHaveAttribute('data-state', 'validating');
+    });
+
+    expect(screen.getByText('Checking selection...')).toBeInTheDocument();
+    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+
+    validationRequest.resolve({
+      data: [{ wallet_address: '0xabc', value: 1 }]
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('metric-grid-empty-state')).not.toBeInTheDocument();
+      expect(screen.getByTestId('metric-widget')).toHaveAttribute('data-metric-id', 'portfolio_metric');
+    });
+
+    expect(screen.getByText('Date range')).toBeInTheDocument();
+  });
+
   it('validates an explicit-filter wallet and renders cards after the wallet is confirmed', async () => {
     metricsService.getMetricData.mockResolvedValueOnce({
       data: [{ wallet_address: '0xabc', value: 0 }]
@@ -372,6 +419,8 @@ describe('MetricGrid global filter behavior', () => {
           searchable: true,
           requireExplicitFilter: true,
           explicitFilterValidationMetric: 'api_execution_circles_v2_avatar_metadata',
+          globalControlsPlacement: 'top',
+          timeRanges: true,
           emptyState: {
             title: 'Explore a Circles user',
             description: 'Search by name or paste an avatar address to load user cards.'
@@ -389,9 +438,10 @@ describe('MetricGrid global filter behavior', () => {
       });
     });
 
-    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'grid');
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
     expect(screen.getByTestId('metric-grid-empty-state')).toHaveAttribute('data-state', 'idle');
     expect(screen.getByText('Explore a Circles user')).toBeInTheDocument();
+    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
   });
 
@@ -426,7 +476,9 @@ describe('MetricGrid global filter behavior', () => {
           globalFilterSourceMetric: 'api_execution_circles_v2_avatar_search',
           searchable: true,
           requireExplicitFilter: true,
-          explicitFilterValidationMetric: 'api_execution_circles_v2_avatar_metadata'
+          explicitFilterValidationMetric: 'api_execution_circles_v2_avatar_metadata',
+          globalControlsPlacement: 'top',
+          timeRanges: true
         }}
         globalFilterValue="0xAbC"
         onGlobalFilterChange={vi.fn()}
@@ -444,6 +496,8 @@ describe('MetricGrid global filter behavior', () => {
       expect(screen.queryByTestId('metric-grid-empty-state')).not.toBeInTheDocument();
       expect(screen.getByTestId('metric-widget')).toHaveAttribute('data-metric-id', 'api_execution_circles_v2_avatar_metadata');
     });
+
+    expect(screen.getByText('Date range')).toBeInTheDocument();
   });
 
   it('shows the no-results state for an invalid Circles name search', async () => {
@@ -476,6 +530,8 @@ describe('MetricGrid global filter behavior', () => {
           searchable: true,
           requireExplicitFilter: true,
           explicitFilterValidationMetric: 'api_execution_circles_v2_avatar_metadata',
+          globalControlsPlacement: 'top',
+          timeRanges: true,
           emptyState: {
             emptyResultsTitle: 'No Circles user found',
             emptyResultsDescription: 'Try another name or avatar address.'
@@ -499,6 +555,7 @@ describe('MetricGrid global filter behavior', () => {
 
     expect(screen.getByText('No Circles user found')).toBeInTheDocument();
     expect(screen.getByText('Try another name or avatar address.')).toBeInTheDocument();
+    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
   });
 
@@ -520,6 +577,7 @@ describe('MetricGrid global filter behavior', () => {
           searchable: true,
           requireExplicitFilter: true,
           explicitFilterValidationMetric: 'api_execution_gpay_user_lifetime_tenure_days',
+          globalControlsPlacement: 'top',
           emptyState: {
             title: 'Explore your Gnosis Pay portfolio',
             description: 'Paste a wallet address to load balances and activity cards.',
@@ -543,6 +601,7 @@ describe('MetricGrid global filter behavior', () => {
       expect(screen.getByTestId('metric-grid-empty-state')).toHaveAttribute('data-state', 'invalid');
     });
 
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
     expect(screen.getByText('This wallet is not a Gnosis Pay wallet')).toBeInTheDocument();
     expect(screen.getByText('Try another wallet address.')).toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
@@ -562,6 +621,7 @@ describe('MetricGrid global filter behavior', () => {
           searchable: true,
           requireExplicitFilter: true,
           explicitFilterValidationMetric: 'api_execution_gpay_user_lifetime_tenure_days',
+          globalControlsPlacement: 'top',
           emptyState: {
             title: 'Explore your Gnosis Pay portfolio',
             description: 'Paste a wallet address to load balances and activity cards.'
@@ -572,7 +632,7 @@ describe('MetricGrid global filter behavior', () => {
       />
     );
 
-    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'grid');
+    expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
     expect(screen.getByTestId('metric-grid-empty-state')).toHaveAttribute('data-state', 'idle');
     expect(screen.getByText('Explore your Gnosis Pay portfolio')).toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
