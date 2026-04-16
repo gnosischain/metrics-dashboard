@@ -11,18 +11,25 @@ GnosisPay:
   iconClass: credit-card
   palette: gnosis-pay
   source: /dashboards/gnosis-pay.yml
-LiveTrades:
-  name: Live Trades
-  order: 15
-  icon: "⚡"
-  iconClass: activity
-  source: /dashboards/live-trades.yml
+GnosisApp:
+  name: Gnosis App
+  order: 13
+  icon: 📱
+  iconClass: gnosis-app
+  palette: gnosis-pay
+  source: /dashboards/gnosis-app.yml
 Circles:
   name: Circles
-  order: 25
+  order: 16
   icon: 🔵
   iconClass: circles
   source: /dashboards/circles.yml
+LiveTrades:
+  name: Live Trades
+  order: 20
+  icon: "⚡"
+  iconClass: activity
+  source: /dashboards/live-trades.yml
 Tokens:
   name: Tokens
   order: 30

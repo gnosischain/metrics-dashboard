@@ -537,6 +537,56 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        // Gnosis App brand — the official glyph (shipped under
+        // /imgs/brand/gnosis-app.png) wrapped in the Gnosis-blue rounded
+        // square container that the app icon uses everywhere.
+        'gnosis-app': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="Gnosis App">
+            <rect x="0" y="0" width="24" height="24" rx="5" ry="5" fill="#1F2937"></rect>
+            <image href="/imgs/brand/gnosis-app.png" x="3" y="3" width="18" height="18"></image>
+          </svg>
+        ),
+
+        // Swap / Exchange — two arrows pointing in opposite directions.
+        'exchange': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Exchange">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+        ),
+
+        // Piggy bank — classic side-view piggy with coin slot.
+        'piggy-bank': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Piggy Bank">
+            <path d="M19 10c0-4-3-7-8-7s-8 3-8 7c0 2 1 3.5 2 4.5V18h3v-2h6v2h3v-3.5c1-1 2-2.5 2-4.5Z"></path>
+            <line x1="10" y1="8" x2="14" y2="8"></line>
+            <circle cx="15.5" cy="10.5" r="0.5" fill={color}></circle>
+            <path d="M19 10h2"></path>
+          </svg>
+        ),
+
+        // Vault / safe door — for GP Wallets tab.
+        'vault': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Vault">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="8" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="16" y2="12"></line>
+          </svg>
+        ),
+
+        // Shopping cart — marketplace.
+        'shopping-cart': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Shopping Cart">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        ),
 
     };
     

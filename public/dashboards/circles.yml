@@ -6,15 +6,19 @@ tabs:
     metrics:
       - id: api_execution_circles_v2_humans_cnt_latest
         gridRow: 1
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_groups_cnt_latest
         gridRow: 1
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_orgs_cnt_latest
         gridRow: 1
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 3
+        minHeight: 110px
+      - id: api_execution_circles_v2_active_trusts_cnt_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_avatars_cumulative
         gridRow: 2 / span 2

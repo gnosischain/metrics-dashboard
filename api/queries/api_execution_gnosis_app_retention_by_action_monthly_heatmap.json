@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_retention_by_action_monthly_heatmap",
+  "query": "SELECT activity_kind, x, y, retention_pct, value_abs\n    FROM dbt.api_execution_gnosis_app_retention_by_action_monthly\n    ORDER BY\n      if(activity_kind = 'circles_trust', 0, 1),\n      y ASC,\n      x ASC"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_marketplace_cumulative_buys_chart",
+  "query": "SELECT toDate(date) AS date,\n           offer_name AS label,\n           cumulative_buys\n    FROM dbt.api_execution_gnosis_app_marketplace_buys_cumulative_daily\n    ORDER BY date ASC, label ASC"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_activity_by_action_daily",
+  "query": "SELECT toDate(date) AS date, activity_kind AS label, n_events, n_users\n    FROM dbt.api_execution_gnosis_app_activity_by_action_daily\n    WHERE activity_kind != 'onboard'\n    ORDER BY date ASC, label ASC"
+}

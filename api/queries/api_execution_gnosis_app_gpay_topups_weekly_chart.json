@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_topups_weekly_chart",
+  "query": "SELECT toDate(week) AS date, n_topups, volume_usd\n    FROM dbt.api_execution_gnosis_app_gpay_topups_weekly\n    ORDER BY date ASC"
+}
