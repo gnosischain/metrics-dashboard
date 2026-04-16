@@ -85,7 +85,14 @@ tabs:
     globalFilterSourceMetric: api_execution_circles_v2_avatar_search
     searchable: true
     requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_circles_v2_avatar_metadata
     searchPlaceholder: Search by name or paste address (0x...)
+    emptyState:
+      title: Explore a Circles user
+      description: Search by name or paste an avatar address to load user cards.
+      emptyResultsTitle: No Circles user found
+      emptyResultsDescription: Try another name or avatar address.
+      iconClass: user
     globalFilterVertical: true
     timeRanges: true
     metrics:

@@ -9,6 +9,7 @@ import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 import { filterDataByTimeRange } from '../utils/dates';
+import { normalizeFilterValue } from '../utils/filterValues';
 
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
 const UNIT_LABELS = { native: 'Native', usd: 'USD' };
@@ -331,7 +332,9 @@ const MetricWidget = ({
   const fetchData = useCallback(async () => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
     // The fetch will trigger once globalFilterValue is set.
-    if (hasGlobalFilter && !globalFilterValue) {
+    const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
+
+    if (hasGlobalFilter && !normalizedGlobalFilterValue) {
       return;
     }
 
@@ -350,9 +353,9 @@ const MetricWidget = ({
       // Let server use its default date range (365 days) for full data.
       // Server-side global filter reduces data transfer significantly.
       const params = {};
-      if (hasGlobalFilter && globalFilterField && globalFilterValue) {
+      if (hasGlobalFilter && globalFilterField && normalizedGlobalFilterValue) {
         params.filterField = globalFilterField;
-        params.filterValue = globalFilterValue;
+        params.filterValue = normalizedGlobalFilterValue;
       }
       if (metricConfig?.useCached === false) {
         params.useCached = 'false';

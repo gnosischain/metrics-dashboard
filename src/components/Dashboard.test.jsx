@@ -94,6 +94,7 @@ vi.mock('../services/dashboards', () => ({
     ]),
     getDashboardTabs: vi.fn(() => [
       { id: 'tab-1', name: 'Tab 1', order: 1 },
+      { id: 'tab-wallet', name: 'Tab Wallet', order: 2 },
       { id: 'tab-2', name: 'Tab 2', order: 2 }
     ]),
     getDashboard: vi.fn(() => ({
@@ -104,6 +105,8 @@ vi.mock('../services/dashboards', () => ({
     getTabMetrics: vi.fn((_dashboardId, tabId) =>
       tabId === 'tab-2'
         ? [{ id: 'metric-2' }, { id: 'metric-3' }]
+        : tabId === 'tab-wallet'
+          ? [{ id: 'metric-wallet' }]
         : [{ id: 'metric-1' }]
     ),
     getTab: vi.fn((_dashboardId, tabId) => (
@@ -113,6 +116,12 @@ vi.mock('../services/dashboards', () => ({
           globalFilterField: 'token',
           secondaryGlobalFilterField: 'pool'
         }
+        : tabId === 'tab-wallet'
+          ? {
+            id: 'tab-wallet',
+            globalFilterField: 'wallet_address',
+            secondaryGlobalFilterField: null
+          }
         : {
           id: 'tab-2',
           globalFilterField: null,
@@ -188,6 +197,21 @@ describe('Dashboard rendering behavior', () => {
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-global-filter', 'GNO');
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-secondary-filter', 'Pool Alpha');
+    });
+  });
+
+  it('normalizes wallet filters from the URL to lowercase', async () => {
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-wallet&wallet_address=0xb7c85EDf3500806C0F7BACb9E1C88f0Ff3B7FDb8');
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-wallet');
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute(
+        'data-global-filter',
+        '0xb7c85edf3500806c0f7bacb9e1c88f0ff3b7fdb8'
+      );
+      expect(window.location.search).toContain('wallet_address=0xb7c85edf3500806c0f7bacb9e1c88f0ff3b7fdb8');
     });
   });
 

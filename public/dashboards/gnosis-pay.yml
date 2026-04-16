@@ -212,7 +212,15 @@ tabs:
     globalFilterField: wallet_address
     globalFilterLabel: Wallet
     searchable: true
-    searchPlaceholder: Paste wallet address...
+    requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_gpay_user_lifetime_tenure_days
+    searchPlaceholder: Paste wallet address and press Enter...
+    emptyState:
+      title: Explore your Gnosis Pay portfolio
+      description: Paste a wallet address to load balances and activity cards.
+      emptyResultsTitle: This wallet is not a Gnosis Pay wallet
+      emptyResultsDescription: Try another wallet address.
+      iconClass: user
     globalFilterVertical: true
     metrics:
       - id: api_execution_gpay_user_lifetime_tenure_days

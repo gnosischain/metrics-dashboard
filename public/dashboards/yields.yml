@@ -139,8 +139,16 @@ tabs:
     globalFilterField: wallet_address
     globalFilterLabel: Wallet
     searchable: true
-    searchPlaceholder: Paste wallet address...
+    searchPlaceholder: Paste wallet address and press Enter...
     globalControlsPlacement: top
+    requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_yields_user_kpi_lending_balance
+    emptyState:
+      title: Explore your portfolio
+      description: Paste a wallet address to load LP, lending, and activity cards.
+      emptyResultsTitle: No portfolio found for this wallet
+      emptyResultsDescription: Try another wallet address.
+      iconClass: user
     metrics:
       - id: api_execution_yields_user_kpi_total_lp_fees
         gridRow: 1

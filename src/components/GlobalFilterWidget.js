@@ -2,6 +2,13 @@ import React from 'react';
 import LabelSelector from './LabelSelector';
 import TOKEN_ICON_URLS, { formatTokenSymbol } from '../utils/tokenIcons.js';
 
+const getOptionValue = (option) => {
+  if (option && typeof option === 'object') {
+    return option.value || '';
+  }
+  return option || '';
+};
+
 /**
  * GlobalFilterWidget - renders the shared global filter dropdown and unit toggle
  * either as an in-grid control card or as part of the top toolbar.
@@ -31,6 +38,9 @@ const GlobalFilterWidget = ({
   const fieldName = tabConfig?.globalFilterField || '';
   const label = tabConfig?.globalFilterLabel || (fieldName.charAt(0).toUpperCase() + fieldName.slice(1));
   const isVertical = placement === 'grid' && tabConfig?.globalFilterVertical;
+  const fallbackFilterValue = !tabConfig?.requireExplicitFilter && globalFilterOptions.length > 0
+    ? getOptionValue(globalFilterOptions[0])
+    : '';
 
   return (
     <div className={`global-filter-widget global-filter-widget--${placement}`}>
@@ -49,7 +59,7 @@ const GlobalFilterWidget = ({
               ) : (globalFilterOptions.length > 0 || tabConfig?.searchable) ? (
                 <LabelSelector
                   labels={globalFilterOptions}
-                  selectedLabel={globalFilterValue || (globalFilterOptions.length > 0 ? globalFilterOptions[0] : '')}
+                  selectedLabel={globalFilterValue || fallbackFilterValue}
                   onSelectLabel={onGlobalFilterChange}
                   labelField={fieldName}
                   idPrefix="global-filter"

@@ -6,6 +6,7 @@ import IconComponent from './IconComponent';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 import { buildMetricSearchIndex } from '../utils/metricSearch';
+import { normalizeFilterValue } from '../utils/filterValues';
 
 const getTabFilterKeyFor = (dashboardId, tabId) => {
   if (!dashboardId || !tabId) return null;
@@ -33,9 +34,11 @@ const resolveLocationState = (dashboards, search = window.location.search) => {
     dashboardId: matchedDashboard.id,
     tabId: resolvedTabId,
     globalFilterField,
-    globalFilterValue: globalFilterField ? params.get(globalFilterField) : null,
+    globalFilterValue: globalFilterField ? normalizeFilterValue(globalFilterField, params.get(globalFilterField)) : null,
     secondaryGlobalFilterField,
-    secondaryGlobalFilterValue: secondaryGlobalFilterField ? params.get(secondaryGlobalFilterField) : null
+    secondaryGlobalFilterValue: secondaryGlobalFilterField
+      ? normalizeFilterValue(secondaryGlobalFilterField, params.get(secondaryGlobalFilterField))
+      : null
   };
 };
 
@@ -431,22 +434,24 @@ const Dashboard = () => {
   // Handle global filter change for a tab
   const handleGlobalFilterChange = useCallback((selectedValue) => {
     if (activeTabFilterKey) {
+      const normalizedValue = normalizeFilterValue(activeTabConfig?.globalFilterField, selectedValue);
       setTabFilters(prev => ({
         ...prev,
-        [activeTabFilterKey]: selectedValue
+        [activeTabFilterKey]: normalizedValue
       }));
     }
-  }, [activeTabFilterKey]);
+  }, [activeTabConfig?.globalFilterField, activeTabFilterKey]);
 
   // Handle secondary (cascading) filter change for a tab
   const handleSecondaryGlobalFilterChange = useCallback((selectedValue) => {
     if (activeTabFilterKey) {
+      const normalizedValue = normalizeFilterValue(activeTabConfig?.secondaryGlobalFilterField, selectedValue);
       setTabSecondaryFilters(prev => ({
         ...prev,
-        [activeTabFilterKey]: selectedValue
+        [activeTabFilterKey]: normalizedValue
       }));
     }
-  }, [activeTabFilterKey]);
+  }, [activeTabConfig?.secondaryGlobalFilterField, activeTabFilterKey]);
 
   // Get current global filter value for active tab
   const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;

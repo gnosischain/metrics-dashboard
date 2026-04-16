@@ -132,6 +132,10 @@ class DashboardService {
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
           requireExplicitFilter: tab.requireExplicitFilter || false, // Skip auto-selection of a default value; cards stay empty until user picks. When combined with globalFilterSourceMetric, the option list is still loaded so search works.
+          explicitFilterValidationMetric: tab.explicitFilterValidationMetric || null, // Optional metric used to validate explicit filter values before rendering cards.
+          emptyState: tab.emptyState && typeof tab.emptyState === 'object'
+            ? { ...tab.emptyState }
+            : null, // Optional empty-state copy and icon metadata for explicit-filter tabs.
           globalFilterVertical: tab.globalFilterVertical || false, // Stack label above filter input
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
           resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
