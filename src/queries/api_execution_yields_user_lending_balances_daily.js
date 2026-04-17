@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_yields_user_lending_balances_daily',
   name: 'Lending Balance',
   description: 'Daily supply balance by token',
-  metricDescription: 'Daily Aave V3 supply balance history for the selected wallet, stacked by token. Toggle between native token units and USD.',
+  metricDescription: 'Daily supply balance history for the selected wallet across Gnosis lending markets (Aave V3 and SparkLend), stacked by token. Toggle between native token units and USD.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_yields_user_kpi_active_lending_positions',
   name: 'Lending Positions',
   description: 'Active reserves',
-  metricDescription: 'Number of Aave V3 reserves where the selected wallet currently has a positive supply balance.',
+  metricDescription: 'Number of (protocol, reserve) combinations where the selected wallet currently has a positive supply balance across Gnosis lending markets (Aave V3 and SparkLend). A wallet supplying the same asset on both protocols counts as two positions.',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumber',

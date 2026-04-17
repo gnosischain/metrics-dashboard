@@ -233,22 +233,11 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
               <line x1="17" y1="14" x2="17" y2="14" />
             </svg>
           ),
+        // Circles brand — official Favicon from aboutcircles.com, wrapped in a rounded
+        // square container to match the Gnosis App icon treatment.
         'circles': (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={pixelSize}
-            height={pixelSize}
-            viewBox="0 0 32 32"
-            fill={color}
-            stroke="none"
-            role="img"
-            aria-label="Circles"
-          >
-            {/* Solid filled C-shape matching the Circles brand logo */}
-            <path
-              fillRule="evenodd"
-              d="M28 9 A14 14 0 1 0 28 23 L21.5 19 A6.5 6.5 0 1 1 21.5 13 Z"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="Circles">
+            <image href="/imgs/brand/circles.png" x="2" y="2" width="20" height="20"></image>
           </svg>
         ),
         'bot': (
@@ -520,10 +509,11 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        // Gnosis Pay brand — official Framer-hosted glyph wrapped in the same dark
+        // rounded container that Gnosis App and Circles use for brand consistency.
         'credit-card': (
-          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Credit Card">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-            <line x1="1" y1="10" x2="23" y2="10"></line>
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="Gnosis Pay">
+            <image href="/imgs/brand/gnosis-pay.png" x="2" y="2" width="20" height="20"></image>
           </svg>
         ),
 
@@ -542,8 +532,17 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
         // square container that the app icon uses everywhere.
         'gnosis-app': (
           <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="Gnosis App">
-            <rect x="0" y="0" width="24" height="24" rx="5" ry="5" fill="#1F2937"></rect>
-            <image href="/imgs/brand/gnosis-app.png" x="3" y="3" width="18" height="18"></image>
+            <image href="/imgs/brand/gnosis-app.png" x="2" y="2" width="20" height="20"></image>
+          </svg>
+        ),
+
+        // Savings xDAI tab — vault icon (dollar-mark + circle) rendered in the
+        // same sharp-stroked vector style as the Yields / Lending sibling icons.
+        'savings': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Savings xDAI">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M15 8.5a4 4 0 0 0-3.5-1.5c-1.9 0-3 1-3 2.5 0 3 6.5 1.5 6.5 4.5 0 1.5-1.2 2.5-3 2.5A4 4 0 0 1 8.5 15"></path>
+            <line x1="12" y1="6" x2="12" y2="18"></line>
           </svg>
         ),
 

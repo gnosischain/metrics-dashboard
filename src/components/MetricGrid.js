@@ -337,7 +337,17 @@ const MetricGrid = ({
     return totalMetric || candidates[0];
   }, [realMetrics, hasSecondaryGlobalFilter, tabConfig?.secondaryGlobalFilterField]);
 
-  // Fetch secondary filter options from a single representative metric — re-runs when the primary filter changes (the cascade)
+  // Fetch secondary filter options from a single representative metric.
+  //
+  // Two cascade models are supported:
+  //  - Default (`secondaryCascadesOnPrimary: true` or omitted): the secondary's options
+  //    depend on the selected primary — Pools tab's `pool` options narrow to the chosen
+  //    token. Selecting a token refetches the Pool dropdown.
+  //  - Reverse (`secondaryCascadesOnPrimary: false`): the secondary is the "anchor" and
+  //    primary options cascade on IT — Lending tab's Protocol dropdown stays fixed while
+  //    the Token dropdown refreshes to show only tokens available for the selected
+  //    protocol. The primary-options effect picks this up via filterField3.
+  const secondaryCascadesOnPrimary = tabConfig?.secondaryCascadesOnPrimary !== false;
   useEffect(() => {
     if (!hasSecondaryGlobalFilter || !metricForSecondaryOptions) {
       setSecondaryGlobalFilterOptions([]);
@@ -353,10 +363,12 @@ const MetricGrid = ({
       try {
         const { from, to } = getDateRange('90d');
         const params = { from, to };
-        const normalizedPrimaryFilterValue = normalizeFilterValue(tabConfig?.globalFilterField, globalFilterValue);
-        if (normalizedPrimaryFilterValue && tabConfig.globalFilterField) {
-          params.filterField = tabConfig.globalFilterField;
-          params.filterValue = normalizedPrimaryFilterValue;
+        if (secondaryCascadesOnPrimary) {
+          const normalizedPrimaryFilterValue = normalizeFilterValue(tabConfig?.globalFilterField, globalFilterValue);
+          if (normalizedPrimaryFilterValue && tabConfig.globalFilterField) {
+            params.filterField = tabConfig.globalFilterField;
+            params.filterValue = normalizedPrimaryFilterValue;
+          }
         }
         const result = await metricsService.getMetricData(metricForSecondaryOptions.id, params);
 
@@ -396,8 +408,15 @@ const MetricGrid = ({
 
     fetchSecondaryOptions();
     return () => { cancelled = true; };
+    // Only depend on globalFilterValue when the secondary IS cascading on the primary.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSecondaryGlobalFilter, metricForSecondaryOptions?.id, tabConfig?.secondaryGlobalFilterField, globalFilterValue]);
+  }, [
+    hasSecondaryGlobalFilter,
+    metricForSecondaryOptions?.id,
+    tabConfig?.secondaryGlobalFilterField,
+    secondaryCascadesOnPrimary,
+    secondaryCascadesOnPrimary ? globalFilterValue : null,
+  ]);
 
   // Fetch filter options from a single metric for speed (much faster than fetching all)
   useEffect(() => {
@@ -430,7 +449,22 @@ const MetricGrid = ({
       try {
         // Fetch from just one metric - much faster! All metrics should have the same tokens anyway
         const { from, to } = getDateRange('90d');
-        const result = await metricsService.getMetricData(metricForOptions.id, { from, to });
+        const primaryParams = { from, to };
+        // When a tab declares the secondary as the "anchor" (secondaryCascadesOnPrimary: false),
+        // the Token list cascades on the selected Protocol via filterField3/filterValue3.
+        // For default cascading tabs (Pools: pool cascades on token), the primary is the
+        // anchor and this filter is skipped so behaviour stays unchanged.
+        const primaryCascadesOnSecondary = !secondaryCascadesOnPrimary;
+        if (
+          primaryCascadesOnSecondary &&
+          hasSecondaryGlobalFilter &&
+          tabConfig.secondaryGlobalFilterField &&
+          secondaryGlobalFilterValue
+        ) {
+          primaryParams.filterField3 = tabConfig.secondaryGlobalFilterField;
+          primaryParams.filterValue3 = secondaryGlobalFilterValue;
+        }
+        const result = await metricsService.getMetricData(metricForOptions.id, primaryParams);
 
         if (cancelled) {
           return;
@@ -523,9 +557,21 @@ const MetricGrid = ({
     return () => {
       cancelled = true;
     };
-    // Only refetch when metrics change, not when filter value changes
+    // Default cascading tabs (Pools): primary options are anchor, fetched once.
+    // Reverse cascade tabs (Lending): primary depends on secondary → include it in deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField, tabConfig?.globalFilterDisplayField, tabConfig?.globalFilterSourceMetric, tabConfig?.requireExplicitFilter]);
+  }, [
+    hasGlobalFilter,
+    metricForOptions?.id,
+    tabConfig?.globalFilterField,
+    tabConfig?.globalFilterDisplayField,
+    tabConfig?.globalFilterSourceMetric,
+    tabConfig?.requireExplicitFilter,
+    hasSecondaryGlobalFilter,
+    tabConfig?.secondaryGlobalFilterField,
+    secondaryCascadesOnPrimary,
+    secondaryCascadesOnPrimary ? null : secondaryGlobalFilterValue,
+  ]);
 
   const { templateRows } = processGridStructure(metricsToRender);
 

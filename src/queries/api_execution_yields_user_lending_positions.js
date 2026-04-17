@@ -3,8 +3,11 @@ import { getTokenIconHtml } from '../utils/tokenIcons.js';
 const metric = {
   id: 'api_execution_yields_user_lending_positions',
   name: 'Lending Positions',
-  description: 'Aave V3 supply balances',
-  metricDescription: 'Current supply positions on Aave V3 for the selected wallet, with current supply APY.',
+  description: 'Lending supply balances on Gnosis (Aave V3 & SparkLend)',
+  metricDescription:
+    'Current supply positions across Gnosis lending markets (Aave V3 and SparkLend) ' +
+    'for the selected wallet, with current supply APY. A wallet holding the same ' +
+    'asset on both protocols produces two rows, one per protocol.',
   chartType: 'table',
   globalFilterField: 'wallet_address',
   useCached: false,
@@ -40,6 +43,14 @@ const metric = {
             ? `<span style="display:inline-flex;align-items:center;gap:6px;">${icon}${safe}</span>`
             : safe;
         }
+      },
+      {
+        title: 'Protocol',
+        field: 'protocol',
+        minWidth: 100,
+        widthGrow: 1,
+        sorter: 'string',
+        formatter: 'plaintext'
       },
       {
         title: 'Balance',

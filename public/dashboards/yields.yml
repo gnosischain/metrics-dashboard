@@ -4,7 +4,7 @@ tabs:
     icon: "📊"
     iconClass: "chart-line"
     metrics:
-      - id: api_execution_yields_overview_sdai_supply
+      - id: api_execution_yields_overview_lending_tvl
         gridRow: 1
         gridColumn: 1 / span 4
         minHeight: 110px
@@ -16,32 +16,44 @@ tabs:
         gridRow: 1
         gridColumn: 9 / span 4
         minHeight: 110px
-      - id: api_execution_yields_overview_sdai_apy
-        gridRow: 2
-        gridColumn: 1 / span 4
-        minHeight: 110px
       - id: api_execution_yields_overview_lending_best_apy
         gridRow: 2
-        gridColumn: 5 / span 4
+        gridColumn: 1 / span 6
         minHeight: 110px
       - id: api_execution_yields_overview_lp_best_apr
         gridRow: 2
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 6
         minHeight: 110px
       - id: api_execution_yields_opportunities_latest
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
+
+  - name: Savings xDAI
+    order: 2
+    icon: "💎"
+    iconClass: "savings"
+    metrics:
+      - id: api_execution_yields_overview_sdai_apy
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 110px
+      - id: api_execution_yields_overview_sdai_supply
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 110px
       - id: historical_yield_sdai
-        gridRow: 4
+        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 450px
 
   - name: Lending
-    order: 2
+    order: 3
     icon: "💰"
     iconClass: "lending"
     globalFilterField: 'token'
+    secondaryGlobalFilterField: 'protocol'
+    secondaryCascadesOnPrimary: false
     globalControlsPlacement: top
     timeRanges: true
     metrics:
@@ -79,7 +91,7 @@ tabs:
         minHeight: 450px
 
   - name: Pools
-    order: 3
+    order: 4
     icon: "📊"
     iconClass: "pool"
     globalFilterField: 'token'
@@ -133,7 +145,7 @@ tabs:
         minHeight: 450px
 
   - name: User Portfolio
-    order: 4
+    order: 5
     icon: "👤"
     iconClass: "user"
     globalFilterField: wallet_address

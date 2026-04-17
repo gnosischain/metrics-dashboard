@@ -364,6 +364,21 @@ const MetricWidget = ({
         params.filterField2 = metricConfig.unitFilterField;
         params.filterValue2 = effectiveUnit;
       }
+      // Tab-level secondary global filter (e.g. `protocol` on the Lending tab):
+      // widgets opt in via `applySecondaryGlobalFilter: true` so the filter flows to
+      // their SQL server-side as filterField3 (ANDed with the primary filter). The
+      // widget where labelField === secondaryGlobalFilterField also gets this —
+      // its client-side filter path becomes a no-op but stays harmless.
+      if (
+        hasSecondaryGlobalFilter &&
+        secondaryGlobalFilterField &&
+        secondaryGlobalFilterValue &&
+        (metricConfig?.applySecondaryGlobalFilter === true ||
+          widgetConfig?.labelField === secondaryGlobalFilterField)
+      ) {
+        params.filterField3 = secondaryGlobalFilterField;
+        params.filterValue3 = secondaryGlobalFilterValue;
+      }
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
       
@@ -411,7 +426,13 @@ const MetricWidget = ({
     hasGlobalFilter,
     hasMultiLocalFilters,
     effectiveUnit,
-    metricConfig?.unitFilterField
+    metricConfig?.unitFilterField,
+    // Refetch when the tab-level secondary filter (e.g. protocol) changes and this
+    // widget opts in via applySecondaryGlobalFilter or has labelField matching.
+    hasSecondaryGlobalFilter,
+    secondaryGlobalFilterField,
+    secondaryGlobalFilterValue,
+    metricConfig?.applySecondaryGlobalFilter,
   ]);
 
   useEffect(() => {

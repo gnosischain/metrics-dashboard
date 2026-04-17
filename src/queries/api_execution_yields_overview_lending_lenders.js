@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_lending_lenders',
   name: 'Active Lenders',
-  description: 'Current on Aave V3',
-  metricDescription: 'Unique wallets currently holding a positive supply balance on Aave V3. Change compares active lender count vs 7 days ago.',
+  description: 'Current on Gnosis lending markets',
+  metricDescription: 'Unique wallets currently holding a positive supply balance across Gnosis lending markets (Aave V3 and SparkLend). Counted once across protocols. Change compares active lender count vs 7 days ago.',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',

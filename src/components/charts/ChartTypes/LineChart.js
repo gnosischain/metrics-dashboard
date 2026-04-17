@@ -81,6 +81,14 @@ export class LineChart extends BaseChart {
             }
           }
 
+          // Attach ECharts marks (markLine / markArea) to the first series only so they
+          // render once instead of per-series. Config is passed through unchanged — the
+          // metric file defines it with standard ECharts syntax.
+          if (index === 0) {
+            if (config.markLine) seriesOpts.markLine = config.markLine;
+            if (config.markArea) seriesOpts.markArea = config.markArea;
+          }
+
           return seriesOpts;
         }),
         

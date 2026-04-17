@@ -1,19 +1,23 @@
 const metric = {
   id: 'api_execution_yields_lending_lenders_count_7d',
-  name: 'Lenders',
-  description: 'Last 7 days',
-  metricDescription: 'Unique wallets that supplied at least one asset on Aave V3 in the last 7 days. Change compares to the prior 7-day window.',
+  name: 'Active Lenders',
+  description: 'Currently holding supply',
+  metricDescription: 'Unique wallets currently holding a positive supply balance in a Gnosis lending market (Aave V3 or SparkLend). Stock measure — counted at the latest available day. Change % compares to the same wallet set 7 days earlier.',
   format: 'formatNumber',
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',
   enableFiltering: false,
+  applySecondaryGlobalFilter: true,
   changeData: {
     enabled: true,
     field: 'change_pct',
-    period: 'vs prior 7 days'
+    period: 'vs 7 days ago'
   },
-  query: `SELECT * FROM dbt.api_execution_lending_lenders_count_7d`,
+  // The mart view returns one row per protocol (Aave V3 / SparkLend / ALL). The tab
+  // always auto-selects a protocol, so filterField3=protocol=<...> narrows to a single
+  // row server-side and the card renders that protocol's count.
+  query: `SELECT token, protocol, value, change_pct FROM dbt.api_execution_lending_lenders_count_7d`,
 };
 
 export default metric;

@@ -208,12 +208,18 @@ module.exports = async (req, res) => {
     // - from/to: override date placeholders if provided (default behavior unchanged if omitted)
     // - filterField/filterValue: apply server-side filtering by wrapping the metric query
     // - filterField2/filterValue2: optional second filter (ANDed with the first)
+    // Normalise `+` to space for filterValue params. URLSearchParams encodes spaces
+    // as `+` (form-encoding); Express/Vercel's default query parser leaves `+` intact,
+    // so 'Aave V3' round-trips as 'Aave+V3' and fails to match. Decode it here.
+    const normalizeValue = (v) => typeof v === 'string' ? v.replace(/\+/g, ' ') : null;
     const requestFrom = typeof req.query.from === 'string' ? req.query.from : null;
     const requestTo = typeof req.query.to === 'string' ? req.query.to : null;
     const requestFilterField = typeof req.query.filterField === 'string' ? req.query.filterField : null;
-    const requestFilterValue = typeof req.query.filterValue === 'string' ? req.query.filterValue : null;
+    const requestFilterValue = normalizeValue(req.query.filterValue);
     const requestFilterField2 = typeof req.query.filterField2 === 'string' ? req.query.filterField2 : null;
-    const requestFilterValue2 = typeof req.query.filterValue2 === 'string' ? req.query.filterValue2 : null;
+    const requestFilterValue2 = normalizeValue(req.query.filterValue2);
+    const requestFilterField3 = typeof req.query.filterField3 === 'string' ? req.query.filterField3 : null;
+    const requestFilterValue3 = normalizeValue(req.query.filterValue3);
     
     // Force cache refresh if explicitly requested
     if (req.query.refreshCache === 'true') {
@@ -233,7 +239,9 @@ module.exports = async (req, res) => {
         filterField: requestFilterField,
         filterValue: requestFilterValue,
         filterField2: requestFilterField2,
-        filterValue2: requestFilterValue2
+        filterValue2: requestFilterValue2,
+        filterField3: requestFilterField3,
+        filterValue3: requestFilterValue3
       });
       return res.status(200).json(metricData);
     } 
@@ -276,7 +284,7 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
   console.log(`Fetching data for metric: ${metricId}`);
   console.log(`Query: ${query.substring(0, 100)}...`);
 
-  const { from: fromParam, to: toParam, filterField, filterValue, filterField2, filterValue2 } = opts;
+  const { from: fromParam, to: toParam, filterField, filterValue, filterField2, filterValue2, filterField3, filterValue3 } = opts;
 
   const isIsoDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
   const isSafeIdentifier = (s) => typeof s === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(s);
@@ -285,16 +293,18 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
   const effectiveFromToProvided = isIsoDate(fromParam) && isIsoDate(toParam);
   const effectiveFilterProvided = isSafeIdentifier(filterField) && typeof filterValue === 'string' && filterValue.length > 0;
   const effectiveFilter2Provided = isSafeIdentifier(filterField2) && typeof filterValue2 === 'string' && filterValue2.length > 0;
+  const effectiveFilter3Provided = isSafeIdentifier(filterField3) && typeof filterValue3 === 'string' && filterValue3.length > 0;
 
   // Backwards-compatible cache key:
   // - If no extra params are provided, keep the original metricId cache key.
   // - If params are provided, include them so cached results don't mix.
   const cacheKey = (() => {
-    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided) return metricId;
+    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided) return metricId;
     const parts = [metricId];
     if (effectiveFromToProvided) parts.push(`from=${fromParam}`, `to=${toParam}`);
     if (effectiveFilterProvided) parts.push(`filterField=${filterField}`, `filterValue=${filterValue}`);
     if (effectiveFilter2Provided) parts.push(`filterField2=${filterField2}`, `filterValue2=${filterValue2}`);
+    if (effectiveFilter3Provided) parts.push(`filterField3=${filterField3}`, `filterValue3=${filterValue3}`);
     return parts.join('|');
   })();
   
@@ -339,7 +349,7 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     // The client (MetricGrid) only sends filterField/filterValue for metrics
     // that explicitly declare support via globalFilterField or enableFiltering,
     // so we trust the request and always apply the filter.
-    if (effectiveFilterProvided || effectiveFilter2Provided) {
+    if (effectiveFilterProvided || effectiveFilter2Provided || effectiveFilter3Provided) {
       const conditions = [];
       if (effectiveFilterProvided) {
         const valueEscaped = escapeSqlString(filterValue);
@@ -348,6 +358,10 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
       if (effectiveFilter2Provided) {
         const valueEscaped2 = escapeSqlString(filterValue2);
         conditions.push(`${filterField2} = '${valueEscaped2}'`);
+      }
+      if (effectiveFilter3Provided) {
+        const valueEscaped3 = escapeSqlString(filterValue3);
+        conditions.push(`${filterField3} = '${valueEscaped3}'`);
       }
 
       if (conditions.length > 0) {

@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_yields_overview_lending_best_apy',
   name: 'Top Lending APY',
-  description: 'Aave V3 best supply rate',
-  metricDescription: 'Highest supply APY currently available on Aave V3 across all listed tokens. Shows which asset is offering the best return for lenders.',
+  description: 'Best supply rate across Gnosis lending markets',
+  metricDescription: 'Highest supply APY currently available across Gnosis lending markets (Aave V3 and SparkLend). The label shows which protocol and asset offer the best return for lenders.',
   format: 'formatPercentage',
   valueField: 'value',
   chartType: 'numberDisplay',
