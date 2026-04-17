@@ -1,8 +1,62 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import MetricWidget from './MetricWidget';
 import GlobalFilterWidget from './GlobalFilterWidget';
+import IconComponent from './IconComponent';
 import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
+import { normalizeFilterValue } from '../utils/filterValues';
+
+const EXPLICIT_FILTER_VALIDATION_STATES = {
+  IDLE: 'idle',
+  VALIDATING: 'validating',
+  VALID: 'valid',
+  INVALID: 'invalid'
+};
+
+const DEFAULT_EXPLICIT_FILTER_EMPTY_STATE = {
+  title: 'Explore your portfolio',
+  description: 'Paste a wallet address to load LP, lending, and activity cards.',
+  emptyResultsTitle: 'No portfolio found for this wallet',
+  emptyResultsDescription: 'Try another wallet address.',
+  iconClass: 'user'
+};
+
+const resolveGlobalControlsPlacement = (tabConfig, requiresExplicitFilterValidation) => {
+  if (tabConfig?.globalControlsPlacement) {
+    return tabConfig.globalControlsPlacement;
+  }
+
+  return requiresExplicitFilterValidation ? 'top' : 'grid';
+};
+
+const resolveExplicitFilterEmptyState = (tabConfig, validationState) => {
+  const emptyState = {
+    ...DEFAULT_EXPLICIT_FILTER_EMPTY_STATE,
+    ...(tabConfig?.emptyState || {})
+  };
+
+  if (validationState === EXPLICIT_FILTER_VALIDATION_STATES.INVALID) {
+    return {
+      iconClass: emptyState.iconClass,
+      title: emptyState.emptyResultsTitle,
+      description: emptyState.emptyResultsDescription
+    };
+  }
+
+  if (validationState === EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING) {
+    return {
+      iconClass: emptyState.iconClass,
+      title: emptyState.validatingTitle || 'Checking selection...',
+      description: emptyState.validatingDescription || 'Looking up data for this selection.'
+    };
+  }
+
+  return {
+    iconClass: emptyState.iconClass,
+    title: emptyState.title,
+    description: emptyState.description
+  };
+};
 
 /**
  * Resolve the effective global filter value to pass to a panel.
@@ -46,11 +100,24 @@ const MetricGrid = ({
   const [loadingSecondaryGlobalFilter, setLoadingSecondaryGlobalFilter] = useState(false);
   const secondaryGlobalFilterValueRef = useRef(secondaryGlobalFilterValue);
   const [tabGroupSelections, setTabGroupSelections] = useState({});
-  
+  const [explicitFilterValidationState, setExplicitFilterValidationState] = useState(EXPLICIT_FILTER_VALIDATION_STATES.IDLE);
+  const explicitFilterValidationRequestRef = useRef(0);
+  const requiresExplicitFilterValidation = !!(
+    tabConfig?.requireExplicitFilter &&
+    tabConfig?.explicitFilterValidationMetric &&
+    tabConfig?.globalFilterField
+  );
+  const globalControlsPlacement = resolveGlobalControlsPlacement(tabConfig, requiresExplicitFilterValidation);
+
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
   const hasUnitToggle = tabConfig?.unitToggle === true;
-  const globalControlsPlacement = tabConfig?.globalControlsPlacement || 'grid';
+  const explicitFilterEmptyState = useMemo(
+    () => resolveExplicitFilterEmptyState(tabConfig, explicitFilterValidationState),
+    [tabConfig, explicitFilterValidationState]
+  );
+  const showExplicitFilterEmptyState = requiresExplicitFilterValidation &&
+    explicitFilterValidationState !== EXPLICIT_FILTER_VALIDATION_STATES.VALID;
 
   // Whether per-chart resolution toggles are enabled for this tab
   const hasResolutionToggle = tabConfig?.resolutionToggle === true;
@@ -81,6 +148,61 @@ const MetricGrid = ({
   useEffect(() => {
     secondaryGlobalFilterValueRef.current = secondaryGlobalFilterValue;
   }, [secondaryGlobalFilterValue]);
+
+  useEffect(() => {
+    if (!requiresExplicitFilterValidation) {
+      setExplicitFilterValidationState(EXPLICIT_FILTER_VALIDATION_STATES.VALID);
+      return;
+    }
+
+    const filterValue = normalizeFilterValue(tabConfig?.globalFilterField, globalFilterValue);
+
+    if (!filterValue) {
+      setExplicitFilterValidationState(EXPLICIT_FILTER_VALIDATION_STATES.IDLE);
+      return;
+    }
+
+    const requestId = ++explicitFilterValidationRequestRef.current;
+    let cancelled = false;
+
+    const validateExplicitFilter = async () => {
+      setExplicitFilterValidationState(EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING);
+
+      try {
+        const result = await metricsService.getMetricData(tabConfig.explicitFilterValidationMetric, {
+          filterField: tabConfig.globalFilterField,
+          filterValue
+        });
+
+        if (cancelled || requestId !== explicitFilterValidationRequestRef.current) {
+          return;
+        }
+
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        setExplicitFilterValidationState(
+          rows.length > 0
+            ? EXPLICIT_FILTER_VALIDATION_STATES.VALID
+            : EXPLICIT_FILTER_VALIDATION_STATES.INVALID
+        );
+      } catch (error) {
+        if (!cancelled && requestId === explicitFilterValidationRequestRef.current) {
+          console.error('Error validating explicit global filter:', error);
+          setExplicitFilterValidationState(EXPLICIT_FILTER_VALIDATION_STATES.INVALID);
+        }
+      }
+    };
+
+    validateExplicitFilter();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    requiresExplicitFilterValidation,
+    tabConfig?.explicitFilterValidationMetric,
+    tabConfig?.globalFilterField,
+    globalFilterValue
+  ]);
 
   // Process metrics to determine grid structure and row heights
   const processGridStructure = (metrics) => {
@@ -127,7 +249,11 @@ const MetricGrid = ({
   // Check if this tab has a global filter
   const hasGlobalFilter = !!(tabConfig?.globalFilterField && onGlobalFilterChange);
   const showTopGlobalControls = globalControlsPlacement === 'top' && (hasGlobalFilter || hasUnitToggle);
-  const showToolbar = !!timeRanges || showTopGlobalControls;
+  const showTimeRangeControls = !!timeRanges && (
+    !requiresExplicitFilterValidation ||
+    explicitFilterValidationState === EXPLICIT_FILTER_VALIDATION_STATES.VALID
+  );
+  const showToolbar = showTimeRangeControls || showTopGlobalControls;
   const positionedMetrics = useMemo(
     () => (globalControlsPlacement === 'top' ? metrics.filter(metric => metric.id !== 'global_filter') : metrics),
     [metrics, globalControlsPlacement]
@@ -150,6 +276,17 @@ const MetricGrid = ({
       return true;
     });
   }, [positionedMetrics]);
+  const metricsToRender = useMemo(() => {
+    if (!showExplicitFilterEmptyState) {
+      return renderedMetrics;
+    }
+
+    if (globalControlsPlacement === 'top') {
+      return [];
+    }
+
+    return renderedMetrics.filter(metric => metric.id === 'global_filter');
+  }, [renderedMetrics, showExplicitFilterEmptyState, globalControlsPlacement]);
 
   // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
   const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);
@@ -216,9 +353,10 @@ const MetricGrid = ({
       try {
         const { from, to } = getDateRange('90d');
         const params = { from, to };
-        if (globalFilterValue && tabConfig.globalFilterField) {
+        const normalizedPrimaryFilterValue = normalizeFilterValue(tabConfig?.globalFilterField, globalFilterValue);
+        if (normalizedPrimaryFilterValue && tabConfig.globalFilterField) {
           params.filterField = tabConfig.globalFilterField;
-          params.filterValue = globalFilterValue;
+          params.filterValue = normalizedPrimaryFilterValue;
         }
         const result = await metricsService.getMetricData(metricForSecondaryOptions.id, params);
 
@@ -389,7 +527,7 @@ const MetricGrid = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGlobalFilter, metricForOptions?.id, tabConfig?.globalFilterField, tabConfig?.globalFilterDisplayField, tabConfig?.globalFilterSourceMetric, tabConfig?.requireExplicitFilter]);
 
-  const { templateRows } = processGridStructure(renderedMetrics);
+  const { templateRows } = processGridStructure(metricsToRender);
 
   const gridStyle = {
     gridTemplateRows: templateRows.join(' ')
@@ -451,7 +589,7 @@ const MetricGrid = ({
     <div className="metrics-grid-container">
       {showToolbar && (
         <div className="metrics-grid-toolbar">
-          {timeRanges && (
+          {showTimeRangeControls && (
             <div className="metrics-grid-toolbar-group">
               <div className="metrics-grid-toolbar-label">Date range</div>
               <div className="resolution-toggle">
@@ -487,73 +625,103 @@ const MetricGrid = ({
           )}
         </div>
       )}
-      <div className="metrics-grid-positioned" style={gridStyle}>
-        {renderedMetrics.map(metric => {
-          const metricStyle = {};
-          if (metric.gridRow) metricStyle.gridRow = metric.gridRow;
-          if (metric.gridColumn) metricStyle.gridColumn = metric.gridColumn;
-          if (metric.gridRow && metric.gridRow.toString().includes('span') && metric.minHeight) {
-            metricStyle.height = metric.minHeight;
-          }
+      {metricsToRender.length > 0 && (
+        <div className="metrics-grid-positioned" style={gridStyle}>
+          {metricsToRender.map(metric => {
+            const metricStyle = {};
+            if (metric.gridRow) metricStyle.gridRow = metric.gridRow;
+            if (metric.gridColumn) metricStyle.gridColumn = metric.gridColumn;
+            if (metric.gridRow && metric.gridRow.toString().includes('span') && metric.minHeight) {
+              metricStyle.height = metric.minHeight;
+            }
 
-          if (metric.id === 'global_filter') {
+            if (metric.id === 'global_filter') {
+              return (
+                <div
+                  key={metric.id}
+                  className="grid-item grid-item-filter"
+                  style={metricStyle}
+                >
+                  <GlobalFilterWidget
+                    {...globalFilterWidgetProps}
+                    placement="grid"
+                  />
+                </div>
+              );
+            }
+
+            // Tab-grouped metrics: render active metric with toggle in its card header
+            if (metric.tabGroup && tabGroups[metric.tabGroup]) {
+              const group = tabGroups[metric.tabGroup];
+              const activeId = tabGroupSelections[metric.tabGroup] || group[0].id;
+              const activeMetric = group.find(m => m.id === activeId) || group[0];
+
+              const tabToggle = (
+                <div className="resolution-toggle">
+                  {group.map(m => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={`resolution-btn${activeId === m.id ? ' active' : ''}`}
+                      onClick={() => setTabGroupSelections(prev => ({ ...prev, [metric.tabGroup]: m.id }))}
+                    >
+                      {m.tabLabel || m.name || m.id}
+                    </button>
+                  ))}
+                </div>
+              );
+
+              return (
+                <div
+                  key={`tabgroup-${metric.tabGroup}-${activeId}`}
+                  className="grid-item"
+                  style={metricStyle}
+                >
+                  {renderMetricWidget(activeMetric, tabToggle)}
+                </div>
+              );
+            }
+
             return (
               <div
                 key={metric.id}
-                className="grid-item grid-item-filter"
-                style={metricStyle}
-              >
-                <GlobalFilterWidget
-                  {...globalFilterWidgetProps}
-                  placement="grid"
-                />
-              </div>
-            );
-          }
-
-          // Tab-grouped metrics: render active metric with toggle in its card header
-          if (metric.tabGroup && tabGroups[metric.tabGroup]) {
-            const group = tabGroups[metric.tabGroup];
-            const activeId = tabGroupSelections[metric.tabGroup] || group[0].id;
-            const activeMetric = group.find(m => m.id === activeId) || group[0];
-
-            const tabToggle = (
-              <div className="resolution-toggle">
-                {group.map(m => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={`resolution-btn${activeId === m.id ? ' active' : ''}`}
-                    onClick={() => setTabGroupSelections(prev => ({ ...prev, [metric.tabGroup]: m.id }))}
-                  >
-                    {m.tabLabel || m.name || m.id}
-                  </button>
-                ))}
-              </div>
-            );
-
-            return (
-              <div
-                key={`tabgroup-${metric.tabGroup}-${activeId}`}
                 className="grid-item"
                 style={metricStyle}
               >
-                {renderMetricWidget(activeMetric, tabToggle)}
+                {renderMetricWidget(metric)}
               </div>
             );
-          }
-          
-          return (
-            <div 
-              key={metric.id} 
-              className="grid-item"
-              style={metricStyle}
-            >
-              {renderMetricWidget(metric)}
+          })}
+        </div>
+      )}
+      {showExplicitFilterEmptyState && (
+        <div
+          className={`metrics-grid-empty-state${explicitFilterValidationState === EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING ? ' is-validating' : ''}`}
+          data-testid="metric-grid-empty-state"
+          data-state={explicitFilterValidationState}
+        >
+          <div className="metrics-grid-empty-state-visual" aria-hidden="true">
+            <div className="metrics-grid-empty-state-icon-badge">
+              <IconComponent
+                name={explicitFilterEmptyState.iconClass}
+                fallback="•"
+                size="lg"
+              />
             </div>
-          );
-        })}
-      </div>
+            {explicitFilterValidationState === EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING && (
+              <div className="metrics-grid-empty-state-spinner">
+                <div className="loading-spinner" style={{ width: '18px', height: '18px', margin: 0 }}></div>
+              </div>
+            )}
+          </div>
+          <div className="metrics-grid-empty-state-title">
+            {explicitFilterEmptyState.title}
+          </div>
+          <div className="metrics-grid-empty-state-description">
+            {explicitFilterEmptyState.description}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

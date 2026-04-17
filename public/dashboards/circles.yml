@@ -6,15 +6,19 @@ tabs:
     metrics:
       - id: api_execution_circles_v2_humans_cnt_latest
         gridRow: 1
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_groups_cnt_latest
         gridRow: 1
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_orgs_cnt_latest
         gridRow: 1
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 3
+        minHeight: 110px
+      - id: api_execution_circles_v2_active_trusts_cnt_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
         minHeight: 110px
       - id: api_execution_circles_v2_avatars_cumulative
         gridRow: 2 / span 2
@@ -81,17 +85,29 @@ tabs:
     globalFilterSourceMetric: api_execution_circles_v2_avatar_search
     searchable: true
     requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_circles_v2_avatar_metadata
     searchPlaceholder: Search by name or paste address (0x...)
+    globalControlsPlacement: top
+    emptyState:
+      title: Explore a Circles user
+      description: Search by name or paste an avatar address to load user cards.
+      emptyResultsTitle: No Circles user found
+      emptyResultsDescription: Try another name or avatar address.
+      iconClass: user
     globalFilterVertical: true
     timeRanges: true
     metrics:
       - id: api_execution_circles_v2_avatar_metadata
         gridRow: 1
-        gridColumn: 1 / span 9
+        gridColumn: 1 / span 8
         minHeight: 160px
-      - id: global_filter
+      - id: api_execution_circles_v2_avatar_personal_token_supply_latest
         gridRow: 1
-        gridColumn: 10 / span 3
+        gridColumn: 9 / span 2
+        minHeight: 160px
+      - id: api_execution_circles_v2_avatar_personal_token_wrapped_latest
+        gridRow: 1
+        gridColumn: 11 / span 2
         minHeight: 160px
       - id: api_execution_circles_v2_avatar_total_balance_latest
         gridRow: 2

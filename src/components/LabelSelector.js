@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { normalizeFilterValue } from '../utils/filterValues';
 
 /**
  * LabelSelector component – custom scrollable dropdown for filtering by label.
@@ -29,23 +30,30 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   const lastInteractionRef = useRef('pointer');
 
   const MAX_VISIBLE = 50;
+  const normalizeSelectionValue = useCallback(
+    (value) => normalizeFilterValue(labelField, value),
+    [labelField]
+  );
 
   // Normalize labels to a uniform `{ label, value, sublabel }` shape so the rest
   // of the component does not have to branch on string vs object input.
   const normalizedOptions = useMemo(() => {
     return (labels || []).map((entry) => {
       if (entry && typeof entry === 'object') {
-        const value = entry.value != null ? String(entry.value) : '';
-        const label = entry.label != null && entry.label !== ''
-          ? String(entry.label)
-          : value;
+        const rawValue = entry.value != null ? String(entry.value) : '';
+        const value = normalizeSelectionValue(rawValue);
+        const hasExplicitLabel = entry.label != null && entry.label !== '';
+        const rawLabel = hasExplicitLabel ? String(entry.label) : value;
+        const label = labelField === 'wallet_address' && (!hasExplicitLabel || rawLabel === rawValue)
+          ? value
+          : rawLabel;
         const sublabel = entry.sublabel != null ? String(entry.sublabel) : '';
         return { label, value, sublabel };
       }
-      const v = entry == null ? '' : String(entry);
+      const v = normalizeSelectionValue(entry == null ? '' : String(entry));
       return { label: v, value: v, sublabel: '' };
     });
-  }, [labels]);
+  }, [labelField, labels, normalizeSelectionValue]);
 
   const matches = useCallback((opt, lower) => {
     if (!lower) return true;
@@ -74,8 +82,13 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
     return normalizedOptions.filter((o) => matches(o, lower)).length;
   }, [normalizedOptions, searchText, searchable, matches]);
 
+  const normalizedSelectedLabel = useMemo(
+    () => normalizeSelectionValue(selectedLabel || ''),
+    [normalizeSelectionValue, selectedLabel]
+  );
+
   const selectedIndex = filteredOptions
-    ? filteredOptions.findIndex((o) => o.value === selectedLabel)
+    ? filteredOptions.findIndex((o) => o.value === normalizedSelectedLabel)
     : -1;
 
   const close = useCallback(() => {
@@ -137,7 +150,7 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   // the options list).
   const selectItem = (entry) => {
     lastInteractionRef.current = 'pointer';
-    const value = entry && typeof entry === 'object' ? entry.value : entry;
+    const value = normalizeSelectionValue(entry && typeof entry === 'object' ? entry.value : entry);
     onSelectLabel(value);
     close();
   };
@@ -186,10 +199,10 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
   // Selected option lookup so we can show the display label (not the raw
   // value) in the trigger button.
   const selectedOption = useMemo(
-    () => normalizedOptions.find((o) => o.value === selectedLabel),
-    [normalizedOptions, selectedLabel]
+    () => normalizedOptions.find((o) => o.value === normalizedSelectedLabel),
+    [normalizedOptions, normalizedSelectedLabel]
   );
-  const displayValue = (selectedOption ? selectedOption.label : selectedLabel) || placeholder || '';
+  const displayValue = (selectedOption ? selectedOption.label : normalizedSelectedLabel) || placeholder || '';
 
   const renderLabel = (entry) => {
     // `entry` can be a normalized option object (from the option list) or
@@ -260,10 +273,10 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
                 key={option.value || option.label || index}
                 id={`${selectId}-option-${index}`}
                 role="option"
-                aria-selected={option.value === selectedLabel}
+                aria-selected={option.value === normalizedSelectedLabel}
                 className={
                   'custom-dropdown-item' +
-                  (option.value === selectedLabel ? ' selected' : '') +
+                  (option.value === normalizedSelectedLabel ? ' selected' : '') +
                   (index === focusedIndex ? ' focused' : '')
                 }
                 onClick={() => selectItem(option)}
@@ -283,16 +296,16 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
                 className="custom-dropdown-search-input"
                 placeholder={placeholder || 'Search...'}
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => setSearchText(normalizeSelectionValue(e.target.value))}
                 onKeyDown={handleKeyDown}
                 autoComplete="off"
                 spellCheck={false}
               />
             </div>
-            {selectedLabel && (
+            {normalizedSelectedLabel && (
               <div className="custom-dropdown-selected-badge">
                 <span className="custom-dropdown-selected-value">
-                  {renderLabel(selectedOption || selectedLabel)}
+                  {renderLabel(selectedOption || normalizedSelectedLabel)}
                 </span>
               </div>
             )}
@@ -307,16 +320,16 @@ const LabelSelector = ({ labels, selectedLabel, onSelectLabel, labelField = 'lab
             >
               {filteredOptions.map((option, index) => (
                 <li
-                  key={option.value || option.label || index}
-                  id={`${selectId}-option-${index}`}
-                  role="option"
-                  aria-selected={option.value === selectedLabel}
-                  className={
-                    'custom-dropdown-item' +
-                    (option.value === selectedLabel ? ' selected' : '') +
-                    (index === focusedIndex ? ' focused' : '')
-                  }
-                  onClick={() => selectItem(option)}
+                key={option.value || option.label || index}
+                id={`${selectId}-option-${index}`}
+                role="option"
+                aria-selected={option.value === normalizedSelectedLabel}
+                className={
+                  'custom-dropdown-item' +
+                  (option.value === normalizedSelectedLabel ? ' selected' : '') +
+                  (index === focusedIndex ? ' focused' : '')
+                }
+                onClick={() => selectItem(option)}
                 >
                   {renderLabel(option)}
                 </li>

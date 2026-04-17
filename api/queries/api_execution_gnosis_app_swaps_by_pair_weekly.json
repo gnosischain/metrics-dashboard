@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_swaps_by_pair_weekly",
+  "query": "WITH top_pairs AS (\n      SELECT pair\n      FROM dbt.api_execution_gnosis_app_swaps_by_pair_daily\n      GROUP BY pair\n      ORDER BY sum(n_swaps) DESC\n      LIMIT 10\n    )\n    SELECT toStartOfWeek(date, 1) AS date, pair AS label, sum(n_swaps) AS n_swaps\n    FROM dbt.api_execution_gnosis_app_swaps_by_pair_daily\n    WHERE pair IN (SELECT pair FROM top_pairs)\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
+}

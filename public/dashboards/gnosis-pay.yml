@@ -212,67 +212,72 @@ tabs:
     globalFilterField: wallet_address
     globalFilterLabel: Wallet
     searchable: true
-    searchPlaceholder: Paste wallet address...
+    requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_gpay_user_lifetime_tenure_days
+    searchPlaceholder: Paste wallet address and press Enter...
+    globalControlsPlacement: top
+    emptyState:
+      title: Explore your Gnosis Pay portfolio
+      description: Paste a wallet address to load balances and activity cards.
+      emptyResultsTitle: This wallet is not a Gnosis Pay wallet
+      emptyResultsDescription: Try another wallet address.
+      iconClass: user
     globalFilterVertical: true
     metrics:
       - id: api_execution_gpay_user_lifetime_tenure_days
-        gridRow: 1 / span 2
+        gridRow: 1 
         gridColumn: 1 / span 4
-        minHeight: 100px
+        minHeight: 110px
       - id: api_execution_gpay_user_lifetime_inactivity_days
-        gridRow: 1 / span 2
+        gridRow: 1 
         gridColumn: 5 / span 4
-        minHeight: 100px
+        minHeight: 110px
       - id: api_execution_gpay_user_lifetime_avg_monthly_payment_volume_usd
-        gridRow: 3 
+        gridRow: 2 
         gridColumn: 1 / span 8
         minHeight: 110px
       - id: api_execution_gpay_user_lifetime_total_deposit_volume_usd
-        gridRow: 4
+        gridRow: 3
         gridColumn: 1 / span 4
         minHeight: 110px
       - id: api_execution_gpay_user_lifetime_total_withdrawal_volume_usd
-        gridRow: 4
+        gridRow: 3
         gridColumn: 5 / span 4
         minHeight: 110px
-      - id: global_filter
-        gridRow: 1
-        gridColumn: 9 / span 4
-        minHeight: 60px
       - id: api_execution_gpay_user_actions_radar
-        gridRow: 2 / span 3
+        gridRow: 1 / span 3
         gridColumn: 9 / span 4
-        minHeight: 276px
+        minHeight: 354px
       - id: api_execution_gpay_user_balances_latest
-        gridRow: 5
+        gridRow: 4
         gridColumn: 1 / span 4
         minHeight: 450px
       - id: api_execution_gpay_user_activity
-        gridRow: 5
+        gridRow: 4
         gridColumn: 5 / span 8
         minHeight: 450px
       - id: api_execution_gpay_user_balances_daily
-        gridRow: 6
+        gridRow: 5
         gridColumn: 1 / span 12
         minHeight: 450px
       - id: api_execution_gpay_user_total_volume
-        gridRow: 7
+        gridRow: 6
         gridColumn: 1 / span 6
         minHeight: 100px
       - id: api_execution_gpay_user_lifetime_total_cashback_usd
-        gridRow: 7
+        gridRow: 6
         gridColumn: 7 / span 3
         minHeight: 100px
       - id: api_execution_gpay_user_total_cashback
-        gridRow: 7
+        gridRow: 6
         gridColumn: 10 / span 3
         minHeight: 100px
       - id: api_execution_gpay_user_payments_daily
-        gridRow: 8
+        gridRow: 7
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_gpay_user_cashback_daily
-        gridRow: 8
+        gridRow: 7
         gridColumn: 7 / span 6
         minHeight: 450px
       
