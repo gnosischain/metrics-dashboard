@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gpay_flows_snapshot",
-  "query": "SELECT\n      window,\n      symbol,\n      from_label,\n      to_label,\n      amount_usd,\n      tf_cnt\n    FROM dbt.api_execution_gpay_flows_snapshot"
+  "query": "SELECT\r\n      window,\r\n      symbol,\r\n      from_label,\r\n      to_label,\r\n      amount_usd,\r\n      tf_cnt\r\n    FROM dbt.api_execution_gpay_flows_snapshot"
 }

@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_marketplace_buys_daily_chart",
-  "query": "SELECT toDate(date) AS date,\n           offer_name AS label,\n           n_buys\n    FROM dbt.api_execution_gnosis_app_marketplace_buys_daily\n    ORDER BY date ASC, label ASC"
+  "query": "SELECT toDate(date) AS date,\r\n           offer_name AS label,\r\n           n_buys\r\n    FROM dbt.api_execution_gnosis_app_marketplace_buys_daily\r\n    ORDER BY date ASC, label ASC"
 }

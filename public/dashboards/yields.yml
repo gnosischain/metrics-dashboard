@@ -154,6 +154,7 @@ tabs:
     searchPlaceholder: Paste wallet address and press Enter...
     globalControlsPlacement: top
     requireExplicitFilter: true
+    globalFilterSourceMetric: api_execution_yields_user_top_wallets
     explicitFilterValidationMetric: api_execution_yields_user_kpi_lending_balance
     emptyState:
       title: Explore your portfolio

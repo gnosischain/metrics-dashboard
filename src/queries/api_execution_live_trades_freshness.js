@@ -7,7 +7,7 @@ const metric = {
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',
-  query: `SELECT lag_seconds AS value FROM dbt.api_execution_live_trades_freshness`,
+  query: `SELECT lag_seconds AS value FROM playground_max.api_execution_live_trades_freshness`,
 };
 
 export default metric;

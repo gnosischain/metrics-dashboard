@@ -213,6 +213,7 @@ tabs:
     globalFilterLabel: Wallet
     searchable: true
     requireExplicitFilter: true
+    globalFilterSourceMetric: api_execution_gpay_user_top_wallets
     explicitFilterValidationMetric: api_execution_gpay_user_lifetime_tenure_days
     searchPlaceholder: Paste wallet address and press Enter...
     globalControlsPlacement: top

@@ -7,7 +7,7 @@ const metric = {
   valueField: 'value',
   chartType: 'numberDisplay',
   variant: 'default',
-  query: `SELECT trade_count AS value FROM dbt.api_execution_live_trades_stats`,
+  query: `SELECT trade_count AS value FROM playground_max.api_execution_live_trades_stats`,
 };
 
 export default metric;

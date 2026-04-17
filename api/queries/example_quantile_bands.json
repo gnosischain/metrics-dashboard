@@ -1,4 +1,4 @@
 {
   "id": "example_quantile_bands",
-  "query": "SELECT \n      date,\n      q05,\n      q10, \n      q25,\n      q50,\n      q75,\n      q90,\n      q95,\n      avg_balance\n    FROM consensus_validators_balances_dist_daily\n    ORDER BY date ASC"
+  "query": "SELECT \r\n      date,\r\n      q05,\r\n      q10, \r\n      q25,\r\n      q50,\r\n      q75,\r\n      q90,\r\n      q95,\r\n      avg_balance\r\n    FROM consensus_validators_balances_dist_daily\r\n    ORDER BY date ASC"
 }

@@ -1,4 +1,4 @@
 {
   "id": "overview_sector_consensus",
-  "query": "SELECT date, q50 AS value\n    FROM dbt.api_consensus_validators_apy_dist_daily\n    WHERE date >= today() - INTERVAL 30 DAY\n    ORDER BY date ASC"
+  "query": "SELECT date, q50 AS value\r\n    FROM dbt.api_consensus_validators_apy_dist_daily\r\n    WHERE date >= today() - INTERVAL 30 DAY\r\n    ORDER BY date ASC"
 }

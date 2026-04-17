@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gpay_churn_rates_monthly",
-  "query": "SELECT scope, toDate(month) AS date, 'Churn Rate' AS label, churn_rate AS value\n    FROM dbt.api_execution_gpay_churn_rates_monthly\n\n    UNION ALL\n\n    SELECT scope, toDate(month) AS date, 'Retention Rate' AS label, retention_rate AS value\n    FROM dbt.api_execution_gpay_churn_rates_monthly\n\n    ORDER BY\n      if(scope = 'Payment', 0, 1),\n      date ASC,\n      if(label = 'Churn Rate', 0, 1)"
+  "query": "SELECT scope, toDate(month) AS date, 'Churn Rate' AS label, churn_rate AS value\r\n    FROM dbt.api_execution_gpay_churn_rates_monthly\r\n\r\n    UNION ALL\r\n\r\n    SELECT scope, toDate(month) AS date, 'Retention Rate' AS label, retention_rate AS value\r\n    FROM dbt.api_execution_gpay_churn_rates_monthly\r\n\r\n    ORDER BY\r\n      if(scope = 'Payment', 0, 1),\r\n      date ASC,\r\n      if(label = 'Churn Rate', 0, 1)"
 }

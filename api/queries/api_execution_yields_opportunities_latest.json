@@ -1,4 +1,4 @@
 {
   "id": "api_execution_yields_opportunities_latest",
-  "query": "SELECT\n      type,\n      token,\n      name,\n      address,\n      pool_key,\n      rate_trend_14d,\n      fee_pct,\n      yield_apr,\n      yield_apy,\n      borrow_apy,\n      tvl,\n      total_supplied,\n      total_borrowed,\n      fees_7d,\n      volume_usd_7d,\n      utilization_rate,\n      protocol\n    FROM dbt.api_execution_yields_opportunities_latest"
+  "query": "SELECT\r\n      type,\r\n      token,\r\n      name,\r\n      address,\r\n      pool_key,\r\n      rate_trend_14d,\r\n      fee_pct,\r\n      yield_apr,\r\n      yield_apy,\r\n      borrow_apy,\r\n      tvl,\r\n      total_supplied,\r\n      total_borrowed,\r\n      fees_7d,\r\n      volume_usd_7d,\r\n      utilization_rate,\r\n      protocol\r\n    FROM dbt.api_execution_yields_opportunities_latest"
 }

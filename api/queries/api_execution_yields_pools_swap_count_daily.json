@@ -1,4 +1,4 @@
 {
   "id": "api_execution_yields_pools_swap_count_daily",
-  "query": "SELECT\n      date,\n      token,\n      label AS pool,\n      value\n    FROM dbt.api_execution_pools_swap_count_daily\n    ORDER BY date ASC, token, pool"
+  "query": "SELECT\r\n      date,\r\n      token,\r\n      label AS pool,\r\n      value\r\n    FROM dbt.api_execution_pools_swap_count_daily\r\n    ORDER BY date ASC, token, pool"
 }
