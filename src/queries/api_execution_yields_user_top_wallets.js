@@ -7,7 +7,7 @@ const metric = {
 
   query: `
     SELECT wallet_address
-    FROM playground_max.api_execution_yields_user_top_wallets
+    FROM dbt.api_execution_yields_user_top_wallets
   `,
 };
 
