@@ -10,11 +10,19 @@
   height: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Allow horizontal scroll on narrow screens so wide tables don't force
+   viewport overflow */
+@media (max-width: 767px) {
+  .table-widget .tabulator .tabulator-tableHolder {
+    overflow-x: auto !important;
+  }
 }
 
 .table-widget.dark {

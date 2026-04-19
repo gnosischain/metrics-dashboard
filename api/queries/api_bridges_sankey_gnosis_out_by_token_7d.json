@@ -1,4 +1,4 @@
 {
   "id": "api_bridges_sankey_gnosis_out_by_token_7d",
-  "query": "SELECT token, source, target, value\r\n    FROM dbt.api_bridges_sankey_gnosis_out_by_token_7d"
+  "query": "SELECT token, source, target, value\n    FROM dbt.api_bridges_sankey_gnosis_out_by_token_7d"
 }

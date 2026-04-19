@@ -7,23 +7,23 @@ tabs:
       - id: api_execution_yields_overview_lending_tvl
         gridRow: 1
         gridColumn: 1 / span 4
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_overview_lending_lenders
         gridRow: 1
         gridColumn: 5 / span 4
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_overview_lp_tvl
         gridRow: 1
         gridColumn: 9 / span 4
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_overview_lending_best_apy
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_overview_lp_best_apr
         gridRow: 2
         gridColumn: 7 / span 6
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_opportunities_latest
         gridRow: 3
         gridColumn: 1 / span 12
@@ -37,11 +37,11 @@ tabs:
       - id: api_execution_yields_overview_sdai_apy
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_overview_sdai_supply
         gridRow: 1
         gridColumn: 7 / span 6
-        minHeight: 110px
+        minHeight: 120px
       - id: historical_yield_sdai
         gridRow: 2
         gridColumn: 1 / span 12
@@ -68,7 +68,7 @@ tabs:
       - id: api_execution_yields_lending_tvl_by_token_latest
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 291px
+        minHeight: 292px
       - id: api_execution_yields_lending_balance_cohorts_holders_daily
         gridRow: 3
         gridColumn: 1 / span 6
@@ -102,19 +102,19 @@ tabs:
       - id: api_execution_yields_pools_tvl_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_pools_volume_7d
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_pools_fees_7d
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_pools_lps_count_7d
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_pools_tvl_by_pool_latest
         gridRow: 2
         gridColumn: 1 / span 6
@@ -166,19 +166,19 @@ tabs:
       - id: api_execution_yields_user_kpi_total_lp_fees
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_user_kpi_lending_balance
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_user_kpi_active_lp_positions
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_user_kpi_active_lending_positions
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_yields_user_lp_positions
         gridRow: 2
         gridColumn: 1 / span 12

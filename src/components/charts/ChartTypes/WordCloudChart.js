@@ -169,8 +169,14 @@ export class WordCloudChart extends BaseChart {
         return null;
       }
 
-      // Clean and normalize the word
-      let cleanWord = text.toString();
+      // Clean and normalize the word. Strip NUL and other control characters
+      // (e.g. beacon-chain graffiti is a null-padded 32-byte field) and trim —
+      // echarts-wordcloud renders NULs as empty glyphs and can silently
+      // discard strings that contain them.
+      let cleanWord = text.toString().replace(/[\u0000-\u001F\u007F]/g, '').trim();
+      if (!cleanWord) {
+        return null;
+      }
       if (normalizeCase) {
         cleanWord = cleanWord.toLowerCase();
       }

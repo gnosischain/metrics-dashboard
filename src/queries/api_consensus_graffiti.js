@@ -40,8 +40,17 @@ const metric = {
   // Animation
   layoutAnimation: true,
   
+  // Graffiti is a fixed 32-byte beacon chain field, null-padded. ClickHouse
+  // returns the raw UInt8 bytes including \0 terminators — trim them here so
+  // echarts-wordcloud doesn't receive strings with embedded NULs (which render
+  // as blank glyphs and can silently break the layout).
   query: `
-    SELECT * FROM api_consensus_graffiti_cloud
+    SELECT
+      label,
+      trim(BOTH '\\0' FROM graffiti) AS graffiti,
+      value
+    FROM dbt.api_consensus_graffiti_cloud
+    WHERE trim(BOTH '\\0' FROM graffiti) != ''
   `
 };
 

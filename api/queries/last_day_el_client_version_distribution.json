@@ -1,4 +1,4 @@
 {
   "id": "last_day_el_client_version_distribution",
-  "query": "SELECT \r\n        client,\r\n        version,\r\n        value\r\n      FROM execution_blocks_clients_version_daily\r\n      WHERE date = today() - INTERVAL 9 DAY \r\n        AND client != 'Unknown'\r\n      ORDER BY value DESC"
+  "query": "SELECT \n        client,\n        version,\n        value\n      FROM execution_blocks_clients_version_daily\n      WHERE date = today() - INTERVAL 9 DAY \n        AND client != 'Unknown'\n      ORDER BY value DESC"
 }

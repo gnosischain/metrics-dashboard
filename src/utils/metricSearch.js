@@ -284,6 +284,8 @@ export const buildMetricSearchIndex = (dashboards = []) => {
           key: dedupeKey,
           dashboardId: dashboard.id,
           dashboardName: dashboard.name || dashboard.id || '',
+          dashboardIcon: dashboard.icon || '',
+          dashboardIconClass: dashboard.iconClass || '',
           tabId: tab.id,
           tabName: tab.name || tab.id || '',
           metricId,

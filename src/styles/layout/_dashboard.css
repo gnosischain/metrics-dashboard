@@ -100,11 +100,12 @@
   
   @media (max-width: 768px) {
   .dashboard-content {
-    margin-left: var(--sidebar-width-collapsed);
-    width: calc(100% - var(--sidebar-width-collapsed));
+    margin-left: 0;
+    width: 100%;
     padding: var(--spacing-md);
+    padding-top: calc(var(--spacing-md) + 48px); /* clear the fixed hamburger toggle */
   }
-    
+
   .dashboard-tabs {
     flex-wrap: wrap;
   }

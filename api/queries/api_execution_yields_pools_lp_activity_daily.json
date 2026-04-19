@@ -1,4 +1,4 @@
 {
   "id": "api_execution_yields_pools_lp_activity_daily",
-  "query": "SELECT\r\n      date,\r\n      token,\r\n      label AS pool,\r\n      type,\r\n      value\r\n    FROM dbt.api_execution_pools_lp_activity_daily\r\n    ORDER BY date ASC, token, pool, type"
+  "query": "SELECT\n      date,\n      token,\n      label AS pool,\n      type,\n      value\n    FROM dbt.api_execution_pools_lp_activity_daily\n    ORDER BY date ASC, token, pool, type"
 }

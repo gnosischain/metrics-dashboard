@@ -14,19 +14,19 @@ tabs:
       - id: api_execution_live_trades_stats_count
         gridRow: 2
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_live_trades_stats_volume
         gridRow: 2
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_live_trades_stats_traders
         gridRow: 2
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_live_trades_stats_aggregator
         gridRow: 2
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
 
       # Row 3: the main trades feed
       - id: api_execution_live_trades

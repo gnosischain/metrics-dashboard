@@ -16,17 +16,21 @@ import { withBaseUrl } from '../utils/env';
  * @param {Array} props.resourceLinks - Optional resource links for the top-bar menu
  * @returns {JSX.Element} Header component
  */
-const Header = ({ 
-  dashboardName, 
-  isDarkMode, 
+const Header = ({
+  dashboardName,
+  isDarkMode,
   toggleTheme,
   showIndexingAlert = false,
   indexingMessage = "Data is being indexed. Some metrics may not be fully updated.",
   resourceLinks = HEADER_RESOURCE_LINKS,
   searchIndex = [],
   onSearchSelect = null,
-  searchEnabled = false
+  searchEnabled = false,
+  searchSectors = [],
+  variant = 'default',
+  onHome = null
 }) => {
+  const isLanding = variant === 'landing';
   // Different logo URLs for light and dark mode
   //const logoUrl = isDarkMode 
   //  ? "https://media.githubusercontent.com/media/gnosis/gnosis-brand-assets/main/Brand%20Assets/Logos/Main%20Brand/White/PNG/Gnosis.png"
@@ -36,11 +40,17 @@ const Header = ({
     : withBaseUrl('/imgs/Gnosis_black.png');
 
   return (
-    <header className="dashboard-header">
-      <div className="header-logo-section">
-        <img 
+    <header className={`dashboard-header${isLanding ? ' dashboard-header--landing' : ''}`}>
+      <div
+        className={`header-logo-section${typeof onHome === 'function' ? ' header-logo-section--clickable' : ''}`}
+        onClick={typeof onHome === 'function' ? onHome : undefined}
+        role={typeof onHome === 'function' ? 'button' : undefined}
+        tabIndex={typeof onHome === 'function' ? 0 : undefined}
+        onKeyDown={typeof onHome === 'function' ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHome(); } } : undefined}
+      >
+        <img
           src={logoUrl}
-          alt="Dashboard Logo" 
+          alt="Dashboard Logo"
           className="dashboard-logo"
         />
         <div className="header-title">
@@ -66,6 +76,7 @@ const Header = ({
             searchIndex={searchIndex}
             onSelect={onSearchSelect}
             searchEnabled={searchEnabled}
+            sectors={searchSectors}
           />
         )}
         <HeaderResourcesMenu resourceLinks={resourceLinks} />

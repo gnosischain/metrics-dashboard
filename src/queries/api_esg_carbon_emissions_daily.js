@@ -50,7 +50,7 @@ const metric = {
   
   // Example query that returns quantile data
   query: `
-    SELECT * FROM api_esg_carbon_emissions_daily
+    SELECT * FROM dbt.api_esg_carbon_emissions_daily
   `
 };
 

@@ -35,11 +35,11 @@ tabs:
       - id: api_execution_tokens_supply_total
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 90px
+        minHeight: 120px
       - id: api_execution_tokens_holders_total
         gridRow: 1
         gridColumn: 7 / span 6
-        minHeight: 90px
+        minHeight: 120px
       - id: api_execution_tokens_balance_cohorts_value_daily
         gridRow: 2
         gridColumn: 1 / span 6

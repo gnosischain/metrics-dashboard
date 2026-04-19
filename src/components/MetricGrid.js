@@ -740,6 +740,12 @@ const MetricGrid = ({
           })}
         </div>
       )}
+      {!showExplicitFilterEmptyState && metricsToRender.length === 0 && (
+        <div className="metrics-grid-empty-state" data-testid="metric-grid-empty-state">
+          <div className="metrics-grid-empty-state-title">No metrics in this view yet</div>
+          <div className="metrics-grid-empty-state-description">Pick another tab or check back soon.</div>
+        </div>
+      )}
       {showExplicitFilterEmptyState && (
         <div
           className={`metrics-grid-empty-state${explicitFilterValidationState === EXPLICIT_FILTER_VALIDATION_STATES.VALIDATING ? ' is-validating' : ''}`}

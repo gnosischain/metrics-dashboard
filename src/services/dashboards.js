@@ -70,6 +70,7 @@ class DashboardService {
       order: dashboardConfig.order || 999,
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
+      tagline: dashboardConfig.tagline || '',
       palette: resolveDashboardPalette(dashboardConfig.palette)
     };
     

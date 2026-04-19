@@ -77,7 +77,13 @@ export class PieChart extends BaseChart {
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
           fontSize: 12,
+          // Hide labels for empty/zero/unnamed slices to avoid label spaghetti
+          // (e.g. "Unknown: 0" radiating from every slice of an empty dataset).
+          show: true,
           formatter: (params) => {
+            const hasName = params.name && params.name !== 'Unknown' && params.name !== '—';
+            const hasValue = Number(params.value) > 0;
+            if (!hasName || !hasValue) return '';
             if (config.pieLabelValue === false) {
               return PieChart.formatLabelWithIcon(params.name, null);
             }
@@ -91,6 +97,9 @@ export class PieChart extends BaseChart {
           }
         },
         labelLine: {
+          show: true,
+          showAbove: false,
+          smooth: true,
           lineStyle: {
             color: isDarkMode ? '#6b7280' : '#9ca3af'
           }
@@ -156,7 +165,7 @@ export class PieChart extends BaseChart {
 
     return {
       data: sortedData.map(item => ({
-        name: item[nameField] || 'Unknown',
+        name: item[nameField] || '—',
         value: parseFloat(item[valueField] || 0)
       }))
     };

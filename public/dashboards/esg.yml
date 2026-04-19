@@ -7,15 +7,15 @@ tabs:
       - id: api_esg_carbon_emissions_annualised_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 100px
+        minHeight: 120px
       - id: api_esg_energy_consumption_annualised_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 100px
+        minHeight: 120px
       - id: api_esg_cif_network_vs_countries_daily
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 602px
+        minHeight: 622px
       - id: api_esg_carbon_emissions_daily
         gridRow: 2
         gridColumn: 1 / span 6

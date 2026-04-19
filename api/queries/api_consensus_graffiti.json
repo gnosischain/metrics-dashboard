@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_graffiti",
-  "query": "SELECT * FROM api_consensus_graffiti_cloud"
+  "query": "SELECT\n      label,\n      trim(BOTH '\\\\0' FROM graffiti) AS graffiti,\n      value\n    FROM dbt.api_consensus_graffiti_cloud\n    WHERE trim(BOTH '\\\\0' FROM graffiti) != ''"
 }

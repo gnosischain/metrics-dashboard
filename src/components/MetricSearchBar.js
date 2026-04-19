@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import IconComponent from './IconComponent';
 import { searchMetricIndex } from '../utils/metricSearch';
 
 const RESULT_LIMIT = 8;
@@ -36,7 +37,7 @@ const getDuplicateQualifier = (entry) => {
   return entry.metricId;
 };
 
-const MetricSearchBar = ({ searchIndex = [], onSelect, searchEnabled = true }) => {
+const MetricSearchBar = ({ searchIndex = [], onSelect, searchEnabled = true, sectors = [] }) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [activeResultIndex, setActiveResultIndex] = useState(-1);
@@ -104,14 +105,24 @@ const MetricSearchBar = ({ searchIndex = [], onSelect, searchEnabled = true }) =
   const handleInputChange = (event) => {
     const nextQuery = event.target.value;
     setQuery(nextQuery);
-    setIsOpen(Boolean(nextQuery.trim()));
+    setIsOpen(true);
   };
 
   const handleInputFocus = () => {
-    if (trimmedQuery) {
-      setIsOpen(true);
-    }
+    setIsOpen(true);
   };
+
+  const handleSectorSelect = (sector) => {
+    if (!sector || typeof onSelect !== 'function') return;
+    onSelect({ dashboardId: sector.id, tabId: null });
+    setQuery('');
+    setIsOpen(false);
+    setActiveResultIndex(-1);
+    inputRef.current?.blur();
+  };
+
+  const showSectorMenu = isOpen && !trimmedQuery && sectors.length > 0;
+  const showResultsMenu = isOpen && !!trimmedQuery;
 
   const handleKeyDown = (event) => {
     if (!searchEnabled) return;
@@ -169,7 +180,32 @@ const MetricSearchBar = ({ searchIndex = [], onSelect, searchEnabled = true }) =
         disabled={!searchEnabled}
       />
 
-      {isOpen && trimmedQuery && (
+      {showSectorMenu && (
+        <div className="metric-search-menu metric-search-menu--sectors" role="menu">
+          <div className="metric-search-menu-head">Jump to sector</div>
+          <div className="metric-search-sector-grid">
+            {sectors.map((sector) => (
+              <button
+                key={sector.id}
+                type="button"
+                role="menuitem"
+                className="metric-search-sector"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleSectorSelect(sector)}
+              >
+                <span className="metric-search-sector-icon" aria-hidden="true">
+                  {sector.iconClass
+                    ? <IconComponent name={sector.iconClass} size="md" />
+                    : (sector.icon || <IconComponent name="chart-line" size="md" />)}
+                </span>
+                <span className="metric-search-sector-name">{sector.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showResultsMenu && (
         <div id={listboxId} className="metric-search-menu" role="listbox">
           {results.length > 0 ? (
             results.map((entry, index) => {
@@ -195,8 +231,18 @@ const MetricSearchBar = ({ searchIndex = [], onSelect, searchEnabled = true }) =
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => handleSelect(entry)}
                 >
-                  <span className="metric-search-title">{titleText}</span>
-                  <span className="metric-search-path">{entry.dashboardName} / {entry.tabName}</span>
+                  <span className="metric-search-item-body">
+                    <span className="metric-search-title">{titleText}</span>
+                    <span className="metric-search-path">{entry.tabName}</span>
+                  </span>
+                  <span className="metric-search-sector-chip" aria-label={`Sector: ${entry.dashboardName}`}>
+                    <span className="metric-search-sector-chip-icon" aria-hidden="true">
+                      {entry.dashboardIconClass
+                        ? <IconComponent name={entry.dashboardIconClass} size="sm" />
+                        : (entry.dashboardIcon || <IconComponent name="chart-line" size="sm" />)}
+                    </span>
+                    <span className="metric-search-sector-chip-name">{entry.dashboardName}</span>
+                  </span>
                 </button>
               );
             })

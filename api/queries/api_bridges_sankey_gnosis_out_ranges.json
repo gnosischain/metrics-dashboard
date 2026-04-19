@@ -1,4 +1,4 @@
 {
   "id": "api_bridges_sankey_gnosis_out_ranges",
-  "query": "SELECT range, source, target, value\r\n    FROM dbt.api_bridges_sankey_gnosis_out_ranges"
+  "query": "SELECT range, source, target, value\n    FROM dbt.api_bridges_sankey_gnosis_out_ranges"
 }

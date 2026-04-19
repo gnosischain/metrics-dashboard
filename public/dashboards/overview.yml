@@ -1,8 +1,10 @@
-# Overview dashboard — structured into 4 visual bands:
+# Overview dashboard — structured into 3 visual bands:
 #   A. Hero KPI row (6 tiles × 2 cols, Artemis-style)
 #   B. Two headline trend charts (6 cols each)
 #   C. Secondary KPI row (4 tiles × 3 cols)
-#   D. Sector launcher — one tile per sector (linkTo routes user into sector)
+#
+# Band D (sector launcher tiles) was removed — sector discovery now lives on
+# the landing page (see src/components/Landing.js).
 metrics:
   # --- Band A: Hero KPIs (row 1) ---
   - id: overview_kpi_transactions
@@ -40,7 +42,7 @@ metrics:
     gridColumn: 7 / span 6
     minHeight: 340px
 
-  # --- Band C: Secondary KPIs (row 4) — distinct from hero ---
+  # --- Band C: Secondary KPIs (row 4) ---
   - id: overview_stake_api
     gridRow: 4
     gridColumn: 1 / span 3
@@ -57,41 +59,3 @@ metrics:
     gridRow: 4
     gridColumn: 10 / span 3
     minHeight: 120px
-
-  # --- Band D: Sector launcher (rows 5-7, 3 per row × 4 cols) ---
-  - id: overview_sector_gnosispay
-    gridRow: 5
-    gridColumn: 1 / span 4
-    minHeight: 130px
-  - id: overview_sector_consensus
-    gridRow: 5
-    gridColumn: 5 / span 4
-    minHeight: 130px
-  - id: overview_sector_bridges
-    gridRow: 5
-    gridColumn: 9 / span 4
-    minHeight: 130px
-  - id: overview_sector_tokens
-    gridRow: 6
-    gridColumn: 1 / span 4
-    minHeight: 130px
-  - id: overview_sector_circles
-    gridRow: 6
-    gridColumn: 5 / span 4
-    minHeight: 130px
-  - id: overview_sector_yields
-    gridRow: 6
-    gridColumn: 9 / span 4
-    minHeight: 130px
-  - id: overview_sector_onchain
-    gridRow: 7
-    gridColumn: 1 / span 4
-    minHeight: 130px
-  - id: overview_sector_network
-    gridRow: 7
-    gridColumn: 5 / span 4
-    minHeight: 130px
-  - id: overview_sector_esg
-    gridRow: 7
-    gridColumn: 9 / span 4
-    minHeight: 130px

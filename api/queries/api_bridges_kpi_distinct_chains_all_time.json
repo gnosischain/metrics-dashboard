@@ -1,4 +1,4 @@
 {
   "id": "api_bridges_kpi_distinct_chains_all_time",
-  "query": "SELECT value\r\n    FROM dbt.api_bridges_kpi_distinct_chains_all_time"
+  "query": "SELECT value\n    FROM dbt.api_bridges_kpi_distinct_chains_all_time"
 }

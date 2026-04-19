@@ -24,6 +24,7 @@
 @import './components/_tabs.css';
 @import './components/_tooltips.css';
 @import './components/_indexing-alert.css';
+@import './components/_landing.css';
 
 /* Widget styles */
 @import './widgets/_charts.css';

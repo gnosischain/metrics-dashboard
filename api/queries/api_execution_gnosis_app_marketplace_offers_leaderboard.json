@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_marketplace_offers_leaderboard",
-  "query": "SELECT\r\n      offer_name,\r\n      total_buys,\r\n      total_payers,\r\n      toDate(first_buy_at)  AS first_buy,\r\n      toDate(last_buy_at)   AS last_buy\r\n    FROM dbt.api_execution_gnosis_app_marketplace_offers_latest\r\n    ORDER BY total_buys DESC"
+  "query": "SELECT\n      offer_name,\n      total_buys,\n      total_payers,\n      toDate(first_buy_at)  AS first_buy,\n      toDate(last_buy_at)   AS last_buy\n    FROM dbt.api_execution_gnosis_app_marketplace_offers_latest\n    ORDER BY total_buys DESC"
 }

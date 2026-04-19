@@ -7,19 +7,19 @@ tabs:
       - id: api_execution_circles_v2_humans_cnt_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_groups_cnt_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_orgs_cnt_latest
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_active_trusts_cnt_latest
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_avatars_cumulative
         gridRow: 2 / span 2
         gridColumn: 1 / span 6
@@ -112,19 +112,19 @@ tabs:
       - id: api_execution_circles_v2_avatar_total_balance_latest
         gridRow: 2
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_avatar_trusts_given_latest
         gridRow: 2
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_avatar_trusts_received_latest
         gridRow: 2
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_avatar_tokens_held_count
         gridRow: 2
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_circles_v2_avatar_balances_daily
         gridRow: 3
         gridColumn: 1 / span 12
@@ -144,7 +144,7 @@ tabs:
       - id: api_execution_circles_v2_avatar_mint_activity_daily
         gridRow: 5
         gridColumn: 7 / span 6
-        minHeight: 320px
+        minHeight: 450px
       - id: api_execution_circles_v2_avatar_trust_network
         gridRow: 6
         gridColumn: 1 / span 6

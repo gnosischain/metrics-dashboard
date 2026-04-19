@@ -1,5 +1,12 @@
 export const HEADER_RESOURCE_LINKS = [
   {
+    id: 'docs',
+    label: 'Docs',
+    links: [
+      { id: 'analytics-docs', label: 'Analytics Docs', href: 'https://docs.analytics.gnosis.io/' }
+    ]
+  },
+  {
     id: 'api',
     label: 'API',
     links: [

@@ -3,12 +3,14 @@ Overview:
   order: 1
   icon: 📊
   iconClass: chart-line
+  tagline: High-level KPIs and trends across the full Gnosis ecosystem.
   source: /dashboards/overview.yml
 GnosisPay:
   name: Gnosis Pay
   order: 10
   icon: 💳
   iconClass: credit-card
+  tagline: Card issuance, spend volume, and merchant activity.
   palette: gnosis-pay
   source: /dashboards/gnosis-pay.yml
 GnosisApp:
@@ -16,6 +18,7 @@ GnosisApp:
   order: 13
   icon: 📱
   iconClass: gnosis-app
+  tagline: Self-custodial wallet adoption and user flows.
   palette: gnosis-pay
   source: /dashboards/gnosis-app.yml
 Circles:
@@ -23,52 +26,61 @@ Circles:
   order: 16
   icon: 🔵
   iconClass: circles
+  tagline: Personal currency network growth and trust graph.
   source: /dashboards/circles.yml
 LiveTrades:
   name: Live Trades
   order: 20
   icon: "⚡"
   iconClass: activity
+  tagline: Real-time DEX trades across Gnosis Chain.
   source: /dashboards/live-trades.yml
 Tokens:
   name: Tokens
   order: 30
   icon: 🪙
-  iconClass: coins
+  iconClass: token-dot
+  tagline: Token supply, holders, and on-chain circulation.
   source: /dashboards/tokens.yml
 OnChainActivity:
   name: OnChain Activity
   order: 30
   icon: ⛓️
   iconClass: link
+  tagline: Transactions, accounts, gas, and contract usage.
   source: /dashboards/onchain-activity.yml
 Consensus:
   name: Consensus
   order: 40
   icon: 🔄
   iconClass: check-circle
+  tagline: Validator participation, attestations, and finality.
   source: /dashboards/consensus.yml
 Network:
   name: Network
   order: 50
   icon: 🌐
   iconClass: globe
+  tagline: Peer distribution, client diversity, and geography.
   source: /dashboards/network.yml
 Bridges:
   name: Bridges
   order: 60
   icon: 🌉
   iconClass: bridge
+  tagline: Cross-chain flows and bridged asset reserves.
   source: /dashboards/bridges.yml
 ESG:
   name: ESG
   order: 70
   icon: 🌱
   iconClass: leaf
+  tagline: Energy footprint and sustainability metrics.
   source: /dashboards/esg.yml
 Yields:
   name: Yields
   order: 80
   icon: "📈"
   iconClass: yield
+  tagline: Lending, staking, and DeFi yield opportunities.
   source: /dashboards/yields.yml

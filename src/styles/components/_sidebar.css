@@ -254,43 +254,53 @@
     top: var(--header-height);
     left: 0;
     bottom: 0;
-    width: var(--sidebar-width-collapsed);
+    width: 0;
     z-index: 500;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: width var(--transition-slow);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; 
+    transition: width var(--transition-slow), transform var(--transition-slow);
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
     height: calc(100dvh - var(--header-height));
   }
 
+  /* Collapsed on mobile = hidden (no rail). Toggle reveals full drawer. */
   .dashboard-sidebar.collapsed {
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .dashboard-sidebar.mobile-expanded,
+  .dashboard-sidebar.collapsed.mobile-expanded {
+    width: min(86vw, var(--sidebar-width)) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
 
-  /* widen drawer whenever mobile-expanded is true */
-  .dashboard-sidebar.mobile-expanded {
-    width: var(--sidebar-width);
-  }
-
-  /* dim/disable content behind drawer */
+  /* Dim content when drawer is open */
   .dashboard-sidebar.mobile-expanded ~ .dashboard-content {
     pointer-events: none;
     opacity: 0.25;
   }
 
-  /* ONE toggle rule only (sibling selector) */
-  .dashboard-sidebar + .sidebar-toggle {
+  /* Toggle becomes a fixed hamburger at the top-left of content, elevated
+     above chart action rows with its own surface + shadow. Elevated
+     specificity to beat `.dashboard-sidebar.collapsed + .sidebar-toggle`. */
+  .dashboard-sidebar + .sidebar-toggle,
+  .dashboard-sidebar.collapsed + .sidebar-toggle {
     position: fixed;
-    top: calc(var(--header-height) + 8px);
-    left: var(--sidebar-width-collapsed);
-    z-index: 510; /* keep it above everything */
+    top: calc(var(--header-height) + 12px);
+    left: 12px;
+    width: 36px;
+    height: 36px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-base);
+    z-index: 510;
   }
 
-  /* move toggle to expanded edge when open */
-  .dashboard-sidebar.mobile-expanded + .sidebar-toggle {
-    left: var(--sidebar-width);
+  .dashboard-sidebar.mobile-expanded + .sidebar-toggle,
+  .dashboard-sidebar.collapsed.mobile-expanded + .sidebar-toggle {
+    left: calc(min(86vw, var(--sidebar-width)) - 18px);
   }
 
   .tab-item {

@@ -179,6 +179,24 @@
   .metrics-grid-positioned .grid-item {
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
+    /* cap any YAML fixed height — prevents 600px+ desktop heights from leaving
+       giant blank chart skeletons on mobile */
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 360px;
+  }
+
+  /* Charts inside a card still need enough room to render legibly */
+  .metrics-grid-positioned .grid-item .chart-container,
+  .metrics-grid-positioned .grid-item .echarts-for-react {
+    min-height: 220px;
+  }
+
+  /* Pure number/filter tiles stay compact */
+  .metrics-grid-positioned .grid-item-filter,
+  .metrics-grid-positioned .grid-item-number {
+    max-height: none;
+    min-height: 0 !important;
   }
 
   .metrics-grid-empty-state {
@@ -300,7 +318,18 @@
 
 @media (max-width: 767px) {
   .metrics-grid-toolbar {
-    justify-content: flex-end;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .metrics-grid-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .metrics-grid-toolbar-group {
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .metrics-grid-positioned {
@@ -316,14 +345,28 @@
     margin-bottom: 0;
     position: relative !important;
     margin-top: var(--spacing-sm) !important;
-    min-height: 450px !important;
+    /* Let content drive height on mobile — do NOT force 450px. */
+    height: auto !important;
+    min-height: 0 !important;
   }
 
+  /* Charts need enough vertical room to be legible */
+  .metrics-grid-positioned .grid-item:has(.echarts-for-react),
+  .metrics-grid-positioned .grid-item:has(canvas) {
+    min-height: 280px !important;
+  }
+
+  /* Number-only tiles stay compact */
   .metrics-grid-positioned .grid-item:has(.number-widget),
   .metrics-grid-positioned .grid-item:has(.number-display-card) {
     min-height: 100px !important;
   }
-  
+
+  /* Filter row: compact */
+  .metrics-grid-positioned .grid-item-filter {
+    min-height: 0 !important;
+  }
+
   /* Force single column on mobile */
   .grid {
     grid-template-columns: 1fr !important;

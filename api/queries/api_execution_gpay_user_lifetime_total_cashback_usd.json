@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gpay_user_lifetime_total_cashback_usd",
-  "query": "SELECT wallet_address, total_cashback_usd AS value\r\n    FROM dbt.api_execution_gpay_user_lifetime_metrics"
+  "query": "SELECT wallet_address, total_cashback_usd AS value\n    FROM dbt.api_execution_gpay_user_lifetime_metrics"
 }

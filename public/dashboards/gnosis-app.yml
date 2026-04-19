@@ -227,35 +227,35 @@ tabs:
       - id: api_execution_gnosis_app_kpi_total_users
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_mau_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_retention_pct_latest
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_churn_rate_latest
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
         gridRow: 2
         gridColumn: 1 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_gp_wallets_latest
         gridRow: 2
         gridColumn: 4 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_marketplace_buys_total
         gridRow: 2
         gridColumn: 7 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_kpi_topups_7d
         gridRow: 2
         gridColumn: 10 / span 3
-        minHeight: 110px
+        minHeight: 120px
       - id: api_execution_gnosis_app_retention_monthly_heatmap
         gridRow: 3
         gridColumn: 1 / span 12

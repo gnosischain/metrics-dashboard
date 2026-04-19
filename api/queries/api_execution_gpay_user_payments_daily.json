@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gpay_user_payments_daily",
-  "query": "SELECT wallet_address, date, label, value\r\n    FROM dbt.api_execution_gpay_user_payments_daily"
+  "query": "SELECT wallet_address, date, label, value\n    FROM dbt.api_execution_gpay_user_payments_daily"
 }

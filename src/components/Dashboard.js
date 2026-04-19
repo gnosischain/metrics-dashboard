@@ -3,6 +3,7 @@ import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
 import IconComponent from './IconComponent';
+import Landing from './Landing';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 import { buildMetricSearchIndex } from '../utils/metricSearch';
@@ -21,6 +22,12 @@ const resolveLocationState = (dashboards, search = window.location.search) => {
   const params = new URLSearchParams(search);
   const dashboardParam = params.get('dashboard');
   const tabParam = params.get('tab');
+
+  // No dashboard param → show landing page (caller treats this as landing).
+  if (!dashboardParam) {
+    return { dashboardId: '', tabId: '', globalFilterField: null, globalFilterValue: null, secondaryGlobalFilterField: null, secondaryGlobalFilterValue: null };
+  }
+
   const matchedDashboard = dashboards.find(dashboard => dashboard.id === dashboardParam) || dashboards[0];
   const dashboardTabs = dashboardsService.getDashboardTabs(matchedDashboard.id);
   const resolvedTabId = tabParam && dashboardTabs.some(tab => tab.id === tabParam)
@@ -501,7 +508,13 @@ const Dashboard = () => {
     const didNavigationChange = previousLocationState.dashboardId !== nextLocationState.dashboardId
       || previousLocationState.tabId !== nextLocationState.tabId;
 
-    const shouldReplace = !hasSyncedUrlRef.current
+    // Leaving the landing (empty previous dashboard → real dashboard) should push,
+    // so the back button returns to landing.
+    const leavingLanding = hasSyncedUrlRef.current === false
+      && previousLocationState.dashboardId === ''
+      && nextLocationState.dashboardId !== '';
+
+    const shouldReplace = (!hasSyncedUrlRef.current && !leavingLanding)
       || suppressNextHistoryPushRef.current
       || !didNavigationChange;
 
@@ -541,82 +554,112 @@ const Dashboard = () => {
   };
 
   const handleSearchSelect = useCallback((searchEntry) => {
-    if (!searchEntry?.dashboardId || !searchEntry?.tabId) {
+    if (!searchEntry?.dashboardId) {
       return;
     }
 
-    handleNavigation(searchEntry.dashboardId, searchEntry.tabId);
+    handleNavigation(searchEntry.dashboardId, searchEntry.tabId || null);
   }, [handleNavigation]);
 
+  const handleGoHome = useCallback(() => {
+    setActiveDashboard('');
+    setActiveTab('');
+    const nextUrl = window.location.pathname;
+    if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
+      window.history.pushState({}, '', nextUrl);
+    }
+    lastSyncedLocationRef.current = {
+      dashboardId: '',
+      tabId: '',
+      globalFilterField: null,
+      globalFilterValue: null,
+      secondaryGlobalFilterField: null,
+      secondaryGlobalFilterValue: null
+    };
+  }, []);
+
+  const isLanding = configLoaded && dashboards.length > 0 && !activeDashboard;
+
   return (
-    <div className="dashboard">
-      <Header 
-        dashboardName={getActiveDashboardName()} 
-        isDarkMode={isDarkMode} 
+    <div className={`dashboard${isLanding ? ' dashboard--landing' : ''}`}>
+      <Header
+        dashboardName={getActiveDashboardName()}
+        isDarkMode={isDarkMode}
         toggleTheme={toggleTheme}
         showIndexingAlert={showIndexingAlert}
         indexingMessage={indexingMessage}
         searchIndex={searchIndex}
         onSearchSelect={handleSearchSelect}
         searchEnabled={configLoaded && searchIndex.length > 0}
+        searchSectors={dashboards.filter(d => d.id !== 'overview')}
+        variant={isLanding ? 'landing' : 'default'}
+        onHome={handleGoHome}
       />
-      
-      <div className="dashboard-main">
-        <aside 
-          ref={sidebarRef}
-          className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileExpanded ? 'mobile-expanded' : ''}`}
-        >
-          <TabNavigation 
-            dashboards={dashboards}
-            activeDashboard={activeDashboard}
-            tabs={tabs} 
-            activeTab={activeTab} 
-            onNavigation={handleNavigation}
-            isCollapsed={sidebarCollapsed && !mobileExpanded}
-          />
-        </aside>
-        
-        {/* Move sidebar toggle here - outside the sidebar */}
-        <div className="sidebar-toggle" onClick={toggleSidebar}>
-          <IconComponent 
-            name={
-              // On mobile
-              window.innerWidth <= 768 
-                ? (mobileExpanded ? 'chevron-left' : 'chevron-right')
-                // On desktop
-                : (sidebarCollapsed ? 'chevron-right' : 'chevron-left')
-            } 
-            size="sm"
-          />
+
+      {isLanding ? (
+        <Landing
+          dashboards={dashboards}
+          onNavigate={handleNavigation}
+          isDarkMode={isDarkMode}
+        />
+      ) : (
+        <div className="dashboard-main">
+          <aside
+            ref={sidebarRef}
+            className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileExpanded ? 'mobile-expanded' : ''}`}
+          >
+            <TabNavigation
+              dashboards={dashboards}
+              activeDashboard={activeDashboard}
+              tabs={tabs}
+              activeTab={activeTab}
+              onNavigation={handleNavigation}
+              isCollapsed={sidebarCollapsed && !mobileExpanded}
+            />
+          </aside>
+
+          {/* Move sidebar toggle here - outside the sidebar */}
+          <div className="sidebar-toggle" onClick={toggleSidebar}>
+            <IconComponent
+              name={
+                // On mobile
+                window.innerWidth <= 768
+                  ? (mobileExpanded ? 'chevron-left' : 'chevron-right')
+                  // On desktop
+                  : (sidebarCollapsed ? 'chevron-right' : 'chevron-left')
+              }
+              size="sm"
+            />
+          </div>
+
+          <div className="dashboard-content">
+            {!configLoaded ? (
+              <div className="loading-indicator">Initializing dashboard...</div>
+            ) : activeDashboard && activeTab ? (
+              <div className="tab-content">
+                <MetricGrid
+                  metrics={tabMetrics}
+                  isDarkMode={isDarkMode}
+                  tabConfig={activeTabConfig}
+                  globalFilterValue={currentGlobalFilter}
+                  onGlobalFilterChange={handleGlobalFilterChange}
+                  secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
+                  onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
+                  dashboardPalette={activeDashboardPalette}
+                />
+              </div>
+            ) : dashboards.length === 0 ? (
+              <div className="empty-dashboard">
+                <p>No dashboards configured. Please check your dashboard configuration.</p>
+              </div>
+            ) : (
+              <div className="empty-dashboard">
+                <p>Select a dashboard and tab to view metrics</p>
+              </div>
+            )}
+          </div>
         </div>
-        
-        <div className="dashboard-content">
-          {!configLoaded ? (
-            <div className="loading-indicator">Initializing dashboard...</div>
-          ) : activeDashboard && activeTab ? (
-            <div className="tab-content">
-              <MetricGrid
-                metrics={tabMetrics}
-                isDarkMode={isDarkMode}
-                tabConfig={activeTabConfig}
-                globalFilterValue={currentGlobalFilter}
-                onGlobalFilterChange={handleGlobalFilterChange}
-                secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
-                onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
-                dashboardPalette={activeDashboardPalette}
-              />
-            </div>
-          ) : dashboards.length === 0 ? (
-            <div className="empty-dashboard">
-              <p>No dashboards configured. Please check your dashboard configuration.</p>
-            </div>
-          ) : (
-            <div className="empty-dashboard">
-              <p>Select a dashboard and tab to view metrics</p>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_token_offer_claims_by_offer_weekly",
-  "query": "SELECT toStartOfWeek(date, 1) AS date,\r\n           concat(substring(offer_address, 1, 10), '…',\r\n                  coalesce(concat(' ', offer_token_symbol), '')) AS label,\r\n           sum(n_claims) AS n_claims\r\n    FROM dbt.api_execution_gnosis_app_token_offer_claims_by_offer_daily\r\n    GROUP BY date, label\r\n    ORDER BY date ASC, label ASC"
+  "query": "SELECT toStartOfWeek(date, 1) AS date,\n           concat(substring(offer_address, 1, 10), '…',\n                  coalesce(concat(' ', offer_token_symbol), '')) AS label,\n           sum(n_claims) AS n_claims\n    FROM dbt.api_execution_gnosis_app_token_offer_claims_by_offer_daily\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
 }
