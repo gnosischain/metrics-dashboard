@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import Dashboard from './Dashboard';
+import dashboardConfig from '../utils/dashboardConfig';
 
 const metricGridLifecycle = {
   mounts: 0,
@@ -9,8 +10,8 @@ const metricGridLifecycle = {
 };
 
 vi.mock('./Header', () => ({
-  default: ({ onSearchSelect }) => (
-    <div data-testid="header">
+  default: ({ onSearchSelect, variant = 'default' }) => (
+    <div data-testid="header" data-variant={variant}>
       header
       {typeof onSearchSelect === 'function' && (
         <button type="button" onClick={() => onSearchSelect({ dashboardId: 'dashboard-a', tabId: 'tab-2' })}>
@@ -22,7 +23,7 @@ vi.mock('./Header', () => ({
 }));
 
 vi.mock('./IconComponent', () => ({
-  default: () => <span>icon</span>
+  default: () => <span aria-hidden="true">icon</span>
 }));
 
 vi.mock('./MetricGrid', () => ({
@@ -131,10 +132,24 @@ vi.mock('../services/dashboards', () => ({
   }
 }));
 
+const createDeferred = () => {
+  let resolve;
+  let reject;
+
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return { promise, resolve, reject };
+};
+
 describe('Dashboard rendering behavior', () => {
   beforeEach(() => {
     metricGridLifecycle.mounts = 0;
     metricGridLifecycle.unmounts = 0;
+    vi.clearAllMocks();
+    vi.mocked(dashboardConfig.loadConfig).mockResolvedValue(true);
 
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -150,7 +165,54 @@ describe('Dashboard rendering behavior', () => {
     window.history.replaceState({}, '', '/');
   });
 
+  it('renders the landing shell immediately while config is still loading on the root URL', async () => {
+    const deferred = createDeferred();
+    vi.mocked(dashboardConfig.loadConfig).mockReturnValue(deferred.promise);
+
+    render(<Dashboard />);
+
+    expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'landing');
+    expect(screen.getByRole('heading', { level: 1, name: /open metrics for gnosis/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Explore Overview' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Browse sectors ↓' })).toBeDisabled();
+    expect(screen.queryByText('Initializing dashboard...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Explore by topic')).not.toBeInTheDocument();
+
+    await act(async () => {
+      deferred.resolve(true);
+      await deferred.promise;
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'landing');
+      expect(screen.getByText('Explore by topic')).toBeInTheDocument();
+    });
+  });
+
+  it('keeps the dashboard loading shell for deep links until config resolves', async () => {
+    const deferred = createDeferred();
+    vi.mocked(dashboardConfig.loadConfig).mockReturnValue(deferred.promise);
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1');
+
+    render(<Dashboard />);
+
+    expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'default');
+    expect(screen.getByText('Initializing dashboard...')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1, name: /open metrics for gnosis/i })).not.toBeInTheDocument();
+
+    await act(async () => {
+      deferred.resolve(true);
+      await deferred.promise;
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
+    });
+  });
+
   it('does not remount MetricGrid component when changing tabs', async () => {
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1');
+
     render(<Dashboard />);
 
     await waitFor(() => {
@@ -175,6 +237,8 @@ describe('Dashboard rendering behavior', () => {
   });
 
   it('navigates to dashboard tab when selecting a search result', async () => {
+    window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1');
+
     render(<Dashboard />);
 
     await waitFor(() => {

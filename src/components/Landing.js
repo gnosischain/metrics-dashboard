@@ -49,24 +49,30 @@ const STRIP_METRIC_IDS = [
   'overview_kpi_stablecoin_supply'
 ];
 
-const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
+const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = false }) => {
   const sectorCards = useMemo(
-    () => dashboards.filter((d) => d.id !== 'overview'),
-    [dashboards]
+    () => (isBootLoading ? [] : dashboards.filter((d) => d.id !== 'overview')),
+    [dashboards, isBootLoading]
   );
 
   const overviewMetrics = useMemo(() => {
+    if (isBootLoading) {
+      return [];
+    }
     const all = dashboardsService.getTabMetrics('overview', 'main') || [];
     const included = new Set(LANDING_OVERVIEW_METRIC_IDS);
     return all.filter((m) => included.has(m.id));
-  }, [dashboards]);
+  }, [dashboards, isBootLoading]);
 
   const overviewTabConfig = useMemo(
-    () => dashboardsService.getTab('overview', 'main') || null,
-    [dashboards]
+    () => (isBootLoading ? null : dashboardsService.getTab('overview', 'main') || null),
+    [dashboards, isBootLoading]
   );
 
   const stripMetrics = useMemo(() => {
+    if (isBootLoading) {
+      return [];
+    }
     const all = dashboardsService.getTabMetrics('overview', 'main') || [];
     const map = new Map(all.map((m) => [m.id, m]));
     return STRIP_METRIC_IDS.map((id, idx) => {
@@ -79,21 +85,24 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
         minHeight: '110px'
       };
     }).filter(Boolean);
-  }, [dashboards]);
+  }, [dashboards, isBootLoading]);
 
   const handleSectorClick = (dashboardId) => {
-    if (typeof onNavigate === 'function') {
+    if (!isBootLoading && typeof onNavigate === 'function') {
       onNavigate(dashboardId, null);
     }
   };
 
   const handleExploreOverview = () => {
-    if (typeof onNavigate === 'function') {
+    if (!isBootLoading && typeof onNavigate === 'function') {
       onNavigate('overview', null);
     }
   };
 
   const scrollToSectors = () => {
+    if (isBootLoading) {
+      return;
+    }
     const el = document.getElementById('landing-sectors');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -118,6 +127,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
               type="button"
               className="landing-cta landing-cta-primary"
               onClick={handleExploreOverview}
+              disabled={isBootLoading}
             >
               Explore Overview
               <IconComponent name="chevron-right" size="sm" />
@@ -134,6 +144,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
               type="button"
               className="landing-cta landing-cta-link"
               onClick={scrollToSectors}
+              disabled={isBootLoading}
             >
               Browse sectors ↓
             </button>
@@ -156,40 +167,42 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
       )}
 
       {/* Sector grid */}
-      <section id="landing-sectors" className="landing-section">
-        <div className="landing-section-head">
-          <div className="landing-section-eyebrow">Sectors</div>
-          <h2 className="landing-section-title">Explore by topic</h2>
-          <p className="landing-section-sub">
-            Every corner of the Gnosis ecosystem, one click away.
-          </p>
-        </div>
-        <div className="landing-sector-grid">
-          {sectorCards.map((d) => (
-            <button
-              type="button"
-              key={d.id}
-              className="landing-sector-card"
-              onClick={() => handleSectorClick(d.id)}
-            >
-              <div className="landing-sector-icon" aria-hidden="true">
-                {d.iconClass
-                  ? <IconComponent name={d.iconClass} size="lg" />
-                  : (d.icon || <IconComponent name="chart-line" size="lg" />)}
-              </div>
-              <div className="landing-sector-body">
-                <div className="landing-sector-name">{d.name}</div>
-                <div className="landing-sector-tagline">
-                  {d.tagline || 'Dive into metrics for this sector.'}
+      {!isBootLoading && (
+        <section id="landing-sectors" className="landing-section">
+          <div className="landing-section-head">
+            <div className="landing-section-eyebrow">Sectors</div>
+            <h2 className="landing-section-title">Explore by topic</h2>
+            <p className="landing-section-sub">
+              Every corner of the Gnosis ecosystem, one click away.
+            </p>
+          </div>
+          <div className="landing-sector-grid">
+            {sectorCards.map((d) => (
+              <button
+                type="button"
+                key={d.id}
+                className="landing-sector-card"
+                onClick={() => handleSectorClick(d.id)}
+              >
+                <div className="landing-sector-icon" aria-hidden="true">
+                  {d.iconClass
+                    ? <IconComponent name={d.iconClass} size="lg" />
+                    : (d.icon || <IconComponent name="chart-line" size="lg" />)}
                 </div>
-              </div>
-              <div className="landing-sector-arrow" aria-hidden="true">
-                <IconComponent name="chevron-right" size="sm" />
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
+                <div className="landing-sector-body">
+                  <div className="landing-sector-name">{d.name}</div>
+                  <div className="landing-sector-tagline">
+                    {d.tagline || 'Dive into metrics for this sector.'}
+                  </div>
+                </div>
+                <div className="landing-sector-arrow" aria-hidden="true">
+                  <IconComponent name="chevron-right" size="sm" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Overview trends */}
       {overviewMetrics.length > 0 && (
@@ -213,6 +226,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode }) => {
               type="button"
               className="landing-cta landing-cta-ghost"
               onClick={handleExploreOverview}
+              disabled={isBootLoading}
             >
               See full Overview dashboard →
             </button>

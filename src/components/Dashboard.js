@@ -14,6 +14,11 @@ const getTabFilterKeyFor = (dashboardId, tabId) => {
   return `${dashboardId}:${tabId}`;
 };
 
+const resolveRequestedView = (search = window.location.search) => {
+  const params = new URLSearchParams(search);
+  return params.has('dashboard') ? 'dashboard' : 'landing';
+};
+
 const resolveLocationState = (dashboards, search = window.location.search) => {
   if (!Array.isArray(dashboards) || dashboards.length === 0) {
     return null;
@@ -578,7 +583,9 @@ const Dashboard = () => {
     };
   }, []);
 
-  const isLanding = configLoaded && dashboards.length > 0 && !activeDashboard;
+  const requestedView = resolveRequestedView(window.location.search);
+  const isBootLanding = !configLoaded && requestedView === 'landing';
+  const isLanding = isBootLanding || (configLoaded && dashboards.length > 0 && !activeDashboard);
 
   return (
     <div className={`dashboard${isLanding ? ' dashboard--landing' : ''}`}>
@@ -601,6 +608,7 @@ const Dashboard = () => {
           dashboards={dashboards}
           onNavigate={handleNavigation}
           isDarkMode={isDarkMode}
+          isBootLoading={isBootLanding}
         />
       ) : (
         <div className="dashboard-main">
