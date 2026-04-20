@@ -22,7 +22,7 @@ const metric = {
   globalFilterField: 'wallet_address',
   query: `
     SELECT user_address AS wallet_address, date, symbol, balance, balance_usd
-    FROM playground_max.api_execution_yields_user_lending_balances_daily
+    FROM dbt.api_execution_yields_user_lending_balances_daily
   `,
 };
 
