@@ -12,7 +12,9 @@ const LANDING_RESOURCE_GROUPS = [
       { id: 'docs', label: 'Analytics Docs', href: 'https://docs.analytics.gnosis.io/' },
       { id: 'api-reference', label: 'API Reference', href: 'https://api.analytics.gnosis.io/docs#/' },
       { id: 'dbt-docs', label: 'dbt Models Docs', href: 'https://gnosischain.github.io/dbt-cerebro/#!/overview' },
-      { id: 'github', label: 'GitHub', href: 'https://github.com/gnosischain' }
+      { id: 'github-dbt', label: 'GitHub: dbt Models', href: 'https://github.com/gnosischain/dbt-cerebro' },
+      { id: 'github-EL', label: 'GitHub: EL Indexer', href: 'https://github.com/gnosischain/cryo-indexer' },
+      { id: 'github-CL', label: 'GitHub: CL Indexer', href: 'https://github.com/gnosischain/beacon-indexer' }
     ]
   },
   {
