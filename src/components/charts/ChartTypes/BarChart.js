@@ -67,34 +67,47 @@ export class BarChart extends BaseChart {
         ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
       },
       
-      series: processedData.series ? 
-        processedData.series.map((series, index) => ({
-          name: series.name,
-          type: 'bar',
-          data: series.data,
-          itemStyle: {
-            color: resolveSeriesColor(series.name, index),
-            borderRadius: 0,
-            // Add opacity support - same as areaOpacity but for bars
-            opacity: config.barOpacity !== undefined ? config.barOpacity : 
-                     config.opacity !== undefined ? config.opacity : 1.0
-          },
-          barWidth: config.barWidth || 'auto',
-          barMaxWidth: config.barMaxWidth || 50,
-          // Enable stacking if we have multiple series
-          stack: isStacked ? 'total' : undefined
-        })) : [{
+      series: processedData.series ?
+        processedData.series.map((series, index) => {
+          const seriesOpts = {
+            name: series.name,
+            type: 'bar',
+            data: series.data,
+            itemStyle: {
+              color: resolveSeriesColor(series.name, index),
+              borderRadius: 0,
+              // Add opacity support - same as areaOpacity but for bars
+              opacity: config.barOpacity !== undefined ? config.barOpacity :
+                       config.opacity !== undefined ? config.opacity : 1.0
+            },
+            barWidth: config.barWidth || 'auto',
+            barMaxWidth: config.barMaxWidth || 50,
+            // Enable stacking if we have multiple series
+            stack: isStacked ? 'total' : undefined
+          };
+
+          // Attach ECharts marks (markLine / markArea) to the first series only so they
+          // render once instead of per-series. Metric files pass standard ECharts syntax.
+          if (index === 0) {
+            if (config.markLine) seriesOpts.markLine = config.markLine;
+            if (config.markArea) seriesOpts.markArea = config.markArea;
+          }
+
+          return seriesOpts;
+        }) : [{
           type: 'bar',
           data: processedData.values,
           itemStyle: {
             color: colors[0],
             borderRadius: 0,
             // Add opacity support for single series too
-            opacity: config.barOpacity !== undefined ? config.barOpacity : 
+            opacity: config.barOpacity !== undefined ? config.barOpacity :
                      config.opacity !== undefined ? config.opacity : 1.0
           },
           barWidth: config.barWidth || 'auto',
-          barMaxWidth: config.barMaxWidth || 50
+          barMaxWidth: config.barMaxWidth || 50,
+          ...(config.markLine ? { markLine: config.markLine } : {}),
+          ...(config.markArea ? { markArea: config.markArea } : {})
         }],
       
       tooltip: {

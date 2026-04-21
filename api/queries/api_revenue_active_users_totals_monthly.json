@@ -1,0 +1,4 @@
+{
+  "id": "api_revenue_active_users_totals_monthly",
+  "query": "SELECT month, users_cnt, fees_total\n    FROM dbt.api_revenue_active_users_totals_monthly\n    ORDER BY month ASC"
+}

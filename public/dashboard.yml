@@ -84,3 +84,10 @@ Yields:
   iconClass: yield
   tagline: Lending, staking, and DeFi yield opportunities.
   source: /dashboards/yields.yml
+GnosisRevenue:
+  name: Gnosis Revenue
+  order: 85
+  icon: 💰
+  iconClass: coins
+  tagline: DAO-accruable revenue streams — holdings interest, sDAI share, Gnosis Pay fees, and cross-stream active users.
+  source: /dashboards/gnosis-revenue.yml

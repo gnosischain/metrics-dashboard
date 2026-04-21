@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_income_daily",
+  "query": "SELECT date, consensus_income_amount_gno FROM dbt.api_consensus_validators_explorer_daily ORDER BY date"
+}

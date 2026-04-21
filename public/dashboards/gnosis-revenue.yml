@@ -1,0 +1,110 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    timeRanges: true
+    metrics:
+      - id: api_revenue_active_users_totals_weekly
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_revenue_active_users_totals_monthly
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 500px
+
+  - name: Holdings
+    order: 2
+    icon: 🏦
+    iconClass: wallet
+    timeRanges: true
+    metrics:
+      - id: api_revenue_holdings_eure_cohorts_weekly
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_eure_cohorts_monthly
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_usdce_cohorts_weekly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_usdce_cohorts_monthly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_brla_cohorts_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_brla_cohorts_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_zchf_cohorts_weekly
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_holdings_zchf_cohorts_monthly
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: sDAI
+    order: 3
+    icon: 🐷
+    iconClass: piggy-bank
+    timeRanges: true
+    metrics:
+      - id: api_revenue_sdai_cohorts_weekly
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_sdai_cohorts_monthly
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Gnosis Pay
+    order: 4
+    icon: 💳
+    iconClass: gnosis-pay
+    timeRanges: true
+    metrics:
+      - id: api_revenue_gpay_eure_cohorts_weekly
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_gpay_eure_cohorts_monthly
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_revenue_gpay_gbpe_cohorts_weekly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_gpay_gbpe_cohorts_monthly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_revenue_gpay_usdce_cohorts_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_gpay_usdce_cohorts_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Methodology
+    order: 5
+    icon: 📘
+    iconClass: file-text
+    metrics:
+      - id: text_revenue_methodology
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 3000px

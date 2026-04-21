@@ -516,6 +516,13 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
             <image href="/imgs/brand/gnosis-pay.png" x="2" y="2" width="20" height="20"></image>
           </svg>
         ),
+        'gnosis-pay': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Credit card">
+            <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+            <line x1="2" y1="10" x2="22" y2="10" />
+            <line x1="6" y1="15" x2="10" y2="15" />
+          </svg>
+        ),
 
         'gift': (
           <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Gift">

@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_balance_latest",
+  "query": "SELECT balance_gno FROM dbt.api_consensus_validators_explorer_latest"
+}

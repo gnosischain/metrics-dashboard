@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_income_30d",
+  "query": "SELECT consensus_income_amount_30d_gno FROM dbt.api_consensus_validators_explorer_latest"
+}

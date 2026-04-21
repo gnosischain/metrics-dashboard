@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_proposer_rewards_daily",
+  "query": "SELECT date, proposer_reward_total_gno FROM dbt.api_consensus_validators_explorer_daily ORDER BY date"
+}

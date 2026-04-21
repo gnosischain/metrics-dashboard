@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_attestations_avg_inclusion_delay_daily",
+  "query": "SELECT date, avg_inclusion_delay FROM dbt.api_consensus_attestations_performance_daily ORDER BY date"
+}
