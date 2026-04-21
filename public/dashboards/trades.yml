@@ -2,7 +2,7 @@ tabs:
   - name: Live Feed
     order: 1
     icon: "⚡"
-    iconClass: activity
+    iconClass: zap
     metrics:
       # Row 1: freshness banner (data lag)
       - id: api_execution_live_trades_freshness
@@ -43,7 +43,7 @@ tabs:
   - name: Stats
     order: 2
     icon: "📊"
-    iconClass: chart-line
+    iconClass: bar-chart
     timeRanges: true
     defaultTimeRange: '3M'
     metrics:

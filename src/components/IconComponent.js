@@ -594,6 +594,23 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'swap': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 3l4 4-4 4"></path>
+            <path d="M20 7H4"></path>
+            <path d="M8 21l-4-4 4-4"></path>
+            <path d="M4 17h16"></path>
+          </svg>
+        ),
+
+        'bar-chart': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        ),
+
     };
     
     // Return the SVG icon if it exists, otherwise fallback

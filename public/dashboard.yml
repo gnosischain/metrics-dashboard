@@ -32,7 +32,7 @@ Trades:
   name: Trades
   order: 20
   icon: "⚡"
-  iconClass: activity
+  iconClass: swap
   tagline: DEX trade activity on Gnosis Chain — live feed and historical stats.
   source: /dashboards/trades.yml
 Tokens:
