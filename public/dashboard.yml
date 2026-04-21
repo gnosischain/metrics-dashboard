@@ -28,13 +28,13 @@ Circles:
   iconClass: circles
   tagline: Personal currency network growth and trust graph.
   source: /dashboards/circles.yml
-LiveTrades:
-  name: Live Trades
+Trades:
+  name: Trades
   order: 20
   icon: "⚡"
   iconClass: activity
-  tagline: Real-time DEX trades across Gnosis Chain.
-  source: /dashboards/live-trades.yml
+  tagline: DEX trade activity on Gnosis Chain — live feed and historical stats.
+  source: /dashboards/trades.yml
 Tokens:
   name: Tokens
   order: 30

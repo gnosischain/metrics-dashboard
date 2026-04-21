@@ -1,0 +1,96 @@
+tabs:
+  - name: Live Feed
+    order: 1
+    icon: "⚡"
+    iconClass: activity
+    metrics:
+      # Row 1: freshness banner (data lag)
+      - id: api_execution_live_trades_freshness
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 90px
+
+      # Row 2: 4 KPI tiles (last 30 min)
+      - id: api_execution_live_trades_stats_count
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_live_trades_stats_volume
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_live_trades_stats_traders
+        gridRow: 2
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_live_trades_stats_aggregator
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 120px
+
+      # Row 3: last 48h hourly volume, stacked by protocol
+      - id: api_execution_live_trades_hourly_48h
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 320px
+
+      # Row 4: the main trades feed (with inline row expansion)
+      - id: api_execution_live_trades
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 600px
+
+  - name: Stats
+    order: 2
+    icon: "📊"
+    iconClass: chart-line
+    timeRanges: true
+    defaultTimeRange: '3M'
+    metrics:
+      # Row 1: volume over time, daily, stacked by protocol
+      - id: api_execution_trades_stats_volume_ts
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 360px
+
+      # Row 2: aggregator share (stacked 100%) | top tokens (weekly stacked bars)
+      - id: api_execution_trades_stats_aggregator_share_ts
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_execution_trades_stats_top_tokens_weekly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 360px
+
+      # Row 3: fixed-window distributions (last 30d)
+      - id: api_execution_trades_stats_hop_distribution
+        gridRow: 3
+        gridColumn: 1 / span 4
+        minHeight: 320px
+      - id: api_execution_trades_stats_size_distribution
+        gridRow: 3
+        gridColumn: 5 / span 4
+        minHeight: 320px
+      - id: api_execution_trades_stats_net_flow
+        gridRow: 3
+        gridColumn: 9 / span 4
+        minHeight: 320px
+
+      # Row 4: lifetime tiles (ignore window)
+      - id: api_execution_trades_stats_lifetime_volume
+        gridRow: 4
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_trades
+        gridRow: 4
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_traders
+        gridRow: 4
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_first_trade
+        gridRow: 4
+        gridColumn: 10 / span 3
+        minHeight: 120px

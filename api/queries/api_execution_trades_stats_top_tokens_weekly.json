@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_trades_stats_top_tokens_weekly",
+  "query": "SELECT date, label, value_volume AS value FROM dbt.api_execution_trades_stats_top_tokens_weekly"
+}
