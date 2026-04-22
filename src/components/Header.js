@@ -2,6 +2,7 @@ import React from 'react';
 import ThemeToggle from './ThemeToggle';
 import HeaderResourcesMenu from './HeaderResourcesMenu';
 import MetricSearchBar from './MetricSearchBar';
+import IconComponent from './IconComponent';
 import { HEADER_RESOURCE_LINKS } from '../config/headerLinks';
 import { withBaseUrl } from '../utils/env';
 
@@ -28,7 +29,9 @@ const Header = ({
   searchEnabled = false,
   searchSectors = [],
   variant = 'default',
-  onHome = null
+  onHome = null,
+  onToggleSidebar = null,
+  sidebarCollapsed = false
 }) => {
   const isLanding = variant === 'landing';
   // Different logo URLs for light and dark mode
@@ -41,11 +44,25 @@ const Header = ({
 
   return (
     <header className={`dashboard-header${isLanding ? ' dashboard-header--landing' : ''}`}>
+      <div className="header-left">
+        {!isLanding && typeof onToggleSidebar === 'function' && (
+          <button
+            type="button"
+            className="header-sidebar-toggle"
+            onClick={(e) => { e.stopPropagation(); onToggleSidebar(); }}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <IconComponent name="panel-left" size="sm" />
+          </button>
+        )}
       <div
         className={`header-logo-section${typeof onHome === 'function' ? ' header-logo-section--clickable' : ''}`}
         onClick={typeof onHome === 'function' ? onHome : undefined}
         role={typeof onHome === 'function' ? 'button' : undefined}
         tabIndex={typeof onHome === 'function' ? 0 : undefined}
+        aria-label={typeof onHome === 'function' ? 'Back to landing' : undefined}
+        title={typeof onHome === 'function' ? 'Back to landing' : undefined}
         onKeyDown={typeof onHome === 'function' ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHome(); } } : undefined}
       >
         <img
@@ -69,7 +86,8 @@ const Header = ({
           </div>
         )}
       </div>
-      
+      </div>
+
       <div className="header-actions">
         {searchEnabled && typeof onSearchSelect === 'function' && (
           <MetricSearchBar

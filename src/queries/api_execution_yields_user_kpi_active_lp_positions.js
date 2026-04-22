@@ -1,8 +1,7 @@
 const metric = {
   id: 'api_execution_yields_user_kpi_active_lp_positions',
   name: 'Active LP Positions',
-  description: 'In-range / out-of-range',
-  metricDescription: 'Count of LP positions with remaining liquidity. Shows in-range and out-of-range breakdown for V3 concentrated liquidity positions.',
+  metricDescription: 'Count of LP positions with remaining liquidity — shown broken down by in-range vs out-of-range for V3 concentrated liquidity positions.',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumber',

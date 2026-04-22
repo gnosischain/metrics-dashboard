@@ -2,7 +2,7 @@ const metric = {
   id: 'api_consensus_validators_explorer_apy_latest',
   globalFilterField: 'withdrawal_credentials',
   name: 'APY (30d)',
-  description: 'Balance-weighted consensus APY over the last 30 days for this credential',
+  description: '30d',
   metricDescription: 'Per-credential balance-weighted APY = SUM(30d consensus income) / AVG(30d effective balance) × 365 × 100. Ignores validators with zero effective balance so idle/exited slots do not drag the mean.',
   format: 'formatPercentage',
   valueField: 'apy_30d',

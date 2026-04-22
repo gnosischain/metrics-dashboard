@@ -163,7 +163,7 @@ describe('MetricGrid global filter behavior', () => {
       expect(onGlobalFilterChange).toHaveBeenCalledWith('BRLA');
     });
 
-    expect(screen.getByText('Date range')).toBeInTheDocument();
+    expect(screen.getByTestId('time-range-controls')).toBeInTheDocument();
     expect(screen.getAllByTestId('global-filter-widget')).toHaveLength(1);
     expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
   });
@@ -193,7 +193,7 @@ describe('MetricGrid global filter behavior', () => {
       expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
     });
 
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('time-range-controls')).not.toBeInTheDocument();
   });
 
   it('renders one card per tab group and switches the active grouped metric from header controls', async () => {
@@ -281,7 +281,7 @@ describe('MetricGrid global filter behavior', () => {
     });
 
     expect(screen.getByText('Checking selection...')).toBeInTheDocument();
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('time-range-controls')).not.toBeInTheDocument();
 
     validationRequest.resolve({
       data: [{ wallet_address: '0xabc', value: 1 }]
@@ -292,7 +292,7 @@ describe('MetricGrid global filter behavior', () => {
       expect(screen.getByTestId('metric-widget')).toHaveAttribute('data-metric-id', 'portfolio_metric');
     });
 
-    expect(screen.getByText('Date range')).toBeInTheDocument();
+    expect(screen.getByTestId('time-range-controls')).toBeInTheDocument();
   });
 
   it('validates an explicit-filter wallet and renders cards after the wallet is confirmed', async () => {
@@ -441,7 +441,7 @@ describe('MetricGrid global filter behavior', () => {
     expect(screen.getByTestId('global-filter-widget')).toHaveAttribute('data-placement', 'top');
     expect(screen.getByTestId('metric-grid-empty-state')).toHaveAttribute('data-state', 'idle');
     expect(screen.getByText('Explore a Circles user')).toBeInTheDocument();
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('time-range-controls')).not.toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
   });
 
@@ -497,7 +497,7 @@ describe('MetricGrid global filter behavior', () => {
       expect(screen.getByTestId('metric-widget')).toHaveAttribute('data-metric-id', 'api_execution_circles_v2_avatar_metadata');
     });
 
-    expect(screen.getByText('Date range')).toBeInTheDocument();
+    expect(screen.getByTestId('time-range-controls')).toBeInTheDocument();
   });
 
   it('shows the no-results state for an invalid Circles name search', async () => {
@@ -555,7 +555,7 @@ describe('MetricGrid global filter behavior', () => {
 
     expect(screen.getByText('No Circles user found')).toBeInTheDocument();
     expect(screen.getByText('Try another name or avatar address.')).toBeInTheDocument();
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('time-range-controls')).not.toBeInTheDocument();
     expect(screen.queryAllByTestId('metric-widget')).toHaveLength(0);
   });
 

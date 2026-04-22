@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gnosis_app_kpi_topup_volume_7d',
   name: 'TopUp Volume',
-  description: 'Last 7 days (USD)',
+  description: 'Last 7 days',
   metricDescription: 'GA → GP TopUp USD volume in the last 7 full days.',
   chartType: 'numberDisplay',
   format: 'formatCurrency',

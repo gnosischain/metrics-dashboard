@@ -1,7 +1,6 @@
 const metric = {
   id: 'api_execution_yields_pools_tvl_latest',
   name: 'Total TVL',
-  description: 'Across all pools',
   metricDescription: 'Total value locked across all tracked pools for the selected token. Change compares to 7 days ago.',
   format: 'formatValue',
   valueField: 'value',

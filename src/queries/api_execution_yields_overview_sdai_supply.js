@@ -1,7 +1,6 @@
 const metric = {
   id: 'api_execution_yields_overview_sdai_supply',
   name: 'Savings xDAI Supply',
-  description: 'TVL on Gnosis Chain',
   metricDescription:
     'Total value locked in the Savings xDAI vault (0xaf20…3701). Not all bridged ' +
     'stablecoin supply is deposited — the bridge concentrates yield in Savings ' +

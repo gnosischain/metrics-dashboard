@@ -21,6 +21,52 @@
 }
 
 /* ==================
+   Header Left Group (sidebar toggle + brand)
+   ================== */
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* ==================
+   Header Sidebar Toggle
+   ================== */
+
+.header-sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-right: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-base);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.header-sidebar-toggle:hover {
+  background-color: var(--color-hover-background);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.header-sidebar-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+/* ==================
    Header Logo Section
    ================== */
 

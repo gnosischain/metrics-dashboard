@@ -38,6 +38,18 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 450px
+      - id: api_consensus_attestations_avg_inclusion_delay_daily
+        gridRow: 3
+        gridColumn: 1 / span 4
+        minHeight: 380px
+      - id: api_consensus_attestations_pct_distance_1_daily
+        gridRow: 3
+        gridColumn: 5 / span 4
+        minHeight: 380px
+      - id: api_consensus_attestations_p50_inclusion_delay_daily
+        gridRow: 3
+        gridColumn: 9 / span 4
+        minHeight: 380px
   - name: Staking
     order: 3
     icon: 📈
@@ -106,6 +118,22 @@ tabs:
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 450px
+      - id: api_consensus_validators_income_total_daily
+        gridRow: 5
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_validators_apy_mean_daily
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_consensus_deposits_withdrawals_cumulative_daily
+        gridRow: 6
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_consolidations_daily
+        gridRow: 6
+        gridColumn: 7 / span 6
+        minHeight: 450px
   - name: Queues
     order: 5
     icon: ⏱️
@@ -149,3 +177,96 @@ tabs:
         gridRow: 1
         gridColumn: 7 / span 6
         minHeight: 450px
+  - name: Validator Explorer
+    order: 7
+    icon: 🔎
+    iconClass: validator
+    timeRanges: true
+    globalFilterField: withdrawal_credentials
+    globalFilterLabel: Validator / Operator
+    globalFilterDisplayField: display_name
+    globalFilterSourceMetric: api_consensus_validators_search
+    searchable: true
+    requireExplicitFilter: true
+    # Validation metric — dashboard fetches this with the selected filter before loading
+    # any chart on the tab. If 0 rows come back, the tab stays on the empty state instead
+    # of rendering stale/empty charts. Matches the pattern used by gnosis-pay/User
+    # Portfolio and circles/User — without this, charts fire their queries even while the
+    # filter is still being picked.
+    explicitFilterValidationMetric: api_consensus_validators_explorer_latest
+    searchPlaceholder: "Paste a withdrawal credential (or search in the dropdown)…"
+    globalControlsPlacement: top
+    globalFilterVertical: true
+    emptyState:
+      title: Explore a validator or operator
+      description: Pick or paste a withdrawal credential to load balance, income, APY and proposer-reward charts aggregated across every validator that shares it.
+      emptyResultsTitle: No validators under this credential
+      emptyResultsDescription: Check the credential and try again.
+    metrics:
+      # Row 1 — credential-level KPIs (6 compact cards)
+      - id: api_consensus_validators_explorer_count_latest
+        gridRow: 1
+        gridColumn: 1 / span 2
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_active_count
+        gridRow: 1
+        gridColumn: 3 / span 2
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_exited_count
+        gridRow: 1
+        gridColumn: 5 / span 2
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_slashed_count
+        gridRow: 1
+        gridColumn: 7 / span 2
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_balance_latest
+        gridRow: 1
+        gridColumn: 9 / span 2
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_apy_latest
+        gridRow: 1
+        gridColumn: 11 / span 2
+        minHeight: 120px
+      # Row 2 — 30d income + lifetime blocks (secondary KPIs)
+      - id: api_consensus_validators_explorer_income_30d
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_proposed_blocks_lifetime
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      # Row 3 — balance trend + signed green/red income bar
+      - id: api_consensus_validators_explorer_balance_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_validators_explorer_income_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      # Row 4 — APY & proposer rewards
+      - id: api_consensus_validators_explorer_apy_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_consensus_validators_explorer_proposer_rewards_daily
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      # Row 5 — deposits / withdrawals / consolidations timeline
+      - id: api_consensus_validators_explorer_deposits_withdrawals_daily
+        gridRow: 5
+        gridColumn: 1 / span 12
+        minHeight: 380px
+      # Row 6 — per-validator members table with lifecycle columns
+      - id: api_consensus_validators_explorer_members_table
+        gridRow: 6
+        gridColumn: 1 / span 12
+        minHeight: 420px
+      # Row 7 — balance distribution histogram across co-validators
+      - id: api_consensus_validators_explorer_balance_dist
+        gridRow: 7
+        gridColumn: 1 / span 12
+        minHeight: 380px

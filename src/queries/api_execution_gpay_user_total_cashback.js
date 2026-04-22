@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_user_total_cashback',
   name: 'Total Cashback',
-  description: 'Lifetime cashback earned (GNO)',
+  description: 'Lifetime',
   metricDescription: `
   All-time GNO cashback received by the selected wallet from the Gnosis Pay cashback program. 
   Cashback is paid in GNO as a reward for card usage.

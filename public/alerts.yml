@@ -1,0 +1,27 @@
+# Per-tab / per-dashboard alert banners rendered in the page header.
+#
+# Each entry:
+#   scope:   dashboardId  (applies to every tab in that dashboard)
+#            dashboardId.tabId  (applies only to that tab)
+#            *   (applies to every dashboard view)
+#   level:   info | success | warning | error         (default: info)
+#   message: one-line body shown in the banner
+#   title:   optional short heading rendered before the message
+#   until:   optional ISO timestamp — alert auto-hides after this time
+#
+# Example entries below — delete or edit freely.
+
+alerts:
+ # - scope: consensus
+ #   level: success
+ #   message: "No known issues with consensus data."
+
+  # - scope: gnosis-pay
+  #   level: warning
+  #   title: "Re-indexing"
+  #   message: "Some Gnosis Pay values may lag by up to 2 hours while we backfill."
+  #   until: "2026-05-01T00:00:00Z"
+
+  # - scope: gnosis-app.user-portfolio
+  #   level: info
+  #   message: "Portfolio view is in beta — please report any oddities."

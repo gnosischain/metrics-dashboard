@@ -601,6 +601,8 @@ const Dashboard = () => {
         searchSectors={dashboards.filter(d => d.id !== 'overview')}
         variant={isLanding ? 'landing' : 'default'}
         onHome={handleGoHome}
+        onToggleSidebar={isLanding ? null : toggleSidebar}
+        sidebarCollapsed={sidebarCollapsed && !mobileExpanded}
       />
 
       {isLanding ? (
@@ -626,20 +628,6 @@ const Dashboard = () => {
             />
           </aside>
 
-          {/* Move sidebar toggle here - outside the sidebar */}
-          <div className="sidebar-toggle" onClick={toggleSidebar}>
-            <IconComponent
-              name={
-                // On mobile
-                window.innerWidth <= 768
-                  ? (mobileExpanded ? 'chevron-left' : 'chevron-right')
-                  // On desktop
-                  : (sidebarCollapsed ? 'chevron-right' : 'chevron-left')
-              }
-              size="sm"
-            />
-          </div>
-
           <div className="dashboard-content">
             {!configLoaded ? (
               <div className="loading-indicator">Initializing dashboard...</div>
@@ -649,6 +637,7 @@ const Dashboard = () => {
                   metrics={tabMetrics}
                   isDarkMode={isDarkMode}
                   tabConfig={activeTabConfig}
+                  dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
                   globalFilterValue={currentGlobalFilter}
                   onGlobalFilterChange={handleGlobalFilterChange}
                   secondaryGlobalFilterValue={currentSecondaryGlobalFilter}

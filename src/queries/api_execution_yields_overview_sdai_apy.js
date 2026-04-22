@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_yields_overview_sdai_apy',
   name: 'Savings xDAI APY',
-  description: 'Current APY (legacy: sDAI)',
+  description: 'Current',
   metricDescription:
     'Current annual percentage yield on the Savings xDAI vault on Gnosis Chain. ' +
     'Before 2025-11-07 this reflected the Sky DSR relayed via the xDAI bridge; ' +

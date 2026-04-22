@@ -1,4 +1,5 @@
 import dashboardsService from '../services/dashboards';
+import alertsService from '../services/alerts';
 import yaml from 'js-yaml';
 
 // Default dashboard configuration as a fallback
@@ -146,6 +147,14 @@ class DashboardConfig {
       const success = dashboardsService.loadFromYaml(resolvedYamlContent);
       this.isLoaded = success;
       console.log('Successfully loaded dashboard configuration from file');
+
+      try {
+        const alertsYaml = await this.fetchYamlFile('/alerts.yml');
+        alertsService.loadFromYaml(alertsYaml);
+      } catch (error) {
+        console.warn('No alerts.yml found or failed to parse; continuing without alerts.', error);
+      }
+
       return success;
     } catch (error) {
       console.error('Error loading dashboard configuration:', error);

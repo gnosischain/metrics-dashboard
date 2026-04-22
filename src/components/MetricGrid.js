@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import MetricWidget from './MetricWidget';
 import GlobalFilterWidget from './GlobalFilterWidget';
 import IconComponent from './IconComponent';
+import DashboardHeader from './DashboardHeader';
 import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
 import { normalizeFilterValue } from '../utils/filterValues';
@@ -87,6 +88,7 @@ const MetricGrid = ({
   metrics,
   isDarkMode = false,
   tabConfig = null,
+  dashboard = null,
   globalFilterValue = null,
   onGlobalFilterChange = null,
   secondaryGlobalFilterValue = null,
@@ -633,23 +635,20 @@ const MetricGrid = ({
 
   return (
     <div className="metrics-grid-container">
-      {showToolbar && (
-        <div className="metrics-grid-toolbar">
+      {(dashboard || tabConfig) && (
+        <DashboardHeader dashboard={dashboard} tabConfig={tabConfig}>
           {showTimeRangeControls && (
-            <div className="metrics-grid-toolbar-group">
-              <div className="metrics-grid-toolbar-label">Date range</div>
-              <div className="resolution-toggle">
-                {timeRanges.map(range => (
-                  <button
-                    key={range}
-                    type="button"
-                    className={`resolution-btn${selectedTimeRange === range ? ' active' : ''}`}
-                    onClick={() => setSelectedTimeRange(range)}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
+            <div className="dashboard-view-header-timerange" data-testid="time-range-controls">
+              {timeRanges.map(range => (
+                <button
+                  key={range}
+                  type="button"
+                  className={`resolution-btn${selectedTimeRange === range ? ' active' : ''}`}
+                  onClick={() => setSelectedTimeRange(range)}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
           )}
           {showTopGlobalControls && (
@@ -669,7 +668,7 @@ const MetricGrid = ({
               placement="top"
             />
           )}
-        </div>
+        </DashboardHeader>
       )}
       {metricsToRender.length > 0 && (
         <div className="metrics-grid-positioned" style={gridStyle}>

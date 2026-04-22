@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_kpi_payment_volume_latest',
   name: 'Payment Volume',
-  description: 'Latest month (USD)',
+  description: 'Latest month',
   metricDescription: `
   Total card payment volume in USD for the latest completed month. 
   

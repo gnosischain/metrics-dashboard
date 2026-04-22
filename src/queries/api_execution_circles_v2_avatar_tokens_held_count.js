@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_circles_v2_avatar_tokens_held_count',
   name: 'Tokens Held',
-  description: 'Distinct CRC tokens currently held',
+  description: 'Current',
   metricDescription: 'Number of distinct Circles v2 CRC tokens the selected avatar currently holds with a balance above 0.001 CRC. The 0.001 dust threshold filters out near-zero residual balances from completed transfers.',
   chartType: 'numberDisplay',
   globalFilterField: 'avatar',

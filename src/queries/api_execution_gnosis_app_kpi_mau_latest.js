@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gnosis_app_kpi_mau_latest',
   name: 'MAU',
-  description: 'Last complete month',
+  description: 'Latest month',
   metricDescription: 'Monthly Active Users — distinct Gnosis App users with any non-onboard activity in the latest complete month.',
   chartType: 'numberDisplay',
   format: 'formatNumber',
