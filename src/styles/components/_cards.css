@@ -456,6 +456,26 @@
   padding: 0;
 }
 
+/* Keep the info (i) popover on the title row for compact / number-display cards.
+   Without these overrides the default .card-header { flex-wrap: wrap } + 150px
+   min-width on .card-header-text push the controls block to a new line on narrow
+   KPI cards. */
+.metric-card.number-display-card .card-header,
+.metric-card.compact .card-header {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.metric-card.number-display-card .card-header-text,
+.metric-card.compact .card-header-text {
+  min-width: 0;
+}
+
+.metric-card.number-display-card .card-header-controls,
+.metric-card.compact .card-header-controls {
+  margin-top: 1px;
+}
+
 /* ==================
    Minimal Widget
    ================== */
