@@ -68,7 +68,7 @@ const metric = {
 
   // Example query that returns quantile data
   query: `
-    SELECT * FROM api_consensus_validators_balances_dist_daily
+    SELECT * FROM dbt.api_consensus_validators_balances_dist_daily
   `
 };
 

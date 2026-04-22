@@ -10,14 +10,14 @@ const metric = {
   hidden: true,
 
   // One row per withdrawal_credentials (~3.4k rows) — collapsed from ~558k per-validator
-  // rows so the dropdown loads in one fast request. display_name includes validator
-  // count + a first-validator-index hint so operator vs solo credentials are legible.
+  // rows so the dropdown loads in one fast request. Returns exactly two columns to match
+  // the minimal shape of other working search sources (circles avatar_search,
+  // gpay_user_top_wallets) — adding extra numeric columns (validator_count,
+  // first_validator_index) broke the LabelSelector's "extract unique labels" step and
+  // produced an empty dropdown that spins forever.
   query: `
     SELECT
       withdrawal_credentials,
-      withdrawal_address,
-      validator_count,
-      first_validator_index,
       display_name
     FROM dbt.api_consensus_validators_search
   `,

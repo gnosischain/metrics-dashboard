@@ -147,14 +147,21 @@ function getActiveQueries(isLocalDevRuntime = false) {
   };
 }
 
-// Check and refresh cache if needed (runs on server start)
-(async () => {
-  try {
-    await cronManager.checkAndRefreshIfNeeded(startupQueries);
-  } catch (error) {
-    console.error('Error checking/refreshing cache:', error);
-  }
-})();
+// Cache warming on module load is disabled by default.
+// Previous behavior refreshed all 406 metrics on every serverless cold start,
+// which never completed within Vercel's function timeout and saturated ClickHouse.
+// The per-request handler below still populates the cache lazily on miss.
+// To run a full warm-up, hit /api/cron-refresh (wired to Vercel Cron) or set
+// ENABLE_STARTUP_CACHE_REFRESH=1 explicitly.
+if (process.env.ENABLE_STARTUP_CACHE_REFRESH === '1') {
+  (async () => {
+    try {
+      await cronManager.checkAndRefreshIfNeeded(startupQueries);
+    } catch (error) {
+      console.error('Error checking/refreshing cache:', error);
+    }
+  })();
+}
 
 /**
  * Vercel API handler for metrics

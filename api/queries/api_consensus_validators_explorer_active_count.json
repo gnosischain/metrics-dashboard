@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_active_count",
+  "query": "SELECT withdrawal_credentials, active_count FROM dbt.api_consensus_validators_explorer_latest"
+}

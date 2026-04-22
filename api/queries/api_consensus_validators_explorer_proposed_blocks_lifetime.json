@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_proposed_blocks_lifetime",
-  "query": "SELECT proposed_blocks_count_lifetime FROM dbt.api_consensus_validators_explorer_latest"
+  "query": "SELECT withdrawal_credentials, proposed_blocks_count_lifetime FROM dbt.api_consensus_validators_explorer_latest"
 }

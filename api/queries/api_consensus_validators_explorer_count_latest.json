@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_count_latest",
-  "query": "SELECT validator_count FROM dbt.api_consensus_validators_explorer_latest"
+  "query": "SELECT withdrawal_credentials, validator_count FROM dbt.api_consensus_validators_explorer_latest"
 }

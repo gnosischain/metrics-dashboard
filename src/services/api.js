@@ -2,9 +2,77 @@ import config from '../utils/config';
 import { isDevelopment } from '../utils/env';
 
 const CACHE_DURATION_MS = 5 * 60 * 1000;
+const STORAGE_KEY_PREFIX = 'api-cache:v1:';
 const responseCache = new Map();
 const inFlightRequests = new Map();
 const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
+
+const getSessionStorage = () => {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window.sessionStorage || null;
+  } catch {
+    return null;
+  }
+};
+
+const readPersistedEntry = (cacheKey) => {
+  const storage = getSessionStorage();
+  if (!storage) return null;
+  try {
+    const raw = storage.getItem(STORAGE_KEY_PREFIX + cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.timestamp !== 'number') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writePersistedEntry = (cacheKey, entry) => {
+  const storage = getSessionStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(STORAGE_KEY_PREFIX + cacheKey, JSON.stringify(entry));
+  } catch {
+    // Quota exceeded or serialization failure — fall back to memory-only cache.
+  }
+};
+
+const hydrateCacheFromStorage = () => {
+  const storage = getSessionStorage();
+  if (!storage) return;
+  try {
+    const now = Date.now();
+    const staleKeys = [];
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!key || !key.startsWith(STORAGE_KEY_PREFIX)) continue;
+      const raw = storage.getItem(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed.timestamp !== 'number') {
+          staleKeys.push(key);
+          continue;
+        }
+        if (now - parsed.timestamp > CACHE_DURATION_MS) {
+          staleKeys.push(key);
+          continue;
+        }
+        responseCache.set(key.slice(STORAGE_KEY_PREFIX.length), parsed);
+      } catch {
+        staleKeys.push(key);
+      }
+    }
+    staleKeys.forEach((key) => {
+      try { storage.removeItem(key); } catch { /* ignore */ }
+    });
+  } catch {
+    // ignore hydration errors
+  }
+};
 
 const sanitizeParams = (params = {}) =>
   Object.fromEntries(
@@ -34,6 +102,10 @@ export class ApiService {
     this.apiKey = config.api.key;
     this.useMockData = config.api.useMockData;
     this.isDevelopment = isDevelopment;
+
+    if (!this.isDevelopment) {
+      hydrateCacheFromStorage();
+    }
 
     console.log('ApiService initialized:', {
       baseUrl: this.baseUrl,
@@ -69,7 +141,14 @@ export class ApiService {
 
     const bypassFrontendCache = this.isDevelopment;
     const cacheKey = this.getCacheKey(endpoint, requestParams);
-    const cachedEntry = bypassFrontendCache ? null : responseCache.get(cacheKey);
+    let cachedEntry = bypassFrontendCache ? null : responseCache.get(cacheKey);
+    if (!bypassFrontendCache && !cachedEntry) {
+      const persisted = readPersistedEntry(cacheKey);
+      if (persisted) {
+        responseCache.set(cacheKey, persisted);
+        cachedEntry = persisted;
+      }
+    }
     const hasFreshCache = cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_DURATION_MS;
 
     if (!bypassFrontendCache && hasFreshCache) {
@@ -77,17 +156,22 @@ export class ApiService {
     }
 
     if (inFlightRequests.has(cacheKey)) {
-      return inFlightRequests.get(cacheKey);
+      const inFlight = inFlightRequests.get(cacheKey);
+      if (!bypassFrontendCache && cachedEntry) {
+        // Stale-while-revalidate: return cached immediately, let refresh settle in background.
+        inFlight.catch(() => {});
+        return cachedEntry.data;
+      }
+      return inFlight;
     }
 
     const requestPromise = (async () => {
       try {
         const data = await this.fetchFromSource(endpoint, requestParams);
         if (!bypassFrontendCache) {
-          responseCache.set(cacheKey, {
-            data,
-            timestamp: Date.now()
-          });
+          const entry = { data, timestamp: Date.now() };
+          responseCache.set(cacheKey, entry);
+          writePersistedEntry(cacheKey, entry);
         }
         return data;
       } catch (error) {
@@ -102,10 +186,9 @@ export class ApiService {
           console.log(`API failed, falling back to mock data for ${endpoint}`);
           const mockData = await this.getMockData(endpoint, requestParams);
           if (!bypassFrontendCache) {
-            responseCache.set(cacheKey, {
-              data: mockData,
-              timestamp: Date.now()
-            });
+            const entry = { data: mockData, timestamp: Date.now() };
+            responseCache.set(cacheKey, entry);
+            writePersistedEntry(cacheKey, entry);
           }
           return mockData;
         }
@@ -117,6 +200,13 @@ export class ApiService {
     })();
 
     inFlightRequests.set(cacheKey, requestPromise);
+
+    if (!bypassFrontendCache && cachedEntry) {
+      // Stale-while-revalidate: serve stale payload, let the refresh update cache silently.
+      requestPromise.catch(() => {});
+      return cachedEntry.data;
+    }
+
     return requestPromise;
   }
 
@@ -126,6 +216,18 @@ export class ApiService {
   clearCache() {
     responseCache.clear();
     inFlightRequests.clear();
+    const storage = getSessionStorage();
+    if (!storage) return;
+    try {
+      const toRemove = [];
+      for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (key && key.startsWith(STORAGE_KEY_PREFIX)) toRemove.push(key);
+      }
+      toRemove.forEach((key) => {
+        try { storage.removeItem(key); } catch { /* ignore */ }
+      });
+    } catch { /* ignore */ }
   }
 
   /**
@@ -151,6 +253,20 @@ export class ApiService {
         inFlightRequests.delete(key);
       }
     }
+
+    const storage = getSessionStorage();
+    if (!storage) return;
+    try {
+      const storagePrefix = STORAGE_KEY_PREFIX + prefix;
+      const toRemove = [];
+      for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (key && key.startsWith(storagePrefix)) toRemove.push(key);
+      }
+      toRemove.forEach((key) => {
+        try { storage.removeItem(key); } catch { /* ignore */ }
+      });
+    } catch { /* ignore */ }
   }
 
   /**

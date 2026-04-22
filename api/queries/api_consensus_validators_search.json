@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_search",
-  "query": "SELECT\n      validator_index,\n      pubkey,\n      withdrawal_credentials,\n      withdrawal_address,\n      display_name\n    FROM dbt.api_consensus_validators_search"
+  "query": "SELECT\n      withdrawal_credentials,\n      display_name\n    FROM dbt.api_consensus_validators_search"
 }

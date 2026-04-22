@@ -1,5 +1,6 @@
 const metric = {
   id: 'api_consensus_validators_explorer_apy_daily',
+  globalFilterField: 'withdrawal_credentials',
   name: 'Average APY',
   description: 'Daily mean APY across the selected validator(s), outliers filtered',
   metricDescription: 'avgIf(apy, apy BETWEEN 0 AND 200) across every validator sharing the selected withdrawal_credentials. For a solo credential this is that validator\'s own daily APY.',
@@ -16,7 +17,7 @@ const metric = {
   enableZoom: true,
   defaultZoom: { start: 80, end: 100 },
 
-  query: `SELECT date, apy FROM dbt.api_consensus_validators_explorer_daily ORDER BY date`,
+  query: `SELECT withdrawal_credentials, date, apy FROM dbt.api_consensus_validators_explorer_daily ORDER BY date`,
 };
 
 export default metric;

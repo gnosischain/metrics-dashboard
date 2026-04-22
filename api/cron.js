@@ -251,24 +251,35 @@ class CronManager {
    * @returns {Promise<Object>} Result status for each metric
    */
   async refreshAllCaches(queries) {
+    if (this._refreshInProgress) {
+      console.log('Cache refresh already in progress, skipping');
+      return {};
+    }
+    this._refreshInProgress = true;
+
+    // Write the timestamp up front. The full refresh takes ~100 minutes (406 metrics
+    // x 15s timeout) which never completes inside a Vercel serverless invocation.
+    // Updating at the end meant the marker was never written and every cold start
+    // re-ran the whole loop from metric #1, hammering ClickHouse.
+    this.updateTimestamp();
+
     try {
       console.log('Starting cache refresh for all metrics');
-      
+
       const metricIds = Object.keys(queries);
       const results = {};
-      
+
       for (const metricId of metricIds) {
         results[metricId] = await this.refreshMetricCache(metricId, queries);
       }
-      
-      // Update timestamp after refreshing all
-      this.updateTimestamp();
-      
+
       console.log('Completed cache refresh for all metrics');
       return results;
     } catch (error) {
       console.error('Error refreshing all caches:', error);
       return {};
+    } finally {
+      this._refreshInProgress = false;
     }
   }
   

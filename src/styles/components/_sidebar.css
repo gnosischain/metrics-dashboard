@@ -29,14 +29,15 @@
    Sidebar Toggle
    ================== */
 
-/* Toggle sits next to the sidebar (it's a sibling in the DOM) */
+/* Toggle is anchored to the sidebar's right edge (sibling in the DOM).
+   Half-overlaps the border so it reads as an integral handle, not a floating pill. */
 .dashboard-sidebar + .sidebar-toggle {
   position: absolute;
-  top: 8px;
-  left: var(--sidebar-width);
+  top: 18px;
+  left: calc(var(--sidebar-width) - 12px);
 
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,18 +45,25 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 999px;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
   cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    left var(--transition-slow);
 
-  z-index: 90;
+  z-index: 95;
 }
 
 /* When sidebar is collapsed, move toggle to collapsed edge */
 .dashboard-sidebar.collapsed + .sidebar-toggle {
-  left: var(--sidebar-width-collapsed);
+  left: calc(var(--sidebar-width-collapsed) - 12px);
 }
 
 .sidebar-toggle:hover {
   background-color: var(--color-accent-softer);
+  border-color: var(--primary-blue);
   color: var(--primary-blue);
 }
 
@@ -301,6 +309,9 @@
   .dashboard-sidebar.mobile-expanded + .sidebar-toggle,
   .dashboard-sidebar.collapsed.mobile-expanded + .sidebar-toggle {
     left: calc(min(86vw, var(--sidebar-width)) - 18px);
+    width: 28px;
+    height: 28px;
+    top: calc(var(--header-height) + 16px);
   }
 
   .tab-item {
