@@ -1,4 +1,4 @@
 {
   "id": "api_execution_yields_user_lp_positions",
-  "query": "SELECT provider AS wallet_address, pool_address, protocol, tick_lower, tick_upper,\n           capital_in_usd, capital_out_usd, fees_collected_usd,\n           is_active, is_in_range, pool_current_tick, entry_date, last_action_date\n    FROM dbt.api_execution_yields_user_lp_positions"
+  "query": "SELECT provider AS wallet_address, pool_address, protocol, tick_lower, tick_upper,\n           capital_in_usd, capital_out_usd, fees_collected_usd,\n           is_active, is_in_range, pool_current_tick, has_unpriced_tokens,\n           entry_date, last_action_date\n    FROM dbt.api_execution_yields_user_lp_positions"
 }

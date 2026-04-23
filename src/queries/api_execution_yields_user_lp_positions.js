@@ -27,6 +27,11 @@ const metric = {
         visible: false
       },
       {
+        title: '',
+        field: 'has_unpriced_tokens',
+        visible: false
+      },
+      {
         title: 'Pool',
         field: 'pool_address',
         minWidth: 120,
@@ -99,8 +104,14 @@ const metric = {
         hozAlign: 'right',
         formatter: function(cell) {
           const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return '-';
-          return '$' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          const row = cell.getRow()?.getData?.() || {};
+          if (val === null || val === undefined || val === 0) {
+            if (row.has_unpriced_tokens) return '<span style="color:#9CA3AF;font-style:italic" title="Some tokens in this pool lack USD pricing">Unpriced</span>';
+            return '-';
+          }
+          const fmt = '$' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          if (row.has_unpriced_tokens) return '<span title="Partial — some tokens in this pool lack USD pricing">' + fmt + '*</span>';
+          return fmt;
         }
       },
       {
@@ -112,8 +123,14 @@ const metric = {
         hozAlign: 'right',
         formatter: function(cell) {
           const val = cell.getValue();
-          if (val === null || val === undefined || val === 0) return '-';
-          return '$' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          const row = cell.getRow()?.getData?.() || {};
+          if (val === null || val === undefined || val === 0) {
+            if (row.has_unpriced_tokens) return '<span style="color:#9CA3AF;font-style:italic" title="Some tokens in this pool lack USD pricing">Unpriced</span>';
+            return '-';
+          }
+          const fmt = '$' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          if (row.has_unpriced_tokens) return '<span title="Partial — some tokens in this pool lack USD pricing">' + fmt + '*</span>';
+          return fmt;
         }
       },
       {
@@ -159,7 +176,8 @@ const metric = {
   query: `
     SELECT provider AS wallet_address, pool_address, protocol, tick_lower, tick_upper,
            capital_in_usd, capital_out_usd, fees_collected_usd,
-           is_active, is_in_range, pool_current_tick, entry_date, last_action_date
+           is_active, is_in_range, pool_current_tick, has_unpriced_tokens,
+           entry_date, last_action_date
     FROM dbt.api_execution_yields_user_lp_positions
   `,
 };
