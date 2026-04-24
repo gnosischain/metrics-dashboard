@@ -8,6 +8,7 @@ const metric = {
   enableZoom: true,
   format: 'formatPercentageInt',
   showTotal: false,
+  tooltipOrder: 'valueDesc',
 
   smooth: true,
   symbolSize: 0,

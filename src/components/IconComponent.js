@@ -603,6 +603,12 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
           </svg>
         ),
 
+        'cow-protocol': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="CoW Protocol">
+            <image href="/imgs/brand/cowprotocol.svg" x="2" y="2" width="20" height="20"></image>
+          </svg>
+        ),
+
         'bar-chart': (
           <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"></line>

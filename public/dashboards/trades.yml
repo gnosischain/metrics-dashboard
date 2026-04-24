@@ -47,50 +47,101 @@ tabs:
     timeRanges: true
     defaultTimeRange: '3M'
     metrics:
-      # Row 1: volume over time, daily, stacked by protocol
-      - id: api_execution_trades_stats_volume_ts
+      # Row 1: lifetime KPI tiles (ignore time window)
+      - id: api_execution_trades_stats_lifetime_volume
         gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_trades
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_traders
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_trades_stats_lifetime_first_trade
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+
+      # Row 2: volume over time, daily, stacked by protocol
+      - id: api_execution_trades_stats_volume_ts
+        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 360px
 
-      # Row 2: aggregator share (stacked 100%) | top tokens (weekly stacked bars)
+      # Row 3: aggregator share (stacked 100%) | top tokens (weekly stacked bars)
       - id: api_execution_trades_stats_aggregator_share_ts
-        gridRow: 2
+        gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 360px
       - id: api_execution_trades_stats_top_tokens_weekly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 360px
+
+      # Row 4: fixed-window distributions (last 30d)
+      - id: api_execution_trades_stats_hop_distribution
+        gridRow: 4
+        gridColumn: 1 / span 4
+        minHeight: 320px
+      - id: api_execution_trades_stats_size_distribution
+        gridRow: 4
+        gridColumn: 5 / span 4
+        minHeight: 320px
+      - id: api_execution_trades_stats_net_flow
+        gridRow: 4
+        gridColumn: 9 / span 4
+        minHeight: 320px
+
+  - name: CoW Protocol
+    order: 3
+    icon: "🐄"
+    iconClass: cow-protocol
+    timeRanges: true
+    defaultTimeRange: '3M'
+    metrics:
+      # Row 1: KPI tiles (7d window)
+      - id: api_execution_cow_kpi_volume_7d
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_cow_kpi_trades_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_cow_kpi_traders_7d
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_cow_kpi_active_solvers
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+
+      # Row 2: volume + trade count over time
+      - id: api_execution_cow_volume_ts
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_execution_cow_trades_ts
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 3: fixed-window distributions (last 30d)
-      - id: api_execution_trades_stats_hop_distribution
+      # Row 3: solver competition (full width)
+      - id: api_execution_cow_solvers_volume_ts
         gridRow: 3
-        gridColumn: 1 / span 4
-        minHeight: 320px
-      - id: api_execution_trades_stats_size_distribution
-        gridRow: 3
-        gridColumn: 5 / span 4
-        minHeight: 320px
-      - id: api_execution_trades_stats_net_flow
-        gridRow: 3
-        gridColumn: 9 / span 4
-        minHeight: 320px
+        gridColumn: 1 / span 12
+        minHeight: 400px
 
-      # Row 4: lifetime tiles (ignore window)
-      - id: api_execution_trades_stats_lifetime_volume
+      # Row 4: batch analytics + top pairs
+      - id: api_execution_cow_batch_metrics_ts
         gridRow: 4
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_trades_stats_lifetime_trades
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_execution_cow_top_pairs_weekly
         gridRow: 4
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_trades_stats_lifetime_traders
-        gridRow: 4
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_trades_stats_lifetime_first_trade
-        gridRow: 4
-        gridColumn: 10 / span 3
-        minHeight: 120px
+        gridColumn: 7 / span 6
+        minHeight: 360px

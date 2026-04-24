@@ -8,6 +8,7 @@ const metric = {
   enableZoom: true,
   format: 'formatCurrencyCompact',
   showTotal: true,
+  tooltipOrder: 'valueDesc',
 
   smooth: true,
   symbolSize: 2,

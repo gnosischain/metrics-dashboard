@@ -8,6 +8,7 @@ const metric = {
   enableZoom: false,
   format: 'formatNumberWithUSD',
   showTotal: true,
+  tooltipOrder: 'valueDesc',
 
   barWidth: 'auto',
   barMaxWidth: 40,
