@@ -113,11 +113,15 @@ tabs:
         minHeight: 120px
       - id: api_execution_cow_kpi_traders_7d
         gridRow: 1
-        gridColumn: 7 / span 3
+        gridColumn: 7 / span 2
+        minHeight: 120px
+      - id: api_execution_cow_kpi_fees_7d
+        gridRow: 1
+        gridColumn: 9 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_active_solvers
         gridRow: 1
-        gridColumn: 10 / span 3
+        gridColumn: 11 / span 2
         minHeight: 120px
 
       # Row 2: volume + trade count over time
@@ -130,18 +134,24 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 3: solver competition (full width)
-      - id: api_execution_cow_solvers_volume_ts
+      # Row 3: fees over time, stacked by source (onchain vs api)
+      - id: api_execution_cow_fees_ts
         gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 360px
+
+      # Row 4: solver competition (full width)
+      - id: api_execution_cow_solvers_volume_ts
+        gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 400px
 
-      # Row 4: batch analytics + top pairs
+      # Row 5: batch analytics + top pairs
       - id: api_execution_cow_batch_metrics_ts
-        gridRow: 4
+        gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 360px
       - id: api_execution_cow_top_pairs_weekly
-        gridRow: 4
+        gridRow: 5
         gridColumn: 7 / span 6
         minHeight: 360px
