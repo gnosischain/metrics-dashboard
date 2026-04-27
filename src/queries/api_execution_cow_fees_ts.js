@@ -1,24 +1,21 @@
 const metric = {
   id: 'api_execution_cow_fees_ts',
-  name: 'Fees by Source',
-  description: 'Daily CoW Protocol fees split by source',
-  metricDescription: 'Daily CoW Protocol fees (USD) stacked by fee_source. Pre-2024 fees come from the on-chain feeAmount field on the Trade event ("onchain"); 2024+ fees come from the CoW API\'s surplus-based protocol fee model ("api"). Visualizes the protocol fee model transition.',
+  name: 'Protocol Fees',
+  description: 'Daily CoW Protocol revenue (surplus-based fees)',
+  metricDescription: 'Daily CoW Protocol revenue on Gnosis Chain — surplus-based fees collected since Sep 2024. Pre-Sep 2024 is excluded: under CoW v1\'s fee-subsidy model, the on-chain feeAmount field represented the user\'s signed-maximum, not actual protocol revenue. The DAO reimbursed solvers for gas + a small protocol margin off-chain via CIP-12 / solver rewards, so on-chain feeAmount values do not reflect what CoW actually kept as revenue.',
   chartType: 'area',
   isTimeSeries: true,
   enableZoom: false,
   format: 'formatCurrencyCompact',
-  showTotal: true,
-  tooltipOrder: 'valueDesc',
 
   smooth: true,
   symbolSize: 0,
-  lineWidth: 1,
-  areaOpacity: 0.75,
+  lineWidth: 2,
+  areaOpacity: 0.6,
 
   xField: 'date',
   yField: 'value',
-  seriesField: 'label',
 
-  query: `SELECT date, label, value FROM dbt.api_execution_cow_fees_ts`,
+  query: `SELECT date, value FROM dbt.api_execution_cow_fees_ts`,
 };
 export default metric;

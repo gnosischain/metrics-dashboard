@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_cow_kpi_fees_7d',
   name: 'Fees',
   description: 'Last 7 days',
-  metricDescription: 'Total CoW Protocol fees (USD) on Gnosis Chain in the last 7 complete days. Combines on-chain feeAmount (pre-2024) and CoW API surplus fees (2024+).',
+  metricDescription: 'Total CoW Protocol fees (USD) collected on Gnosis Chain in the last 7 complete days. Reflects the surplus-based fee model introduced in Sep 2024. Pre-Sep 2024 on-chain feeAmount values are excluded — they represented signed-maximum under CoW v1\'s fee-subsidy model, not actual protocol revenue.',
   chartType: 'numberDisplay',
   format: 'formatNumberWithUSD',
   valueField: 'value',

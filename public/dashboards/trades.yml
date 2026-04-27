@@ -100,7 +100,7 @@ tabs:
     icon: "🐄"
     iconClass: cow-protocol
     timeRanges: true
-    defaultTimeRange: '3M'
+    defaultTimeRange: 'ALL'
     metrics:
       # Row 1: KPI tiles (7d window)
       - id: api_execution_cow_kpi_volume_7d
