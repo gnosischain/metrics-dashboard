@@ -605,8 +605,9 @@ export class BaseChart {
     const seriesNames = config._seriesNames || [];
     const rich = {};
     let hasIcons = false;
+    const showTokenIcons = config.legendTokenIcons !== false;
     for (const name of seriesNames) {
-      const url = getTokenIconUrl(name);
+      const url = showTokenIcons ? getTokenIconUrl(name) : null;
       if (url) {
         const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
         rich[key] = {

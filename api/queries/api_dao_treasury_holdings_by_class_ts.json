@@ -1,0 +1,4 @@
+{
+  "id": "api_dao_treasury_holdings_by_class_ts",
+  "query": "SELECT date, label, value FROM dbt.api_dao_treasury_holdings_by_class_ts"
+}

@@ -54,7 +54,7 @@ export class LineChart extends BaseChart {
             type: 'line',
             data: series.data,
             smooth: config.smooth || false,
-            symbol: 'circle',
+            symbol: config.symbol || 'circle',
             symbolSize: config.symbolSize || 4,
             lineStyle: {
               width: config.lineWidth || 2,

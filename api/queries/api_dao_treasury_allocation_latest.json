@@ -1,0 +1,4 @@
+{
+  "id": "api_dao_treasury_allocation_latest",
+  "query": "SELECT token, value_usd, percentage FROM dbt.api_dao_treasury_allocation_latest"
+}

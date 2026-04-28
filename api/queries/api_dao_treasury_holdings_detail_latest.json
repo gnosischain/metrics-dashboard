@@ -1,0 +1,4 @@
+{
+  "id": "api_dao_treasury_holdings_detail_latest",
+  "query": "SELECT wallet_label, wallet_address, symbol, position_type, protocol, balance, balance_usd FROM dbt.api_dao_treasury_holdings_detail_latest"
+}
