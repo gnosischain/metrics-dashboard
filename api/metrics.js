@@ -1,8 +1,99 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const mockData = require('./mock');
 const cacheManager = require('./cache');
 const cronManager = require('./cron');
+
+const DEBUG_METRICS = process.env.DEBUG_METRICS === 'true';
+
+const metricLog = (...args) => {
+  if (DEBUG_METRICS) console.log(...args);
+};
+
+const summarizeForLog = (value) => {
+  if (typeof value === 'string') {
+    if (/^data:image\//i.test(value)) {
+      return `[data-image ${value.length} chars]`;
+    }
+    return value.length > 180 ? `${value.slice(0, 180)}... (${value.length} chars)` : value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.slice(0, 3).map(summarizeForLog);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, fieldValue]) => [key, summarizeForLog(fieldValue)])
+    );
+  }
+
+  return value;
+};
+
+const getSafeErrorMessage = (error) => {
+  const status = error?.response?.status;
+  const exception = error?.response?.data?.exception || error?.response?.data?.message;
+  return [
+    error?.message || 'Unknown error',
+    status ? `status ${status}` : '',
+    exception ? String(exception).replace(/\s+/g, ' ').slice(0, 300) : '',
+  ].filter(Boolean).join(' · ');
+};
+
+const cacheValue = (value) => {
+  const str = String(value ?? '');
+  if (str.length <= 48) return str;
+  return `${str.slice(0, 16)}_${crypto.createHash('sha1').update(str).digest('hex').slice(0, 12)}`;
+};
+
+const INLINE_FILTER_MARKER = '/*__FILTER_CONDITIONS__*/';
+const FILTERED_QUERY_CACHE_VERSION = 'v3';
+const VALIDATOR_MEMBERS_METRIC_ID = 'api_consensus_validators_explorer_members_table';
+const ACCOUNT_COUNTERPARTY_GRAPH_METRIC_ID = 'api_execution_account_counterparty_graph';
+const CIRCLES_TRUST_NETWORK_METRIC_ID = 'api_execution_circles_v2_avatar_trust_network';
+
+const VALIDATOR_MEMBERS_SORT_FIELDS = new Set([
+  'validator_index',
+  'status',
+  'slashed',
+  'activation_date',
+  'exit_date',
+  'balance_gno',
+  'effective_balance_gno',
+  'apy_30d',
+  'consensus_income_amount_30d_gno',
+  'proposed_blocks_count_lifetime',
+  'proposer_reward_total_lifetime_gno',
+  'total_income_estimated_gno',
+  'withdrawal_address',
+  'pubkey',
+  'withdrawal_credentials'
+]);
+
+const VALIDATOR_MEMBERS_SEARCH_FIELDS = [
+  'validator_index',
+  'status',
+  'withdrawal_address',
+  'pubkey',
+  'withdrawal_credentials'
+];
+
+const isScopedFilteredMetric = (metricId) => {
+  const id = String(metricId || '');
+  return (
+    id.startsWith('api_execution_account_') ||
+    id.startsWith('api_execution_gpay_user_') ||
+    id.startsWith('api_execution_yields_user_') ||
+    id.startsWith('api_execution_circles_v2_avatar_') ||
+    id.startsWith('api_execution_gnosis_app_user_') ||
+    id.startsWith('api_consensus_validator_compare_') ||
+    id.startsWith('api_consensus_validator_group_') ||
+    id.startsWith('api_consensus_validator_history_') ||
+    id.startsWith('api_consensus_validator_profile_')
+  );
+};
 
 /**
  * Load all query definitions from JSON files
@@ -130,7 +221,8 @@ function getDefaultQueries() {
 const startupQueries = loadQueries();
 const startupMetricIds = Object.keys(startupQueries);
 
-console.log(`Loaded ${startupMetricIds.length} metric queries: ${startupMetricIds.join(', ')}`);
+metricLog(`Loaded ${startupMetricIds.length} metric queries`);
+metricLog(`Metric query ids: ${startupMetricIds.join(', ')}`);
 
 function getActiveQueries(isLocalDevRuntime = false) {
   if (isLocalDevRuntime) {
@@ -167,8 +259,13 @@ if (process.env.ENABLE_STARTUP_CACHE_REFRESH === '1') {
  * Vercel API handler for metrics
  */
 module.exports = async (req, res) => {
+  const requestHost = String(req.headers?.host || '');
+  const isLocalHostRequest = /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(requestHost);
   const isLocalDevRuntime =
-    process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+    process.env.NODE_ENV === 'development' ||
+    process.env.VERCEL_ENV === 'development' ||
+    process.env.VERCEL_DEV === '1' ||
+    isLocalHostRequest;
 
   if (isLocalDevRuntime) {
     res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -200,7 +297,7 @@ module.exports = async (req, res) => {
       const urlMatch = req.url.match(/\/api\/metrics?\/([^?&]+)/);
       if (urlMatch) {
         metricId = decodeURIComponent(urlMatch[1]);
-        console.log(`Extracted metric ID from URL: ${metricId}`);
+        metricLog(`Extracted metric ID from URL: ${metricId}`);
       }
     }
     
@@ -227,6 +324,15 @@ module.exports = async (req, res) => {
     const requestFilterValue2 = normalizeValue(req.query.filterValue2);
     const requestFilterField3 = typeof req.query.filterField3 === 'string' ? req.query.filterField3 : null;
     const requestFilterValue3 = normalizeValue(req.query.filterValue3);
+    const requestPage = typeof req.query.page === 'string' ? req.query.page : null;
+    const requestPageSize = typeof req.query.pageSize === 'string'
+      ? req.query.pageSize
+      : (typeof req.query.limit === 'string' ? req.query.limit : null);
+    const requestOffset = typeof req.query.offset === 'string' ? req.query.offset : null;
+    const requestSortField = typeof req.query.sortField === 'string' ? req.query.sortField : null;
+    const requestSortDir = typeof req.query.sortDir === 'string' ? req.query.sortDir : null;
+    const requestSearch = normalizeValue(req.query.search);
+    const requestIncludeTotal = req.query.includeTotal === 'true';
     
     // Force cache refresh if explicitly requested
     if (req.query.refreshCache === 'true') {
@@ -239,7 +345,7 @@ module.exports = async (req, res) => {
     
     // If a specific metric is requested
     if (metricId) {
-      console.log(`Processing request for specific metric: ${metricId}`);
+      metricLog(`Processing request for specific metric: ${metricId}`);
       const metricData = await fetchMetricData(metricId, activeQueries, availableMetrics, useMock, useCached, {
         from: requestFrom,
         to: requestTo,
@@ -248,14 +354,21 @@ module.exports = async (req, res) => {
         filterField2: requestFilterField2,
         filterValue2: requestFilterValue2,
         filterField3: requestFilterField3,
-        filterValue3: requestFilterValue3
+        filterValue3: requestFilterValue3,
+        page: requestPage,
+        pageSize: requestPageSize,
+        offset: requestOffset,
+        sortField: requestSortField,
+        sortDir: requestSortDir,
+        search: requestSearch,
+        includeTotal: requestIncludeTotal
       });
       return res.status(200).json(metricData);
     } 
     
     // If all metrics are requested
     else {
-      console.log('Processing request for all metrics');
+      metricLog('Processing request for all metrics');
       const allMetricsData = await fetchAllMetricsData(activeQueries, availableMetrics, useMock, useCached);
       return res.status(200).json(allMetricsData);
     }
@@ -288,30 +401,242 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     throw error;
   }
   
-  console.log(`Fetching data for metric: ${metricId}`);
-  console.log(`Query: ${query.substring(0, 100)}...`);
+  metricLog(`Fetching data for metric: ${metricId}`);
+  metricLog(`Query: ${query.substring(0, 100)}...`);
 
-  const { from: fromParam, to: toParam, filterField, filterValue, filterField2, filterValue2, filterField3, filterValue3 } = opts;
+  const {
+    from: fromParam,
+    to: toParam,
+    filterField,
+    filterValue,
+    filterField2,
+    filterValue2,
+    filterField3,
+    filterValue3,
+    page: pageParam,
+    pageSize: pageSizeParam,
+    offset: offsetParam,
+    sortField: sortFieldParam,
+    sortDir: sortDirParam,
+    search: searchParam,
+    includeTotal: includeTotalParam,
+  } = opts;
 
   const isIsoDate = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
   const isSafeIdentifier = (s) => typeof s === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(s);
   const escapeSqlString = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "''");
+  const isNumericLiteral = (s) => /^-?\d+(?:\.\d+)?$/.test(String(s).trim());
+  const clampInteger = (value, fallback, min, max) => {
+    const parsed = Number.parseInt(String(value ?? ''), 10);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(min, Math.min(max, parsed));
+  };
+  const toSqlLiteral = (value) => {
+    const normalized = String(value).trim();
+    if (isNumericLiteral(normalized)) {
+      return normalized;
+    }
+    return `'${escapeSqlString(normalized)}'`;
+  };
+  const toLowerSqlLiteral = (value) => `'${escapeSqlString(String(value).trim().toLowerCase())}'`;
+  const buildFilterCondition = (fieldName, rawValue) => {
+    if (!isSafeIdentifier(fieldName) || typeof rawValue !== 'string' || rawValue.length === 0) {
+      return null;
+    }
+
+    const values = rawValue
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (values.length === 0) {
+      return null;
+    }
+
+    if (values.length === 1) {
+      return `${fieldName} = ${toSqlLiteral(values[0])}`;
+    }
+
+    return `${fieldName} IN (${values.map(toSqlLiteral).join(', ')})`;
+  };
+  const buildGraphAddressCondition = (rawValue) => {
+    if (typeof rawValue !== 'string' || rawValue.length === 0) return null;
+    const values = rawValue
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+    if (values.length === 0) return null;
+
+    if (values.length === 1) {
+      return `(lower(source) = ${toLowerSqlLiteral(values[0])} OR lower(target) = ${toLowerSqlLiteral(values[0])})`;
+    }
+
+    const list = values.map(toLowerSqlLiteral).join(', ');
+    return `(lower(source) IN (${list}) OR lower(target) IN (${list}))`;
+  };
+  const stripTrailingOrderBy = (sql) => {
+    const lower = String(sql || '').toLowerCase();
+    const orderByIdx = lower.lastIndexOf('order by');
+    return orderByIdx >= 0 ? sql.slice(0, orderByIdx) : sql;
+  };
+  const buildValidatorMembersOrderBy = ({ sortField, sortDir }) => {
+    if (sortField === 'validator_index') {
+      return `validator_index ${sortDir}`;
+    }
+    return `${sortField} ${sortDir}, validator_index ASC`;
+  };
+  const buildCirclesTrustNetworkRows = async (rawAvatarValue) => {
+    const avatarValues = String(rawAvatarValue || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean)
+      .slice(0, 5);
+
+    if (avatarValues.length === 0) return [];
+
+    const avatarList = avatarValues.map(toSqlLiteral).join(', ');
+    const relations = await cronManager.executeClickHouseQuery(`
+      SELECT avatar, counterparty, direction
+      FROM dbt.api_execution_circles_v2_avatar_trust_relations
+      WHERE avatar IN (${avatarList})
+      LIMIT 500
+    `);
+
+    if (!relations || relations.length === 0) return [];
+
+    const nodeAddresses = new Set();
+    relations.forEach((row) => {
+      const avatar = String(row?.avatar || '').trim().toLowerCase();
+      const counterparty = String(row?.counterparty || '').trim().toLowerCase();
+      if (avatar) nodeAddresses.add(avatar);
+      if (counterparty) nodeAddresses.add(counterparty);
+    });
+
+    const nodeList = Array.from(nodeAddresses).slice(0, 600);
+    const metadataRows = nodeList.length > 0
+      ? await cronManager.executeClickHouseQuery(`
+          SELECT avatar, name, metadata_name, metadata_preview_image_url, metadata_image_url
+          FROM dbt.api_execution_circles_v2_avatar_metadata
+          WHERE avatar IN (${nodeList.map(toSqlLiteral).join(', ')})
+        `)
+      : [];
+
+    const metadataByAvatar = new Map(
+      (metadataRows || []).map((row) => [String(row.avatar || '').toLowerCase(), row])
+    );
+    const imageEmittedFor = new Set();
+    const relationRank = { mutual: 1, outgoing: 2, incoming: 3 };
+    const sortedRelations = [...relations].sort((a, b) => {
+      const rankDelta = (relationRank[String(a.direction || '')] || 9) - (relationRank[String(b.direction || '')] || 9);
+      if (rankDelta !== 0) return rankDelta;
+      return String(a.counterparty || '').localeCompare(String(b.counterparty || ''));
+    });
+
+    const nodeName = (address) => {
+      const key = String(address || '').toLowerCase();
+      const metadata = metadataByAvatar.get(key) || {};
+      return metadata.metadata_name || metadata.name || address;
+    };
+    const nodeImage = (address) => {
+      const key = String(address || '').toLowerCase();
+      if (!key || imageEmittedFor.has(key)) return null;
+      const metadata = metadataByAvatar.get(key) || {};
+      const image = metadata.metadata_preview_image_url || metadata.metadata_image_url || null;
+      if (image) {
+        imageEmittedFor.add(key);
+        return image;
+      }
+      return null;
+    };
+    const makeEdge = ({ avatar, sourceId, targetId, sourceLayer, targetLayer, direction }) => ({
+      avatar,
+      source_id: sourceId,
+      source_name: nodeName(sourceId),
+      source_layer: sourceLayer,
+      source_image: nodeImage(sourceId),
+      target_id: targetId,
+      target_name: nodeName(targetId),
+      target_layer: targetLayer,
+      target_image: nodeImage(targetId),
+      direction,
+      value: 1,
+    });
+
+    const rows = [];
+    sortedRelations.forEach((row) => {
+      const avatar = String(row?.avatar || '').trim().toLowerCase();
+      const counterparty = String(row?.counterparty || '').trim().toLowerCase();
+      const direction = String(row?.direction || '').trim().toLowerCase();
+      if (!avatar || !counterparty) return;
+
+      if (direction === 'outgoing' || direction === 'mutual') {
+        rows.push(makeEdge({
+          avatar,
+          sourceId: avatar,
+          targetId: counterparty,
+          sourceLayer: 'Focal avatar',
+          targetLayer: direction === 'mutual' ? 'Mutual' : 'Trust given',
+          direction: direction === 'mutual' ? 'Mutual' : 'Trust given',
+        }));
+      }
+
+      if (direction === 'incoming' || direction === 'mutual') {
+        rows.push(makeEdge({
+          avatar,
+          sourceId: counterparty,
+          targetId: avatar,
+          sourceLayer: direction === 'mutual' ? 'Mutual' : 'Trust received',
+          targetLayer: 'Focal avatar',
+          direction: direction === 'mutual' ? 'Mutual' : 'Trust received',
+        }));
+      }
+    });
+
+    return rows;
+  };
+  const validatorPagination = metricId === VALIDATOR_MEMBERS_METRIC_ID
+    ? {
+        page: clampInteger(pageParam, 1, 1, 1000000),
+        pageSize: clampInteger(pageSizeParam, 25, 1, 500),
+        offset: offsetParam != null
+          ? clampInteger(offsetParam, 0, 0, 50000000)
+          : null,
+        sortField: VALIDATOR_MEMBERS_SORT_FIELDS.has(sortFieldParam)
+          ? sortFieldParam
+          : 'balance_gno',
+        sortDir: String(sortDirParam || 'desc').toLowerCase() === 'asc' ? 'ASC' : 'DESC',
+        search: typeof searchParam === 'string' ? searchParam.trim().slice(0, 160) : '',
+        includeTotal: Boolean(includeTotalParam || metricId === VALIDATOR_MEMBERS_METRIC_ID),
+      }
+    : null;
 
   const effectiveFromToProvided = isIsoDate(fromParam) && isIsoDate(toParam);
   const effectiveFilterProvided = isSafeIdentifier(filterField) && typeof filterValue === 'string' && filterValue.length > 0;
   const effectiveFilter2Provided = isSafeIdentifier(filterField2) && typeof filterValue2 === 'string' && filterValue2.length > 0;
   const effectiveFilter3Provided = isSafeIdentifier(filterField3) && typeof filterValue3 === 'string' && filterValue3.length > 0;
+  const hasEffectiveFilters = effectiveFilterProvided || effectiveFilter2Provided || effectiveFilter3Provided;
 
   // Backwards-compatible cache key:
   // - If no extra params are provided, keep the original metricId cache key.
   // - If params are provided, include them so cached results don't mix.
   const cacheKey = (() => {
-    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided) return metricId;
+    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided && !validatorPagination) return metricId;
     const parts = [metricId];
+    if (hasEffectiveFilters) parts.push(`filteredCache=${FILTERED_QUERY_CACHE_VERSION}`);
     if (effectiveFromToProvided) parts.push(`from=${fromParam}`, `to=${toParam}`);
-    if (effectiveFilterProvided) parts.push(`filterField=${filterField}`, `filterValue=${filterValue}`);
-    if (effectiveFilter2Provided) parts.push(`filterField2=${filterField2}`, `filterValue2=${filterValue2}`);
-    if (effectiveFilter3Provided) parts.push(`filterField3=${filterField3}`, `filterValue3=${filterValue3}`);
+    if (effectiveFilterProvided) parts.push(`filterField=${filterField}`, `filterValue=${cacheValue(filterValue)}`);
+    if (effectiveFilter2Provided) parts.push(`filterField2=${filterField2}`, `filterValue2=${cacheValue(filterValue2)}`);
+    if (effectiveFilter3Provided) parts.push(`filterField3=${filterField3}`, `filterValue3=${cacheValue(filterValue3)}`);
+    if (validatorPagination) {
+      parts.push(
+        `page=${validatorPagination.page}`,
+        `pageSize=${validatorPagination.pageSize}`,
+        `offset=${validatorPagination.offset ?? ''}`,
+        `sortField=${validatorPagination.sortField}`,
+        `sortDir=${validatorPagination.sortDir}`,
+        `search=${cacheValue(validatorPagination.search)}`
+      );
+    }
     return parts.join('|');
   })();
   
@@ -320,20 +645,33 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     if (useCached) {
       const cachedData = cacheManager.getCache(cacheKey);
       if (cachedData) {
-        console.log(`Using cached data for ${cacheKey} (${cachedData.length} records)`);
+        const cachedLength = Array.isArray(cachedData) ? cachedData.length : cachedData?.data?.length;
+        metricLog(`Using cached data for ${cacheKey} (${cachedLength || 0} records)`);
         return cachedData;
       }
     }
     
     // If we need to generate new data
     if (useMock) {
-      console.log(`Generating mock data for ${metricId}`);
+      metricLog(`Generating mock data for ${metricId}`);
       const mockResult = generateMockData(query, metricId);
       
       // Cache the mock data
       cacheManager.setCache(cacheKey, mockResult);
       
       return mockResult;
+    }
+
+    if (
+      metricId === CIRCLES_TRUST_NETWORK_METRIC_ID &&
+      effectiveFilterProvided &&
+      filterField === 'avatar'
+    ) {
+      const graphRows = await buildCirclesTrustNetworkRows(filterValue);
+      if (graphRows.length > 0) {
+        cacheManager.setCache(cacheKey, graphRows);
+      }
+      return graphRows;
     }
     
     // Default behavior (backwards-compatible): last 365 days unless overridden by query params
@@ -356,87 +694,241 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     // The client (MetricGrid) only sends filterField/filterValue for metrics
     // that explicitly declare support via globalFilterField or enableFiltering,
     // so we trust the request and always apply the filter.
-    if (effectiveFilterProvided || effectiveFilter2Provided || effectiveFilter3Provided) {
+    if (hasEffectiveFilters) {
       const conditions = [];
       if (effectiveFilterProvided) {
-        const valueEscaped = escapeSqlString(filterValue);
-        conditions.push(`${filterField} = '${valueEscaped}'`);
+        const condition = metricId === ACCOUNT_COUNTERPARTY_GRAPH_METRIC_ID && filterField === 'address'
+          ? buildGraphAddressCondition(filterValue)
+          : buildFilterCondition(filterField, filterValue);
+        if (condition) conditions.push(condition);
       }
       if (effectiveFilter2Provided) {
-        const valueEscaped2 = escapeSqlString(filterValue2);
-        conditions.push(`${filterField2} = '${valueEscaped2}'`);
+        const condition = buildFilterCondition(filterField2, filterValue2);
+        if (condition) conditions.push(condition);
       }
       if (effectiveFilter3Provided) {
-        const valueEscaped3 = escapeSqlString(filterValue3);
-        conditions.push(`${filterField3} = '${valueEscaped3}'`);
+        const condition = buildFilterCondition(filterField3, filterValue3);
+        if (condition) conditions.push(condition);
       }
 
       if (conditions.length > 0) {
-        const lowerQuery = processedQuery.toLowerCase();
-        // Preserve ORDER BY (and any trailing LIMIT) by hoisting it to the outer query.
-        const orderByIdx = lowerQuery.lastIndexOf('order by');
-        const innerQuery = orderByIdx >= 0 ? processedQuery.slice(0, orderByIdx) : processedQuery;
-        const orderByClause = orderByIdx >= 0 ? processedQuery.slice(orderByIdx) : '';
+        if (processedQuery.includes(INLINE_FILTER_MARKER)) {
+          processedQuery = processedQuery.replaceAll(
+            INLINE_FILTER_MARKER,
+            `AND ${conditions.join(' AND ')}`
+          );
+        } else {
+          const lowerQuery = processedQuery.toLowerCase();
+          // Preserve ORDER BY (and any trailing LIMIT) by hoisting it to the outer query.
+          const orderByIdx = lowerQuery.lastIndexOf('order by');
+          const innerQuery = orderByIdx >= 0 ? processedQuery.slice(0, orderByIdx) : processedQuery;
+          const orderByClause = orderByIdx >= 0 ? processedQuery.slice(orderByIdx) : '';
 
-        processedQuery = `
-          SELECT *
-          FROM (
-            ${innerQuery}
-          )
-          WHERE ${conditions.join(' AND ')}
-          ${orderByClause}
-        `;
+          processedQuery = `
+            SELECT *
+            FROM (
+              ${innerQuery}
+            )
+            WHERE ${conditions.join(' AND ')}
+            ${orderByClause}
+          `;
+        }
       }
     }
+
+    let paginatedResponseMeta = null;
+    if (validatorPagination) {
+      const baseQuery = stripTrailingOrderBy(processedQuery);
+      let scopedQuery = `
+        SELECT *
+        FROM (
+          ${baseQuery}
+        )
+      `;
+
+      if (validatorPagination.search) {
+        const searchLiteral = `'${escapeSqlString(validatorPagination.search)}'`;
+        const searchConditions = VALIDATOR_MEMBERS_SEARCH_FIELDS.map((field) =>
+          `positionCaseInsensitive(toString(${field}), ${searchLiteral}) > 0`
+        );
+        scopedQuery = `
+          SELECT *
+          FROM (
+            ${baseQuery}
+          )
+          WHERE ${searchConditions.join(' OR ')}
+        `;
+      }
+
+      const offset = validatorPagination.offset ?? ((validatorPagination.page - 1) * validatorPagination.pageSize);
+      const countQuery = `SELECT count() AS total FROM (${scopedQuery})`;
+      let total = 0;
+      try {
+        const countRows = await cronManager.executeClickHouseQuery(countQuery);
+        total = Number(countRows?.[0]?.total || 0);
+      } catch (countError) {
+        metricLog(`Count query failed for ${metricId}: ${getSafeErrorMessage(countError)}`);
+      }
+
+      processedQuery = `
+        SELECT *
+        FROM (
+          ${scopedQuery}
+        )
+        ORDER BY ${buildValidatorMembersOrderBy(validatorPagination)}
+        LIMIT ${validatorPagination.pageSize}
+        OFFSET ${offset}
+      `;
+      paginatedResponseMeta = {
+        page: validatorPagination.page,
+        pageSize: validatorPagination.pageSize,
+        total,
+        lastPage: Math.max(1, Math.ceil(total / validatorPagination.pageSize)),
+      };
+    }
     
-    console.log(`Executing query for ${metricId}: ${processedQuery.substring(0, 200)}...`);
+    metricLog(`Executing query for ${metricId}: ${processedQuery.substring(0, 200)}...`);
     
     // Execute the query against ClickHouse
     let rawData;
+    let primaryGraphError = null;
     try {
       rawData = await cronManager.executeClickHouseQuery(processedQuery);
     } catch (error) {
-      // Backwards-compatible fallback: if the filtered query fails, retry without the filter.
-      // This avoids breaking metrics that don't actually include the requested filter field.
-      if (effectiveFilterProvided || effectiveFilter2Provided) {
-        console.warn(`Filtered query failed for ${metricId}; retrying without filter. Error:`, error?.message || error);
-        const fallbackQuery = query.replace(/\{from\}/g, fromStr).replace(/\{to\}/g, toStr);
-        rawData = await cronManager.executeClickHouseQuery(fallbackQuery);
+      if (
+        metricId === ACCOUNT_COUNTERPARTY_GRAPH_METRIC_ID &&
+        effectiveFilterProvided &&
+        filterField === 'address'
+      ) {
+        primaryGraphError = error;
+        rawData = [];
       } else {
+      // Never retry a filtered request without its filter. That turns a single
+      // account/profile lookup into a full table scan and can exhaust ClickHouse
+      // memory. Surface the failure to the empty-state handling below.
         throw error;
       }
     }
+
+    if (
+      metricId === ACCOUNT_COUNTERPARTY_GRAPH_METRIC_ID &&
+      effectiveFilterProvided &&
+      filterField === 'address' &&
+      (!rawData || rawData.length === 0)
+    ) {
+      const addressValues = String(filterValue || '')
+        .split(',')
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean);
+      if (addressValues.length > 0) {
+        const addressList = addressValues.map(toLowerSqlLiteral).join(', ');
+        const linkedFallbackQuery = `
+          SELECT
+            lower(root_address) AS source,
+            if(
+              lower(coalesce(nullIf(entity_address, ''), '')) = lower(root_address),
+              concat(coalesce(nullIf(relation, ''), entity_type, 'linked'), ':', entity_id),
+              lower(coalesce(nullIf(entity_address, ''), entity_id))
+            ) AS target,
+            'Selected account' AS source_name,
+            coalesce(nullIf(display_label, ''), entity_type, relation, entity_id) AS target_name,
+            coalesce(nullIf(relation, ''), entity_type, 'linked') AS edge_type,
+            greatest(toFloat64OrZero(toString(value_count)), 1) AS weight,
+            value_count AS raw_volume,
+            last_seen_at AS last_seen_date
+          FROM dbt.api_execution_account_linked_entities_latest
+          WHERE lower(root_address) IN (${addressList})
+            AND coalesce(nullIf(entity_address, ''), entity_id) != ''
+          ORDER BY weight DESC
+          LIMIT 60
+        `;
+        const tokenFallbackQuery = `
+          SELECT
+            lower(address) AS source,
+            concat('token:', coalesce(nullIf(symbol, ''), token_address)) AS target,
+            'Selected account' AS source_name,
+            coalesce(nullIf(symbol, ''), token_address) AS target_name,
+            'token_activity' AS edge_type,
+            count() AS weight,
+            sum(abs(toFloat64(net_delta_raw))) AS raw_volume,
+            max(date) AS last_seen_date
+          FROM dbt.int_execution_tokens_address_diffs_daily
+          WHERE date BETWEEN toDate('${fromStr}') AND toDate('${toStr}')
+            AND lower(address) IN (${addressList})
+            AND net_delta_raw IS NOT NULL
+            AND toFloat64(net_delta_raw) != 0
+          GROUP BY source, target, source_name, target_name, edge_type
+          ORDER BY weight DESC
+          LIMIT 60
+        `;
+
+        try {
+          const linkedRows = await cronManager.executeClickHouseQuery(linkedFallbackQuery);
+          rawData = linkedRows && linkedRows.length > 0
+            ? linkedRows
+            : await cronManager.executeClickHouseQuery(tokenFallbackQuery);
+        } catch (fallbackError) {
+          metricLog(`Graph fallback failed for ${metricId}: ${getSafeErrorMessage(fallbackError)}`);
+          if (primaryGraphError) throw primaryGraphError;
+        }
+      }
+    }
     
-    console.log(`Query result for ${metricId}: ${rawData?.length || 0} records`);
+    metricLog(`Query result for ${metricId}: ${rawData?.length || 0} records`);
     
     // Cache the results
-    if (rawData && rawData.length > 0) {
-      cacheManager.setCache(cacheKey, rawData);
+    const responseData = paginatedResponseMeta
+      ? { data: rawData || [], ...paginatedResponseMeta }
+      : (rawData || []);
+
+    if ((rawData && rawData.length > 0) || paginatedResponseMeta) {
+      cacheManager.setCache(cacheKey, responseData);
       
-      // Log some sample data for debugging
-      console.log(`Sample data for ${metricId}:`, rawData.slice(0, 3));
-      if (rawData.length > 0) {
+      if (DEBUG_METRICS && rawData.length > 0) {
+        console.log(`Sample data for ${metricId}:`, summarizeForLog(rawData.slice(0, 3)));
         const uniqueLabels = [...new Set(rawData.map(item => item.label).filter(Boolean))];
-        console.log(`Unique labels in ${metricId}:`, uniqueLabels);
+        console.log(`Unique labels in ${metricId}:`, summarizeForLog(uniqueLabels));
       }
     }
     
     // Return the data
-    return rawData || [];
+    return responseData;
   } catch (error) {
-    console.error(`Error fetching metric ${metricId}:`, error);
+    const errorText = `${error?.message || ''} ${error?.response?.data?.exception || ''} ${error?.response?.data?.message || ''}`;
+    const looksLikeMissingTable = /UNKNOWN_TABLE|Unknown table|doesn't exist|does not exist/i.test(errorText);
+    const isScopedFilterFailure = hasEffectiveFilters && isScopedFilteredMetric(metricId);
+    const suppressErrorLog =
+      looksLikeMissingTable ||
+      isScopedFilterFailure ||
+      String(metricId || '').startsWith('api_execution_account_');
+
+    if (suppressErrorLog) {
+      metricLog(`Metric ${metricId} returned no data: ${getSafeErrorMessage(error)}`);
+    } else {
+      console.error(`Error fetching metric ${metricId}: ${getSafeErrorMessage(error)}`);
+    }
     
     // Try to use cache as a fallback
-    if (!useCached) {
+
+    if (!useCached && !isScopedFilterFailure) {
       const cachedData = cacheManager.getCache(cacheKey);
       if (cachedData) {
-        console.log(`Using cached data as fallback for ${metricId}`);
+        metricLog(`Using cached data as fallback for ${metricId}`);
         return cachedData;
       }
     }
     
+    // Scoped account/profile requests must not silently become empty rows. The
+    // frontend needs to distinguish "true no data" from ClickHouse errors,
+    // missing tables, and memory-limit failures.
+    if (looksLikeMissingTable || String(metricId || '').startsWith('api_execution_account_') || isScopedFilterFailure) {
+      error.status = error.status || error?.response?.status || 502;
+      error.code = error.code || (looksLikeMissingTable ? 'MissingMetricSource' : 'MetricQueryFailed');
+      throw error;
+    }
+
     // If all else fails, try to generate mock data based on the metricId
-    console.log(`Generating fallback mock data for ${metricId}`);
+    metricLog(`Generating fallback mock data for ${metricId}`);
     return generateMockData(query, metricId);
   }
 }
@@ -451,7 +943,7 @@ async function fetchAllMetricsData(queries, availableMetrics, useMock = false, u
   // Get all metric IDs
   const metricIds = availableMetrics;
   
-  console.log(`Fetching data for ${metricIds.length} metrics: ${metricIds.join(', ')}`);
+  metricLog(`Fetching data for ${metricIds.length} metrics: ${metricIds.join(', ')}`);
   
   // Fetch each metric in parallel
   const promises = metricIds.map(metricId => 
@@ -467,7 +959,7 @@ async function fetchAllMetricsData(queries, availableMetrics, useMock = false, u
   const results = await Promise.all(promises);
   const combined = Object.assign({}, ...results);
   
-  console.log(`All metrics fetched. Results:`, Object.keys(combined).map(key => `${key}: ${combined[key]?.length || 0} records`));
+  metricLog(`All metrics fetched. Results:`, Object.keys(combined).map(key => `${key}: ${combined[key]?.length || 0} records`));
   
   return combined;
 }
@@ -479,7 +971,7 @@ async function fetchAllMetricsData(queries, availableMetrics, useMock = false, u
  * @returns {Array} Mock data points
  */
 function generateMockData(query, metricId = null) {
-  console.log(`Generating mock data for ${metricId}`);
+  metricLog(`Generating mock data for ${metricId}`);
   
   // For historical_yield_sdai, generate multi-series data
   if (metricId === 'historical_yield_sdai') {
@@ -504,7 +996,7 @@ function generateMockData(query, metricId = null) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
     
-    console.log(`Generated ${mockDataPoints.length} mock data points for ${metricId}`);
+    metricLog(`Generated ${mockDataPoints.length} mock data points for ${metricId}`);
     return mockDataPoints;
   }
   

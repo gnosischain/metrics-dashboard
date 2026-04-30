@@ -14,6 +14,8 @@ const metric = {
   query: `
     SELECT withdrawal_credentials, bucket, bucket_order, validator_count, balance_gno_total
     FROM dbt.api_consensus_validators_explorer_balance_dist
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
     ORDER BY bucket_order
   `,
 };

@@ -4,7 +4,7 @@ const metric = {
   description: 'Active and historical positions',
   metricDescription: 'LP positions across Uniswap V3, Swapr V3, Balancer V2, and Balancer V3. Shows capital invested, withdrawn, fees collected, and in-range status for concentrated liquidity positions.',
   chartType: 'table',
-  globalFilterField: 'wallet_address',
+  globalFilterField: 'provider',
   useCached: false,
 
   tableConfig: {
@@ -176,9 +176,11 @@ const metric = {
   query: `
     SELECT provider AS wallet_address, pool_address, protocol, tick_lower, tick_upper,
            capital_in_usd, capital_out_usd, fees_collected_usd,
-           is_active, is_in_range, pool_current_tick, has_unpriced_tokens,
+           is_active, is_in_range, pool_current_tick, toUInt8(0) AS has_unpriced_tokens,
            entry_date, last_action_date
     FROM dbt.api_execution_yields_user_lp_positions
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

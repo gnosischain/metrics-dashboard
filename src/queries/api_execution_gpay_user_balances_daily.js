@@ -29,6 +29,8 @@ const metric = {
   query: `
     SELECT wallet_address, date, token, label, value_native, value_usd
     FROM dbt.api_execution_gpay_user_balances_daily
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 export default metric;

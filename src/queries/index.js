@@ -15,6 +15,8 @@ const queryModules = queryModuleEntries
   .map(([, moduleExports]) => moduleExports?.default)
   .filter(Boolean);
 
-console.log(`Loaded ${queryModules.length} metric queries dynamically`);
+if (import.meta.env?.VITE_DEBUG_METRICS === 'true') {
+  console.log(`Loaded ${queryModules.length} metric queries dynamically`);
+}
 
 export default queryModules;

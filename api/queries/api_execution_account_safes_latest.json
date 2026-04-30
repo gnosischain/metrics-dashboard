@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_safes_latest",
+  "query": "SELECT\n    owner_address,\n    safe_address,\n    became_owner_at,\n    current_threshold,\n    current_owner_count,\n    creation_version,\n    deployment_date\n  FROM (\n    SELECT\n      owner AS owner_address,\n      safe_address,\n      became_owner_at,\n      current_threshold,\n      NULL AS current_owner_count,\n      '' AS creation_version,\n      NULL AS deployment_date\n    FROM dbt.int_execution_safes_current_owners\n  )\n  WHERE 1 = 1\n    /*__FILTER_CONDITIONS__*/\n  ORDER BY became_owner_at DESC"
+}

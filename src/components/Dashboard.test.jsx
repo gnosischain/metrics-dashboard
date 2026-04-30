@@ -10,10 +10,20 @@ const metricGridLifecycle = {
 };
 
 vi.mock('./Header', () => ({
-  default: ({ onSearchSelect, variant = 'default' }) => (
-    <div data-testid="header" data-variant={variant}>
+  default: ({
+    onSearchSelect,
+    variant = 'default',
+    searchEnabled = false,
+    resourceLinks
+  }) => (
+    <div
+      data-testid="header"
+      data-variant={variant}
+      data-search-enabled={searchEnabled ? 'true' : 'false'}
+      data-resource-links={Array.isArray(resourceLinks) ? String(resourceLinks.length) : 'default'}
+    >
       header
-      {typeof onSearchSelect === 'function' && (
+      {typeof onSearchSelect === 'function' && searchEnabled && (
         <button type="button" onClick={() => onSearchSelect({ dashboardId: 'dashboard-a', tabId: 'tab-2' })}>
           Search Jump
         </button>
@@ -65,6 +75,32 @@ vi.mock('./MetricGrid', () => ({
   }
 }));
 
+vi.mock('./ValidatorExplorer', () => ({
+  default: ({ explorerState, onExplorerStateChange }) => (
+    <div
+      data-testid="validator-explorer"
+      data-mode={explorerState?.explorerMode || ''}
+      data-validator-index={explorerState?.validatorIndex || ''}
+      data-withdrawal-credentials={explorerState?.withdrawalCredentials || ''}
+      data-compare={Array.isArray(explorerState?.compare) ? explorerState.compare.join(',') : ''}
+    >
+      validator explorer
+      {typeof onExplorerStateChange === 'function' && (
+        <button
+          type="button"
+          onClick={() => onExplorerStateChange({
+            explorerMode: 'credential',
+            withdrawalCredentials: '0xabc123',
+            compare: ['1', '2']
+          })}
+        >
+          Set Explorer State
+        </button>
+      )}
+    </div>
+  )
+}));
+
 vi.mock('./TabNavigation', () => ({
   default: ({ activeDashboard, onNavigation }) => (
     <div>
@@ -74,6 +110,9 @@ vi.mock('./TabNavigation', () => ({
       <button type="button" onClick={() => onNavigation(activeDashboard, 'tab-2')}>
         Go Tab 2
       </button>
+      <button type="button" onClick={() => onNavigation(activeDashboard, 'tab-explorer')}>
+        Go Explorer
+      </button>
     </div>
   )
 }));
@@ -82,6 +121,22 @@ vi.mock('../utils/dashboardConfig', () => ({
   default: {
     loadConfig: vi.fn().mockResolvedValue(true)
   }
+}));
+
+vi.mock('../utils/metricSearch', () => ({
+  buildMetricSearchIndex: vi.fn(() => [
+    {
+      key: 'dashboard-a::tab-1::metric-1',
+      dashboardId: 'dashboard-a',
+      dashboardName: 'Dashboard A',
+      tabId: 'tab-1',
+      tabName: 'Tab 1',
+      metricId: 'metric-1',
+      metricName: 'Metric 1',
+      description: '',
+      metricDescription: ''
+    }
+  ])
 }));
 
 vi.mock('../services/dashboards', () => ({
@@ -96,6 +151,7 @@ vi.mock('../services/dashboards', () => ({
     getDashboardTabs: vi.fn(() => [
       { id: 'tab-1', name: 'Tab 1', order: 1 },
       { id: 'tab-wallet', name: 'Tab Wallet', order: 2 },
+      { id: 'tab-explorer', name: 'Tab Explorer', order: 3 },
       { id: 'tab-2', name: 'Tab 2', order: 2 }
     ]),
     getDashboard: vi.fn(() => ({
@@ -108,6 +164,8 @@ vi.mock('../services/dashboards', () => ({
         ? [{ id: 'metric-2' }, { id: 'metric-3' }]
         : tabId === 'tab-wallet'
           ? [{ id: 'metric-wallet' }]
+          : tabId === 'tab-explorer'
+            ? []
         : [{ id: 'metric-1' }]
     ),
     getTab: vi.fn((_dashboardId, tabId) => (
@@ -121,6 +179,13 @@ vi.mock('../services/dashboards', () => ({
           ? {
             id: 'tab-wallet',
             globalFilterField: 'wallet_address',
+            secondaryGlobalFilterField: null
+          }
+        : tabId === 'tab-explorer'
+          ? {
+            id: 'tab-explorer',
+            customView: 'validatorExplorer',
+            globalFilterField: null,
             secondaryGlobalFilterField: null
           }
         : {
@@ -172,6 +237,9 @@ describe('Dashboard rendering behavior', () => {
     render(<Dashboard />);
 
     expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'landing');
+    expect(screen.getByTestId('header')).toHaveAttribute('data-search-enabled', 'false');
+    expect(screen.getByTestId('header')).toHaveAttribute('data-resource-links', '0');
+    expect(screen.queryByRole('button', { name: 'Search Jump' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: /open metrics for gnosis/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Explore Overview' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Browse sectors ↓' })).toBeDisabled();
@@ -185,6 +253,8 @@ describe('Dashboard rendering behavior', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'landing');
+      expect(screen.getByTestId('header')).toHaveAttribute('data-search-enabled', 'false');
+      expect(screen.getByTestId('header')).toHaveAttribute('data-resource-links', '0');
       expect(screen.getByText('Explore by topic')).toBeInTheDocument();
     });
   });
@@ -197,6 +267,7 @@ describe('Dashboard rendering behavior', () => {
     render(<Dashboard />);
 
     expect(screen.getByTestId('header')).toHaveAttribute('data-variant', 'default');
+    expect(screen.getByTestId('header')).toHaveAttribute('data-resource-links', 'default');
     expect(screen.getByText('Initializing dashboard...')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 1, name: /open metrics for gnosis/i })).not.toBeInTheDocument();
 
@@ -206,7 +277,9 @@ describe('Dashboard rendering behavior', () => {
     });
 
     await waitFor(() => {
+      expect(screen.getByTestId('header')).toHaveAttribute('data-search-enabled', 'true');
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
+      expect(screen.getByRole('button', { name: 'Search Jump' })).toBeInTheDocument();
     });
   });
 
@@ -317,6 +390,34 @@ describe('Dashboard rendering behavior', () => {
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-1');
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-global-filter', 'USDC');
       expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-secondary-filter', 'Pool Gamma');
+    });
+  });
+
+  it('renders the validator explorer custom surface instead of MetricGrid and syncs explorer URL params', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/?dashboard=dashboard-a&tab=tab-explorer&explorerMode=validator&validator_index=5'
+    );
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('validator-explorer')).toHaveAttribute('data-mode', 'validator');
+      expect(screen.getByTestId('validator-explorer')).toHaveAttribute('data-validator-index', '5');
+      expect(screen.queryByTestId('metric-grid')).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set Explorer State' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('validator-explorer')).toHaveAttribute('data-mode', 'credential');
+      expect(screen.getByTestId('validator-explorer')).toHaveAttribute('data-withdrawal-credentials', '0xabc123');
+      expect(screen.getByTestId('validator-explorer')).toHaveAttribute('data-compare', '1,2');
+      expect(window.location.search).toContain('explorerMode=credential');
+      expect(window.location.search).toContain('withdrawal_credentials=0xabc123');
+      expect(window.location.search).toContain('compare=1%2C2');
+      expect(window.location.search).not.toContain('validator_index=5');
     });
   });
 });

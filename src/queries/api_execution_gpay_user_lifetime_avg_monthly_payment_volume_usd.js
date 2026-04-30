@@ -11,6 +11,8 @@ const metric = {
   query: `
     SELECT wallet_address, avg_monthly_payment_volume_usd AS value
     FROM dbt.api_execution_gpay_user_lifetime_metrics
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

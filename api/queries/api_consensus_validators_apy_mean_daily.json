@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_apy_mean_daily",
-  "query": "SELECT * FROM dbt.api_consensus_validators_apy_mean_daily"
+  "query": "SELECT * FROM dbt.api_consensus_validators_apy_dist_income_daily"
 }

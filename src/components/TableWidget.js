@@ -3,6 +3,12 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import formatters from '../utils/formatters';
 
+const DEBUG_TABLES = import.meta.env?.VITE_DEBUG_TABLES === 'true' ||
+  import.meta.env?.VITE_DEBUG_METRICS === 'true';
+const tableDebug = (...args) => {
+  if (DEBUG_TABLES) console.log(...args);
+};
+
 /**
  * TableWidget component using Tabulator with improved height handling and pagination
  * @param {Object} props - Component props
@@ -51,6 +57,45 @@ const TableWidget = ({
       redrawTable(force);
     }, delay);
   }, [redrawTable]);
+
+  const syncSelectedRows = useCallback(() => {
+    if (!tableInstanceRef.current || !tableBuiltRef.current) {
+      return;
+    }
+
+    const selectedRowField = memoizedConfig.selectedRowField;
+    const selectedRowValues = Array.isArray(memoizedConfig.selectedRowValues)
+      ? memoizedConfig.selectedRowValues
+      : [];
+
+    if (!selectedRowField) return;
+
+    const normalizedSelectedValues = new Set(
+      selectedRowValues
+        .map((value) => (value === null || value === undefined ? null : String(value)))
+        .filter(Boolean)
+    );
+
+    const rows = typeof tableInstanceRef.current.getRows === 'function'
+      ? tableInstanceRef.current.getRows()
+      : [];
+
+    rows.forEach((row) => {
+      const rowData = typeof row.getData === 'function' ? row.getData() : null;
+      const rowValue = rowData?.[selectedRowField];
+      const normalizedRowValue = rowValue === null || rowValue === undefined ? null : String(rowValue);
+      const shouldBeSelected = normalizedRowValue ? normalizedSelectedValues.has(normalizedRowValue) : false;
+      const isSelected = typeof row.isSelected === 'function' ? row.isSelected() : false;
+
+      if (shouldBeSelected && !isSelected && typeof row.select === 'function') {
+        row.select();
+      }
+
+      if (!shouldBeSelected && isSelected && typeof row.deselect === 'function') {
+        row.deselect();
+      }
+    });
+  }, [memoizedConfig.selectedRowField, memoizedConfig.selectedRowValues]);
 
   // Filter data by search term across configured searchFields
   const filteredData = useMemo(() => {
@@ -113,8 +158,10 @@ const TableWidget = ({
       tableBuiltRef.current = false;
     }
 
+    const isRemote = memoizedConfig.serverPagination === true && typeof memoizedConfig.remoteDataLoader === 'function';
+
     if (!tableRef.current) return;
-    if (!data || data.length === 0) {
+    if (!isRemote && (!data || data.length === 0)) {
       setError('No data available for table');
       return;
     }
@@ -123,7 +170,7 @@ const TableWidget = ({
       setError(null);
 
       const processedData = processTableData(data, memoizedConfig);
-      if (!processedData || processedData.length === 0) {
+      if (!isRemote && (!processedData || processedData.length === 0)) {
         setError('No data available for table');
         return;
       }
@@ -132,12 +179,13 @@ const TableWidget = ({
       const tableHeight = height === 'auto' || height === '100%'
         ? calculateOptimalHeight(processedData, memoizedConfig)
         : height;
-      const tableConfig = createTableConfig(processedData, columns, memoizedConfig, isDarkMode, tableHeight);
+      const tableConfig = createTableConfig(processedData, columns, memoizedConfig, isDarkMode, tableHeight, searchTerm);
 
       const newTable = new Tabulator(tableRef.current, tableConfig);
 
       newTable.on('tableBuilt', () => {
         tableBuiltRef.current = true;
+        syncSelectedRows();
         scheduleRedraw(true, 0);
         if (height === 'auto' || memoizedConfig.autoResize) {
           setTimeout(() => {
@@ -162,6 +210,10 @@ const TableWidget = ({
 
       newTable.on('dataLoadError', () => setError('Failed to load table data'));
       newTable.on('tableBuildError', () => setError('Failed to build table'));
+      newTable.on('dataLoaded', () => {
+        syncSelectedRows();
+        scheduleRedraw(true, 0);
+      });
 
       tableInstanceRef.current = newTable;
 
@@ -170,7 +222,7 @@ const TableWidget = ({
       setError('Failed to create table: ' + err.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, memoizedConfig, isDarkMode, height, format, scheduleRedraw]);
+  }, [data, memoizedConfig, isDarkMode, height, format, scheduleRedraw, syncSelectedRows, searchTerm]);
 
   // Effect 2: Update table data cheaply when search filter changes.
   // Calls setData() — no DOM rebuild, no fan noise.
@@ -178,17 +230,23 @@ const TableWidget = ({
   // race conditions where the layout module is still null.
   useEffect(() => {
     if (!tableInstanceRef.current || !tableBuiltRef.current) return;
+    if (memoizedConfig.serverPagination === true) return;
     try {
       const processed = processTableData(filteredData, memoizedConfig);
       Promise.resolve(tableInstanceRef.current.setData(processed))
         .finally(() => {
+          syncSelectedRows();
           scheduleRedraw(true, 0);
           scheduleRedraw(true, 60);
         });
     } catch (e) {
       console.warn('TableWidget: Error updating table data:', e);
     }
-  }, [filteredData, memoizedConfig, scheduleRedraw]);
+  }, [filteredData, memoizedConfig, scheduleRedraw, syncSelectedRows]);
+
+  useEffect(() => {
+    syncSelectedRows();
+  }, [syncSelectedRows]);
 
   useEffect(() => {
     if (!tableRef.current || typeof ResizeObserver === 'undefined') {
@@ -348,17 +406,13 @@ const processTableData = (data, config) => {
  * @returns {Array} Column definitions
  */
 const generateColumns = (data, config, format, isDarkMode) => {
-  if (!data || data.length === 0) return [];
-
-  const firstRow = data[0];
-  const keys = Object.keys(firstRow);
-  
   // Use custom columns if provided in config (this handles your explicit column definitions)
   if (config.columns && Array.isArray(config.columns)) {
     return config.columns
       .filter(col => {
         // When hideEmptyColumns is enabled, drop columns where every row is empty
         if (!config.hideEmptyColumns) return true;
+        if (!data || data.length === 0) return true;
         return data.some(row => {
           const val = row[col.field];
           return val !== null && val !== undefined && val !== 0 && val !== '';
@@ -374,6 +428,11 @@ const generateColumns = (data, config, format, isDarkMode) => {
         ...col // Allow custom properties to override
       }));
   }
+
+  if (!data || data.length === 0) return [];
+
+  const firstRow = data[0];
+  const keys = Object.keys(firstRow);
 
   // Auto-generate columns from data (fallback)
   return keys.map(key => ({
@@ -395,16 +454,19 @@ const generateColumns = (data, config, format, isDarkMode) => {
  * @param {string} height - Table height
  * @returns {Object} Tabulator configuration
  */
-const createTableConfig = (data, columns, config, isDarkMode, height) => {
+const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm = '') => {
+    const isRemote = config.serverPagination === true && typeof config.remoteDataLoader === 'function';
     const baseConfig = {
-      data: data,
       columns: columns,
+      index: config.indexField || undefined,
       height: height, // Use the provided height (not 'auto')
       layout: config.layout || 'fitColumns',
       responsiveLayout: config.responsiveLayout !== false ? 'collapse' : false,
       
       
-      pagination: config.pagination !== false ? (data && data.length > 0 ? true : false) : false,
+      pagination: config.pagination !== false ? (isRemote || (data && data.length > 0) ? true : false) : false,
+      paginationMode: isRemote ? 'remote' : 'local',
+      sortMode: isRemote ? 'remote' : 'local',
       paginationSize: config.paginationSize || 5, // Default to smaller page size
       paginationSizeSelector: config.paginationSizeSelector !== undefined ? config.paginationSizeSelector : [3, 5, 10, 20],
       paginationButtonCount: config.paginationButtonCount || 5,
@@ -419,6 +481,23 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       resizableRows: config.resizableRows || false,
       rowHeight: config.rowHeight,
       selectableRows: config.selectableRows || config.selectable || false, // FIXED: Use selectableRows
+      // Row-selection callback: emits the array of selected-row data up to the parent via
+      // config.onRowSelectionChange. Used by explorer-style tabs to cascade a selected
+      // validator/pool/etc. into the tab's secondary global filter so other charts overlay
+      // per-row series on top of the aggregate. Guarded because Tabulator fires this even
+      // for programmatic selections during data refresh — callback must be idempotent.
+      rowSelectionChanged: config.onRowSelectionChange
+        ? function(data /*, rows */) {
+            try { config.onRowSelectionChange(data || []); }
+            catch (e) { console.warn('onRowSelectionChange handler threw:', e); }
+          }
+        : undefined,
+      rowClick: config.onRowClick
+        ? function(event, row) {
+            try { config.onRowClick(row.getData(), row, event); }
+            catch (e) { console.warn('onRowClick handler threw:', e); }
+          }
+        : undefined,
       reactiveData: config.reactiveData !== false,
       debugInvalidOptions: false,
       
@@ -428,10 +507,10 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       
       // Event callbacks for debugging and ensuring pagination shows
       tableBuilt: function() {
-        console.log('TableWidget: Table built');
-        console.log('TableWidget: Data count:', this.getDataCount());
-        console.log('TableWidget: Page size:', this.getPageSize());
-        console.log('TableWidget: Page max:', this.getPageMax());
+        tableDebug('TableWidget: Table built');
+        tableDebug('TableWidget: Data count:', this.getDataCount());
+        tableDebug('TableWidget: Page size:', this.getPageSize());
+        tableDebug('TableWidget: Page max:', this.getPageMax());
 
         if (config.pagination === false) {
           return;
@@ -440,11 +519,11 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
         // Force pagination to be visible
         const paginationElement = this.element.querySelector('.tabulator-footer');
         if (paginationElement) {
-          console.log('TableWidget: Pagination element found');
+          tableDebug('TableWidget: Pagination element found');
           paginationElement.style.display = 'flex';
           paginationElement.style.visibility = 'visible';
         } else {
-          console.warn('TableWidget: Pagination element NOT found');
+          tableDebug('TableWidget: Pagination element NOT found');
         }
         
         // Force redraw after a moment
@@ -454,13 +533,13 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
       },
       
       paginationInitialized: function() {
-        console.log('TableWidget: Pagination initialized');
-        console.log('TableWidget: Current page:', this.getPage());
-        console.log('TableWidget: Total pages:', this.getPageMax());
+        tableDebug('TableWidget: Pagination initialized');
+        tableDebug('TableWidget: Current page:', this.getPage());
+        tableDebug('TableWidget: Total pages:', this.getPageMax());
       },
       
       renderComplete: function() {
-        console.log('TableWidget: Render complete');
+        tableDebug('TableWidget: Render complete');
         if (config.pagination === false) {
           return;
         }
@@ -471,6 +550,34 @@ const createTableConfig = (data, columns, config, isDarkMode, height) => {
         }
       }
     };
+
+    if (isRemote) {
+      baseConfig.ajaxURL = 'metric://server-paginated';
+      baseConfig.ajaxRequestFunc = async (_url, _ajaxConfig, params = {}) => {
+        const sorters = Array.isArray(params.sorters)
+          ? params.sorters
+          : (Array.isArray(params.sort) ? params.sort : []);
+        const firstSorter = sorters[0] || {};
+        const pageSize = params.size || config.paginationSize || 25;
+        const page = params.page || 1;
+        const response = await config.remoteDataLoader({
+          page,
+          pageSize,
+          sortField: firstSorter.field || firstSorter.column,
+          sortDir: firstSorter.dir,
+          search: searchTerm,
+        });
+        const rows = Array.isArray(response?.data) ? response.data : [];
+        const total = Number(response?.total || rows.length || 0);
+        return {
+          data: rows,
+          last_page: Number(response?.lastPage || Math.max(1, Math.ceil(total / pageSize))),
+          last_row: total,
+        };
+      };
+    } else {
+      baseConfig.data = data;
+    }
   
     // Add theme-specific styling
     if (isDarkMode) {

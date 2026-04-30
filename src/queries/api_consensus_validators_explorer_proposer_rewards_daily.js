@@ -14,7 +14,13 @@ const metric = {
   enableZoom: true,
   defaultZoom: { start: 80, end: 100 },
 
-  query: `SELECT withdrawal_credentials, date, proposer_reward_total_gno FROM dbt.api_consensus_validators_explorer_daily ORDER BY date`,
+  query: `
+    SELECT withdrawal_credentials, date, proposer_reward_total_gno
+    FROM dbt.api_consensus_validators_explorer_daily
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
+    ORDER BY date
+  `,
 };
 
 export default metric;

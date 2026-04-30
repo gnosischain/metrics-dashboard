@@ -42,7 +42,9 @@ export class BarChart extends BaseChart {
     };
 
     // Check if this should be a stacked bar chart
-    const isStacked = config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1;
+    const isStacked = config.stacked !== undefined
+      ? !!config.stacked
+      : (config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1);
     const isHorizontal = !!config.horizontal;
 
     return {

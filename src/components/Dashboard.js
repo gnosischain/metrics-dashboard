@@ -2,12 +2,28 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
+import ValidatorExplorer from './ValidatorExplorer';
+import AccountPortfolio from './AccountPortfolio';
 import IconComponent from './IconComponent';
 import Landing from './Landing';
 import dashboardsService from '../services/dashboards';
 import dashboardConfig from '../utils/dashboardConfig';
 import { buildMetricSearchIndex } from '../utils/metricSearch';
 import { normalizeFilterValue } from '../utils/filterValues';
+import {
+  EMPTY_VALIDATOR_EXPLORER_STATE,
+  applyValidatorExplorerStateToParams,
+  parseValidatorExplorerState,
+  normalizeValidatorExplorerState,
+  validatorExplorerStatesEqual
+} from '../utils/validatorExplorerState';
+import {
+  EMPTY_ACCOUNT_PORTFOLIO_STATE,
+  accountPortfolioStatesEqual,
+  applyAccountPortfolioStateToParams,
+  normalizeAccountPortfolioState,
+  parseAccountPortfolioState,
+} from '../utils/accountPortfolioState';
 
 const getTabFilterKeyFor = (dashboardId, tabId) => {
   if (!dashboardId || !tabId) return null;
@@ -19,18 +35,47 @@ const resolveRequestedView = (search = window.location.search) => {
   return params.has('dashboard') ? 'dashboard' : 'landing';
 };
 
+const getCustomTabStateFor = (tabConfig, params) => {
+  if (!tabConfig?.customView) {
+    return null;
+  }
+
+  if (tabConfig.customView === 'validatorExplorer') {
+    return parseValidatorExplorerState(params);
+  }
+
+  if (tabConfig.customView === 'accountPortfolio') {
+    return parseAccountPortfolioState(params);
+  }
+
+  return null;
+};
+
 const resolveLocationState = (dashboards, search = window.location.search) => {
   if (!Array.isArray(dashboards) || dashboards.length === 0) {
     return null;
   }
 
   const params = new URLSearchParams(search);
-  const dashboardParam = params.get('dashboard');
+  const dashboardAliases = {
+    accounts: 'account-portfolio'
+  };
+  const requestedDashboardParam = params.get('dashboard');
+  const dashboardParam = dashboardAliases[requestedDashboardParam] || requestedDashboardParam;
   const tabParam = params.get('tab');
 
   // No dashboard param → show landing page (caller treats this as landing).
   if (!dashboardParam) {
-    return { dashboardId: '', tabId: '', globalFilterField: null, globalFilterValue: null, secondaryGlobalFilterField: null, secondaryGlobalFilterValue: null };
+    return {
+      dashboardId: '',
+      tabId: '',
+      globalFilterField: null,
+      globalFilterValue: null,
+      secondaryGlobalFilterField: null,
+      secondaryGlobalFilterValue: null,
+      customView: null,
+      customState: null
+    };
   }
 
   const matchedDashboard = dashboards.find(dashboard => dashboard.id === dashboardParam) || dashboards[0];
@@ -39,8 +84,15 @@ const resolveLocationState = (dashboards, search = window.location.search) => {
     ? tabParam
     : (dashboardTabs[0]?.id || '');
   const tabConfig = resolvedTabId ? dashboardsService.getTab(matchedDashboard.id, resolvedTabId) : null;
-  const globalFilterField = tabConfig?.globalFilterField || null;
-  const secondaryGlobalFilterField = tabConfig?.secondaryGlobalFilterField || null;
+  const isCustomView = Boolean(tabConfig?.customView);
+  const customViewBypassesGlobalFilter = tabConfig?.customView === 'validatorExplorer' ||
+    tabConfig?.customView === 'accountPortfolio';
+  const globalFilterField = (isCustomView && customViewBypassesGlobalFilter)
+    ? null
+    : (tabConfig?.globalFilterField || null);
+  const secondaryGlobalFilterField = (isCustomView && customViewBypassesGlobalFilter)
+    ? null
+    : (tabConfig?.secondaryGlobalFilterField || null);
 
   return {
     dashboardId: matchedDashboard.id,
@@ -50,7 +102,9 @@ const resolveLocationState = (dashboards, search = window.location.search) => {
     secondaryGlobalFilterField,
     secondaryGlobalFilterValue: secondaryGlobalFilterField
       ? normalizeFilterValue(secondaryGlobalFilterField, params.get(secondaryGlobalFilterField))
-      : null
+      : null,
+    customView: tabConfig?.customView || null,
+    customState: getCustomTabStateFor(tabConfig, params)
   };
 };
 
@@ -90,6 +144,7 @@ const Dashboard = () => {
   const [tabs, setTabs] = useState([]);
   const [tabFilters, setTabFilters] = useState({}); // Store filter state per dashboard+tab: { `${dashboardId}:${tabId}`: selectedValue }
   const [tabSecondaryFilters, setTabSecondaryFilters] = useState({}); // Secondary (cascading) filter state per tab
+  const [tabCustomStates, setTabCustomStates] = useState({}); // Custom per-tab URL/application state (e.g. validator explorer)
   const [isLoading, setIsLoading] = useState(true);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -106,7 +161,9 @@ const Dashboard = () => {
     globalFilterField: null,
     globalFilterValue: null,
     secondaryGlobalFilterField: null,
-    secondaryGlobalFilterValue: null
+    secondaryGlobalFilterValue: null,
+    customView: null,
+    customState: null
   });
 
   const getTabFilterKey = useCallback((dashboardId, tabId) => {
@@ -278,6 +335,13 @@ const Dashboard = () => {
                   [filterKey]: locationState.secondaryGlobalFilterValue || null
                 }));
               }
+
+              if (locationState.customView && locationState.customState) {
+                setTabCustomStates(prev => ({
+                  ...prev,
+                  [filterKey]: locationState.customState
+                }));
+              }
             }
           }
         }
@@ -322,6 +386,16 @@ const Dashboard = () => {
       const next = { ...prev };
       if (locationState.secondaryGlobalFilterField) {
         next[filterKey] = locationState.secondaryGlobalFilterValue || null;
+      } else {
+        delete next[filterKey];
+      }
+      return next;
+    });
+
+    setTabCustomStates((prev) => {
+      const next = { ...prev };
+      if (locationState.customView && locationState.customState) {
+        next[filterKey] = locationState.customState;
       } else {
         delete next[filterKey];
       }
@@ -468,7 +542,66 @@ const Dashboard = () => {
   // Get current global filter value for active tab
   const currentGlobalFilter = activeTabFilterKey ? tabFilters[activeTabFilterKey] || null : null;
   const currentSecondaryGlobalFilter = activeTabFilterKey ? tabSecondaryFilters[activeTabFilterKey] || null : null;
+  const currentCustomTabState = useMemo(() => {
+    if (!activeTabFilterKey || !activeTabConfig?.customView) {
+      return null;
+    }
+
+    if (activeTabConfig.customView === 'validatorExplorer') {
+      return normalizeValidatorExplorerState(
+        tabCustomStates[activeTabFilterKey] || EMPTY_VALIDATOR_EXPLORER_STATE
+      );
+    }
+
+    if (activeTabConfig.customView === 'accountPortfolio') {
+      return normalizeAccountPortfolioState(
+        tabCustomStates[activeTabFilterKey] || EMPTY_ACCOUNT_PORTFOLIO_STATE
+      );
+    }
+
+    return tabCustomStates[activeTabFilterKey] || null;
+  }, [activeTabConfig?.customView, activeTabFilterKey, tabCustomStates]);
   const searchIndex = useMemo(() => buildMetricSearchIndex(dashboards), [dashboards]);
+
+  const handleCustomTabStateChange = useCallback((nextStateOrUpdater) => {
+    if (!activeTabFilterKey || !activeTabConfig?.customView) {
+      return;
+    }
+
+    setTabCustomStates((prev) => {
+      const previousState = activeTabConfig.customView === 'validatorExplorer'
+        ? normalizeValidatorExplorerState(prev[activeTabFilterKey] || EMPTY_VALIDATOR_EXPLORER_STATE)
+        : activeTabConfig.customView === 'accountPortfolio'
+          ? normalizeAccountPortfolioState(prev[activeTabFilterKey] || EMPTY_ACCOUNT_PORTFOLIO_STATE)
+          : (prev[activeTabFilterKey] || null);
+      const candidateState = typeof nextStateOrUpdater === 'function'
+        ? nextStateOrUpdater(previousState)
+        : nextStateOrUpdater;
+
+      const normalizedState = activeTabConfig.customView === 'validatorExplorer'
+        ? normalizeValidatorExplorerState(candidateState)
+        : activeTabConfig.customView === 'accountPortfolio'
+          ? normalizeAccountPortfolioState(candidateState)
+          : candidateState;
+
+      if (activeTabConfig.customView === 'validatorExplorer' &&
+        validatorExplorerStatesEqual(previousState, normalizedState)
+      ) {
+        return prev;
+      }
+
+      if (activeTabConfig.customView === 'accountPortfolio' &&
+        accountPortfolioStatesEqual(previousState, normalizedState)
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [activeTabFilterKey]: normalizedState
+      };
+    });
+  }, [activeTabConfig?.customView, activeTabFilterKey]);
 
   // Keep URL in sync with the current dashboard, tab, and active filters.
   useEffect(() => {
@@ -477,6 +610,8 @@ const Dashboard = () => {
     }
 
     const params = new URLSearchParams(window.location.search);
+    const isCustomValidatorExplorer = activeTabConfig?.customView === 'validatorExplorer';
+    const isCustomAccountPortfolio = activeTabConfig?.customView === 'accountPortfolio';
     params.set('dashboard', activeDashboard);
 
     if (activeTab) {
@@ -489,12 +624,24 @@ const Dashboard = () => {
       params.delete(fieldName);
     });
 
-    if (activeTabConfig?.globalFilterField && currentGlobalFilter) {
-      params.set(activeTabConfig.globalFilterField, currentGlobalFilter);
-    }
+    params.delete('explorerMode');
+    params.delete('validator_index');
+    params.delete('compare');
+    params.delete('withdrawal_credentials');
+    params.delete('portfolio_tab');
 
-    if (activeTabConfig?.secondaryGlobalFilterField && currentSecondaryGlobalFilter) {
-      params.set(activeTabConfig.secondaryGlobalFilterField, currentSecondaryGlobalFilter);
+    if (isCustomValidatorExplorer) {
+      applyValidatorExplorerStateToParams(params, currentCustomTabState);
+    } else if (isCustomAccountPortfolio) {
+      applyAccountPortfolioStateToParams(params, currentCustomTabState);
+    } else {
+      if (activeTabConfig?.globalFilterField && currentGlobalFilter) {
+        params.set(activeTabConfig.globalFilterField, currentGlobalFilter);
+      }
+
+      if (activeTabConfig?.secondaryGlobalFilterField && currentSecondaryGlobalFilter) {
+        params.set(activeTabConfig.secondaryGlobalFilterField, currentSecondaryGlobalFilter);
+      }
     }
 
     const search = params.toString();
@@ -506,12 +653,15 @@ const Dashboard = () => {
       globalFilterField: activeTabConfig?.globalFilterField || null,
       globalFilterValue: currentGlobalFilter,
       secondaryGlobalFilterField: activeTabConfig?.secondaryGlobalFilterField || null,
-      secondaryGlobalFilterValue: currentSecondaryGlobalFilter
+      secondaryGlobalFilterValue: currentSecondaryGlobalFilter,
+      customView: activeTabConfig?.customView || null,
+      customState: currentCustomTabState
     };
 
     const previousLocationState = lastSyncedLocationRef.current;
     const didNavigationChange = previousLocationState.dashboardId !== nextLocationState.dashboardId
-      || previousLocationState.tabId !== nextLocationState.tabId;
+      || previousLocationState.tabId !== nextLocationState.tabId
+      || previousLocationState.customView !== nextLocationState.customView;
 
     // Leaving the landing (empty previous dashboard → real dashboard) should push,
     // so the back button returns to landing.
@@ -539,10 +689,12 @@ const Dashboard = () => {
     dashboards.length,
     activeDashboard,
     activeTab,
+    activeTabConfig?.customView,
     activeTabConfig?.globalFilterField,
     activeTabConfig?.secondaryGlobalFilterField,
     currentGlobalFilter,
     currentSecondaryGlobalFilter,
+    currentCustomTabState,
     knownFilterFields
   ]);
   
@@ -579,7 +731,9 @@ const Dashboard = () => {
       globalFilterField: null,
       globalFilterValue: null,
       secondaryGlobalFilterField: null,
-      secondaryGlobalFilterValue: null
+      secondaryGlobalFilterValue: null,
+      customView: null,
+      customState: null
     };
   }, []);
 
@@ -597,7 +751,8 @@ const Dashboard = () => {
         indexingMessage={indexingMessage}
         searchIndex={searchIndex}
         onSearchSelect={handleSearchSelect}
-        searchEnabled={configLoaded && searchIndex.length > 0}
+        searchEnabled={!isLanding && configLoaded && searchIndex.length > 0}
+        resourceLinks={isLanding ? [] : undefined}
         searchSectors={dashboards.filter(d => d.id !== 'overview')}
         variant={isLanding ? 'landing' : 'default'}
         onHome={handleGoHome}
@@ -633,17 +788,38 @@ const Dashboard = () => {
               <div className="loading-indicator">Initializing dashboard...</div>
             ) : activeDashboard && activeTab ? (
               <div className="tab-content">
-                <MetricGrid
-                  metrics={tabMetrics}
-                  isDarkMode={isDarkMode}
-                  tabConfig={activeTabConfig}
-                  dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
-                  globalFilterValue={currentGlobalFilter}
-                  onGlobalFilterChange={handleGlobalFilterChange}
-                  secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
-                  onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
-                  dashboardPalette={activeDashboardPalette}
-                />
+                {activeTabConfig?.customView === 'validatorExplorer' ? (
+                  <ValidatorExplorer
+                    isDarkMode={isDarkMode}
+                    tabConfig={activeTabConfig}
+                    dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
+                    dashboardPalette={activeDashboardPalette}
+                    explorerState={currentCustomTabState}
+                    onExplorerStateChange={handleCustomTabStateChange}
+                  />
+                ) : activeTabConfig?.customView === 'accountPortfolio' ? (
+                  <AccountPortfolio
+                    isDarkMode={isDarkMode}
+                    tabConfig={activeTabConfig}
+                    dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
+                    globalFilterValue={currentGlobalFilter}
+                    onGlobalFilterChange={handleGlobalFilterChange}
+                    portfolioState={currentCustomTabState}
+                    onPortfolioStateChange={handleCustomTabStateChange}
+                  />
+                ) : (
+                  <MetricGrid
+                    metrics={tabMetrics}
+                    isDarkMode={isDarkMode}
+                    tabConfig={activeTabConfig}
+                    dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
+                    globalFilterValue={currentGlobalFilter}
+                    onGlobalFilterChange={handleGlobalFilterChange}
+                    secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
+                    onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
+                    dashboardPalette={activeDashboardPalette}
+                  />
+                )}
               </div>
             ) : dashboards.length === 0 ? (
               <div className="empty-dashboard">

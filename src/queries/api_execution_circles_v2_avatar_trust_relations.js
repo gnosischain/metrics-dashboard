@@ -75,6 +75,8 @@ const metric = {
   query: `
     SELECT avatar, counterparty, direction, outgoing_from, incoming_from
     FROM dbt.api_execution_circles_v2_avatar_trust_relations
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

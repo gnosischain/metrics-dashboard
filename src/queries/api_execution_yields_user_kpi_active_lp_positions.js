@@ -19,6 +19,8 @@ const metric = {
   query: `
     SELECT wallet_address, active_lp_positions AS value, in_range_positions, out_of_range_positions
     FROM dbt.api_execution_yields_user_kpis
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

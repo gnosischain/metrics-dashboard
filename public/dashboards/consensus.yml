@@ -181,92 +181,115 @@ tabs:
     order: 7
     icon: 🔎
     iconClass: validator
-    timeRanges: true
-    globalFilterField: withdrawal_credentials
-    globalFilterLabel: Validator / Operator
-    globalFilterDisplayField: display_name
-    globalFilterSourceMetric: api_consensus_validators_search
-    searchable: true
-    requireExplicitFilter: true
-    # Validation metric — dashboard fetches this with the selected filter before loading
-    # any chart on the tab. If 0 rows come back, the tab stays on the empty state instead
-    # of rendering stale/empty charts. Matches the pattern used by gnosis-pay/User
-    # Portfolio and circles/User — without this, charts fire their queries even while the
-    # filter is still being picked.
-    explicitFilterValidationMetric: api_consensus_validators_explorer_latest
-    searchPlaceholder: "Paste a withdrawal credential (or search in the dropdown)…"
-    globalControlsPlacement: top
-    globalFilterVertical: true
+    customView: validatorExplorer
+    # timeRanges intentionally omitted — the custom view auto-scopes each chart
+    # to the credential's actual active window (first activation → last exit).
+    # Per-user 1M/3M/6M slicing produced empty tails for exited operators.
+    searchPlaceholder: "Search by validator index, pubkey, withdrawal credential, or withdrawal address..."
     emptyState:
       title: Explore a validator or operator
-      description: Pick or paste a withdrawal credential to load balance, income, APY and proposer-reward charts aggregated across every validator that shares it.
-      emptyResultsTitle: No validators under this credential
-      emptyResultsDescription: Check the credential and try again.
+      description: Search a validator for its lifetime profile or open a withdrawal-credential group to compare every connected validator in one place.
+      emptyResultsTitle: No validator data found
+      emptyResultsDescription: Check the validator index, pubkey, withdrawal credential, or withdrawal address and try again.
+    metrics: []
+  # ---------------------------------------------------------------------------
+  # Validator Explorer (grid) — Phase D0 spike. Standard grid-path rendering
+  # wired to the SAME dbt views the custom `Validator Explorer` tab calls via
+  # its bespoke service. No new metric files — every ID below already exists
+  # under `src/queries/`. Point: let the user compare this tab against the
+  # custom view on the same credential, then decide whether to retire the
+  # custom view (Option A), keep it and harden (Option B), or hybrid (C).
+  # Placed at order:8 so the custom tab stays the default entry point.
+  # ---------------------------------------------------------------------------
+  - name: Validator Explorer (grid)
+    order: 8
+    icon: 🧪
+    iconClass: validator
+    globalFilterField: withdrawal_credentials
+    globalFilterLabel: Operator
+    globalFilterDisplayField: display_name
+    globalFilterSourceMetric: api_consensus_validators_search
+    secondaryGlobalFilterField: validator_index
+    searchable: true
+    requireExplicitFilter: true
+    searchPlaceholder: "Paste a withdrawal credential or search by operator name..."
+    globalControlsPlacement: top
+    globalFilterVertical: true
+    timeRanges: true
+    emptyState:
+      title: Experimental grid-path Validator Explorer
+      description: "Parity spike versus the custom Validator Explorer tab. Select a withdrawal credential (operator) to load KPIs, history charts, and the per-validator members table. Row-selection on the members table emits `validator_index` as a secondary filter — compare-overlay behaviour is parity-pending vs. the custom view."
+      emptyResultsTitle: No operator matched
+      emptyResultsDescription: Try another withdrawal credential or paste the credential directly.
+      iconClass: validator
     metrics:
-      # Row 1 — credential-level KPIs (6 compact cards)
+      # Row 1 — KPI strip (12-col grid, 4 wide @ span 3 each)
       - id: api_consensus_validators_explorer_count_latest
         gridRow: 1
-        gridColumn: 1 / span 2
-        minHeight: 120px
-      - id: api_consensus_validators_explorer_active_count
-        gridRow: 1
-        gridColumn: 3 / span 2
-        minHeight: 120px
-      - id: api_consensus_validators_explorer_exited_count
-        gridRow: 1
-        gridColumn: 5 / span 2
-        minHeight: 120px
-      - id: api_consensus_validators_explorer_slashed_count
-        gridRow: 1
-        gridColumn: 7 / span 2
+        gridColumn: 1 / span 3
         minHeight: 120px
       - id: api_consensus_validators_explorer_balance_latest
         gridRow: 1
-        gridColumn: 9 / span 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_income_30d
+        gridRow: 1
+        gridColumn: 7 / span 3
         minHeight: 120px
       - id: api_consensus_validators_explorer_apy_latest
         gridRow: 1
-        gridColumn: 11 / span 2
+        gridColumn: 10 / span 3
         minHeight: 120px
-      # Row 2 — 30d income + lifetime blocks (secondary KPIs)
-      - id: api_consensus_validators_explorer_income_30d
+      # Row 2 — KPI secondary strip
+      - id: api_consensus_validators_explorer_active_count
         gridRow: 2
         gridColumn: 1 / span 3
         minHeight: 120px
-      - id: api_consensus_validators_explorer_proposed_blocks_lifetime
+      - id: api_consensus_validators_explorer_exited_count
         gridRow: 2
         gridColumn: 4 / span 3
         minHeight: 120px
-      # Row 3 — balance trend + signed green/red income bar
+      - id: api_consensus_validators_explorer_slashed_count
+        gridRow: 2
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_consensus_validators_explorer_proposed_blocks_lifetime
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      # Row 3 — Balance history (left) + APY quantile bands (right)
       - id: api_consensus_validators_explorer_balance_daily
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_consensus_validators_explorer_income_daily
+        minHeight: 400px
+      - id: api_consensus_validators_explorer_apy_daily
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 450px
-      # Row 4 — APY & proposer rewards
-      - id: api_consensus_validators_explorer_apy_daily
+        minHeight: 400px
+      # Row 4 — Consensus income (left) + Proposer rewards (right)
+      - id: api_consensus_validators_explorer_income_daily
         gridRow: 4
         gridColumn: 1 / span 6
-        minHeight: 450px
+        minHeight: 400px
       - id: api_consensus_validators_explorer_proposer_rewards_daily
         gridRow: 4
         gridColumn: 7 / span 6
-        minHeight: 450px
-      # Row 5 — deposits / withdrawals / consolidations timeline
+        minHeight: 400px
+      # Row 5 — Flows stacked bar (full-width). Complex UNION SQL still lives
+      # in the metric file today — flagged for Phase D1 dbt relocation.
       - id: api_consensus_validators_explorer_deposits_withdrawals_daily
         gridRow: 5
         gridColumn: 1 / span 12
-        minHeight: 380px
-      # Row 6 — per-validator members table with lifecycle columns
-      - id: api_consensus_validators_explorer_members_table
+        minHeight: 360px
+      # Row 6 — Balance distribution histogram (full-width)
+      - id: api_consensus_validators_explorer_balance_dist
         gridRow: 6
         gridColumn: 1 / span 12
-        minHeight: 420px
-      # Row 7 — balance distribution histogram across co-validators
-      - id: api_consensus_validators_explorer_balance_dist
+        minHeight: 360px
+      # Row 7 — Members table. `selectableRows: true` + `rowSelectionEmits:
+      # ['validator_index']` already wired in the metric file; the tab-level
+      # `secondaryGlobalFilterField: validator_index` above picks that up.
+      - id: api_consensus_validators_explorer_members_table
         gridRow: 7
         gridColumn: 1 / span 12
-        minHeight: 380px
+        minHeight: 480px

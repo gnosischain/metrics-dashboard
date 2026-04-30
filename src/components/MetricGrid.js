@@ -624,6 +624,7 @@ const MetricGrid = ({
         hasSecondaryGlobalFilter={hasSecondaryGlobalFilter}
         secondaryGlobalFilterField={tabConfig?.secondaryGlobalFilterField || null}
         secondaryGlobalFilterValue={hasSecondaryGlobalFilter && !loadingSecondaryGlobalFilter ? resolvedSecondaryGlobalFilterValue : null}
+        onSecondaryGlobalFilterChange={hasSecondaryGlobalFilter ? onSecondaryGlobalFilterChange : null}
         selectedUnit={hasUnitToggle && !metric.unitFieldGroups ? selectedUnit : null}
         enableResolutionToggle={hasResolutionToggle}
         enableUnitToggle={!!metric.unitFieldGroups || (!hasUnitToggle && !!(metric.unitFilterField || metric.unitFields))}

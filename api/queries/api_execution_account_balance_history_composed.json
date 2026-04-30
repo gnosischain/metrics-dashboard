@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_balance_history_composed",
+  "query": "SELECT\n    date,\n    address,\n    token_address,\n    symbol,\n    balance,\n    balance_usd\n  FROM dbt.int_execution_tokens_balances_daily\n  WHERE date >= today() - INTERVAL 90 DAY\n    /*__FILTER_CONDITIONS__*/\n    AND balance_usd > 0"
+}

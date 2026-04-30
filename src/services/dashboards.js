@@ -71,7 +71,8 @@ class DashboardService {
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
       tagline: dashboardConfig.tagline || '',
-      palette: resolveDashboardPalette(dashboardConfig.palette)
+      palette: resolveDashboardPalette(dashboardConfig.palette),
+      hasDefaultTab: dashboardConfig.hasDefaultTab === true
     };
     
     console.log('DashboardService: Created dashboard object:', dashboard);
@@ -123,6 +124,7 @@ class DashboardService {
           order: tab.order || 999,
           icon: tab.icon || '', // Emoji fallback for tab
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
+          customView: tab.customView || null, // Optional custom tab surface instead of MetricGrid
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
           secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field

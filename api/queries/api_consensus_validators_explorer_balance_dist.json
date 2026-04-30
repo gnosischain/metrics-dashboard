@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_balance_dist",
-  "query": "SELECT withdrawal_credentials, bucket, bucket_order, validator_count, balance_gno_total\n    FROM dbt.api_consensus_validators_explorer_balance_dist\n    ORDER BY bucket_order"
+  "query": "SELECT withdrawal_credentials, bucket, bucket_order, validator_count, balance_gno_total\n    FROM dbt.api_consensus_validators_explorer_balance_dist\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY bucket_order"
 }

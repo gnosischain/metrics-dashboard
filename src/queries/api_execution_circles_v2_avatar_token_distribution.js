@@ -15,6 +15,8 @@ const metric = {
   query: `
     SELECT avatar, holder_category, holder_count, balance, balance_demurraged
     FROM dbt.api_execution_circles_v2_avatar_token_distribution
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

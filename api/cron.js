@@ -3,6 +3,11 @@ const path = require('path');
 const axios = require('axios');
 const cacheManager = require('./cache');
 
+const DEBUG_METRICS = process.env.DEBUG_METRICS === 'true';
+const cronLog = (...args) => {
+  if (DEBUG_METRICS) console.log(...args);
+};
+
 function resolveDbtSchema() {
   const rawSchema = process.env.CLICKHOUSE_DBT_SCHEMA;
   const schema = (rawSchema ?? 'dbt').trim();
@@ -56,10 +61,10 @@ class CronManager {
     } catch (error) {
       console.error(`Failed to create timestamp directory: ${error.message}`);
       this.useMemoryOnly = true;
-      console.log('Using in-memory timestamp as fallback');
+      cronLog('Using in-memory timestamp as fallback');
     }
       
-    console.log(`Cron initialized with refresh interval: ${this.refreshInterval / (60 * 60 * 1000)} hours`);
+    cronLog(`Cron initialized with refresh interval: ${this.refreshInterval / (60 * 60 * 1000)} hours`);
   }
 
   getDbtSchema() {
@@ -127,7 +132,7 @@ class CronManager {
    */
   async refreshMetricCache(metricId, queries) {
     try {
-      console.log(`Refreshing cache for metric: ${metricId}`);
+      cronLog(`Refreshing cache for metric: ${metricId}`);
       
       // Get the query for this metric
       const query = queries[metricId];
@@ -191,8 +196,9 @@ class CronManager {
       // Apply dbt schema override if configured
       const finalQuery = applyDbtSchema(query);
 
-      // Execute the actual query
-      console.log(`Executing ClickHouse query to ${url}`);
+      // Execute the actual query. Keep the endpoint out of normal logs; metric
+      // requests can be very chatty in local development.
+      cronLog('Executing ClickHouse query');
       const response = await axios({
         method: 'post',
         url,
@@ -240,7 +246,7 @@ class CronManager {
       // Return empty array if no valid data
       return [];
     } catch (error) {
-      console.error('Query execution error:', error.message);
+      cronLog('Query execution error:', error.message);
       throw error;
     }
   }
@@ -252,7 +258,7 @@ class CronManager {
    */
   async refreshAllCaches(queries) {
     if (this._refreshInProgress) {
-      console.log('Cache refresh already in progress, skipping');
+      cronLog('Cache refresh already in progress, skipping');
       return {};
     }
     this._refreshInProgress = true;
@@ -264,7 +270,7 @@ class CronManager {
     this.updateTimestamp();
 
     try {
-      console.log('Starting cache refresh for all metrics');
+      cronLog('Starting cache refresh for all metrics');
 
       const metricIds = Object.keys(queries);
       const results = {};
@@ -273,7 +279,7 @@ class CronManager {
         results[metricId] = await this.refreshMetricCache(metricId, queries);
       }
 
-      console.log('Completed cache refresh for all metrics');
+      cronLog('Completed cache refresh for all metrics');
       return results;
     } catch (error) {
       console.error('Error refreshing all caches:', error);
@@ -290,12 +296,12 @@ class CronManager {
    */
   async checkAndRefreshIfNeeded(queries) {
     if (this.needsRefresh()) {
-      console.log('Cache refresh needed, performing refresh');
+      cronLog('Cache refresh needed, performing refresh');
       await this.refreshAllCaches(queries);
       return true;
     }
     
-    console.log('Cache refresh not needed');
+    cronLog('Cache refresh not needed');
     return false;
   }
 }

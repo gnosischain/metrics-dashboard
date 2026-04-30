@@ -10,6 +10,8 @@ const metric = {
   query: `
     SELECT avatar, sum(balance) AS balance, sum(balance_demurraged) AS balance_demurraged
     FROM dbt.api_execution_circles_v2_avatar_balances_latest
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
     GROUP BY avatar
   `,
 };

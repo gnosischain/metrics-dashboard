@@ -75,12 +75,18 @@ class MetricsService {
       // For other widgets, fetch from API
       const response = await api.get(`/metrics/${metricId}`, normalizedParams);
 
-      // Normalize all metric responses into an array for widget consumers.
+      // Normalize all metric responses into an array for widget consumers, while
+      // preserving server-side pagination/error metadata for large table widgets.
       const normalizedRows = this.normalizeMetricRows(response);
 
-      return {
-        data: normalizedRows
-      };
+      return response && typeof response === 'object' && !Array.isArray(response)
+        ? {
+            ...response,
+            data: normalizedRows
+          }
+        : {
+            data: normalizedRows
+          };
     } catch (error) {
       console.error(`Error fetching metric ${metricId}:`, error);
       throw error;

@@ -36,7 +36,9 @@ const MetricWidget = ({
   hasSecondaryGlobalFilter = false,
   secondaryGlobalFilterField = null,
   secondaryGlobalFilterValue = null,
-  headerActions = null
+  onSecondaryGlobalFilterChange = null,
+  headerActions = null,
+  onTableRowClick = null
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,13 @@ const MetricWidget = ({
         resolutions,
         localFilterFields,
         timeRanges,
-        defaultTimeRange = 'ALL'
+        defaultTimeRange = 'ALL',
+        columns,
+        paginationSize,
+        paginationSizeSelector,
+        initialSort,
+        selectableRows,
+        rowSelectionEmits,
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -150,6 +158,12 @@ const MetricWidget = ({
       localFilterFields,
       timeRanges,
       defaultTimeRange,
+      columns,
+      paginationSize,
+      paginationSizeSelector,
+      initialSort,
+      selectableRows,
+      rowSelectionEmits,
       config: metricConfig
     };
   }, [metricConfig]);
@@ -329,6 +343,58 @@ const MetricWidget = ({
     setSelectedValueMode(valueModeOptions[0].key);
   }, [metricConfig?.defaultValueMode, selectedValueMode, valueModeByKey, valueModeOptions]);
 
+  const buildMetricRequestParams = useCallback((overrides = {}) => {
+    const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
+
+    const params = {};
+    if (hasGlobalFilter && globalFilterField && normalizedGlobalFilterValue) {
+      params.filterField = globalFilterField;
+      params.filterValue = normalizedGlobalFilterValue;
+    }
+    if (metricConfig?.useCached === false) {
+      params.useCached = 'false';
+    }
+    if (effectiveUnit && metricConfig?.unitFilterField) {
+      params.filterField2 = metricConfig.unitFilterField;
+      params.filterValue2 = effectiveUnit;
+    }
+    if (
+      hasSecondaryGlobalFilter &&
+      secondaryGlobalFilterField &&
+      secondaryGlobalFilterValue &&
+      (metricConfig?.applySecondaryGlobalFilter === true ||
+        widgetConfig?.labelField === secondaryGlobalFilterField)
+    ) {
+      params.filterField3 = secondaryGlobalFilterField;
+      params.filterValue3 = secondaryGlobalFilterValue;
+    }
+    if (metricConfig?.serverPagination === true) {
+      const initialSort = Array.isArray(metricConfig.initialSort) ? metricConfig.initialSort[0] : null;
+      params.page = overrides.page || 1;
+      params.pageSize = overrides.pageSize || metricConfig.paginationSize || 25;
+      params.includeTotal = 'true';
+      params.sortField = overrides.sortField || initialSort?.column || initialSort?.field || undefined;
+      params.sortDir = overrides.sortDir || initialSort?.dir || undefined;
+      params.search = overrides.search || undefined;
+    }
+
+    return Object.fromEntries(
+      Object.entries({ ...params, ...overrides }).filter(([, value]) =>
+        value !== undefined && value !== null && value !== ''
+      )
+    );
+  }, [
+    effectiveUnit,
+    globalFilterField,
+    globalFilterValue,
+    hasGlobalFilter,
+    hasSecondaryGlobalFilter,
+    metricConfig,
+    secondaryGlobalFilterField,
+    secondaryGlobalFilterValue,
+    widgetConfig?.labelField,
+  ]);
+
   const fetchData = useCallback(async () => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
     // The fetch will trigger once globalFilterValue is set.
@@ -349,36 +415,7 @@ const MetricWidget = ({
         throw new Error('Metrics service is not properly initialized');
       }
       
-      // Build params for server-side filtering.
-      // Let server use its default date range (365 days) for full data.
-      // Server-side global filter reduces data transfer significantly.
-      const params = {};
-      if (hasGlobalFilter && globalFilterField && normalizedGlobalFilterValue) {
-        params.filterField = globalFilterField;
-        params.filterValue = normalizedGlobalFilterValue;
-      }
-      if (metricConfig?.useCached === false) {
-        params.useCached = 'false';
-      }
-      if (effectiveUnit && metricConfig?.unitFilterField) {
-        params.filterField2 = metricConfig.unitFilterField;
-        params.filterValue2 = effectiveUnit;
-      }
-      // Tab-level secondary global filter (e.g. `protocol` on the Lending tab):
-      // widgets opt in via `applySecondaryGlobalFilter: true` so the filter flows to
-      // their SQL server-side as filterField3 (ANDed with the primary filter). The
-      // widget where labelField === secondaryGlobalFilterField also gets this —
-      // its client-side filter path becomes a no-op but stays harmless.
-      if (
-        hasSecondaryGlobalFilter &&
-        secondaryGlobalFilterField &&
-        secondaryGlobalFilterValue &&
-        (metricConfig?.applySecondaryGlobalFilter === true ||
-          widgetConfig?.labelField === secondaryGlobalFilterField)
-      ) {
-        params.filterField3 = secondaryGlobalFilterField;
-        params.filterValue3 = secondaryGlobalFilterValue;
-      }
+      const params = buildMetricRequestParams();
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
       
@@ -425,14 +462,13 @@ const MetricWidget = ({
     globalFilterValue,
     hasGlobalFilter,
     hasMultiLocalFilters,
-    effectiveUnit,
-    metricConfig?.unitFilterField,
     // Refetch when the tab-level secondary filter (e.g. protocol) changes and this
     // widget opts in via applySecondaryGlobalFilter or has labelField matching.
     hasSecondaryGlobalFilter,
     secondaryGlobalFilterField,
     secondaryGlobalFilterValue,
     metricConfig?.applySecondaryGlobalFilter,
+    buildMetricRequestParams,
   ]);
 
   useEffect(() => {
@@ -1044,16 +1080,86 @@ const MetricWidget = ({
         );
       }
 
-      case 'table':
+      case 'table': {
+        // Build the config passed to TableWidget, merging any metric-level options
+        // (paginationSize, initialSort, selectableRows, columns, etc.) with a
+        // row-selection handler that cascades the selected row(s) to the tab's
+        // secondary global filter (so explorer-style tabs can overlay per-validator
+        // series on top of the aggregate). Only wired when:
+        //   * the metric declares `rowSelectionEmits` (e.g. ['validator_index']),
+        //   * the tab has a secondaryGlobalFilterField matching one of the emitted
+        //     fields,
+        //   * the parent provided an onSecondaryGlobalFilterChange handler.
+        const emits = Array.isArray(widgetConfig.rowSelectionEmits)
+          ? widgetConfig.rowSelectionEmits
+          : null;
+        const canCascadeSelection = !!(
+          emits &&
+          secondaryGlobalFilterField &&
+          emits.includes(secondaryGlobalFilterField) &&
+          typeof onSecondaryGlobalFilterChange === 'function'
+        );
+        const tableConfig = {
+          ...(metricConfig.tableConfig || {}),
+          // Pass through the column / pagination / sort config defined on the metric
+          // itself (queries/*.js) so each table metric controls its own UX without
+          // going through tableConfig.
+          columns: widgetConfig.columns || metricConfig.tableConfig?.columns,
+          paginationSize: widgetConfig.paginationSize ?? metricConfig.tableConfig?.paginationSize,
+          paginationSizeSelector: widgetConfig.paginationSizeSelector ?? metricConfig.tableConfig?.paginationSizeSelector,
+          initialSort: widgetConfig.initialSort ?? metricConfig.tableConfig?.initialSort,
+          selectableRows: widgetConfig.selectableRows ?? metricConfig.tableConfig?.selectableRows,
+          serverPagination: metricConfig.serverPagination === true,
+          totalRows: data?.total,
+          lastPage: data?.lastPage,
+          remoteDataLoader: metricConfig.serverPagination === true
+            ? async ({ page, pageSize, sortField, sortDir, search }) => {
+                const result = await metricsService.getMetricData(effectiveMetricId, buildMetricRequestParams({
+                  page,
+                  pageSize,
+                  sortField,
+                  sortDir,
+                  search,
+                  includeTotal: 'true',
+                }));
+                return result;
+              }
+            : undefined,
+          onRowClick: typeof onTableRowClick === 'function'
+            ? (row, tabulatorRow, event) => onTableRowClick({
+                metricId: effectiveMetricId,
+                row,
+                tabulatorRow,
+                event
+              })
+            : metricConfig.tableConfig?.onRowClick,
+          onRowSelectionChange: canCascadeSelection
+            ? (rows) => {
+                // Join selected values with comma so the API's IN-list filter picks
+                // them up (see metric's `applySecondaryGlobalFilter` on the chart side).
+                // Empty selection → null, clearing the filter and reverting charts to
+                // the credential-level aggregate.
+                if (!rows || rows.length === 0) {
+                  onSecondaryGlobalFilterChange(null);
+                  return;
+                }
+                const values = rows
+                  .map((r) => r && r[secondaryGlobalFilterField])
+                  .filter((v) => v !== null && v !== undefined && v !== '');
+                onSecondaryGlobalFilterChange(values.length > 0 ? values.join(',') : null);
+              }
+            : undefined,
+        };
         return (
-          <TableWidget 
+          <TableWidget
             data={timeFilteredData?.data || []}
-            config={metricConfig.tableConfig || {}}
+            config={tableConfig}
             minimal={true}
             isDarkMode={isDarkMode}
             format={widgetConfig.format}
           />
         );
+      }
       
       case 'chart':
         if (isSecondaryGlobalFilterForThisField && secondaryGlobalFilterValue && (timeFilteredData?.data?.length ?? 0) === 0) {

@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_apy_daily",
-  "query": "SELECT withdrawal_credentials, date, apy FROM dbt.api_consensus_validators_explorer_daily ORDER BY date"
+  "query": "SELECT *\n    FROM dbt.api_consensus_validators_explorer_apy_dist_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
 }

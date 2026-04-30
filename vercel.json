@@ -75,6 +75,34 @@
       }
     },
     {
+      "src": "/api/validator-explorer-search",
+      "dest": "/api/validator-explorer-search.js",
+      "headers": {
+        "Content-Security-Policy-Report-Only": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
+    {
+      "src": "/api/account-portfolio-search",
+      "dest": "/api/account-portfolio-search.js",
+      "headers": {
+        "Content-Security-Policy-Report-Only": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS",
+        "Access-Control-Allow-Headers": "X-API-Key,X-Requested-With,Content-Type,Accept,Origin"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1",
       "headers": {

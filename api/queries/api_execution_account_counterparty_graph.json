@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_counterparty_graph",
+  "query": "SELECT\n      source,\n      target,\n      source_name,\n      target_name,\n      edge_type,\n      weight,\n      raw_volume,\n      last_seen_date\n    FROM dbt.api_execution_account_counterparty_graph\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY weight DESC\n    LIMIT 60"
+}

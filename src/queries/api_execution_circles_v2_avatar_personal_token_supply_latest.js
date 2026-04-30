@@ -10,6 +10,8 @@ const metric = {
   query: `
     SELECT avatar, supply
     FROM dbt.api_execution_circles_v2_avatar_personal_token_supply_latest
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

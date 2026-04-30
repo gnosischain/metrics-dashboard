@@ -11,6 +11,11 @@ const metric = {
   format: 'formatNumber',
   valueField: 'value',
   globalFilterField: 'wallet_address',
-  query: `SELECT wallet_address, value FROM dbt.api_execution_gpay_user_total_cashback`,
+  query: `
+    SELECT wallet_address, value
+    FROM dbt.api_execution_gpay_user_total_cashback
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
+  `,
 };
 export default metric;

@@ -1,0 +1,29 @@
+tabs:
+  - name: Account Portfolio
+    order: 1
+    icon: 👤
+    iconClass: user
+    # The custom view owns the validator-style async search and wallet workbench.
+    # It still writes selected addresses through the standard globalFilter
+    # pathway so URL sync (?address=0x…) remains backwards-compatible.
+    customView: accountPortfolio
+    globalFilterField: address
+    globalFilterLabel: Address
+    globalFilterDisplayField: display_name
+    globalFilterSourceMetric: api_execution_address_search
+    searchable: true
+    # Intentionally NOT requireExplicitFilter: pasted addresses that are not in
+    # the ~24k "high-signal" dropdown list (i.e. raw EOAs without any domain
+    # label) must still be accepted — the resolver table knows about many more
+    # addresses than the dropdown exposes, and the custom view handles the
+    # "no domains found" case gracefully.
+    searchPlaceholder: "Search address, Circles name, validator index, pubkey, or withdrawal credential"
+    globalControlsPlacement: top
+    globalFilterVertical: true
+    emptyState:
+      title: Explore an account
+      description: Search any wallet, Safe, Circles name, validator, or withdrawal credential to see balances, movements, counterparties, Safes, payments, yields, Circles, and validators.
+      emptyResultsTitle: Nothing found
+      emptyResultsDescription: This address has no activity in any of the supported domains yet.
+      iconClass: user
+    metrics: []

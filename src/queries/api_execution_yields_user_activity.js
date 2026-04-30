@@ -176,6 +176,8 @@ const metric = {
     SELECT wallet_address, block_timestamp, date, transaction_hash, protocol,
            position_address, action, token_symbol, token_address, amount, amount_usd, source
     FROM dbt.api_execution_yields_user_activity
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

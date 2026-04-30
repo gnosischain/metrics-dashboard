@@ -1,5 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+const DEBUG_METRICS = process.env.DEBUG_METRICS === 'true';
+const cacheLog = (...args) => {
+  if (DEBUG_METRICS) console.log(...args);
+};
 
 /**
  * Cache utility for the API
@@ -16,13 +22,13 @@ class CacheManager {
       if (!fs.existsSync(this.cacheDir)) {
         fs.mkdirSync(this.cacheDir, { recursive: true });
       }
-      console.log(`Cache directory created at ${this.cacheDir}`);
+      cacheLog(`Cache directory ready at ${this.cacheDir}`);
     } catch (error) {
       console.error(`Failed to create cache directory: ${error.message}`);
       // Fallback to in-memory cache if we can't create the directory
       this.useMemoryCache = true;
       this.memoryCache = {};
-      console.log('Using in-memory cache as fallback');
+      cacheLog('Using in-memory cache as fallback');
     }
     
     // Default cache TTL (time to live) in milliseconds (24 hours)
@@ -30,7 +36,7 @@ class CacheManager {
       ? parseInt(process.env.CACHE_TTL_HOURS) * 60 * 60 * 1000 
       : 24 * 60 * 60 * 1000;
       
-    console.log(`Cache initialized with TTL: ${this.cacheTtl / (60 * 60 * 1000)} hours`);
+    cacheLog(`Cache initialized with TTL: ${this.cacheTtl / (60 * 60 * 1000)} hours`);
   }
 
   /**
@@ -42,7 +48,12 @@ class CacheManager {
     // Allow composite cache keys while keeping backwards compatibility:
     // - If metricId is a plain ID (existing behavior), filename stays "<metricId>.json"
     // - If metricId includes special characters, encode it to a filesystem-safe name.
-    const safeName = encodeURIComponent(metricId).replace(/%/g, '_');
+    let safeName = encodeURIComponent(metricId).replace(/%/g, '_');
+    if (safeName.length > 180) {
+      const prefix = safeName.slice(0, 96);
+      const digest = crypto.createHash('sha1').update(metricId).digest('hex');
+      safeName = `${prefix}_${digest}`;
+    }
     return path.join(this.cacheDir, `${safeName}.json`);
   }
 
@@ -150,7 +161,7 @@ class CacheManager {
             timestamp: Date.now(),
             data: data
           };
-          console.log(`Switched to in-memory cache for ${metricId}`);
+          cacheLog(`Switched to in-memory cache for ${metricId}`);
           return true;
         } catch (memError) {
           console.error(`Error using memory cache for ${metricId}:`, memError);

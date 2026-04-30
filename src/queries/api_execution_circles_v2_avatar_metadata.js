@@ -146,6 +146,8 @@ const metric = {
       metadata_image_url,
       metadata_preview_image_url
     FROM dbt.api_execution_circles_v2_avatar_metadata
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

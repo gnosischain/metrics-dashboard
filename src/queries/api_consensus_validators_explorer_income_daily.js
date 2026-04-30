@@ -30,10 +30,12 @@ const metric = {
     SELECT withdrawal_credentials, date, 'gain' AS label, consensus_income_amount_gno AS amount_gno
     FROM dbt.api_consensus_validators_explorer_daily
     WHERE consensus_income_amount_gno > 0
+      /*__FILTER_CONDITIONS__*/
     UNION ALL
     SELECT withdrawal_credentials, date, 'loss' AS label, consensus_income_amount_gno AS amount_gno
     FROM dbt.api_consensus_validators_explorer_daily
     WHERE consensus_income_amount_gno < 0
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_holdings_latest",
+  "query": "SELECT\n    address,\n    token_address,\n    symbol,\n    token_class,\n    max_date AS date,\n    balance,\n    balance_usd\n  FROM (\n    SELECT\n      address,\n      token_address,\n      any(symbol) AS symbol,\n      any(token_class) AS token_class,\n      max(date) AS max_date,\n      argMax(balance, date) AS balance,\n      argMax(coalesce(balance_usd, 0), date) AS balance_usd\n    FROM dbt.int_execution_tokens_balances_daily\n    WHERE date >= today() - 7\n      /*__FILTER_CONDITIONS__*/\n    GROUP BY address, token_address\n  )\n  WHERE balance > 0"
+}

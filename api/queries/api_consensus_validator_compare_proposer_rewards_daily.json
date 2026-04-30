@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validator_compare_proposer_rewards_daily",
+  "query": "SELECT\n      date,\n      validator_index,\n      proposer_reward_total_gno\n    FROM dbt.int_consensus_validators_proposer_rewards_daily\n    WHERE date BETWEEN '{from}' AND '{to}'\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date ASC, validator_index ASC"
+}

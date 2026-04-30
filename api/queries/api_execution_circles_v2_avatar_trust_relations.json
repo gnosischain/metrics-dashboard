@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_avatar_trust_relations",
-  "query": "SELECT avatar, counterparty, direction, outgoing_from, incoming_from\n    FROM dbt.api_execution_circles_v2_avatar_trust_relations"
+  "query": "SELECT avatar, counterparty, direction, outgoing_from, incoming_from\n    FROM dbt.api_execution_circles_v2_avatar_trust_relations\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
 }

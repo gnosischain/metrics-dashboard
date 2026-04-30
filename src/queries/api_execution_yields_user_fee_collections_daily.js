@@ -13,10 +13,12 @@ const metric = {
   showTotal: true,
   tooltipOrder: 'valueDesc',
   enableZoom: false,
-  globalFilterField: 'wallet_address',
+  globalFilterField: 'provider',
   query: `
     SELECT provider AS wallet_address, date, pool_address, protocol, fees_usd
     FROM dbt.api_execution_yields_user_fee_collections_daily
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

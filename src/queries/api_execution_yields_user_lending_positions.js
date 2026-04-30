@@ -9,7 +9,7 @@ const metric = {
     'for the selected wallet, with current supply APY. A wallet holding the same ' +
     'asset on both protocols produces two rows, one per protocol.',
   chartType: 'table',
-  globalFilterField: 'wallet_address',
+  globalFilterField: 'user_address',
   useCached: false,
 
   tableConfig: {
@@ -97,6 +97,8 @@ const metric = {
   query: `
     SELECT user_address AS wallet_address, reserve_address, symbol, balance, balance_usd, supply_apy, protocol
     FROM dbt.api_execution_yields_user_lending_positions
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

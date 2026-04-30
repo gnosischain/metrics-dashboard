@@ -8,12 +8,30 @@ const formatNumberCell = (cell) => {
   return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
 };
 
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 const formatTokenAddress = (cell) => {
   const v = String(cell.getValue() || '').trim();
   if (!v) return '-';
   const href = `https://gnosis.blockscout.com/address/${encodeURIComponent(v)}`;
   return `<a class="table-link" href="${href}" target="_blank" rel="noopener noreferrer" `
     + `style="font-family:monospace;font-size:12px;">${v.slice(0, 8)}…${v.slice(-4)}</a>`;
+};
+
+const formatTokenLabel = (cell) => {
+  const row = cell.getData();
+  const label = String(cell.getValue() || row.token_symbol || row.token_name || '').trim();
+  const address = String(row.token_address || '').trim();
+  const displayLabel = label || (address ? `${address.slice(0, 8)}…${address.slice(-4)}` : '-');
+  const addressLine = address
+    ? `<span style="display:block;color:var(--color-text-tertiary);font-family:monospace;font-size:11px;margin-top:2px;">${escapeHtml(address.slice(0, 8))}…${escapeHtml(address.slice(-4))}</span>`
+    : '';
+  return `<span style="display:block;min-width:0;"><strong>${escapeHtml(displayLabel)}</strong>${addressLine}</span>`;
 };
 
 const formatWrapBadge = (cell) => {
@@ -48,10 +66,17 @@ const metric = {
     initialSort: [{ column: 'balance_demurraged', dir: 'desc' }],
     columns: [
       {
-        title: 'Token',
-        field: 'token_address',
+        title: 'Token / Symbol',
+        field: 'token_label',
         widthGrow: 2,
-        minWidth: 130,
+        minWidth: 160,
+        sorter: 'string',
+        formatter: formatTokenLabel,
+      },
+      {
+        title: 'Contract',
+        field: 'token_address',
+        width: 120,
         sorter: 'string',
         formatter: formatTokenAddress,
       },
@@ -88,8 +113,39 @@ const metric = {
   },
 
   query: `
-    SELECT avatar, token_address, is_wrapped, balance, balance_demurraged
-    FROM dbt.api_execution_circles_v2_avatar_balances_latest
+    WITH filtered AS (
+      SELECT avatar, token_address, is_wrapped, balance, balance_demurraged
+      FROM dbt.api_execution_circles_v2_avatar_balances_latest
+      WHERE 1 = 1
+        /*__FILTER_CONDITIONS__*/
+    )
+    SELECT
+      filtered.avatar,
+      filtered.token_address,
+      coalesce(nullIf(metadata.metadata_symbol, ''), nullIf(metadata.metadata_name, ''), if(
+        lower(coalesce(filtered.token_address, '')) = lower(coalesce(filtered.avatar, '')),
+        'Own CRC',
+        concat('CRC ', substring(coalesce(filtered.token_address, ''), 3, 6))
+      )) AS token_symbol,
+      coalesce(nullIf(metadata.metadata_name, ''), nullIf(metadata.metadata_symbol, ''), '') AS token_name,
+      concat(
+        coalesce(nullIf(metadata.metadata_symbol, ''), nullIf(metadata.metadata_name, ''), if(
+          lower(coalesce(filtered.token_address, '')) = lower(coalesce(filtered.avatar, '')),
+          'Own CRC',
+          concat('CRC ', substring(coalesce(filtered.token_address, ''), 3, 6))
+        )),
+        ' - ',
+        substring(coalesce(filtered.token_address, ''), 3, 6)
+      ) AS token_label,
+      filtered.is_wrapped,
+      filtered.balance,
+      filtered.balance_demurraged
+    FROM filtered
+    LEFT JOIN (
+      SELECT avatar, metadata_symbol, metadata_name
+      FROM dbt.api_execution_circles_v2_avatar_metadata
+    ) AS metadata
+      ON lower(coalesce(metadata.avatar, '')) = lower(coalesce(filtered.token_address, ''))
   `,
 };
 

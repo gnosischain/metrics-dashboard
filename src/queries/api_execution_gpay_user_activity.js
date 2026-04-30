@@ -185,6 +185,8 @@ const metric = {
   query: `
     SELECT wallet_address, timestamp, date, action, symbol, amount, amount_usd, transaction_hash
     FROM dbt.api_execution_gpay_user_activity
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

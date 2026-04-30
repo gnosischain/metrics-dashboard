@@ -6,6 +6,13 @@ const STORAGE_KEY_PREFIX = 'api-cache:v1:';
 const responseCache = new Map();
 const inFlightRequests = new Map();
 const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
+let developmentMetricsQueue = Promise.resolve();
+
+const enqueueDevelopmentMetricRequest = (requestFactory) => {
+  const queued = developmentMetricsQueue.catch(() => {}).then(requestFactory);
+  developmentMetricsQueue = queued.catch(() => {});
+  return queued;
+};
 
 const getSessionStorage = () => {
   try {
@@ -136,7 +143,7 @@ export class ApiService {
     const requestParams = { ...normalizedParams };
 
     if (this.isDevelopment && isMetricsEndpoint(endpoint) && requestParams.useCached === undefined) {
-      requestParams.useCached = 'false';
+      requestParams.useCached = 'true';
     }
 
     const bypassFrontendCache = this.isDevelopment;
@@ -167,7 +174,9 @@ export class ApiService {
 
     const requestPromise = (async () => {
       try {
-        const data = await this.fetchFromSource(endpoint, requestParams);
+        const data = await (this.isDevelopment && isMetricsEndpoint(endpoint)
+          ? enqueueDevelopmentMetricRequest(() => this.fetchFromSource(endpoint, requestParams))
+          : this.fetchFromSource(endpoint, requestParams));
         if (!bypassFrontendCache) {
           const entry = { data, timestamp: Date.now() };
           responseCache.set(cacheKey, entry);
@@ -180,17 +189,6 @@ export class ApiService {
         if (cachedEntry) {
           console.warn(`API Error for ${endpoint}, serving stale cached response`);
           return cachedEntry.data;
-        }
-
-        if (!this.useMockData) {
-          console.log(`API failed, falling back to mock data for ${endpoint}`);
-          const mockData = await this.getMockData(endpoint, requestParams);
-          if (!bypassFrontendCache) {
-            const entry = { data: mockData, timestamp: Date.now() };
-            responseCache.set(cacheKey, entry);
-            writePersistedEntry(cacheKey, entry);
-          }
-          return mockData;
         }
 
         throw error;

@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_members_table",
-  "query": "SELECT\n      withdrawal_credentials,\n      validator_index,\n      status,\n      slashed,\n      activation_date,\n      exit_date,\n      balance_gno,\n      effective_balance_gno,\n      apy_30d,\n      consensus_income_amount_30d_gno,\n      proposed_blocks_count_lifetime,\n      proposer_reward_total_lifetime_gno,\n      total_income_estimated_gno,\n      withdrawal_address,\n      pubkey\n    FROM dbt.api_consensus_validators_explorer_members_table\n    ORDER BY validator_index"
+  "query": "SELECT\n      withdrawal_credentials,\n      validator_index,\n      status,\n      slashed,\n      activation_date,\n      exit_date,\n      balance_gno,\n      effective_balance_gno,\n      apy_30d,\n      consensus_income_amount_30d_gno,\n      proposed_blocks_count_lifetime,\n      proposer_reward_total_lifetime_gno,\n      total_income_estimated_gno,\n      withdrawal_address,\n      pubkey\n    FROM dbt.api_consensus_validators_explorer_members_table\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY balance_gno DESC, validator_index ASC"
 }

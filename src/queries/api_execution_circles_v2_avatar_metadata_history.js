@@ -192,8 +192,11 @@ const metric = {
       is_current,
       transaction_hash,
       log_index
-    FROM dbt.api_execution_circles_v2_avatar_metadata_history
+    FROM dbt.int_execution_circles_v2_avatar_metadata_history
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
     ORDER BY valid_from DESC
+    LIMIT 100
   `,
 };
 

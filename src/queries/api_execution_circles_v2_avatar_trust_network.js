@@ -75,19 +75,77 @@ const metric = {
   },
 
   query: `
+    WITH relations AS (
+      SELECT
+        avatar,
+        direction AS relation_direction,
+        counterparty
+      FROM dbt.api_execution_circles_v2_avatar_trust_relations
+      WHERE 1 = 1
+        /*__FILTER_CONDITIONS__*/
+      LIMIT 500
+    ),
+    edges AS (
+      SELECT
+        avatar,
+        avatar AS source_id,
+        counterparty AS target_id,
+        'Focal avatar' AS source_layer,
+        if(relation_direction = 'mutual', 'Mutual', 'Trust given') AS target_layer,
+        if(relation_direction = 'mutual', 'Mutual', 'Trust given') AS direction,
+        toFloat64(1) AS value
+      FROM relations
+      WHERE relation_direction IN ('outgoing', 'mutual')
+
+      UNION ALL
+
+      SELECT
+        avatar,
+        counterparty AS source_id,
+        avatar AS target_id,
+        if(relation_direction = 'mutual', 'Mutual', 'Trust received') AS source_layer,
+        'Focal avatar' AS target_layer,
+        if(relation_direction = 'mutual', 'Mutual', 'Trust received') AS direction,
+        toFloat64(1) AS value
+      FROM relations
+      WHERE relation_direction IN ('incoming', 'mutual')
+    ),
+    edge_nodes AS (
+      SELECT source_id AS avatar_key FROM edges
+      UNION ALL
+      SELECT target_id AS avatar_key FROM edges
+    ),
+    metadata AS (
+      SELECT
+        avatar AS avatar_key,
+        name,
+        metadata_name,
+        metadata_preview_image_url,
+        metadata_image_url
+      FROM dbt.api_execution_circles_v2_avatar_metadata
+      WHERE avatar IN (SELECT avatar_key FROM edge_nodes)
+    )
     SELECT
-      avatar,
-      source_id,
-      source_name,
-      source_layer,
-      source_image,
-      target_id,
-      target_name,
-      target_layer,
-      target_image,
-      direction,
-      value
-    FROM dbt.api_execution_circles_v2_avatar_trust_network
+      edges.avatar,
+      edges.source_id,
+      coalesce(nullIf(source_metadata.metadata_name, ''), nullIf(source_metadata.name, ''), edges.source_id) AS source_name,
+      edges.source_layer,
+      coalesce(source_metadata.metadata_preview_image_url, source_metadata.metadata_image_url) AS source_image,
+      edges.target_id,
+      coalesce(nullIf(target_metadata.metadata_name, ''), nullIf(target_metadata.name, ''), edges.target_id) AS target_name,
+      edges.target_layer,
+      coalesce(target_metadata.metadata_preview_image_url, target_metadata.metadata_image_url) AS target_image,
+      edges.direction,
+      edges.value
+    FROM edges
+    LEFT JOIN metadata AS source_metadata
+      ON source_metadata.avatar_key = edges.source_id
+    LEFT JOIN metadata AS target_metadata
+      ON target_metadata.avatar_key = edges.target_id
+    ORDER BY
+      multiIf(edges.direction = 'Mutual', 1, edges.direction = 'Trust given', 2, edges.direction = 'Trust received', 3, 4),
+      edges.target_id,
+      edges.source_id
   `,
 };
 

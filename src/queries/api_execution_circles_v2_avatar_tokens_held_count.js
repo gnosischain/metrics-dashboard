@@ -11,6 +11,8 @@ const metric = {
   query: `
     SELECT avatar, tokens_held_count
     FROM dbt.api_execution_circles_v2_avatar_tokens_held_count
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

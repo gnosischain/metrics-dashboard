@@ -6,7 +6,12 @@ const metric = {
   valueField: 'balance_gno',
   chartType: 'numberDisplay',
   variant: 'compact',
-  query: `SELECT withdrawal_credentials, balance_gno FROM dbt.api_consensus_validators_explorer_latest`,
+  query: `
+    SELECT withdrawal_credentials, balance_gno
+    FROM dbt.api_consensus_validators_explorer_latest
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
+  `,
 };
 
 export default metric;

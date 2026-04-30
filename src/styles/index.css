@@ -25,6 +25,8 @@
 @import './components/_tooltips.css';
 @import './components/_indexing-alert.css';
 @import './components/_landing.css';
+@import './components/_validator-explorer.css';
+@import './components/_account-portfolio.css';
 
 /* Widget styles */
 @import './widgets/_charts.css';

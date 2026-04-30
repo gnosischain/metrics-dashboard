@@ -135,4 +135,58 @@ Merged:
       }
     });
   });
+
+  it('preserves customView tab metadata when loading dashboards from YAML', () => {
+    const yaml = `
+Explorer:
+  name: Explorer
+  order: 1
+  tabs:
+    - name: Validator Explorer
+      order: 1
+      customView: validatorExplorer
+      timeRanges: true
+      metrics: []
+`;
+
+    const loaded = dashboardsService.loadFromYaml(yaml);
+    expect(loaded).toBe(true);
+
+    const explorerTab = dashboardsService.getTab('explorer', 'validator-explorer');
+    expect(explorerTab).toMatchObject({
+      customView: 'validatorExplorer',
+      timeRanges: true,
+      metrics: []
+    });
+  });
+
+  it('supports explicit single-tab dashboards without sidebar subtabs', () => {
+    const yaml = `
+Account Portfolio:
+  name: Account Portfolio
+  order: 1
+  hasDefaultTab: true
+  tabs:
+    - name: Account Portfolio
+      order: 1
+      customView: accountPortfolio
+      metrics: []
+`;
+
+    const loaded = dashboardsService.loadFromYaml(yaml);
+    expect(loaded).toBe(true);
+
+    const accountPortfolio = dashboardsService.getDashboard('account-portfolio');
+    const accountPortfolioTab = dashboardsService.getTab('account-portfolio', 'account-portfolio');
+
+    expect(accountPortfolio).toMatchObject({
+      id: 'account-portfolio',
+      name: 'Account Portfolio',
+      hasDefaultTab: true
+    });
+    expect(accountPortfolioTab).toMatchObject({
+      customView: 'accountPortfolio',
+      metrics: []
+    });
+  });
 });

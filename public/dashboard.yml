@@ -5,6 +5,14 @@ Overview:
   iconClass: chart-line
   tagline: High-level KPIs and trends across the full Gnosis ecosystem.
   source: /dashboards/overview.yml
+"Account Portfolio":
+  name: Account Portfolio
+  order: 5
+  icon: 🔎
+  iconClass: user
+  tagline: Per-address lens — tokens, safes, circles, gnosis pay, and validators in one view.
+  hasDefaultTab: true
+  source: /dashboards/accounts.yml
 GnosisPay:
   name: Gnosis Pay
   order: 10

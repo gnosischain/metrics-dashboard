@@ -16,6 +16,9 @@ const metric = {
   query: `
     SELECT avatar, date, mint_events, amount_minted
     FROM dbt.api_execution_circles_v2_avatar_mint_activity_daily
+    WHERE date BETWEEN toDate('{from}') AND toDate('{to}')
+      /*__FILTER_CONDITIONS__*/
+    ORDER BY date
   `,
 };
 

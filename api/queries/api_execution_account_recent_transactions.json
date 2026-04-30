@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_recent_transactions",
+  "query": "SELECT *\n    FROM dbt.api_execution_account_recent_transactions\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date DESC"
+}

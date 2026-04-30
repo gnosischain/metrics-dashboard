@@ -16,14 +16,30 @@ const metric = {
   enableZoom: true,
   defaultZoom: { start: 80, end: 100 },
 
+  // Single-scan arrayJoin variant — the prior 4x UNION ALL triggered
+  // ClickHouse memory-exceeded errors because the framework's outer
+  // `WHERE withdrawal_credentials = '...'` wrapper doesn't push down
+  // through UNION ALL. See api_consensus_validator_group_history_flows_daily.js
+  // for the full rationale.
   query: `
-    SELECT withdrawal_credentials, date, 'deposits' AS label, deposits_amount_gno AS amount_gno FROM dbt.api_consensus_validators_explorer_daily WHERE deposits_amount_gno > 0
-    UNION ALL
-    SELECT withdrawal_credentials, date, 'withdrawals' AS label, -withdrawals_amount_gno AS amount_gno FROM dbt.api_consensus_validators_explorer_daily WHERE withdrawals_amount_gno > 0
-    UNION ALL
-    SELECT withdrawal_credentials, date, 'consolidation_in' AS label, consolidation_inflow_gno AS amount_gno FROM dbt.api_consensus_validators_explorer_daily WHERE consolidation_inflow_gno > 0
-    UNION ALL
-    SELECT withdrawal_credentials, date, 'consolidation_out' AS label, -consolidation_outflow_gno AS amount_gno FROM dbt.api_consensus_validators_explorer_daily WHERE consolidation_outflow_gno > 0
+    SELECT withdrawal_credentials, date, label, amount_gno
+    FROM (
+      SELECT
+        withdrawal_credentials,
+        date,
+        arrayJoin([
+          ('deposits',          deposits_amount_gno),
+          ('withdrawals',       -withdrawals_amount_gno),
+          ('consolidation_in',  consolidation_inflow_gno),
+          ('consolidation_out', -consolidation_outflow_gno)
+        ]) AS flow,
+        flow.1 AS label,
+        flow.2 AS amount_gno
+      FROM dbt.api_consensus_validators_explorer_daily
+      WHERE 1 = 1
+        /*__FILTER_CONDITIONS__*/
+    )
+    WHERE amount_gno != 0
   `,
 };
 

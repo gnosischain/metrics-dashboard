@@ -1,4 +1,4 @@
 {
   "id": "api_consensus_validators_explorer_income_30d",
-  "query": "SELECT withdrawal_credentials, consensus_income_amount_30d_gno FROM dbt.api_consensus_validators_explorer_latest"
+  "query": "SELECT withdrawal_credentials, consensus_income_amount_30d_gno\n    FROM dbt.api_consensus_validators_explorer_latest\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
 }

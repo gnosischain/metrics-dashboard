@@ -19,10 +19,12 @@ const metric = {
     native: { field: 'balance', format: 'formatNumber' },
     usd: { field: 'balance_usd', format: 'formatCurrency' }
   },
-  globalFilterField: 'wallet_address',
+  globalFilterField: 'user_address',
   query: `
     SELECT user_address AS wallet_address, date, symbol, balance, balance_usd
     FROM dbt.api_execution_yields_user_lending_balances_daily
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

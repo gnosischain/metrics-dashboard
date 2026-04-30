@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_avatar_trusts_daily",
-  "query": "SELECT avatar, date, 'Given' AS label, trusts_given_count AS value\n    FROM dbt.api_execution_circles_v2_avatar_trusts_daily\n    UNION ALL\n    SELECT avatar, date, 'Received' AS label, trusts_received_count AS value\n    FROM dbt.api_execution_circles_v2_avatar_trusts_daily"
+  "query": "SELECT avatar, date, 'Given' AS label, trusts_given_count AS value\n    FROM dbt.api_execution_circles_v2_avatar_trusts_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    UNION ALL\n    SELECT avatar, date, 'Received' AS label, trusts_received_count AS value\n    FROM dbt.api_execution_circles_v2_avatar_trusts_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
 }

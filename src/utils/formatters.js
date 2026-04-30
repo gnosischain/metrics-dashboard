@@ -145,6 +145,30 @@ export const formatNumberCompact = (value) => {
 };
 
 // Export all formatters as default object for easier imports
+/**
+ * Truncate a hex string (pubkey, withdrawal_credentials, withdrawal_address) to a
+ * `0xabcd…wxyz` form so long identifier columns don't dominate table rendering.
+ * Clicking the cell copies the full value to the clipboard via the inline
+ * onclick handler. The full value is also in the title attribute for on-hover
+ * inspection.
+ *
+ * @param {string} value - The hex string to truncate.
+ * @returns {string} HTML string with truncated text and click-to-copy handler.
+ */
+export const formatTruncateHex = (value) => {
+  if (value === null || value === undefined || value === '') return '';
+  const str = String(value);
+  if (str.length <= 14) return str;
+  const head = str.slice(0, 6);
+  const tail = str.slice(-4);
+  const truncated = `${head}…${tail}`;
+  // Escape for safe HTML attribute embedding.
+  const escapedTitle = str.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const escapedJs = str.replace(/'/g, "\\'");
+  const onclick = `navigator.clipboard&&navigator.clipboard.writeText('${escapedJs}');event.stopPropagation();`;
+  return `<span class="hex-copy" title="${escapedTitle} — click to copy" style="cursor:pointer;font-family:monospace;" onclick="${onclick}">${truncated}</span>`;
+};
+
 const formatters = {
   formatNumber,
   formatBytes,
@@ -157,7 +181,8 @@ const formatters = {
   formatNumberWithGNO,
   formatCurrency,
   formatCurrencyCompact,
-  formatNumberCompact
+  formatNumberCompact,
+  formatTruncateHex
 };
 
 export default formatters;

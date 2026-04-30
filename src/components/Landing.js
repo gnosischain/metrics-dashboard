@@ -112,7 +112,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       {/* Hero */}
       <section className="landing-hero">
         <div className="landing-hero-inner">
-          <div className="landing-eyebrow">Gnosis Chain Analytics</div>
+          <div className="landing-eyebrow">Gnosis Analytics</div>
           <h1 className="landing-headline">
             <span>OPEN</span>
             <span>METRICS</span>
@@ -272,7 +272,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       {/* Footer */}
       <footer className="landing-footer">
         <div className="landing-footer-inner">
-          <div className="landing-footer-brand">Gnosis Chain Analytics</div>
+          <div className="landing-footer-brand">Gnosis Analytics</div>
           <div className="landing-footer-links">
             <a
               href="https://github.com/gnosischain"
