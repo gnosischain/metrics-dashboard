@@ -63,12 +63,17 @@ vi.mock('./DashboardHeader', () => ({
 }));
 
 vi.mock('./MetricWidget', () => ({
-  default: ({ metricId, globalFilterField, globalFilterValue }) => (
+  default: ({ metricId, globalFilterField, globalFilterValue, tableConfigOverrides, tableHeight }) => (
     <div
       data-testid="portfolio-metric"
       data-metric-id={metricId}
       data-filter-field={globalFilterField || ''}
       data-filter-value={globalFilterValue || ''}
+      data-table-height={tableHeight || ''}
+      data-pagination-size={String(tableConfigOverrides?.paginationSize || '')}
+      data-pagination-selector={Array.isArray(tableConfigOverrides?.paginationSizeSelector) ? tableConfigOverrides.paginationSizeSelector.join('|') : ''}
+      data-responsive-layout={String(tableConfigOverrides?.responsiveLayout)}
+      data-row-height={String(tableConfigOverrides?.rowHeight || '')}
     >
       {metricId}
     </div>
@@ -184,5 +189,95 @@ describe('AccountPortfolio section tabs', () => {
 
     expect(container.querySelector('[data-metric-id="api_execution_circles_v2_avatar_metadata"]')).toBeNull();
     expect(container.querySelector('[data-metric-id="api_execution_circles_v2_avatar_metadata_history"]')).toBeInTheDocument();
+  });
+
+  it('uses colored source and direction labels in the Activity table', async () => {
+    const { container } = render(
+      <AccountPortfolio
+        tabConfig={{ emptyState: {} }}
+        dashboard={{ id: 'accounts', name: 'Accounts' }}
+        portfolioState={{ address: ADDRESS }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Activity' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
+
+    await waitFor(() => {
+      expect(container.querySelector('.ap-pill--transfer')).toHaveTextContent('Transfer');
+      expect(container.querySelector('.ap-pill--inflow')).toHaveTextContent('transfer');
+    }, { timeout: 2500 });
+  });
+
+  it('renders compact Yields activity and wraps position tables', async () => {
+    accountPortfolioService.getProfile.mockResolvedValue({
+      address: ADDRESS,
+      display_name: 'Alice Account',
+      is_lp_provider: true,
+      has_yield_activity: true,
+    });
+    accountPortfolioService.getRoleFlags.mockResolvedValue({
+      is_lp_provider: true,
+    });
+    accountPortfolioService.getYields.mockResolvedValue({
+      lp: [{
+        protocol: 'Balancer V2',
+        pool_address: '0x0000000000000000000000000000000000000001',
+        capital_in_usd: 100,
+        capital_out_usd: 0,
+        fees_collected_usd: 2,
+        is_active: true,
+        is_in_range: true,
+        last_action_date: '2026-04-01',
+      }],
+      lending: [{
+        protocol: 'Aave V3',
+        symbol: 'EURe',
+        balance: 10,
+        balance_usd: 11,
+        supply_apy: 3.2,
+        reserve_address: '0x0000000000000000000000000000000000000002',
+      }],
+      activity: [{
+        block_timestamp: '2026-04-02T12:34:00Z',
+        transaction_hash: '0xabc123',
+        source: 'lending',
+        action: 'Supply',
+        protocol: 'Aave V3',
+        token_symbol: 'EURe',
+        amount: 10,
+        amount_usd: 11,
+      }],
+    });
+
+    const { container } = render(
+      <AccountPortfolio
+        tabConfig={{ emptyState: {} }}
+        dashboard={{ id: 'accounts', name: 'Accounts' }}
+        portfolioState={{ address: ADDRESS }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Yields' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Yields' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity History')).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const activityCard = [...container.querySelectorAll('.ap-card')]
+      .find((element) => element.textContent.includes('Activity History'));
+    expect(activityCard).toBeTruthy();
+    expect(activityCard.querySelector('.ap-pill--lending')).toHaveTextContent('Lending');
+    expect(activityCard.querySelector('.ap-pill--inflow')).toHaveTextContent('Supply');
+    expect(activityCard.querySelector('.ap-token-cell')).toHaveTextContent('EURe');
+    expect(activityCard.querySelector('.ap-amount--inflow')).toHaveTextContent('10.00');
+    expect(container.querySelectorAll('.ap-table-wrapper .ap-table--portfolio')).toHaveLength(3);
   });
 });

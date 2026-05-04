@@ -58,6 +58,24 @@ const TableWidget = ({
     }, delay);
   }, [redrawTable]);
 
+  const handleTableClickCapture = useCallback((event) => {
+    const target = event.target;
+    const copyTarget = typeof target?.closest === 'function'
+      ? target.closest('.hex-copy[data-copy-value]')
+      : null;
+
+    if (!copyTarget) return;
+
+    event.stopPropagation();
+    const copyValue = copyTarget.getAttribute('data-copy-value') || '';
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      Promise.resolve(navigator.clipboard.writeText(copyValue)).catch((error) => {
+        console.warn('TableWidget: Failed to copy hex value:', error);
+      });
+    }
+  }, []);
+
   const syncSelectedRows = useCallback(() => {
     if (!tableInstanceRef.current || !tableBuiltRef.current) {
       return;
@@ -296,7 +314,7 @@ const TableWidget = ({
       minHeight: '200px',
       display: 'flex',
       flexDirection: 'column'
-    }}>
+    }} onClickCapture={handleTableClickCapture}>
       {error && (
         <div className="table-error" style={{
           padding: '2rem',

@@ -144,29 +144,33 @@ export const formatNumberCompact = (value) => {
   return String(v);
 };
 
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // Export all formatters as default object for easier imports
 /**
  * Truncate a hex string (pubkey, withdrawal_credentials, withdrawal_address) to a
  * `0xabcd…wxyz` form so long identifier columns don't dominate table rendering.
- * Clicking the cell copies the full value to the clipboard via the inline
- * onclick handler. The full value is also in the title attribute for on-hover
- * inspection.
+ * TableWidget handles click-to-copy using the `data-copy-value` attribute. The
+ * full value is also in the title attribute for on-hover inspection.
  *
  * @param {string} value - The hex string to truncate.
- * @returns {string} HTML string with truncated text and click-to-copy handler.
+ * @returns {string} HTML string with truncated text and copy metadata.
  */
 export const formatTruncateHex = (value) => {
   if (value === null || value === undefined || value === '') return '';
   const str = String(value);
-  if (str.length <= 14) return str;
+  if (str.length <= 14) return escapeHtml(str);
   const head = str.slice(0, 6);
   const tail = str.slice(-4);
   const truncated = `${head}…${tail}`;
-  // Escape for safe HTML attribute embedding.
-  const escapedTitle = str.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-  const escapedJs = str.replace(/'/g, "\\'");
-  const onclick = `navigator.clipboard&&navigator.clipboard.writeText('${escapedJs}');event.stopPropagation();`;
-  return `<span class="hex-copy" title="${escapedTitle} — click to copy" style="cursor:pointer;font-family:monospace;" onclick="${onclick}">${truncated}</span>`;
+  const escapedValue = escapeHtml(str);
+  const escapedTruncated = escapeHtml(truncated);
+  return `<span class="hex-copy" title="${escapedValue} — click to copy" data-copy-value="${escapedValue}" style="cursor:pointer;font-family:monospace;">${escapedTruncated}</span>`;
 };
 
 const formatters = {

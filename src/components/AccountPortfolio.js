@@ -12,6 +12,10 @@ import {
   formatNumberCompact,
 } from '../utils/formatters';
 import {
+  formatTokenSymbol,
+  getTokenIconUrl,
+} from '../utils/tokenIcons.js';
+import {
   accountPortfolioStateFromSelection,
   normalizeAccountPortfolioState,
 } from '../utils/accountPortfolioState';
@@ -1175,19 +1179,204 @@ const AccountOverview = ({
 };
 
 const ActionPill = ({ action, direction }) => {
-  const key = String(action || direction || '').toLowerCase();
-  const label = action || direction || '';
+  const key = `${action || ''} ${direction || ''}`.toLowerCase();
+  const label = action || direction || '-';
   let cls = 'ap-pill';
-  if (/inflow|deposit|topup|top.?up/.test(key)) cls += ' ap-pill--inflow';
-  else if (/outflow|withdraw/.test(key)) cls += ' ap-pill--outflow';
+  if (/inflow|deposit|topup|top.?up|supply|repay|add liquidity|collect fees/.test(key)) cls += ' ap-pill--inflow';
+  else if (/outflow|withdraw|borrow|remove liquidity/.test(key)) cls += ' ap-pill--outflow';
   else if (/payment/.test(key)) cls += ' ap-pill--payment';
   else if (/cashback/.test(key)) cls += ' ap-pill--cashback';
+  else cls += ' ap-pill--muted';
   return <span className={cls}>{label}</span>;
+};
+
+const SourcePill = ({ source }) => {
+  const key = String(source || '').toLowerCase();
+  if (key === 'gpay') return <span className="ap-pill ap-pill--gpay">Gnosis Pay</span>;
+  if (key === 'lp') return <span className="ap-pill ap-pill--lp">LP</span>;
+  if (key === 'lending') return <span className="ap-pill ap-pill--lending">Lending</span>;
+  return <span className="ap-pill ap-pill--transfer">Transfer</span>;
+};
+
+const TokenSymbolCell = ({ symbol }) => {
+  const label = formatTokenSymbol(symbol || '') || '-';
+  const iconUrl = getTokenIconUrl(symbol);
+  return (
+    <span className="ap-token-cell">
+      {iconUrl ? <img className="ap-token-icon" src={iconUrl} alt="" aria-hidden="true" /> : null}
+      <span>{label}</span>
+    </span>
+  );
+};
+
+const formatActivityTimestamp = (value) => {
+  if (!value) return '-';
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return String(value).slice(0, 16);
+  return parsedDate.toISOString().replace('T', ' ').slice(0, 16);
+};
+
+const formatActivityAmount = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return String(value);
+  return numeric.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+};
+
+const getActivityAmountClass = (action) => {
+  const key = String(action || '').toLowerCase();
+  if (/remove|withdraw|borrow/.test(key)) return 'ap-amount ap-amount--outflow';
+  if (/add|collect|supply|repay/.test(key)) return 'ap-amount ap-amount--inflow';
+  return 'ap-amount';
+};
+
+const ActivityHistoryTable = ({ rows = [], onRowClick }) => {
+  if (!rows.length) return null;
+
+  return (
+    <div className="ap-card">
+      <div className="ap-card-header">
+        <h3>Activity History</h3>
+        <span className="ap-card-subtitle">{rows.length} actions · newest first</span>
+      </div>
+      <PaginatedTable
+        rows={rows}
+        rowLabel="actions"
+        tableClassName="ap-table ap-table--portfolio"
+        renderHeader={() => (
+            <tr>
+              <th>Timestamp</th>
+              <th>Source</th>
+              <th>Action</th>
+              <th>Protocol</th>
+              <th>Token</th>
+              <th className="num">Amount</th>
+              <th className="num">USD Value</th>
+            </tr>
+        )}
+        renderRow={(row, idx) => {
+          const txHash = String(row.transaction_hash || '').trim();
+          const timestamp = formatActivityTimestamp(row.block_timestamp || row.date);
+          return (
+            <tr
+              key={`${row.block_timestamp || row.date || 'activity'}-${txHash || idx}`}
+              onClick={() => onRowClick?.({ metricId: 'yields_activity', row })}
+              className="ap-row-clickable"
+            >
+              <td>
+                {txHash ? (
+                  <a
+                    className="table-link"
+                    href={`https://gnosis.blockscout.com/tx/${encodeURIComponent(txHash)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {timestamp}
+                  </a>
+                ) : timestamp}
+              </td>
+              <td><SourcePill source={row.source} /></td>
+              <td><ActionPill action={row.action} /></td>
+              <td>{row.protocol || '-'}</td>
+              <td><TokenSymbolCell symbol={row.token_symbol} /></td>
+              <td className="num">
+                <span className={getActivityAmountClass(row.action)}>
+                  {formatActivityAmount(row.amount)}
+                </span>
+              </td>
+              <td className="num">{formatUsd(row.amount_usd)}</td>
+            </tr>
+          );
+        }}
+      />
+    </div>
+  );
 };
 
 const renderEmpty = (message) => (
   <div className="ap-empty">{message}</div>
 );
+
+const TABLE_PAGE_SIZE_OPTIONS = [10, 25, 50];
+
+const PaginatedTable = ({
+  rows = [],
+  rowLabel = 'rows',
+  tableClassName = 'ap-table',
+  initialPageSize = 10,
+  pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
+  getRowKey,
+  renderHeader,
+  renderRow,
+}) => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const totalRows = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalRows);
+  const visibleRows = rows.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setPage(1);
+  }, [totalRows, pageSize]);
+
+  return (
+    <>
+      <div className="ap-table-wrapper">
+        <table className={tableClassName}>
+          <thead>{renderHeader()}</thead>
+          <tbody>
+            {visibleRows.map((row, index) => renderRow(row, startIndex + index, getRowKey?.(row, startIndex + index)))}
+          </tbody>
+        </table>
+      </div>
+      {totalRows > pageSizeOptions[0] ? (
+        <div className="ap-table-pagination">
+          <span>
+            Showing {startIndex + 1}-{endIndex} of {totalRows} {rowLabel}
+          </span>
+          <div className="ap-table-pagination-controls">
+            <label className="ap-table-page-size">
+              Rows
+              <select
+                value={pageSize}
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value));
+                  setPage(1);
+                }}
+                aria-label="Rows per page"
+              >
+                {pageSizeOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="ap-table-page-btn"
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+              disabled={currentPage <= 1}
+            >
+              Previous
+            </button>
+            <span>Page {currentPage} / {totalPages}</span>
+            <button
+              type="button"
+              className="ap-table-page-btn"
+              onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+};
 
 const BalancesTab = ({ holdings, balanceHistory }) => {
   const sorted = useMemo(
@@ -1248,9 +1437,11 @@ const BalancesTab = ({ holdings, balanceHistory }) => {
             ? renderEmpty(`Daily total ${formatCurrencyCompact(latest.total_balance_usd)} (as of ${latest.date}) — token-level breakdown unavailable.`)
             : renderEmpty('No token balances found for this address.')
         ) : (
-          <div className="ap-table-wrapper">
-            <table className="ap-table">
-              <thead>
+          <PaginatedTable
+            rows={sorted}
+            rowLabel="tokens"
+            tableClassName="ap-table"
+            renderHeader={() => (
                 <tr>
                   <th>Token</th>
                   <th>Class</th>
@@ -1259,21 +1450,18 @@ const BalancesTab = ({ holdings, balanceHistory }) => {
                   <th style={{ textAlign: 'right' }}>USD</th>
                   <th>As of</th>
                 </tr>
-              </thead>
-              <tbody>
-                {sorted.map((row, idx) => (
-                  <tr key={`${row.token_address}-${idx}`}>
-                    <td>{row.symbol || '-'}</td>
-                    <td>{row.token_class || '-'}</td>
-                    <td className="ap-mono" title={row.token_address}>{shortIdentifier(row.token_address)}</td>
-                    <td style={{ textAlign: 'right' }}>{formatNumberCompact(row.balance || 0)}</td>
-                    <td style={{ textAlign: 'right' }}>{row.balance_usd != null ? formatCurrencyCompact(row.balance_usd) : '-'}</td>
-                    <td>{row.date || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            )}
+            renderRow={(row, idx) => (
+              <tr key={`${row.token_address}-${idx}`}>
+                <td>{row.symbol || '-'}</td>
+                <td>{row.token_class || '-'}</td>
+                <td className="ap-mono" title={row.token_address}>{shortIdentifier(row.token_address)}</td>
+                <td style={{ textAlign: 'right' }}>{formatNumberCompact(row.balance || 0)}</td>
+                <td style={{ textAlign: 'right' }}>{row.balance_usd != null ? formatCurrencyCompact(row.balance_usd) : '-'}</td>
+                <td>{row.date || '-'}</td>
+              </tr>
+            )}
+          />
         )}
       </div>
     </section>
@@ -1327,9 +1515,11 @@ const MovementsTab = ({
             ) : null}
           </span>
         </div>
-        <div className="ap-table-wrapper">
-          <table className="ap-table">
-            <thead>
+        <PaginatedTable
+          rows={filtered}
+          rowLabel="rows"
+          tableClassName="ap-table"
+          renderHeader={() => (
               <tr>
                 <th>Date</th>
                 <th>Source</th>
@@ -1339,31 +1529,28 @@ const MovementsTab = ({
                 <th style={{ textAlign: 'right' }}>USD</th>
                 <th>Counterparty</th>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row, idx) => {
-                const amountCls = row.direction === 'outflow' ? 'ap-movement-amount--outflow'
-                  : row.direction === 'inflow' ? 'ap-movement-amount--inflow' : '';
-                return (
-                  <tr key={`${row.date}-${row.symbol}-${idx}`}>
-                    <td>{row.date}</td>
-                    <td>{row.source === 'gpay' ? 'Gnosis Pay' : 'Transfer'}</td>
-                    <td><ActionPill action={row.action || row.direction} direction={row.direction} /></td>
-                    <td>{row.symbol}</td>
-                    <td style={{ textAlign: 'right' }} className={amountCls}>
-                      {row.direction === 'outflow' ? '-' : ''}
-                      {formatNumberCompact(row.amount || 0)}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>{row.amount_usd != null ? formatCurrencyCompact(row.amount_usd) : '-'}</td>
-                    <td className="ap-mono" title={row.counterparty || ''}>
-                      {row.counterparty ? shortIdentifier(row.counterparty) : '-'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+          )}
+          renderRow={(row, idx) => {
+            const amountCls = row.direction === 'outflow' ? 'ap-movement-amount--outflow'
+              : row.direction === 'inflow' ? 'ap-movement-amount--inflow' : '';
+            return (
+              <tr key={`${row.date}-${row.symbol}-${idx}`}>
+                <td>{row.date}</td>
+                <td><SourcePill source={row.source} /></td>
+                <td><ActionPill action={row.action || row.direction} direction={row.direction} /></td>
+                <td>{row.symbol}</td>
+                <td style={{ textAlign: 'right' }} className={amountCls}>
+                  {row.direction === 'outflow' ? '-' : ''}
+                  {formatNumberCompact(row.amount || 0)}
+                </td>
+                <td style={{ textAlign: 'right' }}>{row.amount_usd != null ? formatCurrencyCompact(row.amount_usd) : '-'}</td>
+                <td className="ap-mono" title={row.counterparty || ''}>
+                  {row.counterparty ? shortIdentifier(row.counterparty) : '-'}
+                </td>
+              </tr>
+            );
+          }}
+        />
       </div>
     </section>
   );
@@ -1410,42 +1597,41 @@ const SafesTab = ({ safes = [], safeOwners = [], address, onOpenAddress }) => {
           <h3>Safes owned by this address</h3>
           <span className="ap-header-sub">{safes.length} rows</span>
         </div>
-        <div className="ap-table-wrapper">
-          <table className="ap-table">
-            <thead>
-              <tr>
-                <th>Safe</th>
-                <th>Threshold</th>
-                <th>Owners</th>
-                <th>Became owner</th>
-                <th>Deployed</th>
-                <th>Version</th>
-              </tr>
-            </thead>
-            <tbody>
-              {safes.map((row, idx) => (
-                <tr key={`${row.safe_address}-${idx}`}>
-                  <td>
-                    <button
-                      type="button"
-                      className="ap-mono"
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', textDecoration: 'underline' }}
-                      onClick={() => onOpenAddress && onOpenAddress(String(row.safe_address).toLowerCase())}
-                      title={row.safe_address}
-                    >
-                      {shortIdentifier(row.safe_address)}
-                    </button>
-                  </td>
-                  <td>{row.current_threshold ?? '-'} / {row.current_owner_count ?? '-'}</td>
-                  <td>{row.current_owner_count ?? '-'}</td>
-                  <td>{row.became_owner_at ? String(row.became_owner_at).slice(0, 10) : '-'}</td>
-                  <td>{row.deployment_date ? String(row.deployment_date).slice(0, 10) : '-'}</td>
-                  <td>{row.creation_version || '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <PaginatedTable
+          rows={safes}
+          rowLabel="rows"
+          tableClassName="ap-table"
+          renderHeader={() => (
+            <tr>
+              <th>Safe</th>
+              <th>Threshold</th>
+              <th>Owners</th>
+              <th>Became owner</th>
+              <th>Deployed</th>
+              <th>Version</th>
+            </tr>
+          )}
+          renderRow={(row, idx) => (
+            <tr key={`${row.safe_address}-${idx}`}>
+              <td>
+                <button
+                  type="button"
+                  className="ap-mono"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', textDecoration: 'underline' }}
+                  onClick={() => onOpenAddress && onOpenAddress(String(row.safe_address).toLowerCase())}
+                  title={row.safe_address}
+                >
+                  {shortIdentifier(row.safe_address)}
+                </button>
+              </td>
+              <td>{row.current_threshold ?? '-'} / {row.current_owner_count ?? '-'}</td>
+              <td>{row.current_owner_count ?? '-'}</td>
+              <td>{row.became_owner_at ? String(row.became_owner_at).slice(0, 10) : '-'}</td>
+              <td>{row.deployment_date ? String(row.deployment_date).slice(0, 10) : '-'}</td>
+              <td>{row.creation_version || '-'}</td>
+            </tr>
+          )}
+        />
       </div>
       ) : (
         <div className="ap-card">{renderEmpty('This address does not own any tracked Safes.')}</div>
@@ -1457,38 +1643,37 @@ const SafesTab = ({ safes = [], safeOwners = [], address, onOpenAddress }) => {
             <h3>Owners of this Safe</h3>
             <span className="ap-header-sub">{safeOwners.length} rows</span>
           </div>
-          <div className="ap-table-wrapper">
-            <table className="ap-table">
-              <thead>
-                <tr>
-                  <th>Owner</th>
-                  <th>Threshold</th>
-                  <th>Became owner</th>
-                  <th>Safe</th>
-                </tr>
-              </thead>
-              <tbody>
-                {safeOwners.map((row, idx) => (
-                  <tr key={`${row.owner_address}-${idx}`}>
-                    <td>
-                      <button
-                        type="button"
-                        className="ap-mono"
-                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', textDecoration: 'underline' }}
-                        onClick={() => onOpenAddress && onOpenAddress(String(row.owner_address).toLowerCase())}
-                        title={row.owner_address}
-                      >
-                        {shortIdentifier(row.owner_address)}
-                      </button>
-                    </td>
-                    <td>{row.current_threshold ?? '-'}</td>
-                    <td>{row.became_owner_at ? String(row.became_owner_at).slice(0, 10) : '-'}</td>
-                    <td className="ap-mono" title={row.safe_address || address}>{shortIdentifier(row.safe_address || address)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedTable
+            rows={safeOwners}
+            rowLabel="rows"
+            tableClassName="ap-table"
+            renderHeader={() => (
+              <tr>
+                <th>Owner</th>
+                <th>Threshold</th>
+                <th>Became owner</th>
+                <th>Safe</th>
+              </tr>
+            )}
+            renderRow={(row, idx) => (
+              <tr key={`${row.owner_address}-${idx}`}>
+                <td>
+                  <button
+                    type="button"
+                    className="ap-mono"
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', textDecoration: 'underline' }}
+                    onClick={() => onOpenAddress && onOpenAddress(String(row.owner_address).toLowerCase())}
+                    title={row.owner_address}
+                  >
+                    {shortIdentifier(row.owner_address)}
+                  </button>
+                </td>
+                <td>{row.current_threshold ?? '-'}</td>
+                <td>{row.became_owner_at ? String(row.became_owner_at).slice(0, 10) : '-'}</td>
+                <td className="ap-mono" title={row.safe_address || address}>{shortIdentifier(row.safe_address || address)}</td>
+              </tr>
+            )}
+          />
         </div>
       ) : (
         <div className="ap-card">{renderEmpty('This selected address is not currently recognized as a Safe with tracked owners.')}</div>
@@ -1619,17 +1804,19 @@ const formatUsd = (n) => {
 };
 
 const YIELDS_PORTFOLIO_METRICS = [
-  { metricId: 'api_execution_yields_user_kpi_total_lp_fees', filterField: 'wallet_address', gridColumn: '1 / span 3', minHeight: 120 },
-  { metricId: 'api_execution_yields_user_kpi_lending_balance', filterField: 'wallet_address', gridColumn: '4 / span 3', minHeight: 120 },
-  { metricId: 'api_execution_yields_user_kpi_active_lp_positions', filterField: 'wallet_address', gridColumn: '7 / span 3', minHeight: 120 },
-  { metricId: 'api_execution_yields_user_kpi_active_lending_positions', filterField: 'wallet_address', gridColumn: '10 / span 3', minHeight: 120 },
+  { metricId: 'api_execution_yields_user_kpi_total_lp_fees', filterField: 'wallet_address', gridColumn: '1 / span 3', minHeight: 84, band: 'kpi' },
+  { metricId: 'api_execution_yields_user_kpi_lending_balance', filterField: 'wallet_address', gridColumn: '4 / span 3', minHeight: 84, band: 'kpi' },
+  { metricId: 'api_execution_yields_user_kpi_active_lp_positions', filterField: 'wallet_address', gridColumn: '7 / span 3', minHeight: 84, band: 'kpi' },
+  { metricId: 'api_execution_yields_user_kpi_active_lending_positions', filterField: 'wallet_address', gridColumn: '10 / span 3', minHeight: 84, band: 'kpi' },
   { metricId: 'api_execution_yields_user_fee_collections_daily', filterField: 'provider', gridColumn: '1 / span 6', minHeight: 450 },
   { metricId: 'api_execution_yields_user_lending_balances_daily', filterField: 'user_address', gridColumn: '7 / span 6', minHeight: 450 },
-  { metricId: 'api_execution_yields_user_activity', filterField: 'wallet_address', gridColumn: '1 / span 12', minHeight: 450 },
 ];
 
+const YIELDS_KPI_METRICS = YIELDS_PORTFOLIO_METRICS.filter((item) => item.band === 'kpi');
+const YIELDS_CHART_METRICS = YIELDS_PORTFOLIO_METRICS.filter((item) => item.band !== 'kpi');
+
 const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
-  const [state, setState] = useState({ loading: true, lp: [], lending: [], error: null });
+  const [state, setState] = useState({ loading: true, lp: [], lending: [], activity: [], error: null });
   const visibleMetricCount = useStaggeredCount(YIELDS_PORTFOLIO_METRICS.length, address, {
     enabled: Boolean(address),
     initialCount: 4,
@@ -1644,16 +1831,24 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
     accountPortfolioService.getYields(address)
       .then((res) => {
         if (cancelled) return;
-        setState({ loading: false, lp: res?.lp || [], lending: res?.lending || [], error: null });
+        setState({ loading: false, lp: res?.lp || [], lending: res?.lending || [], activity: res?.activity || [], error: null });
       })
       .catch((err) => {
         if (cancelled) return;
-        setState({ loading: false, lp: [], lending: [], error: err?.message || 'Failed to load yields' });
+        setState({ loading: false, lp: [], lending: [], activity: [], error: err?.message || 'Failed to load yields' });
       });
     return () => { cancelled = true; };
   }, [address]);
 
-  const { loading, lp, lending, error } = state;
+  const { loading, lp, lending, activity, error } = state;
+  const activityRows = useMemo(
+    () => [...(activity || [])].sort((a, b) => {
+      const bTime = new Date(b?.block_timestamp || b?.date || 0).getTime() || 0;
+      const aTime = new Date(a?.block_timestamp || a?.date || 0).getTime() || 0;
+      return bTime - aTime;
+    }),
+    [activity]
+  );
   const activeLp = lp.filter((r) => r && (r.is_active === 1 || r.is_active === true || r.is_active === null));
   const activeLending = lending.filter((r) => r && Number(r.balance_usd || 0) > 0);
   const totalFees = lp.reduce((s, r) => s + Number(r?.fees_collected_usd || 0), 0);
@@ -1661,6 +1856,8 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
   const totalLpOut = lp.reduce((s, r) => s + Number(r?.capital_out_usd || 0), 0);
   const activeLpTvl = activeLp.reduce((s, r) => s + Math.max(Number(r?.capital_in_usd || 0) - Number(r?.capital_out_usd || 0), 0), 0);
   const lendingBalance = activeLending.reduce((s, r) => s + Number(r?.balance_usd || 0), 0);
+  const visibleKpiCount = Math.min(visibleMetricCount, YIELDS_KPI_METRICS.length);
+  const visibleChartCount = Math.max(0, visibleMetricCount - YIELDS_KPI_METRICS.length);
   const weightedLendingApy = activeLending.length
     ? activeLending.reduce((s, r) => s + Number(r?.supply_apy || 0) * Number(r?.balance_usd || 0), 0) / Math.max(lendingBalance, 1)
     : 0;
@@ -1683,9 +1880,24 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
 	        <h3>Yields</h3>
 	      </div>
 	      <ScopeBadge label="Yields wallet" value={address} detail="selected or controlled wallet" />
-	      <div className="account-portfolio-section-grid ap-workbench-card">
-        {YIELDS_PORTFOLIO_METRICS.map((item, index) => (
-          index < visibleMetricCount ? (
+	      <div className="account-portfolio-kpi-band account-portfolio-yields-kpi-band ap-workbench-card">
+        {YIELDS_KPI_METRICS.map((item, index) => (
+          index < visibleKpiCount ? (
+            <PortfolioMetric
+              key={item.metricId}
+              item={item}
+              filterValue={address}
+              isDarkMode={isDarkMode}
+              onRowClick={onRowClick}
+            />
+          ) : (
+            <PortfolioMetricPlaceholder key={item.metricId} item={item} />
+          )
+        ))}
+      </div>
+      <div className="account-portfolio-section-grid ap-workbench-card">
+        {YIELDS_CHART_METRICS.map((item, index) => (
+          index < visibleChartCount ? (
             <PortfolioMetric
               key={item.metricId}
               item={item}
@@ -1703,6 +1915,8 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
         <div className="ap-card">{renderEmpty('No LP or lending positions for this wallet.')}</div>
       ) : null}
 
+      <ActivityHistoryTable rows={activityRows} onRowClick={onRowClick} />
+
       <div className="ap-yields-summary">
         <div className="ap-yields-stat"><span>Active LP positions</span><strong>{formatNumberCompact(activeLp.length)}</strong></div>
         <div className="ap-yields-stat"><span>Active lending positions</span><strong>{formatNumberCompact(activeLending.length)}</strong></div>
@@ -1718,42 +1932,43 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
             <h3>LP positions</h3>
             <span className="ap-card-subtitle">{activeLp.length} active · {lp.length} total · ${formatNumberCompact(totalLpIn)} in / ${formatNumberCompact(totalLpOut)} out</span>
           </div>
-          <table className="ap-table">
-            <thead>
-              <tr>
-                <th>Protocol</th>
-                <th>Pool</th>
-                <th className="num">Capital in</th>
-                <th className="num">Capital out</th>
-                <th className="num">Fees</th>
-                <th>Range</th>
-                <th>Status</th>
-                <th>Last action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lp.slice(0, 30).map((r, i) => (
-                <tr key={`${r.pool_address}-${i}`} onClick={() => onRowClick?.({ metricId: 'yields_lp', row: r })} className="ap-row-clickable">
-                  <td>{r.protocol || '—'}</td>
-                  <td title={r.pool_address}>{shortIdentifier(r.pool_address)}</td>
-                  <td className="num">{formatUsd(r.capital_in_usd)}</td>
-                  <td className="num">{formatUsd(r.capital_out_usd)}</td>
-                  <td className="num">{formatUsd(r.fees_collected_usd)}</td>
-                  <td>{r.tick_lower != null && r.tick_upper != null ? `${r.tick_lower} → ${r.tick_upper}` : '—'}</td>
-                  <td>
-                    {r.is_active ? (
-                      <span className={`ap-pill ${r.is_in_range ? 'ap-pill--good' : 'ap-pill--warn'}`}>
-                        {r.is_in_range ? 'In range' : 'Out of range'}
-                      </span>
-                    ) : (
-                      <span className="ap-pill ap-pill--muted">Closed</span>
-                    )}
-                  </td>
-                  <td>{r.last_action_date ? String(r.last_action_date).slice(0, 10) : '—'}</td>
+          <PaginatedTable
+            rows={lp}
+            rowLabel="positions"
+            tableClassName="ap-table ap-table--portfolio"
+            renderHeader={() => (
+                <tr>
+                  <th>Protocol</th>
+                  <th>Pool</th>
+                  <th className="num">Capital in</th>
+                  <th className="num">Capital out</th>
+                  <th className="num">Fees</th>
+                  <th>Range</th>
+                  <th>Status</th>
+                  <th>Last action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+            )}
+            renderRow={(r, i) => (
+              <tr key={`${r.pool_address}-${i}`} onClick={() => onRowClick?.({ metricId: 'yields_lp', row: r })} className="ap-row-clickable">
+                <td>{r.protocol || '—'}</td>
+                <td title={r.pool_address}>{shortIdentifier(r.pool_address)}</td>
+                <td className="num">{formatUsd(r.capital_in_usd)}</td>
+                <td className="num">{formatUsd(r.capital_out_usd)}</td>
+                <td className="num">{formatUsd(r.fees_collected_usd)}</td>
+                <td>{r.tick_lower != null && r.tick_upper != null ? `${r.tick_lower} → ${r.tick_upper}` : '—'}</td>
+                <td>
+                  {r.is_active ? (
+                    <span className={`ap-pill ${r.is_in_range ? 'ap-pill--good' : 'ap-pill--warn'}`}>
+                      {r.is_in_range ? 'In range' : 'Out of range'}
+                    </span>
+                  ) : (
+                    <span className="ap-pill ap-pill--muted">Closed</span>
+                  )}
+                </td>
+                <td>{r.last_action_date ? String(r.last_action_date).slice(0, 10) : '—'}</td>
+              </tr>
+            )}
+          />
         </div>
       ) : null}
 
@@ -1763,30 +1978,31 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
             <h3>Lending positions</h3>
             <span className="ap-card-subtitle">{activeLending.length} active · ${formatNumberCompact(lendingBalance)} supplied</span>
           </div>
-          <table className="ap-table">
-            <thead>
-              <tr>
-                <th>Protocol</th>
-                <th>Asset</th>
-                <th className="num">Balance</th>
-                <th className="num">Balance USD</th>
-                <th className="num">Supply APY</th>
-                <th>Reserve</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lending.slice(0, 30).map((r, i) => (
-                <tr key={`${r.reserve_address}-${i}`} onClick={() => onRowClick?.({ metricId: 'yields_lending', row: r })} className="ap-row-clickable">
-                  <td>{r.protocol || '—'}</td>
-                  <td>{r.symbol || '—'}</td>
-                  <td className="num">{formatNumberCompact(r.balance)}</td>
-                  <td className="num">{formatUsd(r.balance_usd)}</td>
-                  <td className="num">{Number(r.supply_apy || 0).toFixed(2)}%</td>
-                  <td title={r.reserve_address}>{shortIdentifier(r.reserve_address)}</td>
+          <PaginatedTable
+            rows={lending}
+            rowLabel="positions"
+            tableClassName="ap-table ap-table--portfolio"
+            renderHeader={() => (
+                <tr>
+                  <th>Protocol</th>
+                  <th>Asset</th>
+                  <th className="num">Balance</th>
+                  <th className="num">Balance USD</th>
+                  <th className="num">Supply APY</th>
+                  <th>Reserve</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+            )}
+            renderRow={(r, i) => (
+              <tr key={`${r.reserve_address}-${i}`} onClick={() => onRowClick?.({ metricId: 'yields_lending', row: r })} className="ap-row-clickable">
+                <td>{r.protocol || '—'}</td>
+                <td>{r.symbol || '—'}</td>
+                <td className="num">{formatNumberCompact(r.balance)}</td>
+                <td className="num">{formatUsd(r.balance_usd)}</td>
+                <td className="num">{Number(r.supply_apy || 0).toFixed(2)}%</td>
+                <td title={r.reserve_address}>{shortIdentifier(r.reserve_address)}</td>
+              </tr>
+            )}
+          />
         </div>
       ) : null}
     </section>
@@ -1858,6 +2074,8 @@ const GPayTab = ({ address, profile, roleFlags, isDarkMode, onRowClick }) => {
                   globalFilterValue={walletAddress}
                   hasGlobalFilter
                   onTableRowClick={onRowClick}
+                  tableConfigOverrides={item.tableConfigOverrides}
+                  tableHeight={item.tableHeight}
                 />
               </SectionErrorBoundary>
             ) : (
@@ -1919,6 +2137,8 @@ const PortfolioMetric = ({ item, filterValue, isDarkMode, onRowClick, lazy = fal
             globalFilterValue={filterValue}
             hasGlobalFilter={Boolean(item.filterField && filterValue)}
             onTableRowClick={onRowClick}
+            tableConfigOverrides={item.tableConfigOverrides}
+            tableHeight={item.tableHeight}
           />
         </SectionErrorBoundary>
       ) : (
@@ -2420,7 +2640,7 @@ const AccountPortfolio = ({
 	                    type="button"
 	                    role="tab"
 	                    aria-selected={activeSection === section.id}
-	                    className={`resolution-btn ${activeSection === section.id ? 'active' : ''}`}
+	                    className={`account-portfolio-section-tab ${activeSection === section.id ? 'active' : ''}`}
 	                    onClick={() => setActiveSection(section.id)}
 	                  >
 	                    {section.title}

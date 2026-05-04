@@ -38,7 +38,9 @@ const MetricWidget = ({
   secondaryGlobalFilterValue = null,
   onSecondaryGlobalFilterChange = null,
   headerActions = null,
-  onTableRowClick = null
+  onTableRowClick = null,
+  tableConfigOverrides = null,
+  tableHeight = null
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1099,6 +1101,9 @@ const MetricWidget = ({
           emits.includes(secondaryGlobalFilterField) &&
           typeof onSecondaryGlobalFilterChange === 'function'
         );
+        const scopedTableOverrides = tableConfigOverrides && typeof tableConfigOverrides === 'object'
+          ? tableConfigOverrides
+          : {};
         const tableConfig = {
           ...(metricConfig.tableConfig || {}),
           // Pass through the column / pagination / sort config defined on the metric
@@ -1109,6 +1114,7 @@ const MetricWidget = ({
           paginationSizeSelector: widgetConfig.paginationSizeSelector ?? metricConfig.tableConfig?.paginationSizeSelector,
           initialSort: widgetConfig.initialSort ?? metricConfig.tableConfig?.initialSort,
           selectableRows: widgetConfig.selectableRows ?? metricConfig.tableConfig?.selectableRows,
+          ...scopedTableOverrides,
           serverPagination: metricConfig.serverPagination === true,
           totalRows: data?.total,
           lastPage: data?.lastPage,
@@ -1157,6 +1163,7 @@ const MetricWidget = ({
             minimal={true}
             isDarkMode={isDarkMode}
             format={widgetConfig.format}
+            height={tableHeight || undefined}
           />
         );
       }

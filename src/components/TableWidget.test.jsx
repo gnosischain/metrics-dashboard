@@ -1,6 +1,7 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, waitFor, cleanup, fireEvent } from '@testing-library/react';
+import { formatTruncateHex } from '../utils/formatters';
 
 const tabulatorInstances = [];
 const resizeObservers = [];
@@ -234,5 +235,47 @@ describe('TableWidget regressions', () => {
     expect(instance.config.pagination).toBe(false);
     expect(instance.config.responsiveLayout).toBe(false);
     expect(instance.config.rowHeight).toBe(56);
+  });
+
+  it('copies hex formatter values through delegated table clicks', async () => {
+    const originalClipboard = navigator.clipboard;
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText }
+    });
+
+    const value = '0xabc"\'&<>\\def123456789';
+    const displayValue = `${value.slice(0, 6)}…${value.slice(-4)}`;
+
+    try {
+      render(
+        <TableWidget
+          data={[{ address: value }]}
+          config={{
+            columns: [
+              {
+                field: 'address',
+                title: 'Address',
+                formatter: (cell) => formatTruncateHex(cell.getValue())
+              }
+            ]
+          }}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(displayValue)).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText(displayValue));
+
+      expect(writeText).toHaveBeenCalledWith(value);
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard
+      });
+    }
   });
 });

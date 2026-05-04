@@ -18,7 +18,16 @@ vi.mock('./index', () => ({
   ),
   NumberWidget: () => <div data-testid="number-widget"></div>,
   TextWidget: () => <div data-testid="text-widget"></div>,
-  TableWidget: () => <div data-testid="table-widget"></div>
+  TableWidget: ({ config = {}, height }) => (
+    <div
+      data-testid="table-widget"
+      data-height={height || ''}
+      data-pagination-size={String(config.paginationSize || '')}
+      data-pagination-selector={Array.isArray(config.paginationSizeSelector) ? config.paginationSizeSelector.join('|') : String(config.paginationSizeSelector || '')}
+      data-responsive-layout={String(config.responsiveLayout)}
+      data-row-height={String(config.rowHeight || '')}
+    ></div>
+  )
 }));
 
 vi.mock('./charts/ChartTypes/EChartsContainer', () => ({
@@ -82,6 +91,18 @@ const metricConfigs = {
     valueField: 'amount_usd',
     enableFiltering: true,
     labelField: 'window'
+  },
+  table_metric: {
+    id: 'table_metric',
+    chartType: 'table',
+    name: 'Table Metric',
+    description: 'Table metric',
+    tableConfig: {
+      paginationSize: 100,
+      paginationSizeSelector: false,
+      responsiveLayout: 'collapse',
+      rowHeight: 40,
+    }
   }
 };
 
@@ -176,6 +197,48 @@ describe('MetricWidget local filter behavior', () => {
     await waitFor(() => {
       expect(metricsService.getMetricData).toHaveBeenCalledTimes(1);
       expect(screen.getAllByTestId('label-selector')).toHaveLength(1);
+    });
+  });
+
+  it('passes scoped table overrides and height to TableWidget', async () => {
+    metricsService.getMetricData.mockResolvedValue({
+      data: [{ id: 1 }]
+    });
+
+    render(
+      <MetricWidget
+        metricId="table_metric"
+        tableHeight="360px"
+        tableConfigOverrides={{
+          paginationSize: 10,
+          paginationSizeSelector: [10, 25, 50],
+          responsiveLayout: false,
+          rowHeight: 36,
+        }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-height', '360px');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-pagination-size', '10');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-pagination-selector', '10|25|50');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-responsive-layout', 'false');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-row-height', '36');
+    });
+  });
+
+  it('keeps table defaults unchanged when scoped overrides are omitted', async () => {
+    metricsService.getMetricData.mockResolvedValue({
+      data: [{ id: 1 }]
+    });
+
+    render(<MetricWidget metricId="table_metric" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-height', '');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-pagination-size', '100');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-responsive-layout', 'collapse');
+      expect(screen.getByTestId('table-widget')).toHaveAttribute('data-row-height', '40');
     });
   });
 });

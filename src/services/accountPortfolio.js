@@ -666,8 +666,8 @@ class AccountPortfolioService {
 
   async getYields(address) {
     const normalized = normalizeAddress(address);
-    if (!normalized) return { lp: [], lending: [] };
-    const [lp, lending] = await Promise.all([
+    if (!normalized) return { lp: [], lending: [], activity: [] };
+    const [lp, lending, activity] = await Promise.all([
       this.getRows('api_execution_yields_user_lp_positions', {
         filterField: 'provider',
         filterValue: normalized,
@@ -676,8 +676,16 @@ class AccountPortfolioService {
         filterField: 'user_address',
         filterValue: normalized,
       }).catch(() => []),
+      this.getRows('api_execution_yields_user_activity', {
+        filterField: 'wallet_address',
+        filterValue: normalized,
+      }).catch(() => []),
     ]);
-    return { lp: Array.isArray(lp) ? lp : [], lending: Array.isArray(lending) ? lending : [] };
+    return {
+      lp: Array.isArray(lp) ? lp : [],
+      lending: Array.isArray(lending) ? lending : [],
+      activity: Array.isArray(activity) ? activity : [],
+    };
   }
 
   async getGPayActivity(address, limit = 200) {
