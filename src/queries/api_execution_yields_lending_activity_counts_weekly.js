@@ -20,7 +20,10 @@ const metric = {
   barMaxWidth: 50,
   borderRadius: [1, 1, 0, 0],
   barOpacity: 0.8,
-  query: `SELECT * FROM dbt.api_execution_lending_activity_counts_weekly`,
+  query: `
+    SELECT date, token, token_class, label AS protocol, activity_type, value
+    FROM dbt.api_execution_lending_activity_counts_weekly
+  `,
 };
 
 export default metric;
