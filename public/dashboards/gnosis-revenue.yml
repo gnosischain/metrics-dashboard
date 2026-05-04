@@ -67,6 +67,10 @@ tabs:
         gridRow: 1
         gridColumn: 7 / span 6
         minHeight: 450px
+      - id: api_revenue_sdai_top_holders_latest
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 500px
 
   - name: Gnosis Pay
     order: 4
