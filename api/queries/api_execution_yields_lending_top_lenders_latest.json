@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_lending_top_lenders_latest",
+  "query": "SELECT rank, symbol AS token, protocol, user_address, label, balance, balance_usd,\n           pct_of_total, cumulative_pct, change_usd_7d\n    FROM dbt.api_execution_lending_top_lenders_latest\n    WHERE rank <= 100\n    ORDER BY rank"
+}

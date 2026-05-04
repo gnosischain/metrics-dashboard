@@ -89,6 +89,10 @@ tabs:
         gridRow: 5
         gridColumn: 7 / span 6
         minHeight: 450px
+      - id: api_execution_yields_lending_top_lenders_latest
+        gridRow: 6
+        gridColumn: 1 / span 12
+        minHeight: 500px
 
   - name: Pools
     order: 4
