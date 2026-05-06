@@ -5,6 +5,10 @@ const mockData = require('./mock');
 const cacheManager = require('./cache');
 const cronManager = require('./cron');
 
+module.exports.config = {
+  maxDuration: 60
+};
+
 const DEBUG_METRICS = process.env.DEBUG_METRICS === 'true';
 
 const metricLog = (...args) => {

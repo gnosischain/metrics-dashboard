@@ -211,7 +211,7 @@ class CronManager {
           database: clickhouseDatabase,
           default_format: 'JSONEachRow'
         },
-        timeout: 15000 // 15 second timeout
+        timeout: 55000 // 55s — leave headroom under api/metrics.js maxDuration of 60s
       });
       
       // Handle JSONEachRow format (string with newline-separated JSON objects)
