@@ -528,3 +528,56 @@
 .table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary) !important;
 }
+
+/* ==================
+   Percentage Bar Cells
+   ==================
+   Inline horizontal bar used in Tabulator cells to render a percentage as
+   a filled track with the numeric label overlaid. Visualises top-holder /
+   cumulative-share columns where the visual ramp helps read the table at
+   a glance. */
+.pct-bar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--color-surface-hover, rgba(127, 127, 127, 0.08));
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.pct-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-accent-primary, #6c5ce7);
+  opacity: 0.18;
+  border-radius: inherit;
+  transition: width 200ms ease;
+  pointer-events: none;
+}
+
+.pct-bar__label {
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium, 500);
+  white-space: nowrap;
+}
+
+.pct-bar--empty {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+
+.dark-mode .pct-bar {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark-mode .pct-bar__fill {
+  opacity: 0.28;
+}

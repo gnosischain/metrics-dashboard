@@ -181,6 +181,24 @@ const STAGGER_INITIAL_COUNT = 2;
 const STAGGER_BATCH_SIZE = 1;
 const STAGGER_INTERVAL_MS = 1200;
 
+// IntersectionObserver's default root is the viewport, but the dashboard
+// renders inside a scrollable .dashboard-content container — so a default
+// observer never sees scroll events and lazy widgets stay stuck on their
+// skeleton forever. Walk ancestors to find the actual scrolling element.
+const findScrollableAncestor = (node) => {
+  if (!node || typeof window === 'undefined') return null;
+  let current = node.parentElement;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+};
+
 const useStaggeredCount = (
   itemCount,
   resetKey,
@@ -641,9 +659,20 @@ const AccountSearch = ({ value, onSelect }) => {
       setQuery(selection.displayLabel || selection.address || selection.withdrawalCredentials || '');
       userOpenedRef.current = false;
       setOpen(false);
+      // Warm the overview bundle cache before the route mounts. The mount-
+      // time fetch will attach to the same in-flight promise.
+      if (selection.address) {
+        accountPortfolioService.prefetchOverview(selection.address);
+      }
       onSelect(selection);
     }
   }, [onSelect]);
+
+  const prefetchResult = useCallback((result) => {
+    if (result?.address) {
+      accountPortfolioService.prefetchOverview(result.address);
+    }
+  }, []);
 
   const submit = useCallback(async () => {
     const trimmed = query.trim();
@@ -713,6 +742,8 @@ const AccountSearch = ({ value, onSelect }) => {
                 type="button"
                 className="validator-explorer-search-result account-portfolio-search-result"
                 onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => prefetchResult(result)}
+                onFocus={() => prefetchResult(result)}
                 onClick={() => chooseResult(result)}
               >
                 <span
@@ -1101,7 +1132,13 @@ const AccountOverview = ({
         </div>
         <div className="account-portfolio-overview-stats">
           <MetricTile label="Tokens held" value={formatNumberCompact(tokensHeld || 0)} />
-          <MetricTile label="Latest balance date" value={latestBalance?.date || profile?.balance_date || '-'} />
+          {(() => {
+            const rawBalanceDate = String(latestBalance?.date || profile?.balance_date || '').slice(0, 10);
+            // dbt's profile model uses 1970-01-01 as a sentinel for "never had a balance".
+            // Don't render the tile in that case — there's no meaningful date to show.
+            const isRealDate = /^\d{4}-\d{2}-\d{2}$/.test(rawBalanceDate) && rawBalanceDate >= '2020-01-01';
+            return isRealDate ? <MetricTile label="Latest balance date" value={rawBalanceDate} /> : null;
+          })()}
         </div>
         {topTokenBalances.length > 0 ? (
           <OverviewTable
@@ -1473,6 +1510,7 @@ const MovementsTab = ({
   address,
   counterpartyFilter,
   onClearCounterpartyFilter,
+  safesOwned = [],
   title = 'Token movements & Gnosis Pay activity',
   emptyMessage = 'No movements in the last 90 days.',
 }) => {
@@ -1482,17 +1520,22 @@ const MovementsTab = ({
     return (movements || []).filter((row) => String(row.counterparty || '').toLowerCase() === cp);
   }, [movements, counterpartyFilter]);
   if (!movements || movements.length === 0) {
+    // For Safe-owner EOAs, on-chain activity flows through the controlled
+    // Safes — the signer address itself often has zero token movements.
+    // Surface that hint instead of the generic "no activity" message.
+    const safeCount = Array.isArray(safesOwned) ? safesOwned.length : 0;
+    const message = safeCount > 0
+      ? `No direct token movements for this address in the last 90 days. This address controls ${safeCount} Safe${safeCount === 1 ? '' : 's'} — see the Safes tab for activity routed through them.`
+      : emptyMessage;
     return (
       <section className="ap-tab">
-        {address ? <ScopeBadge label="Selected address" value={address} detail="canonical movement source" /> : null}
-        <div className="ap-card">{renderEmpty(emptyMessage)}</div>
+        <div className="ap-card">{renderEmpty(message)}</div>
       </section>
     );
   }
 
   return (
     <section className="ap-tab">
-      {address ? <ScopeBadge label="Selected address" value={address} detail="canonical movement source" /> : null}
       <div className="ap-card">
         <div className="ap-card-header">
           <h3>{title}</h3>
@@ -1566,7 +1609,7 @@ const SafesTab = ({ safes = [], safeOwners = [], address, onOpenAddress }) => {
   }
   return (
     <section className="ap-tab">
-      <div className="ap-grid-3">
+      <div className="ap-grid-4">
         <div className="ap-stat">
           <span className="ap-stat-label">Safes owned</span>
           <span className="ap-stat-value">{formatNumberCompact(safes.length)}</span>
@@ -1712,23 +1755,6 @@ const GraphTab = ({ address, profile, safes, roleFlags, linkedEntities, isDarkMo
 
   return (
     <section className="ap-tab">
-      {address ? <ScopeBadge label="Graph scope" value={address} detail="matches source or target, with linked-entity fallback" /> : null}
-      {address ? (
-        <PortfolioMetric
-          item={{ metricId: 'api_execution_account_counterparty_graph', filterField: 'address', gridColumn: '1 / span 12', minHeight: 560 }}
-          filterValue={address}
-          isDarkMode={isDarkMode}
-          onRowClick={(payload) => {
-            const cp = payload?.row?.counterparty || payload?.row?.target;
-            if (isAddress(cp) && onFilterCounterparty) {
-              onFilterCounterparty(String(cp).toLowerCase());
-            } else {
-              onRowClick?.(payload);
-            }
-          }}
-        />
-      ) : null}
-
       <div className="ap-grid-4">
         <div className="ap-stat">
           <span className="ap-stat-label">Safes owned</span>
@@ -1751,6 +1777,30 @@ const GraphTab = ({ address, profile, safes, roleFlags, linkedEntities, isDarkMo
           <span className="ap-stat-value">{hasCirclesIdentity(profile, roleFlags) ? getCirclesLabel(profile, roleFlags) : 'No'}</span>
         </div>
       </div>
+
+      {address ? (
+        <div className="ap-card ap-graph-card">
+          <div className="ap-card-header">
+            <h3>Counterparty graph</h3>
+            <span className="ap-header-sub">
+              Top counterparties this address has interacted with — token transfers and Circles trust edges. Click a node to filter.
+            </span>
+          </div>
+          <PortfolioMetric
+            item={{ metricId: 'api_execution_account_counterparty_graph', filterField: 'address', gridColumn: '1 / span 12', minHeight: 520 }}
+            filterValue={address}
+            isDarkMode={isDarkMode}
+            onRowClick={(payload) => {
+              const cp = payload?.row?.counterparty || payload?.row?.target;
+              if (isAddress(cp) && onFilterCounterparty) {
+                onFilterCounterparty(String(cp).toLowerCase());
+              } else {
+                onRowClick?.(payload);
+              }
+            }}
+          />
+        </div>
+      ) : null}
 
       <div className="ap-card">
         <div className="ap-card-header">
@@ -2107,12 +2157,13 @@ const PortfolioMetric = ({ item, filterValue, isDarkMode, onRowClick, lazy = fal
       return undefined;
     }
 
+    const root = findScrollableAncestor(node);
     const observer = new window.IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         setShouldLoad(true);
         observer.disconnect();
       }
-    }, { rootMargin: '420px 0px' });
+    }, { root, rootMargin: '420px 0px' });
 
     observer.observe(node);
     return () => observer.disconnect();
@@ -2379,21 +2430,49 @@ const AccountPortfolio = ({
     const fire = (promise, setter, fallback) => promise
       .then((value) => { if (!cancelled) setter(value ?? fallback); })
       .catch(() => { if (!cancelled) setter(fallback); });
-    const profilePromise = accountPortfolioService.getProfile(address);
     const timers = [];
 
+    // One coalesced request returns profile + linkedEntities + activitySummary
+    // + roleFlags + circlesAvatar. Falls back to per-section getters if the
+    // batch endpoint is unavailable (older deployments or local dev).
+    const overviewPromise = accountPortfolioService.getOverview(address);
+    const profilePromise = overviewPromise.then((bundle) => {
+      if (bundle && bundle.profile) return bundle.profile;
+      return accountPortfolioService.getProfile(address);
+    });
+
     fire(profilePromise, (v) => setProfile(v || { address, display_name: address }), { address, display_name: address });
-    fire(accountPortfolioService.getRoleFlags(address), setRoleFlags, null);
-    fire(accountPortfolioService.getCirclesAvatarMetadata(address), setCirclesAvatar, null);
+
+    fire(
+      overviewPromise.then((bundle) => bundle?.roleFlags ?? accountPortfolioService.getRoleFlags(address)),
+      setRoleFlags,
+      null
+    );
+    fire(
+      overviewPromise.then((bundle) => bundle?.circlesAvatar ?? accountPortfolioService.getCirclesAvatarMetadata(address)),
+      setCirclesAvatar,
+      null
+    );
 
     timers.push(window.setTimeout(() => {
       fire(accountPortfolioService.getSafes(address), (v) => setSafesOwned(Array.isArray(v) ? v : []), []);
       fire(accountPortfolioService.getSafeOwners(address), (v) => setSafeOwners(Array.isArray(v) ? v : []), []);
-      fire(accountPortfolioService.getLinkedEntities(address), (v) => setLinkedEntities(Array.isArray(v) ? v : []), []);
+      fire(
+        overviewPromise.then((bundle) => {
+          if (bundle && Array.isArray(bundle.linkedEntities) && bundle.linkedEntities.length > 0) return bundle.linkedEntities;
+          return accountPortfolioService.getLinkedEntities(address);
+        }),
+        (v) => setLinkedEntities(Array.isArray(v) ? v : []),
+        []
+      );
     }, 250));
 
 	    timers.push(window.setTimeout(() => {
-	      fire(accountPortfolioService.getActivitySummary(address), setActivitySummary, null);
+	      fire(
+	        overviewPromise.then((bundle) => bundle?.activitySummary ?? accountPortfolioService.getActivitySummary(address)),
+	        setActivitySummary,
+	        null
+	      );
 	      fire(accountPortfolioService.getHoldings(address), (v) => setTokenBalances(Array.isArray(v) ? v : []), []);
 	    }, 650));
 
@@ -2668,12 +2747,13 @@ const AccountPortfolio = ({
 	                  <MovementsTab
 	                    movements={movements}
 	                    address={address}
+	                    safesOwned={safesOwned}
 	                    isDarkMode={isDarkMode}
 	                    onRowClick={setDrawer}
 	                    counterpartyFilter={counterpartyFilter}
 	                    onClearCounterpartyFilter={clearCounterpartyFilter}
 	                    title="Recent account activity"
-	                    emptyMessage="No recent account activity found in the canonical movement source."
+	                    emptyMessage="No recent account activity for this address."
 	                  />
 	                ) : activeSection === 'graph' ? (
 	                  <GraphTab

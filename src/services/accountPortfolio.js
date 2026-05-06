@@ -153,69 +153,6 @@ const rankSearchIndexRows = (query, rows = [], limit = SEARCH_LIMIT) => {
     .slice(0, limit);
 };
 
-// Client-side substring scoring against the (address, display_name) index.
-const filterAddressSearchRows = (rows, needle, limit) => {
-  const n = String(needle || '').trim().toLowerCase();
-  if (!n) return [];
-  const out = [];
-  for (const row of rows) {
-    const addr = String(row.address || '').toLowerCase();
-    const name = String(row.display_name || '').toLowerCase();
-    if (!addr && !name) continue;
-    const hitAddr = addr.includes(n);
-    const hitName = name.includes(n);
-    if (!hitAddr && !hitName) continue;
-    const score =
-      addr === n ? 9500 :
-      name === n ? 9000 :
-      addr.startsWith(n) ? 8000 :
-      name.startsWith(n) ? 7000 :
-      hitName ? 4500 :
-      hitAddr ? 4000 :
-      0;
-    out.push({
-      resultType: 'address',
-      address: addr,
-      displayLabel: row.display_name || row.address,
-      subtitle: addr,
-      badges: [],
-      score,
-    });
-  }
-  return out.sort((a, b) => b.score - a.score).slice(0, limit);
-};
-
-const filterCirclesSearchRows = (rows, needle, limit) => {
-  const n = String(needle || '').trim().toLowerCase();
-  if (!n) return [];
-  const out = [];
-  for (const row of rows) {
-    const avatar = String(row.avatar || '').toLowerCase();
-    const name = String(row.display_name || '').toLowerCase();
-    if (!avatar && !name) continue;
-    const hitAvatar = avatar.includes(n);
-    const hitName = name.includes(n);
-    if (!hitAvatar && !hitName) continue;
-    const score =
-      avatar === n ? 9400 :
-      name === n ? 9100 :
-      avatar.startsWith(n) ? 7800 :
-      name.startsWith(n) ? 7500 :
-      hitName ? 5000 :
-      hitAvatar ? 3800 :
-      0;
-    out.push({
-      resultType: 'circles',
-      address: avatar,
-      displayLabel: row.display_name || `Circles ${avatar.slice(0, 10)}`,
-      subtitle: avatar,
-      badges: ['Circles'],
-      score,
-    });
-  }
-  return out.sort((a, b) => b.score - a.score).slice(0, limit);
-};
-
 const validatorRowsToResults = (rows = []) => rows.map((r) => {
   const rawResultType = r.resultType || r.result_type;
   const resultType = rawResultType === 'credential' || rawResultType === 'validator_credential'
@@ -315,24 +252,6 @@ class AccountPortfolioService {
       });
       const results = Array.isArray(response?.results) ? response.results : [];
       return validatorRowsToResults(results);
-    } catch (err) {
-      return [];
-    }
-  }
-
-  async searchAddressIndex(trimmed, limit) {
-    try {
-      const rows = await this.getRows('api_execution_address_search');
-      return filterAddressSearchRows(rows, trimmed, limit);
-    } catch (err) {
-      return [];
-    }
-  }
-
-  async searchCirclesIndex(trimmed, limit) {
-    try {
-      const rows = await this.getRows('api_execution_circles_v2_avatar_search');
-      return filterCirclesSearchRows(rows, trimmed, limit);
     } catch (err) {
       return [];
     }
@@ -686,6 +605,45 @@ class AccountPortfolioService {
       lending: Array.isArray(lending) ? lending : [],
       activity: Array.isArray(activity) ? activity : [],
     };
+  }
+
+  // Coalesced fetch for the always-on overview header. One round-trip
+  // replaces five individual /api/metrics/* calls. Returns null if the
+  // batch endpoint is unavailable so callers can fall back to the
+  // per-section getters.
+  async getOverview(address) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return null;
+    try {
+      const response = await api.get('/account-portfolio-overview', { address: normalized });
+      if (!response || typeof response !== 'object') return null;
+      const profileRow = Array.isArray(response.profile) ? response.profile.find(looksLikeProfileRow) : null;
+      const linkedEntities = Array.isArray(response.linkedEntities)
+        ? response.linkedEntities.filter(looksLikeLinkedEntityRow)
+        : [];
+      const activitySummary = Array.isArray(response.activitySummary)
+        ? response.activitySummary.find((row) => row && (
+            row.token_transfer_count !== undefined ||
+            row.active_days !== undefined ||
+            row.counterparty_count !== undefined
+          )) || null
+        : null;
+      const roleFlags = Array.isArray(response.roleFlags) ? response.roleFlags[0] || null : null;
+      const circlesAvatar = Array.isArray(response.circlesAvatar) ? response.circlesAvatar[0] || null : null;
+      // If profile is missing but resolver-style data is needed, fall back below.
+      return { profile: profileRow, linkedEntities, activitySummary, roleFlags, circlesAvatar };
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // Fire-and-forget warmer. Triggered on search-result selection so the
+  // batch endpoint's file cache is hot by the time the route mounts.
+  prefetchOverview(address) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return;
+    // Don't await — caller is on the click handler path.
+    this.getOverview(normalized).catch(() => {});
   }
 
   async getGPayActivity(address, limit = 200) {

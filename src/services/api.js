@@ -6,12 +6,40 @@ const STORAGE_KEY_PREFIX = 'api-cache:v1:';
 const responseCache = new Map();
 const inFlightRequests = new Map();
 const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
-let developmentMetricsQueue = Promise.resolve();
 
-const enqueueDevelopmentMetricRequest = (requestFactory) => {
-  const queued = developmentMetricsQueue.catch(() => {}).then(requestFactory);
-  developmentMetricsQueue = queued.catch(() => {});
-  return queued;
+// In dev we used to fully serialize all metric requests, which made the
+// portfolio tab feel ~10x slower than prod. Cap at a small concurrency
+// instead so we don't hammer Vercel-dev's single Node process while still
+// letting independent widgets load in parallel.
+const DEV_METRIC_CONCURRENCY = 6;
+let developmentMetricsActive = 0;
+const developmentMetricsWaiters = [];
+
+const acquireDevelopmentMetricSlot = () => new Promise((resolve) => {
+  if (developmentMetricsActive < DEV_METRIC_CONCURRENCY) {
+    developmentMetricsActive += 1;
+    resolve();
+  } else {
+    developmentMetricsWaiters.push(resolve);
+  }
+});
+
+const releaseDevelopmentMetricSlot = () => {
+  const next = developmentMetricsWaiters.shift();
+  if (next) {
+    next();
+  } else {
+    developmentMetricsActive = Math.max(0, developmentMetricsActive - 1);
+  }
+};
+
+const enqueueDevelopmentMetricRequest = async (requestFactory) => {
+  await acquireDevelopmentMetricSlot();
+  try {
+    return await requestFactory();
+  } finally {
+    releaseDevelopmentMetricSlot();
+  }
 };
 
 const getSessionStorage = () => {
@@ -307,7 +335,25 @@ export class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+      // Try to read the structured error envelope so the UI can distinguish
+      // permanent states (MissingMetricSource, InvalidMetric, FilterRequired)
+      // from transient ones (timeouts, 5xx). Fall back to status-only text
+      // when the body isn't JSON.
+      let body = null;
+      try {
+        body = await response.json();
+      } catch {
+        // ignore — non-JSON body
+      }
+      const code = body?.error || body?.code || null;
+      const detail = body?.message || response.statusText || '';
+      const error = new Error(
+        `HTTP ${response.status}${code ? ` (${code})` : ''}${detail ? `: ${detail}` : ''}`
+      );
+      error.status = response.status;
+      error.code = code;
+      error.body = body;
+      throw error;
     }
 
     return response.json();

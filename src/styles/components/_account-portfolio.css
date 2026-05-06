@@ -242,6 +242,26 @@
   min-width: 0;
 }
 
+/* Graph card hosts an embedded MetricWidget — strip the inner card chrome
+   so the wrapper card frames the visualization instead of stacking borders.
+   Also hide the MetricWidget's own header: the wrapper already provides a
+   title and subtitle, and the inner header would duplicate them. */
+.ap-graph-card .account-portfolio-metric,
+.ap-graph-card .metric-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+.ap-graph-card .account-portfolio-metric {
+  min-height: 0 !important;
+}
+.ap-graph-card .metric-card .card-header,
+.ap-graph-card .minimal-widget-header {
+  display: none;
+}
+
 /* Workbench card: clean, border-only chrome matching the page header.
    Wraps generic MetricWidget grids inside Account Portfolio tabs so the
    shadow-heavy .metric-card look from the dashboard sections never leaks in. */

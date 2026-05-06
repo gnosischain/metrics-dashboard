@@ -1,4 +1,0 @@
-{
-  "id": "api_execution_gnosis_app_users_weekly_chart",
-  "query": "SELECT toDate(week) AS date, 'New' AS label, new_users AS value\n    FROM dbt.api_execution_gnosis_app_users_weekly\n    UNION ALL SELECT toDate(week) AS date, 'Active' AS label, active_users AS value\n    FROM dbt.api_execution_gnosis_app_users_weekly\n    UNION ALL SELECT toDate(week) AS date, 'Returning' AS label, returning_users AS value\n    FROM dbt.api_execution_gnosis_app_users_weekly\n    UNION ALL SELECT toDate(week) AS date, 'Reactivated' AS label, reactivated_users AS value\n    FROM dbt.api_execution_gnosis_app_users_weekly\n    ORDER BY date ASC, label ASC"
-}

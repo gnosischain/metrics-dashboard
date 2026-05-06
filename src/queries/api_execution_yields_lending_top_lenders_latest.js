@@ -1,3 +1,5 @@
+import { formatPercentageBar } from '../utils/formatters';
+
 const metric = {
   id: 'api_execution_yields_lending_top_lenders_latest',
   name: 'Top Lenders',
@@ -106,14 +108,12 @@ const metric = {
       {
         title: 'Cumul. %',
         field: 'cumulative_pct',
-        minWidth: 90,
-        widthGrow: 1,
+        minWidth: 110,
+        widthGrow: 1.4,
         sorter: 'number',
         hozAlign: 'right',
         formatter: function (cell) {
-          const val = cell.getValue();
-          if (val === null || val === undefined) return '-';
-          return Number(val).toFixed(2) + '%';
+          return formatPercentageBar(cell.getValue());
         },
       },
       {

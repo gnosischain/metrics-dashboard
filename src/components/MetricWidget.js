@@ -11,6 +11,24 @@ import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
 import { filterDataByTimeRange } from '../utils/dates';
 import { normalizeFilterValue } from '../utils/filterValues';
 
+// IntersectionObserver's default root is the viewport. The dashboard scrolls
+// inside .dashboard-content, so a viewport-rooted observer never fires and
+// off-screen widgets stay skeletons forever. Walk ancestors to find the real
+// scroll container so the IO can attach to it.
+const findScrollableAncestor = (node) => {
+  if (!node || typeof window === 'undefined') return null;
+  let current = node.parentElement;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+};
+
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
 const UNIT_LABELS = { native: 'Native', usd: 'USD' };
 
@@ -52,6 +70,15 @@ const MetricWidget = ({
   
   const isMounted = useRef(true);
   const requestSequenceRef = useRef(0);
+  const cardRef = useRef(null);
+  // IntersectionObserver-gated fetch: don't request data until the widget
+  // is within ~300px of the viewport. The portfolio renders ~30 widgets;
+  // without this, all 30 fire on mount even if the user only scrolls past
+  // the first 4. Falls back to "fetch immediately" when IO is unavailable.
+  const [shouldFetch, setShouldFetch] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return typeof window.IntersectionObserver !== 'function';
+  });
 
   // Per-chart resolution toggle (independent per widget)
   const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
@@ -446,8 +473,23 @@ const MetricWidget = ({
       }
     } catch (err) {
       if (isMounted.current && requestId === requestSequenceRef.current) {
-        setError(err.message);
-        console.error('Error fetching metric data:', err);
+        const code = err?.code || null;
+        const status = Number(err?.status || 0);
+        setError({ message: err?.message || 'Request failed', code, status });
+        // Permanent/expected states are noisy in the console — log them
+        // quietly. Real failures still warn loudly.
+        const isExpected = code === 'MissingMetricSource'
+          || code === 'InvalidMetric'
+          || code === 'FilterRequired';
+        if (isExpected) {
+          if (process.env.NODE_ENV === 'development') {
+            // eslint-disable-next-line no-console
+            console.debug(`Metric ${effectiveMetricId}: ${code}`);
+          }
+        } else {
+          // eslint-disable-next-line no-console
+          console.error('Error fetching metric data:', err);
+        }
       }
     } finally {
       if (isMounted.current && requestId === requestSequenceRef.current) {
@@ -474,8 +516,33 @@ const MetricWidget = ({
   ]);
 
   useEffect(() => {
+    if (!shouldFetch) return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, shouldFetch]);
+
+  useEffect(() => {
+    if (shouldFetch) return undefined;
+    const node = cardRef.current;
+    if (!node || typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
+      setShouldFetch(true);
+      return undefined;
+    }
+    const root = findScrollableAncestor(node);
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setShouldFetch(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { root, rootMargin: '300px 0px', threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldFetch]);
 
   useEffect(() => {
     if (!hasMultiLocalFilters) return;
@@ -718,6 +785,36 @@ const MetricWidget = ({
   const handleRefresh = useCallback(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-retry once for transient errors (network blips, ClickHouse timeouts).
+  // Permanent error codes are skipped — retrying yields the same response.
+  const autoRetriedRef = useRef(false);
+  useEffect(() => {
+    if (!error) {
+      autoRetriedRef.current = false;
+      return undefined;
+    }
+    if (autoRetriedRef.current) return undefined;
+    const code = error.code;
+    const status = error.status;
+    const isPermanent = code === 'MissingMetricSource'
+      || code === 'InvalidMetric'
+      || code === 'FilterRequired';
+    const isTransient = !isPermanent && (
+      !status
+      || status === 0
+      || status === 408
+      || status === 429
+      || (status >= 500 && status !== 502)
+    );
+    if (!isTransient) return undefined;
+    autoRetriedRef.current = true;
+    const jitter = 1200 + Math.floor(Math.random() * 600);
+    const handle = window.setTimeout(() => {
+      if (isMounted.current) fetchData();
+    }, jitter);
+    return () => window.clearTimeout(handle);
+  }, [error, fetchData]);
 
   // Extract available labels from data for secondary filters
   // Data is already filtered by global filter (server-side), so we extract secondary options from it
@@ -973,9 +1070,10 @@ const MetricWidget = ({
 
   if (showSkeleton) {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
+      <Card
+        ref={cardRef}
+        minimal={minimal}
+        title={widgetConfig.title}
         subtitle={widgetConfig.description}
         headerControls={headerControls}
         chartType={widgetConfig.chartType}
@@ -986,19 +1084,40 @@ const MetricWidget = ({
   }
 
   if (error) {
+    const errorCode = error?.code || null;
+    // InvalidMetric: the metric isn't registered. Hide the widget entirely
+    // rather than shaming the user with a configuration error.
+    if (errorCode === 'InvalidMetric') {
+      return null;
+    }
+    // MissingMetricSource / FilterRequired: permanent "no data for this
+    // address" states. Render a calm empty state, no retry button.
+    const isPermanent = errorCode === 'MissingMetricSource'
+      || errorCode === 'FilterRequired';
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
+      <Card
+        ref={cardRef}
+        minimal={minimal}
+        title={widgetConfig.title}
         subtitle={widgetConfig.description}
         headerControls={headerControls}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
+        chartType={widgetConfig.chartType}
       >
-        <div className="error-container">
-          <p className="error-message">Error: {error}</p>
-          <button onClick={handleRefresh} className="refresh-button">
-            Retry
-          </button>
+        <div className={`metric-fallback ${isPermanent ? 'metric-fallback--empty' : 'metric-fallback--error'}`}>
+          {isPermanent ? (
+            <span className="metric-fallback__placeholder" aria-label="No data">—</span>
+          ) : (
+            <>
+              <span className="metric-fallback__message">Couldn’t load</span>
+              <button
+                type="button"
+                onClick={handleRefresh}
+                className="metric-fallback__retry"
+              >
+                Retry
+              </button>
+            </>
+          )}
         </div>
       </Card>
     );
@@ -1195,6 +1314,7 @@ const MetricWidget = ({
 
   return (
     <Card
+      ref={cardRef}
       minimal={minimal}
       title={widgetConfig.title}
       subtitle={widgetConfig.description}

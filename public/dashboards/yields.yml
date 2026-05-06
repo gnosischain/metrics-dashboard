@@ -46,6 +46,10 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 450px
+      - id: api_execution_yields_sdai_top_holders_latest
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 500px
 
   - name: Lending
     order: 3

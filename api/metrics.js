@@ -373,11 +373,24 @@ module.exports = async (req, res) => {
       return res.status(200).json(allMetricsData);
     }
   } catch (error) {
-    console.error('API Error:', error.message);
-    
-    // Return appropriate error response
-    return res.status(error.status || 500).json({ 
-      error: error.code || 'ServerError', 
+    // Quiet expected/permanent failures — these are surfaced to the UI via
+    // structured error codes and rendered as calm empty states, so they
+    // don't deserve a scary "API Error" line in the dev console every time
+    // an account has no rows in a particular dbt model.
+    const expectedCodes = new Set([
+      'InvalidMetric',
+      'FilterRequired',
+      'MissingMetricSource',
+      'MetricQueryFailed',
+    ]);
+    if (expectedCodes.has(error.code)) {
+      metricLog(`API expected failure: ${error.code} — ${error.message}`);
+    } else {
+      console.error('API Error:', error.message);
+    }
+
+    return res.status(error.status || 500).json({
+      error: error.code || 'ServerError',
       message: error.message || 'Internal server error'
     });
   }
@@ -400,7 +413,26 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     error.code = 'InvalidMetric';
     throw error;
   }
-  
+
+  // Guard: scoped/account-shaped metrics must be called with an explicit
+  // filter. Without one, ClickHouse would scan every address in the table.
+  // The frontend already always passes filterField/filterValue for these
+  // metrics; this guard catches programmer error and external callers.
+  if (isScopedFilteredMetric(metricId)) {
+    const hasFilter =
+      (opts.filterField && opts.filterValue) ||
+      (opts.filterField2 && opts.filterValue2) ||
+      (opts.filterField3 && opts.filterValue3);
+    if (!hasFilter) {
+      const error = new Error(
+        `Metric ${metricId} is account-scoped and requires a filterField/filterValue parameter.`
+      );
+      error.status = 400;
+      error.code = 'FilterRequired';
+      throw error;
+    }
+  }
+
   metricLog(`Fetching data for metric: ${metricId}`);
   metricLog(`Query: ${query.substring(0, 100)}...`);
 
@@ -922,8 +954,11 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
     // frontend needs to distinguish "true no data" from ClickHouse errors,
     // missing tables, and memory-limit failures.
     if (looksLikeMissingTable || String(metricId || '').startsWith('api_execution_account_') || isScopedFilterFailure) {
-      error.status = error.status || error?.response?.status || 502;
-      error.code = error.code || (looksLikeMissingTable ? 'MissingMetricSource' : 'MetricQueryFailed');
+      // Override any axios-provided code (e.g. ERR_BAD_REQUEST) so the
+      // frontend can distinguish permanent "no data for this address"
+      // states from transient failures.
+      error.status = error?.response?.status || error.status || 502;
+      error.code = looksLikeMissingTable ? 'MissingMetricSource' : 'MetricQueryFailed';
       throw error;
     }
 
@@ -1027,6 +1062,13 @@ function getDefaultFromDate() {
   date.setDate(date.getDate() - 90);
   return date.toISOString().split('T')[0];
 }
+
+// Expose internal helpers so sibling endpoints (e.g. account-portfolio-overview)
+// can reuse the query loader and per-metric fetch path without round-tripping
+// HTTP. These are attached to the handler function so the default Vercel
+// invocation (`module.exports(req, res)`) continues to work unchanged.
+module.exports.fetchMetricData = fetchMetricData;
+module.exports.getActiveQueries = getActiveQueries;
 
 /**
  * Get today's date

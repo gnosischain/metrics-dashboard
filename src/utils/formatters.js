@@ -173,11 +173,38 @@ export const formatTruncateHex = (value) => {
   return `<span class="hex-copy" title="${escapedValue} — click to copy" data-copy-value="${escapedValue}" style="cursor:pointer;font-family:monospace;">${escapedTruncated}</span>`;
 };
 
+/**
+ * Tabulator cell formatter that renders a percentage as a horizontal bar
+ * filled proportional to the value, with the numeric label overlaid. Used
+ * for top-holders / cumulative-share columns where the visual ramp is
+ * more informative than the bare number alone.
+ *
+ * @param {number} rawValue - The percentage value (0-100, may exceed 100).
+ * @param {{ decimals?: number, accent?: string }} [options]
+ * @returns {string} HTML for the bar.
+ */
+export const formatPercentageBar = (rawValue, options = {}) => {
+  const { decimals = 2, accent = 'primary' } = options;
+  if (rawValue === null || rawValue === undefined || rawValue === '' || Number.isNaN(Number(rawValue))) {
+    return '<span class="pct-bar pct-bar--empty">-</span>';
+  }
+  const value = Number(rawValue);
+  const clamped = Math.max(0, Math.min(100, value));
+  const label = `${value.toFixed(decimals)}%`;
+  return (
+    `<span class="pct-bar pct-bar--${escapeHtml(accent)}" role="img" aria-label="${escapeHtml(label)}">` +
+      `<span class="pct-bar__fill" style="width:${clamped.toFixed(2)}%"></span>` +
+      `<span class="pct-bar__label">${escapeHtml(label)}</span>` +
+    '</span>'
+  );
+};
+
 const formatters = {
   formatNumber,
   formatBytes,
   formatPercentage,
   formatPercentageInt,
+  formatPercentageBar,
   formatDuration,
   formatValue,
   formatNumberWithXDAI,

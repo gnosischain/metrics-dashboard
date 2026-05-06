@@ -9,6 +9,8 @@ const ADDRESS = '0xa6247834b41771022498f63cae8820ffee208265';
 const serviceMock = vi.hoisted(() => ({
   search: vi.fn(),
   resolveSearch: vi.fn(),
+  getOverview: vi.fn(),
+  prefetchOverview: vi.fn(),
   getProfile: vi.fn(),
   getRoleFlags: vi.fn(),
   getCirclesAvatarMetadata: vi.fn(),
@@ -94,6 +96,10 @@ describe('AccountPortfolio section tabs', () => {
 
     accountPortfolioService.search.mockResolvedValue([]);
     accountPortfolioService.resolveSearch.mockResolvedValue(null);
+    // Default the batch overview fetch to null so the component falls back
+    // to the per-section getters that the tests already configure below.
+    accountPortfolioService.getOverview.mockResolvedValue(null);
+    accountPortfolioService.prefetchOverview.mockReturnValue(undefined);
     accountPortfolioService.getProfile.mockResolvedValue({
       address: ADDRESS,
       display_name: 'Alice Account',
