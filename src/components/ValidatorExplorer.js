@@ -1599,7 +1599,20 @@ const ValidatorExplorer = ({
           detail="Group mode lets you compare up to five validators on top of the aggregate credential series."
         />
       ) : loading ? (
-        <LoadingSpinner />
+        <div className="validator-explorer-empty">
+          <div className="validator-explorer-empty-card ap-empty-card ap-empty-card--validating">
+            <p className="validator-explorer-empty-eyebrow">Validator Explorer · validating</p>
+            <h2 className="validator-explorer-empty-title">
+              {emptyStateCopy.validatingTitle || 'Loading validator data…'}
+            </h2>
+            <p className="validator-explorer-empty-description">
+              {emptyStateCopy.validatingDescription || 'Fetching lifetime metrics for this selection.'}
+            </p>
+            <div className="loading-indicator ap-empty-card__spinner" role="status" aria-live="polite">
+              <div className="loading-spinner" />
+            </div>
+          </div>
+        </div>
       ) : loadError ? (
         <EmptyState
           title={emptyStateCopy.emptyResultsTitle || 'No validator data found'}

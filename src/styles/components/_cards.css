@@ -23,6 +23,29 @@
 
 .metric-card:hover {
   box-shadow: var(--shadow-base);
+  transform: translateY(-1px);
+}
+
+/* Stage 4: unified card variants */
+.metric-card.card--outline {
+  background: transparent;
+  box-shadow: none;
+}
+.metric-card.card--outline:hover {
+  box-shadow: none;
+  background: transparent;
+}
+
+.metric-card.card--ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.metric-card.card--ghost:hover {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 /* ==================
@@ -115,7 +138,7 @@
 .metric-info-button {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--border-radius-base);
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
@@ -364,21 +387,9 @@
 }
 
 /* ==================
-   Number Display Card - NO BORDERS AT ALL (Higher specificity)
+   Number Display Card — header/content layout
+   (chrome handled by .metric-card / .card--ghost / .card--outline)
    ================== */
-
-.metric-card.number-display-card {
-  box-shadow: none !important;
-  border: none !important;
-  background: transparent !important;
-}
-
-.metric-card.number-display-card:hover {
-  box-shadow: none !important;
-  border: none !important;
-  background: transparent !important;
-  transform: none;
-}
 
 .metric-card.number-display-card .card-header {
   border-bottom: none;
@@ -390,89 +401,23 @@
   padding: 0;
 }
 
-/* Generic outline variant: keeps card border but uses dashboard background */
-.metric-card.card-variant-outline {
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  box-shadow: none;
-}
-
-.metric-card.card-variant-outline:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: none;
-}
-
-/* Number display card with dashboard background + border only */
-.metric-card.number-display-card.card-variant-outline {
-  box-shadow: none !important;
-  border: 1px solid var(--color-border-hover) !important;
-  background: var(--color-background) !important;
-}
-
-.metric-card.number-display-card.card-variant-outline:hover {
-  box-shadow: none !important;
-  border: 1px solid var(--color-text-muted) !important;
-  background: var(--color-background) !important;
-  transform: none;
-}
-
-.metric-card.number-display-card.card-variant-outline .card-header {
-  border-bottom: 1px solid var(--color-border-subtle);
-  background: transparent;
-  padding: var(--spacing-sm) var(--spacing-md);
-}
-
-.metric-card.number-display-card.card-variant-outline .card-content {
-  padding: var(--spacing-xs) 0 var(--spacing-sm);
-}
-
-/* Remove the separate compact class since all number display cards should be borderless */
-
-/* ==================
-   Compact Number Display Card
-   ================== */
-
-.metric-card.compact {
-  /* Completely transparent - no borders at all */
-  box-shadow: none !important;
-  border: none !important;
-  background: transparent !important;
-}
-
-.metric-card.compact:hover {
-  /* Remove all hover effects */
-  border: none !important;
-  box-shadow: none !important;
-  transform: none;
-}
-
-.metric-card.compact .card-header {
-  border-bottom: none;
-  background: transparent;
-  padding: var(--spacing-sm) var(--spacing-md) 0;
-}
-
-.metric-card.compact .card-content {
-  padding: 0;
-}
-
 /* Keep the info (i) popover on the title row for compact / number-display cards.
    Without these overrides the default .card-header { flex-wrap: wrap } + 150px
    min-width on .card-header-text push the controls block to a new line on narrow
    KPI cards. */
 .metric-card.number-display-card .card-header,
-.metric-card.compact .card-header {
+.metric-card.card--ghost .card-header {
   flex-wrap: nowrap;
   align-items: flex-start;
 }
 
 .metric-card.number-display-card .card-header-text,
-.metric-card.compact .card-header-text {
+.metric-card.card--ghost .card-header-text {
   min-width: 0;
 }
 
 .metric-card.number-display-card .card-header-controls,
-.metric-card.compact .card-header-controls {
+.metric-card.card--ghost .card-header-controls {
   margin-top: 1px;
 }
 
@@ -536,16 +481,16 @@
    ================== */
 
 /* Override minimal widget styles for compact cards */
-.metric-card.compact .minimal-widget-container {
+.metric-card.card--ghost .minimal-widget-container {
   background: transparent;
   height: 100%;
 }
 
-.metric-card.compact .minimal-widget-header {
+.metric-card.card--ghost .minimal-widget-header {
   display: none; /* Hide for compact - title is handled by NumberWidget */
 }
 
-.metric-card.compact .minimal-widget-content {
+.metric-card.card--ghost .minimal-widget-content {
   height: 100%;
   margin-bottom: 0;
 }
@@ -583,22 +528,22 @@
    ================== */
 
 /* Special styling for different grid positions */
-.grid-item .metric-card.compact {
+.grid-item .metric-card.card--ghost {
   min-height: 80px; /* Minimum height for compact cards */
 }
 
 /* Adjust compact card height based on grid span */
-.grid-item[style*="span 3"] .metric-card.compact,
-.grid-item[style*="span 4"] .metric-card.compact {
+.grid-item[style*="span 3"] .metric-card.card--ghost,
+.grid-item[style*="span 4"] .metric-card.card--ghost {
   min-height: 70px;
 }
 
-.grid-item[style*="span 6"] .metric-card.compact,
-.grid-item[style*="span 8"] .metric-card.compact {
+.grid-item[style*="span 6"] .metric-card.card--ghost,
+.grid-item[style*="span 8"] .metric-card.card--ghost {
   min-height: 85px;
 }
 
-.grid-item[style*="span 12"] .metric-card.compact {
+.grid-item[style*="span 12"] .metric-card.card--ghost {
   min-height: 90px;
 }
 
@@ -617,13 +562,13 @@
   box-shadow: var(--shadow-md);
 }
 
-.dark-mode .metric-card.compact {
+.dark-mode .metric-card.card--ghost {
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-.dark-mode .metric-card.compact:hover {
+.dark-mode .metric-card.card--ghost:hover {
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -739,12 +684,12 @@
   }
 
   /* Compact cards on mobile */
-  .metric-card.compact {
+  .metric-card.card--ghost {
     min-height: 60px;
     border-left-width: 2px !important;
   }
   
-  .grid-item .metric-card.compact {
+  .grid-item .metric-card.card--ghost {
     min-height: 60px;
   }
 
@@ -772,6 +717,6 @@
   outline-offset: 2px;
 }
 
-.metric-card.compact:focus-within {
+.metric-card.card--ghost:focus-within {
   outline-color: var(--primary-blue);
 }

@@ -39,6 +39,11 @@
   --color-error: #ef4444;
   --color-info: #0ea5e9;
 
+  /* Brand accent — product-specific color (sidebar active, sparklines, primary buttons).
+     Defaults to primary-blue; overridden via [data-brand="..."] below. */
+  --brand-accent: var(--primary-blue);
+  --brand-soft:   var(--color-accent-softer);
+
   /* Chart Colors */
   --chart-axis-line: #cbd5e1;
   --chart-axis-text: #64748b;
@@ -152,6 +157,9 @@
   --color-tooltip-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);
 
   --color-error: #f87171;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-info:    #38bdf8;
 
   --chart-axis-line: #475569;
   --chart-axis-text: #94a3b8;
@@ -162,3 +170,8 @@
   --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.3), 0 2px 6px -2px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 6px 12px -6px rgba(0, 0, 0, 0.3);
 }
+
+/* Brand overrides — apply via [data-brand="<id>"] on dashboard root */
+[data-brand="pay"]     { --brand-accent: #10b981; --brand-soft: rgba(16, 185, 129, 0.12); }
+[data-brand="app"]     { --brand-accent: #7b3fe4; --brand-soft: rgba(123, 63, 228, 0.12); }
+[data-brand="circles"] { --brand-accent: #3b82f6; --brand-soft: rgba(59, 130, 246, 0.12); }

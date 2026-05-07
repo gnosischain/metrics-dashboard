@@ -174,12 +174,12 @@
 
 .number-change.positive {
   color: var(--color-success);
-  background-color: rgba(40, 167, 69, 0.1);
+  background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
 }
 
 .number-change.negative {
   color: var(--color-error);
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
 }
 
 .number-change.neutral {
@@ -381,8 +381,9 @@
 }
 
 .kpi-tile-link:focus-visible {
-  outline: 2px solid var(--primary-blue);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  border-radius: inherit;
 }
 
 .kpi-tile-arrow {
@@ -489,32 +490,14 @@
 }
 
 /* ==================
-   Number Display Card
+   Number Display Card — layout only (chrome lives in _cards.css)
    ================== */
 
-.number-display-card {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--border-radius-base);
-  box-shadow: var(--shadow-sm) !important;
+.number-display-card.card--ghost .card-header {
+  display: none; /* Hide header for compact/ghost variant */
 }
 
-.number-display-card .card-header {
-  border-bottom: none;
-  background: transparent;
-  padding: var(--spacing-sm) var(--spacing-md) 0;
-}
-
-.number-display-card .card-content {
-  padding: 0;
-}
-
-/* Compact variant card adjustments */
-.number-display-card.compact .card-header {
-  display: none; /* Hide header for compact variant */
-}
-
-.number-display-card.compact .card-content {
+.number-display-card.card--ghost .card-content {
   height: 100%;
 }
 
@@ -633,11 +616,11 @@
 
 .dark-mode .number-change.positive,
 .dark-mode .compact-change-indicator {
-  background-color: rgba(40, 167, 69, 0.15);
+  background-color: color-mix(in srgb, var(--color-success) 15%, transparent);
 }
 
 .dark-mode .number-change.negative {
-  background-color: rgba(248, 81, 73, 0.15);
+  background-color: color-mix(in srgb, var(--color-error) 15%, transparent);
 }
 
 .dark-mode .sparkline-path {
@@ -647,11 +630,6 @@
 .dark-mode .sparkline-area {
   fill: var(--primary-blue);
   opacity: 0.15;
-}
-
-.dark-mode .number-display-card {
-  background: var(--color-surface) !important;
-  border-color: var(--color-border) !important;
 }
 
 /* ==================

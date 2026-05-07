@@ -741,8 +741,10 @@ const Dashboard = () => {
   const isBootLanding = !configLoaded && requestedView === 'landing';
   const isLanding = isBootLanding || (configLoaded && dashboards.length > 0 && !activeDashboard);
 
+  const activeBrand = activeDashboardConfig?.brand || undefined;
+
   return (
-    <div className={`dashboard${isLanding ? ' dashboard--landing' : ''}`}>
+    <div className={`dashboard${isLanding ? ' dashboard--landing' : ''}`} data-brand={activeBrand}>
       <Header
         dashboardName={getActiveDashboardName()}
         isDarkMode={isDarkMode}

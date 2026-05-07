@@ -72,11 +72,11 @@
     border-left-color: var(--primary-blue);
     color: var(--primary-blue);
   }
-  
+
   .dark-mode .expand-icon {
     color: var(--color-text-secondary);
   }
-  
+
   .dark-mode .dashboard-item > .dashboard-header.active .expand-icon {
     color: var(--primary-blue);
   }

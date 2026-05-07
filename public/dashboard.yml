@@ -20,6 +20,7 @@ GnosisPay:
   iconClass: credit-card
   tagline: Card issuance, spend volume, and merchant activity.
   palette: gnosis-pay
+  brand: pay
   source: /dashboards/gnosis-pay.yml
 GnosisApp:
   name: Gnosis App
@@ -27,7 +28,8 @@ GnosisApp:
   icon: 📱
   iconClass: gnosis-app
   tagline: Self-custodial wallet adoption and user flows.
-  palette: gnosis-pay
+  palette: gnosis-app
+  brand: app
   source: /dashboards/gnosis-app.yml
 Circles:
   name: Circles
@@ -35,6 +37,8 @@ Circles:
   icon: 🔵
   iconClass: circles
   tagline: Personal currency network growth and trust graph.
+  palette: circles
+  brand: circles
   source: /dashboards/circles.yml
 Trades:
   name: Trades

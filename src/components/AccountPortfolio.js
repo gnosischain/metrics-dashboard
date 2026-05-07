@@ -2643,6 +2643,26 @@ const AccountPortfolio = ({
 
   const emptyCopy = tabConfig?.emptyState || {};
 
+  // Stage 2: derive empty-state for the search/idle/validating/empty-results card.
+  // Only mark 'empty-results' once we are certain every dependent loader has settled
+  // (profileLoading=false AND roleFlags has been populated). Without that guard,
+  // setProfile() can land in React's render cycle a beat before setRoleFlags()/
+  // setSafesOwned(), causing a flash of "no results" between the two state writes.
+  const apEmptyState = (() => {
+    if (!selectedAccount) return 'idle';
+    if (validatorOnlySelection) return 'validator-only';
+    if (profileLoading && !profile) return 'validating';
+    if (
+      !profileLoading
+      && profile
+      && roleFlags !== null
+      && !Object.values(sectionFlags).some(Boolean)
+    ) {
+      return 'empty-results';
+    }
+    return 'loaded';
+  })();
+
   return (
     <div className="account-portfolio">
       <DashboardHeader dashboard={dashboard} tabConfig={tabConfig}>
@@ -2656,14 +2676,46 @@ const AccountPortfolio = ({
         </div>
       </DashboardHeader>
 
-      {!selectedAccount ? (
+      {apEmptyState === 'idle' ? (
         <div className="validator-explorer-empty">
-          <div className="validator-explorer-empty-card">
+          <div className="validator-explorer-empty-card ap-empty-card ap-empty-card--idle">
             <p className="validator-explorer-empty-eyebrow">Account Portfolio</p>
             <h2 className="validator-explorer-empty-title">{emptyCopy.title || 'Explore an account'}</h2>
             <p className="validator-explorer-empty-description">
               {emptyCopy.description || 'Search any wallet, Safe, Circles name, validator, or withdrawal credential.'}
             </p>
+          </div>
+        </div>
+      ) : apEmptyState === 'validating' ? (
+        <div className="validator-explorer-empty">
+          <div className="validator-explorer-empty-card ap-empty-card ap-empty-card--validating">
+            <p className="validator-explorer-empty-eyebrow">Account Portfolio · validating</p>
+            <h2 className="validator-explorer-empty-title">
+              {emptyCopy.validatingTitle || 'Checking address…'}
+            </h2>
+            <p className="validator-explorer-empty-description">
+              {emptyCopy.validatingDescription || 'Looking up production data for this selection.'}
+            </p>
+            <div className="loading-indicator ap-empty-card__spinner" role="status" aria-live="polite">
+              <div className="loading-spinner" />
+            </div>
+          </div>
+        </div>
+      ) : apEmptyState === 'empty-results' ? (
+        <div className="validator-explorer-empty">
+          <div className="validator-explorer-empty-card ap-empty-card ap-empty-card--not-found">
+            <p className="validator-explorer-empty-eyebrow">Account Portfolio · no results</p>
+            <h2 className="validator-explorer-empty-title">
+              {emptyCopy.emptyResultsTitle || 'No production data for this address'}
+            </h2>
+            <p className="validator-explorer-empty-description">
+              {emptyCopy.emptyResultsDescription || 'Try another address.'}
+            </p>
+            <div className="ap-empty-card__actions">
+              <button type="button" className="button secondary" onClick={() => handleSelect(null)}>
+                Clear search
+              </button>
+            </div>
           </div>
         </div>
       ) : (

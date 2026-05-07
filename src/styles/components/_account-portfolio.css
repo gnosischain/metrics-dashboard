@@ -858,3 +858,25 @@
   color: #1b9b88;
   border: 1px solid rgba(27, 155, 136, 0.3);
 }
+
+/* Account Portfolio — empty-state variants (stage 2) */
+.ap-empty-card__spinner {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ap-empty-card__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.ap-empty-card--not-found .validator-explorer-empty-eyebrow {
+  color: var(--color-warning);
+}
+
+.ap-empty-card--validating .validator-explorer-empty-eyebrow {
+  color: var(--color-text-tertiary);
+}

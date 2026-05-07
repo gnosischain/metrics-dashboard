@@ -21,9 +21,24 @@ const Card = forwardRef(({
   const toggleExpand = () => setIsExpanded(!isExpanded);
   
   const isNumberDisplay = chartType === 'numberDisplay' || chartType === 'kpi';
-  const cardVariantClass = cardVariant && cardVariant !== 'default'
-    ? `card-variant-${cardVariant}`
-    : '';
+
+  // Stage 4: collapse legacy variants onto unified .card--{outline|ghost} system
+  const VARIANT_ALIASES = {
+    'number-display-card': 'default',
+    'compact': 'ghost',
+    'card-variant-outline': 'outline',
+    'outline': 'outline',
+  };
+  const legacyTokens = [
+    isNumberDisplay ? 'number-display-card' : null,
+    variant === 'compact' ? 'compact' : null,
+    cardVariant && cardVariant !== 'default' ? `card-variant-${cardVariant}` : null,
+  ].filter(Boolean);
+  const resolvedVariants = new Set(
+    legacyTokens.map((tok) => VARIANT_ALIASES[tok] ?? tok).filter((v) => v && v !== 'default')
+  );
+  const variantClasses = Array.from(resolvedVariants).map((v) => `card--${v}`).join(' ');
+  const numberDisplayHook = isNumberDisplay ? 'number-display-card' : '';
   
   if (minimal) {
     return (
@@ -55,7 +70,7 @@ const Card = forwardRef(({
     <>
       <div 
         ref={ref} 
-        className={`metric-card ${isNumberDisplay ? 'number-display-card' : ''} ${variant === 'compact' ? 'compact' : ''} ${cardVariantClass}`}
+        className={`metric-card ${numberDisplayHook} ${variantClasses}`.trim()}
         data-chart-type={chartType} 
       >
         <div className="card-header">

@@ -72,6 +72,7 @@ class DashboardService {
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
       tagline: dashboardConfig.tagline || '',
       palette: resolveDashboardPalette(dashboardConfig.palette),
+      brand: dashboardConfig.brand || '',
       hasDefaultTab: dashboardConfig.hasDefaultTab === true
     };
     
