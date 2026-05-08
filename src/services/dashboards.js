@@ -131,6 +131,7 @@ class DashboardService {
           secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field
           globalFilterDisplayField: tab.globalFilterDisplayField || null, // Optional column to use as the display label in the search dropdown (e.g. metadata_name); the value column stays globalFilterField
           globalFilterSourceMetric: tab.globalFilterSourceMetric || null, // Optional metric ID to use for the options fetch; defaults to first panel metric. Lets a tab pin a dedicated lightweight lookup mart.
+          globalFilterSourceField: tab.globalFilterSourceField || null, // Optional column name on the source metric whose value populates the dropdown. Defaults to globalFilterField. Use when the source metric names the address column differently than the downstream filter (e.g. dropdown sourced from `user_address` while cards filter on `wallet_address`).
           globalControlsPlacement: tab.globalControlsPlacement || null, // Optional explicit control placement; MetricGrid resolves the default behavior.
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection

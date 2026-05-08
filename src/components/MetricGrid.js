@@ -472,7 +472,11 @@ const MetricGrid = ({
           return;
         }
 
+        // `globalFilterSourceField` lets a tab populate its dropdown from a
+        // metric whose row schema names the address field differently than the
+        // downstream filter. Defaults to `globalFilterField` for back-compat.
         const valueField = tabConfig.globalFilterField;
+        const sourceField = tabConfig.globalFilterSourceField || tabConfig.globalFilterField;
         const displayField = tabConfig.globalFilterDisplayField;
         const rows = (result?.data && Array.isArray(result.data)) ? result.data : [];
 
@@ -484,7 +488,7 @@ const MetricGrid = ({
           // the filter value.
           const seen = new Map();
           for (const item of rows) {
-            const value = item[valueField];
+            const value = item[sourceField];
             if (!value || seen.has(value)) continue;
             const display = item[displayField];
             const labelText = display && String(display).trim()
@@ -510,7 +514,7 @@ const MetricGrid = ({
           // Backwards-compatible string-array path.
           const allValues = new Set();
           for (const item of rows) {
-            const value = item[valueField];
+            const value = item[sourceField];
             if (value) allValues.add(value);
           }
           sortedOptions = Array.from(allValues).sort();

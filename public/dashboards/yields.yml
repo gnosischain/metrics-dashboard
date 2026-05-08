@@ -162,7 +162,12 @@ tabs:
     searchPlaceholder: Paste wallet address and press Enter...
     globalControlsPlacement: top
     requireExplicitFilter: true
-    globalFilterSourceMetric: api_execution_yields_user_top_wallets
+    # `*_user_top_wallets` was switched to account-scoped (filter required) on
+    # the backend, so it can no longer power a global dropdown. Use the
+    # non-scoped lending top-lenders mart and map its `user_address` column to
+    # the downstream `wallet_address` filter via globalFilterSourceField.
+    globalFilterSourceMetric: api_execution_yields_lending_top_lenders_latest
+    globalFilterSourceField: user_address
     explicitFilterValidationMetric: api_execution_yields_user_kpi_lending_balance
     emptyState:
       title: Explore your portfolio

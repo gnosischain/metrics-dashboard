@@ -544,20 +544,44 @@
   right: 0;
   width: min(520px, 100vw);
   height: 100vh;
-  z-index: 80;
-  padding: 20px;
+  /* Above the page header (z-index: 100) so the Close button and the row
+     details header stay visible above all other site chrome. */
+  z-index: var(--z-index-modal, 1050);
+  padding: 0;
   background: var(--color-surface);
   border-left: 1px solid var(--color-border);
   box-shadow: var(--shadow-xl);
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .account-portfolio-drawer-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  padding: 20px 20px 12px;
+  margin-bottom: 0;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.account-portfolio-drawer > :not(.account-portfolio-drawer-header) {
+  flex-shrink: 0;
+}
+
+.account-portfolio-drawer-grid,
+.account-portfolio-drawer > .validator-explorer-search-button {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.account-portfolio-drawer > .validator-explorer-search-button {
+  margin-bottom: 20px;
 }
 
 .account-portfolio-drawer-header h3 {
@@ -565,23 +589,50 @@
 }
 
 .account-portfolio-drawer-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 12px;
+  margin: 0 20px 12px;
   display: grid;
-  grid-template-columns: minmax(120px, 0.36fr) minmax(0, 0.64fr);
-  gap: 8px 12px;
-  margin: 0 0 18px;
+  grid-template-columns: minmax(110px, 0.32fr) minmax(0, 0.68fr);
+  row-gap: 4px;
+  column-gap: 12px;
+  align-items: start;
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
 }
 
 .account-portfolio-drawer-grid dt {
+  margin: 0;
+  padding: 4px 0;
   color: var(--color-text-tertiary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
+  text-transform: lowercase;
+  letter-spacing: 0;
+  align-self: start;
 }
 
 .account-portfolio-drawer-grid dd {
   margin: 0;
+  padding: 4px 0;
   min-width: 0;
   color: var(--color-text-primary);
   overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Subtle row separator instead of generous whitespace. */
+.account-portfolio-drawer-grid dt + dd {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.account-portfolio-drawer-grid dt {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.account-portfolio-drawer-grid dt:last-of-type,
+.account-portfolio-drawer-grid dd:last-of-type {
+  border-bottom: 0;
 }
 
 .account-portfolio-section .tabulator-row {

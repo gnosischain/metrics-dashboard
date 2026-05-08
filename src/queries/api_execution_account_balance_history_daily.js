@@ -19,8 +19,8 @@ const metric = {
       native_or_wrapped_xdai_balance,
       priced_balance_usd,
       priced_tokens_held
-    FROM dbt.api_execution_account_balance_history_daily
-    WHERE 1 = 1
+    FROM dbt.int_execution_account_balance_history_daily
+    PREWHERE 1 = 1
       /*__FILTER_CONDITIONS__*/
     ORDER BY date
   `,

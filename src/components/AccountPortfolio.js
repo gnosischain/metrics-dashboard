@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import DashboardHeader from './DashboardHeader';
 import MetricWidget from './MetricWidget';
 import MetricWidgetSkeleton from './MetricWidgetSkeleton';
@@ -347,7 +348,62 @@ const buildHoldingsFromHistory = (balanceHistory = []) => {
 
 const buildEffectiveHoldings = (tokenBalances = [], balanceHistory = []) => {
   const realRows = (tokenBalances || []).filter((row) => row && (row.token_address || row.symbol));
-  return realRows.length > 0 ? realRows : buildHoldingsFromHistory(balanceHistory);
+  if (realRows.length === 0) return buildHoldingsFromHistory(balanceHistory);
+  // Defensive guard: the upstream `int_execution_tokens_balances_daily` model
+  // never writes balance=0 rows — when a token is fully transferred out, its
+  // rows simply stop. A 90-day argMax-style query therefore reports stale
+  // balances for tokens the wallet no longer holds. Keep only rows whose `date`
+  // matches the most recent date the metric returned for this wallet.
+  let mostRecent = '';
+  for (const row of realRows) {
+    const d = String(row.date || '');
+    if (d > mostRecent) mostRecent = d;
+  }
+  if (!mostRecent) return realRows;
+  return realRows.filter((row) => String(row.date || '') === mostRecent);
+};
+
+// Merge regular tokens, lending positions, and the aggregated Circles
+// balance into a single rowset for the unified Balances tab. BalancesTab
+// already sorts by balance_usd desc internally.
+const buildUnifiedHoldings = (tokenRows = [], lendingRows = [], circlesBalance = null) => {
+  const out = [...(tokenRows || [])];
+
+  (lendingRows || []).forEach((row) => {
+    if (!row) return;
+    const balance = Number(row.balance ?? row.atoken_balance ?? row.deposit_amount ?? 0);
+    const usd = Number(row.balance_usd ?? row.atoken_balance_usd ?? row.deposit_amount_usd ?? 0);
+    if (!balance && !usd) return;
+    const baseSymbol = row.symbol || row.underlying_symbol || '';
+    const symbol = row.atoken_symbol || (baseSymbol ? `a${baseSymbol}` : 'aToken');
+    const platform = row.platform || row.protocol || 'Lending';
+    out.push({
+      symbol,
+      token_class: `Lending · ${platform}`,
+      token_address: row.atoken_address || row.token_address || '',
+      balance,
+      balance_usd: Number.isFinite(usd) && usd > 0 ? usd : null,
+      date: row.date || row.snapshot_date || null,
+    });
+  });
+
+  if (circlesBalance) {
+    const totalBalance = Number(circlesBalance.total_balance);
+    const totalUsd = Number(circlesBalance.total_balance_usd);
+    if ((Number.isFinite(totalBalance) && totalBalance > 0)
+        || (Number.isFinite(totalUsd) && totalUsd > 0)) {
+      out.push({
+        symbol: 'CRC',
+        token_class: 'Circles',
+        token_address: circlesBalance.avatar || '',
+        balance: Number.isFinite(totalBalance) ? totalBalance : null,
+        balance_usd: Number.isFinite(totalUsd) && totalUsd > 0 ? totalUsd : null,
+        date: circlesBalance.date || null,
+      });
+    }
+  }
+
+  return out;
 };
 
 const buildMovementActivitySummary = (movements = []) => {
@@ -799,6 +855,8 @@ const AccountSummaryCard = ({
   circlesAvatar = null,
   safesOwned = [],
   movements = [],
+  lendingPositions = [],
+  circlesTotalBalance = null,
 }) => {
   const displayName = profile?.display_name || selection?.displayLabel || address || selection?.withdrawalCredentials || 'Account';
   const selectedEth1Credential = isEth1WithdrawalCredential(selection?.withdrawalCredentials)
@@ -816,9 +874,24 @@ const AccountSummaryCard = ({
     String(row.entity_type || '').toLowerCase().includes('validator') ||
     String(row.relation || '').toLowerCase().includes('validator')
   ).length;
-  const computedBalance = tokenBalances.reduce((acc, row) => acc + Number(row?.balance_usd || 0), 0);
-  const totalBalance = profile?.total_balance_usd ?? latestBalance?.total_balance_usd ?? computedBalance;
-  const tokensHeld = profile?.tokens_held ?? latestBalance?.tokens_held ?? tokenBalances.length;
+  const tokenBalanceUsd = tokenBalances.reduce((acc, row) => acc + Number(row?.balance_usd || 0), 0);
+  const lendingBalanceUsd = (lendingPositions || []).reduce((acc, row) => acc + Number(row?.balance_usd ?? row?.atoken_balance_usd ?? 0), 0);
+  const circlesBalanceUsd = Number(circlesTotalBalance?.total_balance_usd ?? 0);
+  const computedBalance = tokenBalanceUsd + lendingBalanceUsd + (Number.isFinite(circlesBalanceUsd) ? circlesBalanceUsd : 0);
+  // Include lending + circles in the total when we have those streams. Falls back to
+  // profile/history when token-balance stream is empty (e.g. validator-only accounts).
+  const totalBalance = (tokenBalances.length || lendingPositions.length || circlesBalanceUsd > 0)
+    ? computedBalance
+    : (profile?.total_balance_usd ?? latestBalance?.total_balance_usd ?? 0);
+  const tokenSlotsHeld = (tokenBalances?.length || 0)
+    + ((lendingPositions || []).length)
+    + (circlesTotalBalance && (Number(circlesTotalBalance.total_balance) > 0
+        || Number(circlesTotalBalance.total_balance_usd) > 0) ? 1 : 0);
+  // Prefer the live count when any holdings stream returned rows; only fall back
+  // to profile/history when nothing has loaded yet.
+  const tokensHeld = tokenSlotsHeld > 0
+    ? tokenSlotsHeld
+    : (profile?.tokens_held ?? latestBalance?.tokens_held ?? 0);
   const firstMovementDate = movements.length
     ? [...movements].map((m) => String(m.date || '')).filter(Boolean).sort()[0]
     : null;
@@ -962,7 +1035,10 @@ const AccountDetailDrawer = ({ item, onClose, onSelectAddress }) => {
   const row = item.row || {};
   const addressValue = pickAddress(row);
 
-  return (
+  // Render via portal so the drawer escapes the .dashboard-content stacking
+  // context (which sets z-index: 80 and would otherwise place the drawer
+  // beneath the page header at z-index: 100, hiding the Close button).
+  const content = (
     <aside className="account-portfolio-drawer" aria-label="Row details">
       <div className="account-portfolio-drawer-header">
         <div>
@@ -990,6 +1066,9 @@ const AccountDetailDrawer = ({ item, onClose, onSelectAddress }) => {
       ) : null}
     </aside>
   );
+
+  if (typeof document === 'undefined') return content;
+  return createPortal(content, document.body);
 };
 
 const OverviewField = ({ label, value, title = null }) => (
@@ -1039,12 +1118,17 @@ const AccountOverview = ({
   balanceHistory,
   movements = [],
   onRowClick,
+  holdings = null,
 }) => {
+  // Prefer the unified holdings (tokens + aTokens + Circles aggregate) when
+  // available so the Overview's "Top tokens" preview reflects the full
+  // portfolio, not just plain ERC-20 holdings.
+  const overviewSource = (holdings && holdings.length) ? holdings : tokenBalances;
   const topTokenBalances = useMemo(
-    () => [...tokenBalances]
+    () => [...overviewSource]
       .sort((a, b) => Number(b.balance_usd || 0) - Number(a.balance_usd || 0))
       .slice(0, 8),
-    [tokenBalances]
+    [overviewSource]
   );
 
   const latestBalance = useMemo(
@@ -1066,8 +1150,13 @@ const AccountOverview = ({
   }, [linkedEntities]);
 
   const displayName = profile?.display_name || selection?.displayLabel || address || selection?.withdrawalCredentials;
-  const totalBalance = profile?.total_balance_usd ?? latestBalance?.total_balance_usd ?? 0;
-  const tokensHeld = profile?.tokens_held ?? latestBalance?.tokens_held ?? tokenBalances.length;
+  const computedHoldingsUsd = (overviewSource || []).reduce((acc, row) => acc + Number(row?.balance_usd || 0), 0);
+  const totalBalance = computedHoldingsUsd > 0
+    ? computedHoldingsUsd
+    : (profile?.total_balance_usd ?? latestBalance?.total_balance_usd ?? 0);
+  const tokensHeld = (overviewSource && overviewSource.length > 0)
+    ? overviewSource.length
+    : (profile?.tokens_held ?? latestBalance?.tokens_held ?? 0);
   const movementSummary = useMemo(() => buildMovementActivitySummary(movements), [movements]);
   const summary = activitySummary || {};
   const firstActive = normalizeDisplayDate(summary.first_activity_date || movementSummary.first_activity_date || profile?.first_seen_date) || '-';
@@ -1415,7 +1504,199 @@ const PaginatedTable = ({
   );
 };
 
-const BalancesTab = ({ holdings, balanceHistory }) => {
+// Stacked-line history of every token the address has ever held, plus aTokens.
+// One series per (symbol, class) pair; ECharts renders the multi-line plot.
+const BalancesHistoryChart = ({ tokenRows = [], lendingRows = [], isDarkMode = false }) => {
+  const containerRef = useRef(null);
+  const instanceRef = useRef(null);
+
+  const { categories, series, totalSeries } = useMemo(() => {
+    const merged = [];
+    (tokenRows || []).forEach((row) => {
+      if (!row?.date || !row?.symbol) return;
+      const usd = Number(row.balance_usd ?? 0);
+      if (!Number.isFinite(usd) || usd <= 0) return;
+      merged.push({ date: String(row.date), key: row.symbol, label: row.symbol, usd });
+    });
+    (lendingRows || []).forEach((row) => {
+      if (!row?.date || !row?.symbol) return;
+      const usd = Number(row.balance_usd ?? 0);
+      if (!Number.isFinite(usd) || usd <= 0) return;
+      merged.push({ date: String(row.date), key: `a${row.symbol}`, label: `a${row.symbol}`, usd });
+    });
+    if (merged.length === 0) return { categories: [], series: [], totalSeries: [] };
+    const dates = Array.from(new Set(merged.map((r) => r.date))).sort();
+    const byKey = new Map();
+    merged.forEach((r) => {
+      const m = byKey.get(r.key) || { label: r.label, byDate: new Map() };
+      m.byDate.set(r.date, r.usd);
+      byKey.set(r.key, m);
+    });
+    const seriesArr = Array.from(byKey.entries()).map(([key, { label, byDate }]) => {
+      // Build the raw per-date values, then patch up two artefacts of the
+      // upstream model:
+      //   1. Gaps between rows on consecutive days are NOT real "balance went
+      //      to null" events — the model writes a row per day per held token.
+      //      So forward-fill gaps with the last known balance.
+      //   2. The model never writes a zero-balance row; rows simply stop when
+      //      a token is transferred out. So append a single 0 point right
+      //      after the last known row to make the line drop to zero visually.
+      const raw = dates.map((d) => (byDate.has(d) ? byDate.get(d) : null));
+      const filled = raw.slice();
+      let lastVal = null;
+      let lastIdx = -1;
+      for (let i = 0; i < filled.length; i += 1) {
+        if (filled[i] != null) {
+          if (lastIdx >= 0 && i - lastIdx > 1) {
+            for (let j = lastIdx + 1; j < i; j += 1) filled[j] = lastVal;
+          }
+          lastVal = filled[i];
+          lastIdx = i;
+        }
+      }
+      if (lastIdx >= 0 && lastIdx < filled.length - 1) {
+        filled[lastIdx + 1] = 0;
+      }
+      const peak = filled.reduce((acc, v) => (v != null && v > acc ? v : acc), 0);
+      return { key, label, peak, data: filled };
+    });
+    seriesArr.sort((a, b) => b.peak - a.peak);
+    // Aggregate total per date FROM THE FORWARD-FILLED SERIES so it tracks what
+    // the user actually sees on each line — not just rows that happened to have
+    // an explicit transfer that day.
+    const total = dates.map((_, idx) => {
+      const sum = seriesArr.reduce((acc, s) => acc + (Number(s.data[idx]) || 0), 0);
+      return Number(sum.toFixed(2));
+    });
+    return { categories: dates, series: seriesArr, totalSeries: total };
+  }, [tokenRows, lendingRows]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let echarts;
+    (async () => {
+      const mod = await import('echarts');
+      if (cancelled || !containerRef.current) return;
+      echarts = mod;
+      if (!instanceRef.current) {
+        instanceRef.current = mod.init(containerRef.current, isDarkMode ? 'dark' : null);
+      }
+      const textColor = isDarkMode ? '#cbd5e1' : '#334155';
+      const gridLine = isDarkMode ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.3)';
+      const option = {
+        backgroundColor: 'transparent',
+        animation: false,
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'cross' },
+          // Skip series with null / zero values on the hovered date so the
+          // tooltip only lists tokens the wallet actually held that day.
+          formatter: (params) => {
+            if (!Array.isArray(params) || params.length === 0) return '';
+            const date = params[0]?.axisValueLabel ?? params[0]?.axisValue ?? '';
+            const fmtUsd = (v) => {
+              const abs = Math.abs(v);
+              if (abs >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+              if (abs >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+              if (abs >= 1e3) return `$${(v / 1e3).toFixed(2)}K`;
+              if (abs >= 1) return `$${v.toFixed(2)}`;
+              return `$${v.toFixed(4)}`;
+            };
+            const visible = params.filter((p) => {
+              const v = Number(p?.value);
+              return Number.isFinite(v) && v > 0;
+            });
+            if (visible.length === 0) return '';
+            // Total goes last; everything else sorted by USD desc.
+            visible.sort((a, b) => {
+              const aTotal = a.seriesName === 'Total (USD)';
+              const bTotal = b.seriesName === 'Total (USD)';
+              if (aTotal !== bTotal) return aTotal ? 1 : -1;
+              return Number(b.value) - Number(a.value);
+            });
+            const lines = visible.map((p) =>
+              `${p.marker}<span style="margin-right:8px">${p.seriesName}</span><strong style="float:right">${fmtUsd(Number(p.value))}</strong>`
+            );
+            return `<div style="font-weight:600;margin-bottom:4px">${date}</div>${lines.join('<br/>')}`;
+          },
+        },
+        legend: {
+          type: 'scroll',
+          top: 0,
+          textStyle: { color: textColor, fontSize: 11 },
+        },
+        grid: { left: 56, right: 24, top: 36, bottom: 36 },
+        xAxis: {
+          type: 'category',
+          data: categories,
+          axisLine: { lineStyle: { color: gridLine } },
+          axisLabel: { color: textColor, fontSize: 10 },
+        },
+        yAxis: {
+          type: 'value',
+          axisLine: { show: false },
+          splitLine: { lineStyle: { color: gridLine } },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            formatter: (value) => {
+              const abs = Math.abs(value);
+              if (abs >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+              if (abs >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+              if (abs >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
+              return `$${value.toFixed(0)}`;
+            },
+          },
+        },
+        series: [
+          ...series.map((s) => ({
+            name: s.label,
+            type: 'line',
+            data: s.data,
+            connectNulls: false,
+            showSymbol: false,
+            sampling: 'lttb',
+            smooth: true,
+            lineStyle: { width: 1.6 },
+            emphasis: { focus: 'series' },
+          })),
+          {
+            name: 'Total (USD)',
+            type: 'line',
+            data: totalSeries,
+            showSymbol: false,
+            sampling: 'lttb',
+            smooth: true,
+            lineStyle: { width: 2.2, type: 'dashed' },
+            color: isDarkMode ? '#94a3b8' : '#475569',
+            emphasis: { focus: 'series' },
+          },
+        ],
+      };
+      instanceRef.current.setOption(option, true);
+    })();
+    return () => { cancelled = true; };
+  }, [categories, series, totalSeries, isDarkMode]);
+
+  useEffect(() => {
+    const handle = () => instanceRef.current?.resize();
+    window.addEventListener('resize', handle);
+    return () => {
+      window.removeEventListener('resize', handle);
+      if (instanceRef.current) {
+        instanceRef.current.dispose();
+        instanceRef.current = null;
+      }
+    };
+  }, []);
+
+  if (categories.length === 0) {
+    return renderEmpty('No historical balance data available for this address yet.');
+  }
+  return <div ref={containerRef} style={{ width: '100%', height: 420 }} />;
+};
+
+const BalancesTab = ({ holdings, balanceHistory, tokenBalancesDaily = [], lendingBalancesDaily = [], isDarkMode = false }) => {
   const sorted = useMemo(
     () => [...(holdings || [])].sort((a, b) => Number(b.balance_usd || 0) - Number(a.balance_usd || 0)),
     [holdings]
@@ -1429,30 +1710,6 @@ const BalancesTab = ({ holdings, balanceHistory }) => {
     [balanceHistory]
   );
 
-  // Simple inline sparkline SVG
-  const sparkline = useMemo(() => {
-    const points = [...(balanceHistory || [])]
-      .map((r) => [r.date, Number(r.total_balance_usd || 0)])
-      .filter(([, v]) => !Number.isNaN(v))
-      .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
-    if (points.length < 2) return null;
-    const values = points.map(([, v]) => v);
-    const maxV = Math.max(...values);
-    const minV = Math.min(...values);
-    const range = Math.max(1e-6, maxV - minV);
-    const w = 600;
-    const h = 80;
-    const step = w / (points.length - 1);
-    const path = points
-      .map(([, v], i) => `${i === 0 ? 'M' : 'L'} ${i * step} ${h - ((v - minV) / range) * (h - 8) - 4}`)
-      .join(' ');
-    return (
-      <svg className="ap-balance-sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-        <path d={path} stroke="currentColor" strokeWidth="1.6" fill="none" />
-      </svg>
-    );
-  }, [balanceHistory]);
-
   return (
     <section className="ap-tab">
       <div className="ap-balance-hero">
@@ -1461,45 +1718,18 @@ const BalancesTab = ({ holdings, balanceHistory }) => {
         <span className="ap-stat-sub">
           {sorted.length} token{sorted.length === 1 ? '' : 's'} · as of {sorted[0]?.date || latest?.date || '-'}
         </span>
-        {sparkline}
       </div>
 
       <div className="ap-card">
         <div className="ap-card-header">
-          <h3>Token balances</h3>
-          <span className="ap-header-sub">{sorted.length} row{sorted.length === 1 ? '' : 's'}</span>
+          <h3>Historical balances</h3>
+          <span className="ap-header-sub">USD value per token over time · aTokens prefixed with `a`</span>
         </div>
-        {sorted.length === 0 ? (
-          Number(latest?.total_balance_usd || 0) > 0
-            ? renderEmpty(`Daily total ${formatCurrencyCompact(latest.total_balance_usd)} (as of ${latest.date}) — token-level breakdown unavailable.`)
-            : renderEmpty('No token balances found for this address.')
-        ) : (
-          <PaginatedTable
-            rows={sorted}
-            rowLabel="tokens"
-            tableClassName="ap-table"
-            renderHeader={() => (
-                <tr>
-                  <th>Token</th>
-                  <th>Class</th>
-                  <th>Contract</th>
-                  <th style={{ textAlign: 'right' }}>Balance</th>
-                  <th style={{ textAlign: 'right' }}>USD</th>
-                  <th>As of</th>
-                </tr>
-            )}
-            renderRow={(row, idx) => (
-              <tr key={`${row.token_address}-${idx}`}>
-                <td>{row.symbol || '-'}</td>
-                <td>{row.token_class || '-'}</td>
-                <td className="ap-mono" title={row.token_address}>{shortIdentifier(row.token_address)}</td>
-                <td style={{ textAlign: 'right' }}>{formatNumberCompact(row.balance || 0)}</td>
-                <td style={{ textAlign: 'right' }}>{row.balance_usd != null ? formatCurrencyCompact(row.balance_usd) : '-'}</td>
-                <td>{row.date || '-'}</td>
-              </tr>
-            )}
-          />
-        )}
+        <BalancesHistoryChart
+          tokenRows={tokenBalancesDaily}
+          lendingRows={lendingBalancesDaily}
+          isDarkMode={isDarkMode}
+        />
       </div>
     </section>
   );
@@ -1865,8 +2095,11 @@ const YIELDS_PORTFOLIO_METRICS = [
 const YIELDS_KPI_METRICS = YIELDS_PORTFOLIO_METRICS.filter((item) => item.band === 'kpi');
 const YIELDS_CHART_METRICS = YIELDS_PORTFOLIO_METRICS.filter((item) => item.band !== 'kpi');
 
-const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
-  const [state, setState] = useState({ loading: true, lp: [], lending: [], activity: [], error: null });
+// Yields data is now hoisted to AccountPortfolio so the unified Balances tab
+// can read the same lending positions without a duplicate fetch. YieldsTab
+// receives lp/lending/activity arrays as props; absence of all three is
+// treated as the (typically very brief) loading state.
+const YieldsTab = ({ address, isDarkMode, onRowClick, lp = [], lending = [], activity = [] }) => {
   const visibleMetricCount = useStaggeredCount(YIELDS_PORTFOLIO_METRICS.length, address, {
     enabled: Boolean(address),
     initialCount: 4,
@@ -1874,23 +2107,8 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
     intervalMs: 700,
   });
 
-  useEffect(() => {
-    if (!address) return undefined;
-    let cancelled = false;
-    setState((s) => ({ ...s, loading: true, error: null }));
-    accountPortfolioService.getYields(address)
-      .then((res) => {
-        if (cancelled) return;
-        setState({ loading: false, lp: res?.lp || [], lending: res?.lending || [], activity: res?.activity || [], error: null });
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setState({ loading: false, lp: [], lending: [], activity: [], error: err?.message || 'Failed to load yields' });
-      });
-    return () => { cancelled = true; };
-  }, [address]);
-
-  const { loading, lp, lending, activity, error } = state;
+  const error = null;
+  const loading = false;
   const activityRows = useMemo(
     () => [...(activity || [])].sort((a, b) => {
       const bTime = new Date(b?.block_timestamp || b?.date || 0).getTime() || 0;
@@ -1929,7 +2147,6 @@ const YieldsTab = ({ address, isDarkMode, onRowClick }) => {
 	      <div className="account-portfolio-section-header">
 	        <h3>Yields</h3>
 	      </div>
-	      <ScopeBadge label="Yields wallet" value={address} detail="selected or controlled wallet" />
 	      <div className="account-portfolio-kpi-band account-portfolio-yields-kpi-band ap-workbench-card">
         {YIELDS_KPI_METRICS.map((item, index) => (
           index < visibleKpiCount ? (
@@ -2318,6 +2535,12 @@ const AccountPortfolio = ({
   const [safesOwned, setSafesOwned] = useState([]);
   const [safeOwners, setSafeOwners] = useState([]);
 	  const [movements, setMovements] = useState([]);
+  const [lpPositions, setLpPositions] = useState([]);
+  const [lendingPositions, setLendingPositions] = useState([]);
+  const [yieldsActivity, setYieldsActivity] = useState([]);
+  const [circlesTotalBalance, setCirclesTotalBalance] = useState(null);
+  const [tokenBalancesDaily, setTokenBalancesDaily] = useState([]);
+  const [lendingBalancesDaily, setLendingBalancesDaily] = useState([]);
 	  const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [scope, setScope] = useState('selected');
@@ -2397,6 +2620,43 @@ const AccountPortfolio = ({
     [tokenBalances, balanceHistory]
   );
 
+  const unifiedHoldings = useMemo(
+    () => buildUnifiedHoldings(effectiveTokenBalances, lendingPositions, circlesTotalBalance),
+    [effectiveTokenBalances, lendingPositions, circlesTotalBalance]
+  );
+
+  // Merge ERC-20 movements with lending Supply/Withdraw/Repay/Borrow events so the
+  // Activity tab shows the full chronological story for accounts that hold aTokens.
+  // yieldsActivity rows already carry block_timestamp + transaction_hash; we just
+  // need to map them onto the MovementsTab row shape (direction + counterparty).
+  const unifiedMovements = useMemo(() => {
+    const lendingDirectionFor = (action) => {
+      const a = String(action || '').toLowerCase();
+      if (a === 'supply' || a === 'repay' || a === 'deposit') return 'outflow';
+      if (a === 'withdraw' || a === 'borrow' || a === 'redeem') return 'inflow';
+      return null;
+    };
+    const lendingRows = (yieldsActivity || []).map((row) => ({
+      date: row.date || (row.block_timestamp ? String(row.block_timestamp).slice(0, 10) : null),
+      block_timestamp: row.block_timestamp || null,
+      transaction_hash: row.transaction_hash || null,
+      source: row.source || 'lending',
+      action: row.action || '',
+      direction: lendingDirectionFor(row.action),
+      symbol: row.token_symbol || '',
+      token_address: row.token_address || '',
+      amount: row.amount,
+      amount_usd: row.amount_usd,
+      counterparty: row.protocol || row.position_address || '',
+    }));
+    const combined = [...(movements || []), ...lendingRows];
+    return combined.sort((a, b) => {
+      const ad = String(a?.block_timestamp || a?.date || '');
+      const bd = String(b?.block_timestamp || b?.date || '');
+      return bd.localeCompare(ad);
+    });
+  }, [movements, yieldsActivity]);
+
   useEffect(() => {
     if (!address) {
       setProfile(null);
@@ -2409,6 +2669,12 @@ const AccountPortfolio = ({
       setSafesOwned([]);
       setSafeOwners([]);
       setMovements([]);
+      setLpPositions([]);
+      setLendingPositions([]);
+      setYieldsActivity([]);
+      setCirclesTotalBalance(null);
+      setTokenBalancesDaily([]);
+      setLendingBalancesDaily([]);
       setProfileError('');
       setProfileLoading(false);
       return undefined;
@@ -2424,6 +2690,12 @@ const AccountPortfolio = ({
 	    setSafesOwned([]);
 	    setSafeOwners([]);
 	    setMovements([]);
+    setLpPositions([]);
+    setLendingPositions([]);
+    setYieldsActivity([]);
+    setCirclesTotalBalance(null);
+    setTokenBalancesDaily([]);
+    setLendingBalancesDaily([]);
 
     // Fire each data stream independently so the hero card renders as soon
     // as the cheap resolver + role-flags + safes queries return.
@@ -2484,6 +2756,27 @@ const AccountPortfolio = ({
 	      fire(accountPortfolioService.getMovements(address, { days: 90, includeGPay: true }), (v) => setMovements(Array.isArray(v) ? v : []), []);
 	    }, 1100));
 
+    // Yields (LP + lending) — hoisted so the unified Balances tab can show
+    // aTokens alongside ERC-20 holdings without each tab fetching separately.
+    timers.push(window.setTimeout(() => {
+      fire(
+        accountPortfolioService.getYields(address),
+        (v) => {
+          setLpPositions(Array.isArray(v?.lp) ? v.lp : []);
+          setLendingPositions(Array.isArray(v?.lending) ? v.lending : []);
+          setYieldsActivity(Array.isArray(v?.activity) ? v.activity : []);
+        },
+        { lp: [], lending: [], activity: [] }
+      );
+    }, 900));
+
+    // Per-token historical balances — feeds the multi-line chart on the
+    // Balances tab. Light-weight view; loaded on the same tier as movements.
+    timers.push(window.setTimeout(() => {
+      fire(accountPortfolioService.getTokenBalancesDaily(address), (v) => setTokenBalancesDaily(Array.isArray(v) ? v : []), []);
+      fire(accountPortfolioService.getLendingBalancesDaily(address), (v) => setLendingBalancesDaily(Array.isArray(v) ? v : []), []);
+    }, 1100));
+
 	    // Unblock the loading gate as soon as the resolver lands (< 500 ms) so
 	    // the hero and sections paint while heavier streams load later.
 	    profilePromise
@@ -2495,6 +2788,22 @@ const AccountPortfolio = ({
       timers.forEach((timer) => window.clearTimeout(timer));
 	    };
 	  }, [address]);
+
+  // Circles aggregated balance — fires once we know the avatar address. Gated
+  // on circles identity so we don't ping the metric for every wallet.
+  useEffect(() => {
+    let cancelled = false;
+    const avatarAddress = circlesAvatar?.avatar
+      || (hasCirclesIdentity(profile, roleFlags, selectedAccount) ? address : null);
+    if (!avatarAddress) {
+      setCirclesTotalBalance(null);
+      return undefined;
+    }
+    accountPortfolioService.getCirclesTotalBalance(avatarAddress)
+      .then((v) => { if (!cancelled) setCirclesTotalBalance(v || null); })
+      .catch(() => { if (!cancelled) setCirclesTotalBalance(null); });
+    return () => { cancelled = true; };
+  }, [circlesAvatar?.avatar, profile, roleFlags, selectedAccount, address]);
 
 	  const handleSelect = useCallback((selection) => {
 	    setSelectedAccount(selection);
@@ -2508,6 +2817,12 @@ const AccountPortfolio = ({
     setSafesOwned([]);
     setSafeOwners([]);
     setMovements([]);
+    setLpPositions([]);
+    setLendingPositions([]);
+    setYieldsActivity([]);
+    setCirclesTotalBalance(null);
+    setTokenBalancesDaily([]);
+    setLendingBalancesDaily([]);
     setDrawer(null);
     setCounterpartyFilter(null);
     setEmbeddedValidatorState(null);
@@ -2583,7 +2898,9 @@ const AccountPortfolio = ({
 	      hasGpay: hasGPayIdentity(p, r),
 	      hasGnosisApp: Boolean(p.is_gnosis_app_user) || Boolean(r.is_ga_user),
 	      hasYields: Boolean(p.is_lp_provider || p.is_lending_user || p.has_yield_activity) ||
-	        Boolean(r.is_lp_provider || r.is_lending_user),
+	        Boolean(r.is_lp_provider || r.is_lending_user) ||
+	        (lpPositions?.length > 0) ||
+	        (lendingPositions?.length > 0),
 	      hasSafe: Boolean(p.is_safe || p.is_safe_owner) ||
 	        Number(p.linked_safe_count || p.connected_safe_count || 0) > 0 ||
 	        Boolean(r.is_safe || r.is_safe_owner) ||
@@ -2596,6 +2913,8 @@ const AccountPortfolio = ({
 	    circlesAvatar,
 	    safesOwned,
 	    safeOwners,
+	    lpPositions,
+	    lendingPositions,
 	    selectedAccount?.sourceType,
 	    selectedAccount?.validatorIndex,
 	    selectedAccount?.withdrawalCredentials,
@@ -2761,7 +3080,9 @@ const AccountPortfolio = ({
                 roleFlags={roleFlags}
                 circlesAvatar={circlesAvatar}
                 safesOwned={safesOwned}
-                movements={movements}
+                movements={unifiedMovements}
+                lendingPositions={lendingPositions}
+                circlesTotalBalance={circlesTotalBalance}
               />
 
 	              <nav className="account-portfolio-section-tabs" role="tablist" aria-label="Account portfolio sections">
@@ -2789,15 +3110,22 @@ const AccountPortfolio = ({
 	                    linkedEntities={effectiveLinkedEntities}
 	                    activitySummary={activitySummary}
 	                    tokenBalances={effectiveTokenBalances}
+	                    holdings={unifiedHoldings}
 	                    balanceHistory={balanceHistory}
-	                    movements={movements}
+	                    movements={unifiedMovements}
 	                    onRowClick={setDrawer}
 	                  />
 	                ) : activeSection === 'balances' ? (
-	                  <BalancesTab holdings={effectiveTokenBalances} balanceHistory={balanceHistory} />
+	                  <BalancesTab
+	                    holdings={unifiedHoldings}
+	                    balanceHistory={balanceHistory}
+	                    tokenBalancesDaily={tokenBalancesDaily}
+	                    lendingBalancesDaily={lendingBalancesDaily}
+	                    isDarkMode={isDarkMode}
+	                  />
 	                ) : activeSection === 'activity' ? (
 	                  <MovementsTab
-	                    movements={movements}
+	                    movements={unifiedMovements}
 	                    address={address}
 	                    safesOwned={safesOwned}
 	                    isDarkMode={isDarkMode}
@@ -2831,6 +3159,9 @@ const AccountPortfolio = ({
 	                    address={profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || address}
 	                    isDarkMode={isDarkMode}
 	                    onRowClick={setDrawer}
+	                    lp={lpPositions}
+	                    lending={lendingPositions}
+	                    activity={yieldsActivity}
 	                  />
 	                ) : activeSection === 'circles' && sectionFlags.hasCircles ? (
 	                  <PortfolioMetricSection

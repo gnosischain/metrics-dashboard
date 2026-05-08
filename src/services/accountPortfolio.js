@@ -476,6 +476,54 @@ class AccountPortfolioService {
     }
   }
 
+  // Per-token daily balances for a wallet — feeds the multi-line chart on the
+  // Balances tab. Returns rows of { date, symbol, token_address, balance, balance_usd }.
+  async getTokenBalancesDaily(address) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return [];
+    try {
+      const rows = await this.getRows('api_execution_tokens_balances_daily', {
+        filterField: 'address',
+        filterValue: normalized,
+      });
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // Per-token daily aToken balances — overlays lending positions onto the
+  // Balances historical chart. Returns rows of { date, symbol, balance, balance_usd }.
+  async getLendingBalancesDaily(address) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return [];
+    try {
+      const rows = await this.getRows('api_execution_yields_user_lending_balances_daily', {
+        filterField: 'user_address',
+        filterValue: normalized,
+      });
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // Aggregated CRC balance for a Circles avatar — surfaces a single
+  // "CRC" row in the unified Balances tab without pulling per-token detail.
+  async getCirclesTotalBalance(avatarAddress) {
+    const normalized = normalizeAddress(avatarAddress);
+    if (!normalized) return null;
+    try {
+      const rows = await this.getRows('api_execution_circles_v2_avatar_total_balance_latest', {
+        filterField: 'avatar',
+        filterValue: normalized,
+      });
+      return Array.isArray(rows) && rows.length ? rows[0] : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
   async getHoldings(address) {
     const normalized = normalizeAddress(address);
     if (!normalized) return [];

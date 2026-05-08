@@ -1,4 +1,4 @@
 {
   "id": "api_execution_account_balance_history_daily",
-  "query": "SELECT\n      date,\n      address,\n      'Total balance' AS series,\n      total_balance_usd,\n      tokens_held,\n      native_or_wrapped_xdai_balance,\n      priced_balance_usd,\n      priced_tokens_held\n    FROM dbt.api_execution_account_balance_history_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
+  "query": "SELECT\n      date,\n      address,\n      'Total balance' AS series,\n      total_balance_usd,\n      tokens_held,\n      native_or_wrapped_xdai_balance,\n      priced_balance_usd,\n      priced_tokens_held\n    FROM dbt.int_execution_account_balance_history_daily\n    PREWHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
 }
