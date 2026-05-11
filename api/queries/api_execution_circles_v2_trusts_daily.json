@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_trusts_daily",
+  "query": "SELECT\n      date,\n      n_trust_events,\n      n_new_trusts,\n      n_revoked_trusts,\n      n_distinct_trusters,\n      n_distinct_trustees\n    FROM dbt.api_execution_circles_v2_trusts_daily\n    ORDER BY date"
+}

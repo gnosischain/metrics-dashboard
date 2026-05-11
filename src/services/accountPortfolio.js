@@ -551,6 +551,59 @@ class AccountPortfolioService {
     return [];
   }
 
+  // Top counterparties for an address over a window. Inbound + outbound merged
+  // and grouped by the OTHER side; project/sector enriched via crawler labels.
+  async getCounterparties(address, { days = 90 } = {}) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return [];
+    const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    try {
+      const rows = await this.getRows('api_execution_account_activity_counterparties', {
+        from, to, filterField: 'wallet_address', filterValue: normalized,
+      });
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      console.warn('[activity-counterparties] failed', err);
+      return [];
+    }
+  }
+
+  // Daily transfer counts (inbound + outbound) for the activity heatmap.
+  async getActivityHeatmap(address, { days = 90 } = {}) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return [];
+    const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    try {
+      const rows = await this.getRows('api_execution_account_activity_heatmap', {
+        from, to, filterField: 'wallet_address', filterValue: normalized,
+      });
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      console.warn('[activity-heatmap] failed', err);
+      return [];
+    }
+  }
+
+  // Window-aware totals (transfers, active days, counterparties) used by the
+  // hero KPI cards so they match the heatmap meta line.
+  async getActivityTotals(address, { days = 90 } = {}) {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return null;
+    const from = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const to = new Date().toISOString().slice(0, 10);
+    try {
+      const rows = await this.getRows('api_execution_account_activity_totals', {
+        from, to, filterField: 'wallet_address', filterValue: normalized,
+      });
+      return Array.isArray(rows) && rows.length ? rows[0] : null;
+    } catch (err) {
+      console.warn('[activity-totals] failed', err);
+      return null;
+    }
+  }
+
   async getMovements(address, { days = 90, includeGPay = true } = {}) {
     const normalized = normalizeAddress(address);
     if (!normalized) return [];

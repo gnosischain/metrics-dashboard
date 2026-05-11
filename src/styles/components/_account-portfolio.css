@@ -880,3 +880,58 @@
 .ap-empty-card--validating .validator-explorer-empty-eyebrow {
   color: var(--color-text-tertiary);
 }
+
+/* Activity tab analytics block (replaces the old Graph tab). */
+.ap-analytics {
+  display: grid;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.ap-heatmap-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 4px 4px 8px;
+}
+
+.ap-cp-list th,
+.ap-cp-list td {
+  padding: 6px 10px;
+}
+
+.ap-cp-list .ap-mono {
+  font-family: var(--font-family-mono, "Monaco", monospace);
+  font-size: var(--font-size-xs);
+}
+
+.ap-window-selector {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--border-radius-base);
+  background: var(--color-accent-softer);
+  border: 1px solid var(--color-border);
+}
+
+.ap-window-selector button {
+  background: transparent;
+  border: 0;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.ap-window-selector button:hover {
+  background: var(--color-hover-background);
+  color: var(--color-text-primary);
+}
+
+.ap-window-selector button.active {
+  background: var(--color-surface);
+  color: var(--primary-blue);
+  box-shadow: var(--shadow-sm);
+}

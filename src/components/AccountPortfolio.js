@@ -169,7 +169,6 @@ const ACCOUNT_PORTFOLIO_SECTIONS = [
   { id: 'overview', title: 'Overview', always: true },
   { id: 'balances', title: 'Balances', always: true },
   { id: 'activity', title: 'Activity', always: true },
-  { id: 'graph', title: 'Graph', always: true },
   { id: 'safes', title: 'Safes', flag: 'hasSafe' },
   { id: 'yields', title: 'Yields', flag: 'hasYields' },
   { id: 'circles', title: 'Circles', flag: 'hasCircles' },
@@ -857,6 +856,8 @@ const AccountSummaryCard = ({
   movements = [],
   lendingPositions = [],
   circlesTotalBalance = null,
+  activityTotals = null,
+  activityWindowDays = 90,
 }) => {
   const displayName = profile?.display_name || selection?.displayLabel || address || selection?.withdrawalCredentials || 'Account';
   const selectedEth1Credential = isEth1WithdrawalCredential(selection?.withdrawalCredentials)
@@ -925,13 +926,16 @@ const AccountSummaryCard = ({
   const validatorCredentialEquivalent = validatorWithdrawalAddress
     ? (selectedEth1Credential || withdrawalCredentialFromAddress(validatorWithdrawalAddress))
     : '';
-  const movementCount = movements.length || summary.token_transfer_count || 0;
+  const totalsTransferCount = Number(activityTotals?.total_transfers) || 0;
+  const totalsCounterpartyCount = Number(activityTotals?.counterparty_count) || 0;
   const counterpartySet = new Set(
     movements
       .map((m) => String(m.counterparty || '').toLowerCase())
       .filter((v) => v && v !== 'null' && v !== 'undefined')
   );
-  const counterpartiesCount = counterpartySet.size || summary.counterparty_count || 0;
+  const movementCount = totalsTransferCount || summary.token_transfer_count || movements.length || 0;
+  const counterpartiesCount = totalsCounterpartyCount || summary.counterparty_count || counterpartySet.size || 0;
+  const windowLabel = ACTIVITY_WINDOW_OPTIONS.find((o) => o.value === activityWindowDays)?.label || `${activityWindowDays}d`;
   const firstActive = normalizeDisplayDate(firstMovementDate || summary.first_activity_date || profile?.first_seen_date);
   const lastActive = normalizeDisplayDate(lastMovementDate || summary.last_activity_date || profile?.last_active_date);
   const circlesIdentity = getCirclesAvatarIdentity(profile, roleFlags, selection, circlesAvatar, address);
@@ -1021,8 +1025,8 @@ const AccountSummaryCard = ({
         <MetricTile label="Tokens held" value={formatNumberCompact(tokensHeld || 0)} />
         <MetricTile label="Account age" value={getAgeText(firstActive)} />
         <MetricTile label="Last active" value={lastActive || '-'} />
-        <MetricTile label="Counterparties" value={formatNumberCompact(counterpartiesCount)} />
-        <MetricTile label="Token transfers" value={formatNumberCompact(movementCount)} />
+        <MetricTile label={`Counterparties · ${windowLabel}`} value={formatNumberCompact(counterpartiesCount)} />
+        <MetricTile label={`Token transfers · ${windowLabel}`} value={formatNumberCompact(movementCount)} />
         <MetricTile label="Safes" value={formatNumberCompact(safesCount)} />
         <MetricTile label="Validators" value={formatNumberCompact(validatorsCount)} />
       </div>
@@ -1119,6 +1123,8 @@ const AccountOverview = ({
   movements = [],
   onRowClick,
   holdings = null,
+  activityTotals = null,
+  activityWindowDays = 90,
 }) => {
   // Prefer the unified holdings (tokens + aTokens + Circles aggregate) when
   // available so the Overview's "Top tokens" preview reflects the full
@@ -1162,10 +1168,12 @@ const AccountOverview = ({
   const firstActive = normalizeDisplayDate(summary.first_activity_date || movementSummary.first_activity_date || profile?.first_seen_date) || '-';
   const lastActive = normalizeDisplayDate(summary.last_activity_date || movementSummary.last_activity_date || profile?.last_active_date) || '-';
   const activeDays = Number(summary.active_days || 0) || movementSummary.active_days || 0;
-  const transferCount = Number(summary.token_transfer_count || 0) || movementSummary.token_transfer_count || 0;
+  const totalsTransferCount = Number(activityTotals?.total_transfers) || 0;
+  const totalsCounterpartyCount = Number(activityTotals?.counterparty_count) || 0;
+  const transferCount = totalsTransferCount || Number(summary.token_transfer_count || 0) || movementSummary.token_transfer_count || 0;
   const inboundCount = Number(summary.inbound_transfer_count || 0) || movementSummary.inbound_transfer_count || 0;
   const outboundCount = Number(summary.outbound_transfer_count || 0) || movementSummary.outbound_transfer_count || 0;
-  const counterpartyCount = Number(summary.counterparty_count || 0) || movementSummary.counterparty_count || 0;
+  const counterpartyCount = totalsCounterpartyCount || Number(summary.counterparty_count || 0) || movementSummary.counterparty_count || 0;
   const tokenCountMoved = Number(summary.token_count_moved || 0) || movementSummary.token_count_moved || 0;
 
   return (
@@ -1735,6 +1743,295 @@ const BalancesTab = ({ holdings, balanceHistory, tokenBalancesDaily = [], lendin
   );
 };
 
+// Calendar-style transaction heatmap (weeks × weekday). Renders inline ECharts.
+// `rows` is `[{ date, transfers }]`.
+const HEATMAP_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const TransactionHeatmap = ({ rows = [], windowDays = 90, isDarkMode = false }) => {
+  const containerRef = useRef(null);
+  const instanceRef = useRef(null);
+  const [paintTick, setPaintTick] = useState(0);
+
+  const { matrix, weekIds, weekMonthLabels, total, peak } = useMemo(() => {
+    if (!rows || rows.length === 0) {
+      return { matrix: [], weekIds: [], weekMonthLabels: [], total: 0, peak: 0 };
+    }
+    const byDate = new Map();
+    let sum = 0;
+    let max = 0;
+    rows.forEach((r) => {
+      const v = Number(r.transfers || 0);
+      if (!r?.date) return;
+      byDate.set(String(r.date), v);
+      sum += v;
+      if (v > max) max = v;
+    });
+    const end = new Date();
+    end.setHours(0, 0, 0, 0);
+    const start = new Date(end);
+    start.setDate(end.getDate() - (windowDays - 1));
+
+    // Each month is its own block. Within a month, week-within-month is
+    // computed from the 1st-of-month's weekday so partial first/last weeks
+    // are honored. A blank "gap" column separates adjacent months.
+    const isoLocal = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${dd}`;
+    };
+    const cells = [];
+    const ids = [];
+    const monthLabels = [];
+    let lastMonthKey = null;
+    const cur = new Date(start);
+    while (cur <= end) {
+      const iso = isoLocal(cur);
+      const v = byDate.get(iso) || 0;
+      const day = cur.getDay();
+      const monthKey = `${cur.getFullYear()}-${String(cur.getMonth()).padStart(2, '0')}`;
+      // Day-of-week of the 1st of this month.
+      const firstDow = new Date(cur.getFullYear(), cur.getMonth(), 1).getDay();
+      const weekInMonth = Math.floor((cur.getDate() - 1 + firstDow) / 7);
+      const colId = `${monthKey}:${weekInMonth}`;
+      cells.push({ value: [colId, HEATMAP_WEEKDAYS[day], v], name: iso });
+
+      if (monthKey !== lastMonthKey) {
+        if (lastMonthKey !== null) {
+          // Insert gap column between months for visual separation.
+          ids.push(`gap-${ids.length}`);
+          monthLabels.push('');
+        }
+        lastMonthKey = monthKey;
+      }
+      // Track every distinct (month, weekInMonth) we've encountered, in order.
+      if (ids[ids.length - 1] !== colId) {
+        ids.push(colId);
+        // Label only the first column of each month.
+        const isFirstColOfMonth = !ids
+          .slice(0, -1)
+          .some((id) => typeof id === 'string' && id.startsWith(`${monthKey}:`));
+        monthLabels.push(
+          isFirstColOfMonth ? cur.toLocaleString('default', { month: 'short' }) : ''
+        );
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    return { matrix: cells, weekIds: ids, weekMonthLabels: monthLabels, total: sum, peak: max };
+  }, [rows, windowDays]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const echarts = await import('echarts');
+      if (cancelled || !containerRef.current) return;
+      if (!instanceRef.current) {
+        if (!containerRef.current.clientWidth || !containerRef.current.clientHeight) return;
+        instanceRef.current = echarts.init(containerRef.current);
+      }
+      const textColor = isDarkMode ? '#cbd5e1' : '#334155';
+      const emptyColor = isDarkMode ? '#1e293b' : '#e2e8f0';
+      const surfaceColor = isDarkMode ? '#0f172a' : '#ffffff';
+      const monthByWeekId = {};
+      weekIds.forEach((id, i) => { monthByWeekId[id] = weekMonthLabels[i] || ''; });
+      const option = {
+        backgroundColor: 'transparent',
+        animation: false,
+        tooltip: {
+          formatter: (p) => {
+            const val = Array.isArray(p.value) ? p.value[2] : p.data?.value?.[2];
+            const iso = p.name || p.data?.name || '';
+            return `<b>${iso}</b><br/>${val} transfer${val === 1 ? '' : 's'}`;
+          },
+        },
+        grid: { top: 8, left: 36, right: 8, bottom: 28 },
+        xAxis: {
+          type: 'category',
+          data: weekIds,
+          position: 'bottom',
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            interval: 0,
+            align: 'left',
+            formatter: (v) => monthByWeekId[v] || '',
+          },
+          splitLine: { show: false },
+        },
+        yAxis: {
+          type: 'category',
+          data: HEATMAP_WEEKDAYS,
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: { color: textColor, fontSize: 10, interval: 1 },
+          splitLine: { show: false },
+          inverse: true,
+        },
+        visualMap: {
+          show: false,
+          type: 'piecewise',
+          seriesIndex: 0,
+          dimension: 2,
+          pieces: [
+            { value: 0, color: emptyColor },
+            { gt: 0, lte: 1, color: '#bfdbfe' },
+            { gt: 1, lte: 4, color: '#93c5fd' },
+            { gt: 4, lte: 10, color: '#60a5fa' },
+            { gt: 10, lte: 25, color: '#1d4ed8' },
+            { gt: 25, color: '#7c3aed' },
+          ],
+        },
+        series: [{
+          type: 'heatmap',
+          data: matrix,
+          itemStyle: {
+            borderRadius: 3,
+            borderColor: surfaceColor,
+            borderWidth: 3,
+          },
+          progressive: 0,
+          emphasis: { itemStyle: { borderColor: textColor, borderWidth: 1 } },
+        }],
+      };
+      instanceRef.current.setOption(option, true);
+    })();
+    return () => { cancelled = true; };
+  }, [matrix, weekIds, weekMonthLabels, peak, isDarkMode, paintTick]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const handle = () => {
+      if (instanceRef.current) {
+        instanceRef.current.resize();
+      } else if (el.clientWidth > 0 && el.clientHeight > 0) {
+        // Container went from 0×0 to sized — bump paintTick so the option
+        // effect re-runs and gets to call echarts.init.
+        setPaintTick((n) => n + 1);
+      }
+    };
+    const ro = new ResizeObserver(handle);
+    ro.observe(el);
+    window.addEventListener('resize', handle);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', handle);
+      if (instanceRef.current) {
+        instanceRef.current.dispose();
+        instanceRef.current = null;
+      }
+    };
+  }, []);
+
+  if (matrix.length === 0) {
+    return renderEmpty('No activity in the selected window.');
+  }
+  return (
+    <div>
+      <div className="ap-heatmap-meta">
+        {total} transfer{total === 1 ? '' : 's'} · peak {peak}/day
+      </div>
+      <div ref={containerRef} className="ap-heatmap" style={{ width: '100%', height: 180 }} />
+    </div>
+  );
+};
+
+// Top-counterparty list and transaction heatmap, shown above the activity
+// table. Both honour the active window selector (90d / 1y / 2y / All).
+const ActivityAnalytics = ({ counterparties = [], heatmap = [], windowDays = 90, onOpenAddress, isDarkMode = false }) => {
+  const list = (counterparties || []).slice(0, 20);
+  return (
+    <section className="ap-analytics">
+      <div className="ap-card">
+        <div className="ap-card-header">
+          <h3>Transaction heatmap</h3>
+          <span className="ap-header-sub">Daily transfer count · inbound + outbound</span>
+        </div>
+        <TransactionHeatmap rows={heatmap} windowDays={windowDays} isDarkMode={isDarkMode} />
+      </div>
+      <div className="ap-card">
+        <div className="ap-card-header">
+          <h3>Top counterparties</h3>
+          <span className="ap-header-sub">{list.length} of {counterparties.length || 0} · grouped by transfer count</span>
+        </div>
+        {list.length === 0 ? renderEmpty('No counterparty data for this window yet.') : (
+          <table className="ap-table ap-cp-list">
+            <thead>
+              <tr>
+                <th>Counterparty</th>
+                <th>Project</th>
+                <th>Sector</th>
+                <th style={{ textAlign: 'right' }}>Transfers</th>
+                <th style={{ textAlign: 'right' }}>Active days</th>
+                <th>Last seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((row) => {
+                const cp = String(row.counterparty || '').toLowerCase();
+                const canOpen = isAddress(cp);
+                return (
+                  <tr key={cp}>
+                    <td>
+                      {canOpen ? (
+                        <button
+                          type="button"
+                          className="table-link ap-mono"
+                          onClick={() => onOpenAddress && onOpenAddress(cp)}
+                          title={cp}
+                        >
+                          {shortIdentifier(cp)}
+                        </button>
+                      ) : (
+                        <span className="ap-mono" title={cp}>{shortIdentifier(cp) || '-'}</span>
+                      )}
+                    </td>
+                    <td>{row.project || '-'}</td>
+                    <td>
+                      {row.sector ? (
+                        <span className="validator-explorer-status-pill validator-explorer-status-pill--neutral">{row.sector}</span>
+                      ) : '-'}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>{formatNumberCompact(row.transfers || 0)}</td>
+                    <td style={{ textAlign: 'right' }}>{formatNumberCompact(row.active_days || 0)}</td>
+                    <td>{row.last_seen || '-'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  );
+};
+
+const ACTIVITY_WINDOW_OPTIONS = [
+  { label: '90d', value: 90 },
+  { label: '1y', value: 365 },
+  { label: '2y', value: 730 },
+  { label: 'All', value: 3650 },
+];
+
+const ActivityWindowSelector = ({ value, onChange }) => (
+  <div className="ap-window-selector" role="tablist" aria-label="Activity time window">
+    {ACTIVITY_WINDOW_OPTIONS.map((opt) => (
+      <button
+        key={opt.value}
+        type="button"
+        role="tab"
+        aria-selected={value === opt.value}
+        className={value === opt.value ? 'active' : ''}
+        onClick={() => onChange(opt.value)}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+);
+
 const MovementsTab = ({
   movements,
   address,
@@ -1743,35 +2040,61 @@ const MovementsTab = ({
   safesOwned = [],
   title = 'Token movements & Gnosis Pay activity',
   emptyMessage = 'No movements in the last 90 days.',
+  windowDays = 90,
+  onWindowChange,
+  counterparties = [],
+  heatmap = [],
+  onOpenAddress,
+  isDarkMode = false,
 }) => {
   const filtered = useMemo(() => {
     if (!counterpartyFilter) return movements || [];
     const cp = String(counterpartyFilter).toLowerCase();
     return (movements || []).filter((row) => String(row.counterparty || '').toLowerCase() === cp);
   }, [movements, counterpartyFilter]);
-  if (!movements || movements.length === 0) {
-    // For Safe-owner EOAs, on-chain activity flows through the controlled
-    // Safes — the signer address itself often has zero token movements.
-    // Surface that hint instead of the generic "no activity" message.
+  const windowLabel = ACTIVITY_WINDOW_OPTIONS.find((o) => o.value === windowDays)?.label || `${windowDays}d`;
+  const noMovements = !movements || movements.length === 0;
+  if (noMovements) {
     const safeCount = Array.isArray(safesOwned) ? safesOwned.length : 0;
     const message = safeCount > 0
-      ? `No direct token movements for this address in the last 90 days. This address controls ${safeCount} Safe${safeCount === 1 ? '' : 's'} — see the Safes tab for activity routed through them.`
+      ? `No direct token movements for this address in the selected window. This address controls ${safeCount} Safe${safeCount === 1 ? '' : 's'} — see the Safes tab for activity routed through them.`
       : emptyMessage;
     return (
       <section className="ap-tab">
-        <div className="ap-card">{renderEmpty(message)}</div>
+        <div className="ap-card">
+          <div className="ap-card-header">
+            <h3>{title}</h3>
+            <ActivityWindowSelector value={windowDays} onChange={onWindowChange} />
+          </div>
+          {renderEmpty(message)}
+        </div>
+        <ActivityAnalytics
+          counterparties={counterparties}
+          heatmap={heatmap}
+          windowDays={windowDays}
+          onOpenAddress={onOpenAddress}
+          isDarkMode={isDarkMode}
+        />
       </section>
     );
   }
 
   return (
     <section className="ap-tab">
+      <ActivityAnalytics
+        counterparties={counterparties}
+        heatmap={heatmap}
+        windowDays={windowDays}
+        onOpenAddress={onOpenAddress}
+        isDarkMode={isDarkMode}
+      />
       <div className="ap-card">
         <div className="ap-card-header">
-          <h3>{title}</h3>
-          <span className="ap-header-sub">
-            {filtered.length} of {movements.length} rows · last 90 days
-            {counterpartyFilter ? (
+          <div>
+            <h3>{title}</h3>
+            <span className="ap-header-sub">
+              {filtered.length} of {movements.length} rows · {windowLabel}
+              {counterpartyFilter ? (
               <>
                 {' · filtered by '}
                 <span className="ap-mono">{shortIdentifier(counterpartyFilter)}</span>
@@ -1786,7 +2109,9 @@ const MovementsTab = ({
                 </button>
               </>
             ) : null}
-          </span>
+            </span>
+          </div>
+          <ActivityWindowSelector value={windowDays} onChange={onWindowChange} />
         </div>
         <PaginatedTable
           rows={filtered}
@@ -1955,127 +2280,6 @@ const SafesTab = ({ safes = [], safeOwners = [], address, onOpenAddress }) => {
   );
 };
 
-const GraphTab = ({ address, profile, safes, roleFlags, linkedEntities, isDarkMode, onOpenAddress, onRowClick, onFilterCounterparty }) => {
-  const edges = [];
-  if (profile?.controlled_gpay_wallet) {
-    edges.push({ type: 'Gnosis Pay Safe (controlled)', address: profile.controlled_gpay_wallet });
-  }
-  if (roleFlags?.controls_gpay_wallet && roleFlags.controls_gpay_wallet !== profile?.controlled_gpay_wallet) {
-    edges.push({ type: 'Gnosis Pay Safe (controlled)', address: roleFlags.controls_gpay_wallet });
-  }
-  (safes || []).forEach((s) => {
-    if (s.safe_address) edges.push({ type: 'Safe owned', address: s.safe_address, detail: `${s.current_threshold}/${s.current_owner_count}` });
-  });
-  (linkedEntities || []).forEach((row) => {
-    const entityAddress = row.entity_address ? String(row.entity_address).toLowerCase() : '';
-    const relationId = [row.relation || row.entity_type || 'linked', row.entity_id]
-      .filter(Boolean)
-      .join(':');
-    const candidate = entityAddress && entityAddress !== String(address || '').toLowerCase()
-      ? row.entity_address
-      : (row.entity_id || relationId);
-    if (candidate && candidate !== address) {
-      edges.push({
-        type: row.relation || row.entity_type || 'linked',
-        address: candidate,
-        detail: row.display_label || null,
-      });
-    }
-  });
-
-  return (
-    <section className="ap-tab">
-      <div className="ap-grid-4">
-        <div className="ap-stat">
-          <span className="ap-stat-label">Safes owned</span>
-          <span className="ap-stat-value">{formatNumberCompact(safes?.length || 0)}</span>
-        </div>
-        <div className="ap-stat">
-          <span className="ap-stat-label">Gnosis Pay controlled</span>
-          <span className="ap-stat-value">
-            {profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet ? 'Yes' : 'No'}
-          </span>
-        </div>
-        <div className="ap-stat">
-          <span className="ap-stat-label">Validators (withdrawals)</span>
-          <span className="ap-stat-value">
-            {formatNumberCompact(profile?.connected_validator_count || 0)}
-          </span>
-        </div>
-        <div className="ap-stat">
-          <span className="ap-stat-label">Circles avatar</span>
-          <span className="ap-stat-value">{hasCirclesIdentity(profile, roleFlags) ? getCirclesLabel(profile, roleFlags) : 'No'}</span>
-        </div>
-      </div>
-
-      {address ? (
-        <div className="ap-card ap-graph-card">
-          <div className="ap-card-header">
-            <h3>Counterparty graph</h3>
-            <span className="ap-header-sub">
-              Top counterparties this address has interacted with — token transfers and Circles trust edges. Click a node to filter.
-            </span>
-          </div>
-          <PortfolioMetric
-            item={{ metricId: 'api_execution_account_counterparty_graph', filterField: 'address', gridColumn: '1 / span 12', minHeight: 520 }}
-            filterValue={address}
-            isDarkMode={isDarkMode}
-            onRowClick={(payload) => {
-              const cp = payload?.row?.counterparty || payload?.row?.target;
-              if (isAddress(cp) && onFilterCounterparty) {
-                onFilterCounterparty(String(cp).toLowerCase());
-              } else {
-                onRowClick?.(payload);
-              }
-            }}
-          />
-        </div>
-      ) : null}
-
-      <div className="ap-card">
-        <div className="ap-card-header">
-          <h3>Connected entities</h3>
-          <span className="ap-header-sub">{edges.length} edges</span>
-        </div>
-        {edges.length === 0 ? renderEmpty('No linked entities detected.') : (
-          <div className="ap-graph-edge-list">
-            {edges.map((edge, idx) => (
-              <div key={`${edge.address}-${idx}`} className="ap-graph-edge">
-                <div>
-                  <div style={{ fontWeight: 'var(--font-weight-semibold)' }}>{edge.type}</div>
-                  <div className="ap-mono" style={{ color: 'var(--color-text-tertiary)' }} title={edge.address}>
-                    {shortIdentifier(edge.address)}
-                    {edge.detail ? ` · ${edge.detail}` : ''}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {onFilterCounterparty && isAddress(edge.address) ? (
-                    <button
-                      type="button"
-                      className="resolution-btn"
-                      onClick={() => onFilterCounterparty(String(edge.address).toLowerCase())}
-                      title="Filter Movements/Transactions to this counterparty"
-                    >
-                      Filter
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="resolution-btn"
-                    onClick={() => onOpenAddress && isAddress(edge.address) && onOpenAddress(String(edge.address).toLowerCase())}
-                    disabled={!isAddress(edge.address)}
-                  >
-                    Open
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-};
 
 const formatUsd = (n) => {
   const v = Number(n || 0);
@@ -2540,6 +2744,10 @@ const AccountPortfolio = ({
   const [yieldsActivity, setYieldsActivity] = useState([]);
   const [circlesTotalBalance, setCirclesTotalBalance] = useState(null);
   const [tokenBalancesDaily, setTokenBalancesDaily] = useState([]);
+  const [activityWindowDays, setActivityWindowDays] = useState(90);
+  const [counterparties, setCounterparties] = useState([]);
+  const [activityHeatmap, setActivityHeatmap] = useState([]);
+  const [activityTotals, setActivityTotals] = useState(null);
   const [lendingBalancesDaily, setLendingBalancesDaily] = useState([]);
 	  const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
@@ -2675,6 +2883,9 @@ const AccountPortfolio = ({
       setCirclesTotalBalance(null);
       setTokenBalancesDaily([]);
       setLendingBalancesDaily([]);
+      setCounterparties([]);
+      setActivityHeatmap([]);
+      setActivityTotals(null);
       setProfileError('');
       setProfileLoading(false);
       return undefined;
@@ -2752,9 +2963,9 @@ const AccountPortfolio = ({
 	      fire(accountPortfolioService.getBalanceHistory(address), (v) => setBalanceHistory(Array.isArray(v) ? v : []), []);
 	    }, 900));
 
-	    timers.push(window.setTimeout(() => {
-	      fire(accountPortfolioService.getMovements(address, { days: 90, includeGPay: true }), (v) => setMovements(Array.isArray(v) ? v : []), []);
-	    }, 1100));
+    // (Movements + counterparties + activity heatmap are loaded by the
+    // activity-window effect below — they re-fetch when the user changes the
+    // 90d / 1y / 2y / All selector inside the Activity tab.)
 
     // Yields (LP + lending) — hoisted so the unified Balances tab can show
     // aTokens alongside ERC-20 holdings without each tab fetching separately.
@@ -2805,6 +3016,34 @@ const AccountPortfolio = ({
     return () => { cancelled = true; };
   }, [circlesAvatar?.avatar, profile, roleFlags, selectedAccount, address]);
 
+  // Activity-window-bound fetches: movements (table), counterparties, and the
+  // transaction heatmap. Re-runs whenever the address or the user's selected
+  // window (90d / 1y / 2y / All) changes.
+  useEffect(() => {
+    if (!address) {
+      setMovements([]);
+      setCounterparties([]);
+      setActivityHeatmap([]);
+      setActivityTotals(null);
+      return undefined;
+    }
+    let cancelled = false;
+    const days = activityWindowDays;
+    accountPortfolioService.getMovements(address, { days, includeGPay: true })
+      .then((v) => { if (!cancelled) setMovements(Array.isArray(v) ? v : []); })
+      .catch(() => { if (!cancelled) setMovements([]); });
+    accountPortfolioService.getCounterparties(address, { days })
+      .then((v) => { if (!cancelled) setCounterparties(Array.isArray(v) ? v : []); })
+      .catch(() => { if (!cancelled) setCounterparties([]); });
+    accountPortfolioService.getActivityHeatmap(address, { days })
+      .then((v) => { if (!cancelled) setActivityHeatmap(Array.isArray(v) ? v : []); })
+      .catch(() => { if (!cancelled) setActivityHeatmap([]); });
+    accountPortfolioService.getActivityTotals(address, { days })
+      .then((v) => { if (!cancelled) setActivityTotals(v || null); })
+      .catch(() => { if (!cancelled) setActivityTotals(null); });
+    return () => { cancelled = true; };
+  }, [address, activityWindowDays]);
+
 	  const handleSelect = useCallback((selection) => {
 	    setSelectedAccount(selection);
 	    setProfile(null);
@@ -2823,6 +3062,10 @@ const AccountPortfolio = ({
     setCirclesTotalBalance(null);
     setTokenBalancesDaily([]);
     setLendingBalancesDaily([]);
+    setActivityWindowDays(90);
+    setCounterparties([]);
+    setActivityHeatmap([]);
+    setActivityTotals(null);
     setDrawer(null);
     setCounterpartyFilter(null);
     setEmbeddedValidatorState(null);
@@ -3083,6 +3326,8 @@ const AccountPortfolio = ({
                 movements={unifiedMovements}
                 lendingPositions={lendingPositions}
                 circlesTotalBalance={circlesTotalBalance}
+                activityTotals={activityTotals}
+                activityWindowDays={activityWindowDays}
               />
 
 	              <nav className="account-portfolio-section-tabs" role="tablist" aria-label="Account portfolio sections">
@@ -3114,6 +3359,8 @@ const AccountPortfolio = ({
 	                    balanceHistory={balanceHistory}
 	                    movements={unifiedMovements}
 	                    onRowClick={setDrawer}
+	                    activityTotals={activityTotals}
+	                    activityWindowDays={activityWindowDays}
 	                  />
 	                ) : activeSection === 'balances' ? (
 	                  <BalancesTab
@@ -3134,18 +3381,11 @@ const AccountPortfolio = ({
 	                    onClearCounterpartyFilter={clearCounterpartyFilter}
 	                    title="Recent account activity"
 	                    emptyMessage="No recent account activity for this address."
-	                  />
-	                ) : activeSection === 'graph' ? (
-	                  <GraphTab
-	                    address={address}
-	                    profile={profile}
-	                    roleFlags={roleFlags}
-	                    safes={safesOwned}
-	                    linkedEntities={effectiveLinkedEntities}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
+	                    windowDays={activityWindowDays}
+	                    onWindowChange={setActivityWindowDays}
+	                    counterparties={counterparties}
+	                    heatmap={activityHeatmap}
 	                    onOpenAddress={handleOpenAddress}
-	                    onFilterCounterparty={handleFilterCounterparty}
 	                  />
 	                ) : activeSection === 'safes' && sectionFlags.hasSafe ? (
 	                  <SafesTab

@@ -157,3 +157,41 @@ tabs:
         gridRow: 8
         gridColumn: 1 / span 12
         minHeight: 360px
+
+  - name: Activity
+    order: 5
+    icon: 📈
+    iconClass: chart-line
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_hub_events_daily
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_hub_events_addresses_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_mints_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_trusts_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Minters
+    order: 6
+    icon: ⛏️
+    iconClass: hammer
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_active_minters_daily
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_minter_cohort_daily
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
