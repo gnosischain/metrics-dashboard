@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_backing_depositors_current",
+  "query": "SELECT\n      backer,\n      toDate(first_initiated_at) AS first_initiated,\n      toDate(last_event_at)      AS last_event,\n      n_initiated,\n      n_completed,\n      n_released,\n      n_distinct_assets\n    FROM dbt.api_execution_circles_v2_backing_depositors_current\n    ORDER BY first_initiated_at ASC\n    LIMIT 200"
+}

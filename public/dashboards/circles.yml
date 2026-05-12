@@ -98,6 +98,10 @@ tabs:
         gridRow: 2
         gridColumn: 9 / span 4
         minHeight: 450px
+      - id: api_execution_circles_v2_wrapper_share_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
 
   - name: User
     order: 4
@@ -196,12 +200,20 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 450px
-      - id: api_execution_circles_v2_mints_daily
+      - id: api_execution_circles_v2_transfers_daily
         gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 450px
-      - id: api_execution_circles_v2_trusts_daily
+      - id: api_execution_circles_v2_p2p_velocity_daily
         gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_mints_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_trusts_daily
+        gridRow: 4
         gridColumn: 7 / span 6
         minHeight: 450px
 
@@ -227,7 +239,41 @@ tabs:
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 450px
-      - id: api_execution_circles_v2_inviters_ranking
+      - id: api_execution_circles_v2_invite_funnel_cohort_monthly
         gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_inviters_ranking
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 480px
+
+  - name: Groups
+    order: 7
+    icon: 👥
+    iconClass: users
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_groups_cnt_latest
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_groups_overview_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: Backing
+    order: 8
+    icon: 🏦
+    iconClass: piggy-bank
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_backing_events_daily
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_backing_depositors_current
+        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 480px
