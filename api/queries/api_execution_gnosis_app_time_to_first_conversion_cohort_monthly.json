@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_time_to_first_conversion_cohort_monthly",
+  "query": "SELECT cohort_month, conversion_kind, median_days, n_in_cohort, n_converted, pct_converted, p25_days, p75_days\n    FROM dbt.api_execution_gnosis_app_time_to_first_conversion_cohort_monthly\n    ORDER BY cohort_month, conversion_kind"
+}
