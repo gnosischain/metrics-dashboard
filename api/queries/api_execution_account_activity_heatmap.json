@@ -1,4 +1,0 @@
-{
-  "id": "api_execution_account_activity_heatmap",
-  "query": "WITH edges AS (\n  SELECT * FROM (\n    SELECT date, transfer_count, \"to\" AS wallet_address\n    FROM dbt.int_execution_transfers_whitelisted_daily\n    WHERE date BETWEEN toDate('{from}') AND toDate('{to}')\n  )\n  WHERE 1 = 1\n    /*__FILTER_CONDITIONS__*/\n  UNION ALL\n  SELECT * FROM (\n    SELECT date, transfer_count, \"from\" AS wallet_address\n    FROM dbt.int_execution_transfers_whitelisted_daily\n    WHERE date BETWEEN toDate('{from}') AND toDate('{to}')\n  )\n  WHERE 1 = 1\n    /*__FILTER_CONDITIONS__*/\n)\nSELECT date, sum(transfer_count) AS transfers\nFROM edges\nGROUP BY date\nORDER BY date"
-}

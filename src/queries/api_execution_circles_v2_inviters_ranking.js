@@ -6,7 +6,10 @@ const metric = {
   query: `
     SELECT
       rank,
+      preview_image_url AS image,
+      display_name,
       inviter,
+      is_blacklisted,
       invite_count,
       toDate(first_invite_ts) AS first_invite,
       toDate(last_invite_ts)  AS last_invite

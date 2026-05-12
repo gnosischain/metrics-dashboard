@@ -1,4 +1,0 @@
-{
-  "id": "api_execution_tokens_balances_daily",
-  "query": "SELECT\n  date,\n  address,\n  token_address,\n  any(symbol) AS symbol,\n  any(token_class) AS token_class,\n  argMax(balance, date) AS balance,\n  argMax(coalesce(balance_usd, 0), date) AS balance_usd\nFROM dbt.int_execution_tokens_balances_daily\nPREWHERE 1 = 1\n  /*__FILTER_CONDITIONS__*/\nWHERE date >= today() - 730\nGROUP BY date, address, token_address\nHAVING balance > 0\nORDER BY date, balance_usd DESC"
-}
