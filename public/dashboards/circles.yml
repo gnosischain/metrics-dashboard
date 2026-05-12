@@ -20,12 +20,28 @@ tabs:
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
+      - id: api_execution_circles_v2_kpi_total_supply_latest
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_mints_7d
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_active_minters_latest
+        gridRow: 2
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_avg_trusts_per_avatar_latest
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 120px
       - id: api_execution_circles_v2_avatars_cumulative
-        gridRow: 2 / span 2
+        gridRow: 3 / span 2
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_circles_v2_total_supply_daily
-        gridRow: 2 / span 2
+        gridRow: 3 / span 2
         gridColumn: 7 / span 6
         minHeight: 450px
 
@@ -51,6 +67,14 @@ tabs:
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 450px
+      - id: api_execution_circles_v2_kpi_new_trusts_7d
+        gridRow: 3
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_trusts_distribution
+        gridRow: 3 / span 2
+        gridColumn: 4 / span 9
+        minHeight: 432px
 
   - name: Supply
     order: 3
@@ -187,11 +211,23 @@ tabs:
     iconClass: hammer
     timeRanges: true
     metrics:
-      - id: api_execution_circles_v2_active_minters_daily
+      - id: api_execution_circles_v2_kpi_active_minters_latest
         gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_mints_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_active_minters_daily
+        gridRow: 2
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_circles_v2_minter_cohort_daily
-        gridRow: 1
+        gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 450px
+      - id: api_execution_circles_v2_inviters_ranking
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 480px

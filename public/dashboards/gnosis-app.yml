@@ -234,53 +234,34 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 420px
 
-  - name: KPI
+  - name: Retention
     order: 8
-    icon: 🎯
-    iconClass: gauge
+    icon: 🔁
+    iconClass: rotate
     timeRanges: true
     metrics:
-      - id: api_execution_gnosis_app_kpi_total_users
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_mau_latest
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
+      # Analytical-only KPI tiles (no duplicates of topic-tab KPIs)
       - id: api_execution_gnosis_app_kpi_retention_pct_latest
         gridRow: 1
-        gridColumn: 7 / span 3
+        gridColumn: 1 / span 3
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_churn_rate_latest
         gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
-        gridRow: 2
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
-        gridRow: 2
         gridColumn: 4 / span 3
         minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_marketplace_buys_total
-        gridRow: 2
+      - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
+        gridRow: 1
         gridColumn: 7 / span 3
         minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_topups_7d
-        gridRow: 2
-        gridColumn: 10 / span 3
-        minHeight: 120px
       - id: api_execution_gnosis_app_retention_monthly_heatmap
-        gridRow: 3
+        gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 500px
       - id: api_execution_gnosis_app_retention_by_action_monthly_heatmap
-        gridRow: 4
+        gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 500px
       - id: api_execution_gnosis_app_churn_monthly_chart
-        gridRow: 5
+        gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 450px

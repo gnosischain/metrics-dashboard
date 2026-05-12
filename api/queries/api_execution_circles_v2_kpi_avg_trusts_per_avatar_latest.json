@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_kpi_avg_trusts_per_avatar_latest",
+  "query": "SELECT value FROM dbt.api_execution_circles_v2_kpi_avg_trusts_per_avatar_latest"
+}
