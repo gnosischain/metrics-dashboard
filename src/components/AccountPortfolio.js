@@ -2989,27 +2989,13 @@ const AccountPortfolio = ({
     // (Movements + counterparties + activity heatmap are loaded by the
     // activity-window effect below — they re-fetch when the user changes the
     // 90d / 1y / 2y / All selector inside the Activity tab.)
-
-    // Yields (LP + lending) — hoisted so the unified Balances tab can show
-    // aTokens alongside ERC-20 holdings without each tab fetching separately.
-    timers.push(window.setTimeout(() => {
-      fire(
-        accountPortfolioService.getYields(address),
-        (v) => {
-          setLpPositions(Array.isArray(v?.lp) ? v.lp : []);
-          setLendingPositions(Array.isArray(v?.lending) ? v.lending : []);
-          setYieldsActivity(Array.isArray(v?.activity) ? v.activity : []);
-        },
-        { lp: [], lending: [], activity: [] }
-      );
-    }, 900));
-
-    // Per-token historical balances — feeds the multi-line chart on the
-    // Balances tab. Light-weight view; loaded on the same tier as movements.
-    timers.push(window.setTimeout(() => {
-      fire(accountPortfolioService.getTokenBalancesDaily(address), (v) => setTokenBalancesDaily(Array.isArray(v) ? v : []), []);
-      fire(accountPortfolioService.getLendingBalancesDaily(address), (v) => setLendingBalancesDaily(Array.isArray(v) ? v : []), []);
-    }, 1100));
+    //
+    // Yields (lp + lending + activity) and per-token daily balances used to
+    // fire here unconditionally on every Account Portfolio mount. The
+    // tokens_balances_daily query can take 30–60s cold-cache on Vercel; while
+    // it holds a serverless-function slot, every other widget's request
+    // queues behind it. We now load those streams on-demand from a separate
+    // effect gated on activeSection (see below).
 
 	    // Unblock the loading gate as soon as the resolver lands (< 500 ms) so
 	    // the hero and sections paint while heavier streams load later.
@@ -3038,6 +3024,50 @@ const AccountPortfolio = ({
       .catch(() => { if (!cancelled) setCirclesTotalBalance(null); });
     return () => { cancelled = true; };
   }, [circlesAvatar?.avatar, profile, roleFlags, selectedAccount, address]);
+
+  // Section-gated data streams. These used to fire eagerly on every
+  // Account Portfolio mount; the slowest of them (tokens_balances_daily)
+  // could hold a Vercel function slot for 30–60s and queue every other
+  // widget's request behind it. Now they only fetch when the user opens
+  // a tab that actually needs them. A per-(address, section) ref dedupes
+  // so switching tabs back and forth doesn't refetch.
+  const sectionFetchedRef = useRef(new Set());
+  useEffect(() => {
+    sectionFetchedRef.current = new Set();
+  }, [address]);
+
+  useEffect(() => {
+    if (!address) return undefined;
+    let cancelled = false;
+    const key = (section) => `${address}::${section}`;
+    const fetched = sectionFetchedRef.current;
+    const fire = (promise, setter, fallback) => promise
+      .then((value) => { if (!cancelled) setter(value ?? fallback); })
+      .catch(() => { if (!cancelled) setter(fallback); });
+
+    // Balances tab needs daily token balances + lending balances.
+    if (activeSection === 'balances' && !fetched.has(key('balances'))) {
+      fetched.add(key('balances'));
+      fire(accountPortfolioService.getTokenBalancesDaily(address), (v) => setTokenBalancesDaily(Array.isArray(v) ? v : []), []);
+      fire(accountPortfolioService.getLendingBalancesDaily(address), (v) => setLendingBalancesDaily(Array.isArray(v) ? v : []), []);
+    }
+
+    // Yields tab and Balances tab both render yield positions/activity.
+    if ((activeSection === 'yields' || activeSection === 'balances') && !fetched.has(key('yields'))) {
+      fetched.add(key('yields'));
+      fire(
+        accountPortfolioService.getYields(address),
+        (v) => {
+          setLpPositions(Array.isArray(v?.lp) ? v.lp : []);
+          setLendingPositions(Array.isArray(v?.lending) ? v.lending : []);
+          setYieldsActivity(Array.isArray(v?.activity) ? v.activity : []);
+        },
+        { lp: [], lending: [], activity: [] }
+      );
+    }
+
+    return () => { cancelled = true; };
+  }, [address, activeSection]);
 
   // Activity-window-bound fetches: movements (table), counterparties, and the
   // transaction heatmap. Re-runs whenever the address or the user's selected
