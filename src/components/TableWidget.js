@@ -254,8 +254,14 @@ const TableWidget = ({
       Promise.resolve(tableInstanceRef.current.setData(processed))
         .finally(() => {
           syncSelectedRows();
+          // One redraw is enough. We used to schedule two (0ms + 60ms) as
+          // a defensive "layout settle" pattern, but each redraw runs
+          // Tabulator's full per-row event dispatch (set/get/_dispatch/
+          // subscribed/_chain) — for a paginated table with hundreds of
+          // rows that's seconds of main-thread work. Doubling it × every
+          // table on the page produced the 5×7s freezes the Performance
+          // trace caught.
           scheduleRedraw(true, 0);
-          scheduleRedraw(true, 60);
         });
     } catch (e) {
       console.warn('TableWidget: Error updating table data:', e);
