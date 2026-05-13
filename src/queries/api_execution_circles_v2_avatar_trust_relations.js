@@ -13,17 +13,35 @@ const metric = {
   chartType: 'table',
   globalFilterField: 'avatar',
   useCached: false,
+  serverPagination: true,
+  serverSort: true,
+  maxPageSize: 500,
+  serverSortFields: [
+    'direction',
+    'counterparty',
+    'outgoing_from',
+    'incoming_from',
+  ],
+  paginationSize: 50,
+  paginationSizeSelector: [25, 50, 100],
+  initialSort: [
+    { column: 'direction', dir: 'asc' },
+    { column: 'counterparty', dir: 'asc' },
+  ],
 
   tableConfig: {
     layout: 'fitColumns',
     pagination: true,
     paginationSize: 50,
-    paginationSizeSelector: false,
+    paginationSizeSelector: [25, 50, 100],
     responsiveLayout: false,
     height: '100%',
     rowHeight: 36,
     movableColumns: false,
-    initialSort: [{ column: 'direction', dir: 'asc' }],
+    initialSort: [
+      { column: 'direction', dir: 'asc' },
+      { column: 'counterparty', dir: 'asc' },
+    ],
 
     columns: [
       {

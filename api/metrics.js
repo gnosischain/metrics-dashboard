@@ -4,6 +4,10 @@ const crypto = require('crypto');
 const mockData = require('./mock');
 const cacheManager = require('./cache');
 const cronManager = require('./cron');
+const {
+  buildPaginatedMetricSql,
+  normalizeMetricPagination,
+} = require('./metrics-pagination');
 
 module.exports.config = {
   maxDuration: 60
@@ -645,6 +649,16 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
         includeTotal: Boolean(includeTotalParam || metricId === VALIDATOR_MEMBERS_METRIC_ID),
       }
     : null;
+  const metricPagination = normalizeMetricPagination(metricId, {
+    page: pageParam,
+    pageSize: pageSizeParam,
+    offset: offsetParam,
+    sortField: sortFieldParam,
+    sortDir: sortDirParam,
+    search: searchParam,
+    includeTotal: includeTotalParam,
+  });
+  const paginatedRequest = validatorPagination || metricPagination;
 
   const effectiveFromToProvided = isIsoDate(fromParam) && isIsoDate(toParam);
   const effectiveFilterProvided = isSafeIdentifier(filterField) && typeof filterValue === 'string' && filterValue.length > 0;
@@ -656,7 +670,7 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
   // - If no extra params are provided, keep the original metricId cache key.
   // - If params are provided, include them so cached results don't mix.
   const cacheKey = (() => {
-    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided && !validatorPagination) return metricId;
+    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided && !paginatedRequest) return metricId;
     const parts = [metricId];
     if (hasEffectiveFilters) parts.push(`filteredCache=${FILTERED_QUERY_CACHE_VERSION}`);
     if (effectiveFromToProvided) parts.push(`from=${fromParam}`, `to=${toParam}`);
@@ -671,6 +685,16 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
         `sortField=${validatorPagination.sortField}`,
         `sortDir=${validatorPagination.sortDir}`,
         `search=${cacheValue(validatorPagination.search)}`
+      );
+    }
+    if (metricPagination) {
+      parts.push(
+        `page=${metricPagination.page}`,
+        `pageSize=${metricPagination.pageSize}`,
+        `offset=${metricPagination.offset ?? ''}`,
+        `sortField=${metricPagination.sortField || ''}`,
+        `sortDir=${metricPagination.sortDir}`,
+        `search=${cacheValue(metricPagination.search)}`
       );
     }
     return parts.join('|');
@@ -820,6 +844,29 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
         pageSize: validatorPagination.pageSize,
         total,
         lastPage: Math.max(1, Math.ceil(total / validatorPagination.pageSize)),
+      };
+    } else if (metricPagination) {
+      const {
+        query: paginatedQuery,
+        countQuery,
+      } = buildPaginatedMetricSql(processedQuery, metricPagination);
+      let total = 0;
+
+      if (metricPagination.includeTotal) {
+        try {
+          const countRows = await cronManager.executeClickHouseQuery(countQuery);
+          total = Number(countRows?.[0]?.total || 0);
+        } catch (countError) {
+          metricLog(`Count query failed for ${metricId}: ${getSafeErrorMessage(countError)}`);
+        }
+      }
+
+      processedQuery = paginatedQuery;
+      paginatedResponseMeta = {
+        page: metricPagination.page,
+        pageSize: metricPagination.pageSize,
+        total,
+        lastPage: Math.max(1, Math.ceil(total / metricPagination.pageSize)),
       };
     }
     

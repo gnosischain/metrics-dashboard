@@ -39,6 +39,7 @@ class MockTabulator {
     this.data = Array.isArray(config.data) ? config.data : [];
     this.redrawCount = 0;
     this.setDataCount = 0;
+    this.replaceDataCount = 0;
 
     tabulatorInstances.push(this);
     this.render();
@@ -92,6 +93,13 @@ class MockTabulator {
 
   setData(nextData) {
     this.setDataCount += 1;
+    this.data = Array.isArray(nextData) ? nextData : [];
+    this.render();
+    return Promise.resolve(this.data);
+  }
+
+  replaceData(nextData) {
+    this.replaceDataCount += 1;
     this.data = Array.isArray(nextData) ? nextData : [];
     this.render();
     return Promise.resolve(this.data);
@@ -195,6 +203,7 @@ describe('TableWidget regressions', () => {
     const instance = tabulatorInstances.at(-1);
     expect(instance.config.responsiveLayout).toBe(false);
     expect(instance.config.rowHeight).toBe(40);
+    expect(instance.config.reactiveData).toBe(false);
 
     const redrawCountBeforeResize = instance.redrawCount;
     resizeObservers[0].callback([{ contentRect: { width: 980, height: 420 } }]);
@@ -235,6 +244,86 @@ describe('TableWidget regressions', () => {
     expect(instance.config.pagination).toBe(false);
     expect(instance.config.responsiveLayout).toBe(false);
     expect(instance.config.rowHeight).toBe(56);
+  });
+
+  it('applies initial data through Tabulator construction only once', async () => {
+    render(
+      <TableWidget
+        data={[{ name: 'Alice' }]}
+        config={{
+          columns: [{ field: 'name', title: 'Name' }]
+        }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument();
+    });
+
+    const instance = tabulatorInstances.at(-1);
+    expect(instance.setDataCount).toBe(0);
+    expect(instance.replaceDataCount).toBe(0);
+  });
+
+  it('updates row data without destroying and recreating Tabulator', async () => {
+    const config = {
+      columns: [{ field: 'name', title: 'Name' }]
+    };
+    const { rerender } = render(
+      <TableWidget
+        data={[{ name: 'Alice' }]}
+        config={config}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument();
+    });
+
+    const instance = tabulatorInstances.at(-1);
+
+    rerender(
+      <TableWidget
+        data={[{ name: 'Bob' }]}
+        config={config}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Bob')).toBeInTheDocument();
+    });
+
+    expect(tabulatorInstances).toHaveLength(1);
+    expect(instance.destroyed).not.toBe(true);
+    expect(instance.replaceDataCount).toBe(1);
+    expect(instance.setDataCount).toBe(0);
+  });
+
+  it('does not schedule duplicate redraws for repeated identical resize measurements', async () => {
+    render(
+      <TableWidget
+        data={[{ name: 'Alice' }]}
+        config={{
+          columns: [{ field: 'name', title: 'Name' }]
+        }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument();
+    });
+
+    const instance = tabulatorInstances.at(-1);
+    resizeObservers[0].callback([{ contentRect: { width: 900, height: 360 } }]);
+
+    await waitFor(() => {
+      expect(instance.redrawCount).toBe(1);
+    });
+
+    resizeObservers[0].callback([{ contentRect: { width: 900, height: 360 } }]);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(instance.redrawCount).toBe(1);
   });
 
   it('copies hex formatter values through delegated table clicks', async () => {

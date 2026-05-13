@@ -14,12 +14,18 @@ const serviceMock = vi.hoisted(() => ({
   getProfile: vi.fn(),
   getRoleFlags: vi.fn(),
   getCirclesAvatarMetadata: vi.fn(),
+  getCirclesTotalBalance: vi.fn(),
   getSafes: vi.fn(),
   getSafeOwners: vi.fn(),
   getLinkedEntities: vi.fn(),
   getActivitySummary: vi.fn(),
+  getCounterparties: vi.fn(),
+  getActivityHeatmap: vi.fn(),
+  getActivityTotals: vi.fn(),
   getHoldings: vi.fn(),
   getBalanceHistory: vi.fn(),
+  getTokenBalancesDaily: vi.fn(),
+  getLendingBalancesDaily: vi.fn(),
   getMovements: vi.fn(),
   getYields: vi.fn(),
 }));
@@ -120,6 +126,7 @@ describe('AccountPortfolio section tabs', () => {
       metadata_name: 'Alice CRC',
       metadata_preview_image_url: '',
     });
+    accountPortfolioService.getCirclesTotalBalance.mockResolvedValue(null);
     accountPortfolioService.getSafes.mockResolvedValue([]);
     accountPortfolioService.getSafeOwners.mockResolvedValue([]);
     accountPortfolioService.getLinkedEntities.mockResolvedValue([]);
@@ -131,6 +138,9 @@ describe('AccountPortfolio section tabs', () => {
       counterparty_count: 1,
       token_count_moved: 2,
     });
+    accountPortfolioService.getCounterparties.mockResolvedValue([]);
+    accountPortfolioService.getActivityHeatmap.mockResolvedValue([]);
+    accountPortfolioService.getActivityTotals.mockResolvedValue(null);
     accountPortfolioService.getHoldings.mockResolvedValue([
       {
         token_address: '0x0000000000000000000000000000000000000001',
@@ -148,6 +158,8 @@ describe('AccountPortfolio section tabs', () => {
         tokens_held: 2,
       },
     ]);
+    accountPortfolioService.getTokenBalancesDaily.mockResolvedValue([]);
+    accountPortfolioService.getLendingBalancesDaily.mockResolvedValue([]);
     accountPortfolioService.getMovements.mockResolvedValue([
       {
         date: '2026-04-01',
@@ -187,6 +199,9 @@ describe('AccountPortfolio section tabs', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Circles' }));
 
+    await waitFor(() => {
+      expect(container.querySelector('[data-section-key="circles"]')).toBeInTheDocument();
+    });
     const circlesSection = container.querySelector('[data-section-key="circles"]');
     expect(circlesSection).toBeInTheDocument();
     expect(circlesSection).toHaveClass('account-portfolio-section');
@@ -194,7 +209,9 @@ describe('AccountPortfolio section tabs', () => {
     expect(Array.from(circlesSection.children).some((child) => child.classList.contains('ap-card'))).toBe(false);
 
     expect(container.querySelector('[data-metric-id="api_execution_circles_v2_avatar_metadata"]')).toBeNull();
-    expect(container.querySelector('[data-metric-id="api_execution_circles_v2_avatar_metadata_history"]')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(container.querySelector('[data-metric-id="api_execution_circles_v2_avatar_metadata_history"]')).toBeInTheDocument();
+    }, { timeout: 8000 });
   });
 
   it('uses colored source and direction labels in the Activity table', async () => {

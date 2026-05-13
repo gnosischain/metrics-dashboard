@@ -9,6 +9,37 @@ const tableDebug = (...args) => {
   if (DEBUG_TABLES) console.log(...args);
 };
 
+const describeFunction = (fn) => ({
+  type: 'function',
+  name: fn.name || 'anonymous',
+});
+
+const stableTableValue = (value) => {
+  if (typeof value === 'function') return describeFunction(value);
+  if (!value || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map(stableTableValue);
+
+  return Object.keys(value)
+    .sort()
+    .reduce((result, key) => {
+      result[key] = stableTableValue(value[key]);
+      return result;
+    }, {});
+};
+
+const stableTableSignature = (value) => {
+  try {
+    return JSON.stringify(stableTableValue(value));
+  } catch {
+    return String(value);
+  }
+};
+
+const summarizeColumns = (columns) => {
+  if (!Array.isArray(columns)) return [];
+  return columns.map((column) => stableTableValue(column));
+};
+
 /**
  * TableWidget component using Tabulator with improved height handling and pagination
  * @param {Object} props - Component props
@@ -34,9 +65,13 @@ const TableWidget = ({
   const observedSizeRef = useRef({ width: 0, height: 0 });
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const configRef = useRef(config);
+  const searchTermRef = useRef(searchTerm);
+  const redrawTimerRef = useRef(null);
+  const lastAppliedDataRef = useRef(null);
 
-  // Memoize config to prevent unnecessary re-renders
-  const memoizedConfig = useMemo(() => config, [config]);
+  configRef.current = config || {};
+  searchTermRef.current = searchTerm;
 
   const redrawTable = useCallback((force = true) => {
     if (!tableInstanceRef.current || !tableBuiltRef.current) return;
@@ -48,12 +83,18 @@ const TableWidget = ({
   }, []);
 
   const scheduleRedraw = useCallback((force = true, delay = 0) => {
+    if (redrawTimerRef.current && typeof window !== 'undefined') {
+      window.clearTimeout(redrawTimerRef.current);
+      redrawTimerRef.current = null;
+    }
+
     if (typeof window === 'undefined') {
       redrawTable(force);
       return;
     }
 
-    window.setTimeout(() => {
+    redrawTimerRef.current = window.setTimeout(() => {
+      redrawTimerRef.current = null;
       redrawTable(force);
     }, delay);
   }, [redrawTable]);
@@ -81,9 +122,10 @@ const TableWidget = ({
       return;
     }
 
-    const selectedRowField = memoizedConfig.selectedRowField;
-    const selectedRowValues = Array.isArray(memoizedConfig.selectedRowValues)
-      ? memoizedConfig.selectedRowValues
+    const currentConfig = configRef.current || {};
+    const selectedRowField = currentConfig.selectedRowField;
+    const selectedRowValues = Array.isArray(currentConfig.selectedRowValues)
+      ? currentConfig.selectedRowValues
       : [];
 
     if (!selectedRowField) return;
@@ -113,19 +155,90 @@ const TableWidget = ({
         row.deselect();
       }
     });
-  }, [memoizedConfig.selectedRowField, memoizedConfig.selectedRowValues]);
+  }, []);
 
   // Filter data by search term across configured searchFields
+  const searchFields = useMemo(
+    () => (Array.isArray(config?.searchFields) ? config.searchFields.filter(Boolean) : []),
+    [config?.searchFields]
+  );
+  const searchFieldsSignature = searchFields.join('|');
   const filteredData = useMemo(() => {
-    if (!searchTerm || !config.searchFields || config.searchFields.length === 0) return data;
+    if (!searchTerm || searchFields.length === 0) return data;
     const term = searchTerm.toLowerCase();
     return data.filter(row =>
-      config.searchFields.some(field => {
+      searchFields.some(field => {
         const val = row[field];
         return val != null && String(val).toLowerCase().includes(term);
       })
     );
-  }, [data, searchTerm, config.searchFields]);
+  }, [data, searchTerm, searchFields, searchFieldsSignature]);
+
+  const dataHasRows = useMemo(() => processTableData(data).length > 0, [data]);
+  const autoColumnSignature = useMemo(() => {
+    if (Array.isArray(config?.columns) && config.columns.length > 0) return '';
+    const firstRow = processTableData(data)[0] || {};
+    return Object.keys(firstRow).sort().join('|');
+  }, [config?.columns, data]);
+  const tableStructureSignature = useMemo(() => stableTableSignature({
+    autoColumnSignature,
+    dataHasRows,
+    format,
+    height,
+    isDarkMode,
+    columns: summarizeColumns(config?.columns),
+    hideEmptyColumns: config?.hideEmptyColumns,
+    indexField: config?.indexField,
+    layout: config?.layout,
+    responsiveLayout: config?.responsiveLayout,
+    pagination: config?.pagination,
+    serverPagination: config?.serverPagination === true,
+    paginationSize: config?.paginationSize,
+    paginationSizeSelector: config?.paginationSizeSelector,
+    paginationButtonCount: config?.paginationButtonCount,
+    paginationCounter: config?.paginationCounter,
+    movableColumns: config?.movableColumns,
+    resizableRows: config?.resizableRows,
+    rowHeight: config?.rowHeight,
+    selectableRows: config?.selectableRows,
+    selectable: config?.selectable,
+    hasRowSelectionChange: typeof config?.onRowSelectionChange === 'function',
+    hasRowClick: typeof config?.onRowClick === 'function',
+    autoResize: config?.autoResize,
+    initialSort: config?.initialSort,
+    tabulatorConfig: config?.tabulatorConfig,
+  }), [
+    autoColumnSignature,
+    config?.autoResize,
+    config?.columns,
+    config?.hideEmptyColumns,
+    config?.indexField,
+    config?.initialSort,
+    config?.layout,
+    config?.movableColumns,
+    config?.pagination,
+    config?.paginationButtonCount,
+    config?.paginationCounter,
+    config?.paginationSize,
+    config?.paginationSizeSelector,
+    config?.responsiveLayout,
+    config?.resizableRows,
+    config?.rowHeight,
+    config?.selectable,
+    config?.selectableRows,
+    config?.serverPagination,
+    config?.tabulatorConfig,
+    config?.onRowClick,
+    config?.onRowSelectionChange,
+    dataHasRows,
+    format,
+    height,
+    isDarkMode,
+  ]);
+  const selectedRowsSignature = useMemo(() => stableTableSignature({
+    field: config?.selectedRowField,
+    values: config?.selectedRowValues || [],
+  }), [config?.selectedRowField, config?.selectedRowValues]);
 
   // Calculate optimal height based on data and pagination
   const calculateOptimalHeight = (data, config) => {
@@ -147,6 +260,10 @@ const TableWidget = ({
   // Clean up table instance on unmount
   useEffect(() => {
     return () => {
+      if (redrawTimerRef.current && typeof window !== 'undefined') {
+        window.clearTimeout(redrawTimerRef.current);
+        redrawTimerRef.current = null;
+      }
       if (tableInstanceRef.current) {
         try {
           tableInstanceRef.current.destroy();
@@ -160,8 +277,8 @@ const TableWidget = ({
     };
   }, []);
 
-  // Effect 1: Create/rebuild table when structure changes (config, theme, height, format).
-  // Does NOT depend on filteredData — search never triggers a rebuild.
+  // Effect 1: Create/rebuild table only when structural inputs change.
+  // Data and search changes are handled by the update effect below.
   useEffect(() => {
     // Always tear down the previous Tabulator instance first. If data is
     // about to clear, we must not leave stale grid DOM (including headers)
@@ -176,10 +293,11 @@ const TableWidget = ({
       tableBuiltRef.current = false;
     }
 
-    const isRemote = memoizedConfig.serverPagination === true && typeof memoizedConfig.remoteDataLoader === 'function';
+    const currentConfig = configRef.current || {};
+    const isRemote = currentConfig.serverPagination === true && typeof currentConfig.remoteDataLoader === 'function';
 
     if (!tableRef.current) return;
-    if (!isRemote && (!data || data.length === 0)) {
+    if (!isRemote && !dataHasRows) {
       setError('No data available for table');
       return;
     }
@@ -187,25 +305,28 @@ const TableWidget = ({
     try {
       setError(null);
 
-      const processedData = processTableData(data, memoizedConfig);
+      const processedData = processTableData(filteredData, currentConfig);
       if (!isRemote && (!processedData || processedData.length === 0)) {
         setError('No data available for table');
         return;
       }
 
-      const columns = generateColumns(processedData, memoizedConfig, format, isDarkMode);
+      const columns = generateColumns(processedData, currentConfig, format, isDarkMode);
       const tableHeight = height === 'auto' || height === '100%'
-        ? calculateOptimalHeight(processedData, memoizedConfig)
+        ? calculateOptimalHeight(processedData, currentConfig)
         : height;
-      const tableConfig = createTableConfig(processedData, columns, memoizedConfig, isDarkMode, tableHeight, searchTerm);
+      const tableConfig = createTableConfig(processedData, columns, currentConfig, isDarkMode, tableHeight, {
+        getConfig: () => configRef.current || {},
+        getSearchTerm: () => searchTermRef.current,
+      });
 
       const newTable = new Tabulator(tableRef.current, tableConfig);
+      lastAppliedDataRef.current = processedData;
 
       newTable.on('tableBuilt', () => {
         tableBuiltRef.current = true;
         syncSelectedRows();
-        scheduleRedraw(true, 0);
-        if (height === 'auto' || memoizedConfig.autoResize) {
+        if (height === 'auto' || currentConfig.autoResize) {
           setTimeout(() => {
             try {
               const tableElement = tableRef.current;
@@ -215,7 +336,7 @@ const TableWidget = ({
                 const containerHeight = tableElement.offsetHeight;
                 if (Math.abs(actualHeight - containerHeight) > 20) {
                   tableElement.style.height = Math.min(actualHeight + 20, 600) + 'px';
-                  newTable.redraw();
+                  scheduleRedraw(true, 0);
                 }
               }
             } catch (e) {
@@ -223,14 +344,12 @@ const TableWidget = ({
             }
           }, 100);
         }
-        scheduleRedraw(true, 100);
       });
 
       newTable.on('dataLoadError', () => setError('Failed to load table data'));
       newTable.on('tableBuildError', () => setError('Failed to build table'));
       newTable.on('dataLoaded', () => {
         syncSelectedRows();
-        scheduleRedraw(true, 0);
       });
 
       tableInstanceRef.current = newTable;
@@ -239,38 +358,38 @@ const TableWidget = ({
       console.error('TableWidget: Error creating table:', err);
       setError('Failed to create table: ' + err.message);
     }
+    // tableStructureSignature intentionally excludes row data and search text.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, memoizedConfig, isDarkMode, height, format, scheduleRedraw, syncSelectedRows, searchTerm]);
+  }, [tableStructureSignature, dataHasRows, format, height, isDarkMode, scheduleRedraw, syncSelectedRows]);
 
   // Effect 2: Update table data cheaply when search filter changes.
-  // Calls setData() — no DOM rebuild, no fan noise.
+  // Calls setData/replaceData: no DOM rebuild, no extra synchronous table walk.
   // Guard: only call setData after Tabulator fires `tableBuilt` to avoid
   // race conditions where the layout module is still null.
   useEffect(() => {
     if (!tableInstanceRef.current || !tableBuiltRef.current) return;
-    if (memoizedConfig.serverPagination === true) return;
+    const currentConfig = configRef.current || {};
+    if (currentConfig.serverPagination === true) return;
     try {
-      const processed = processTableData(filteredData, memoizedConfig);
-      Promise.resolve(tableInstanceRef.current.setData(processed))
+      const processed = processTableData(filteredData, currentConfig);
+      if (processed === lastAppliedDataRef.current) return;
+      lastAppliedDataRef.current = processed;
+      const updateData = typeof tableInstanceRef.current.replaceData === 'function'
+        ? tableInstanceRef.current.replaceData.bind(tableInstanceRef.current)
+        : tableInstanceRef.current.setData.bind(tableInstanceRef.current);
+      Promise.resolve(updateData(processed))
         .finally(() => {
           syncSelectedRows();
-          // One redraw is enough. We used to schedule two (0ms + 60ms) as
-          // a defensive "layout settle" pattern, but each redraw runs
-          // Tabulator's full per-row event dispatch (set/get/_dispatch/
-          // subscribed/_chain) — for a paginated table with hundreds of
-          // rows that's seconds of main-thread work. Doubling it × every
-          // table on the page produced the 5×7s freezes the Performance
-          // trace caught.
-          scheduleRedraw(true, 0);
+          scheduleRedraw(false, 0);
         });
     } catch (e) {
       console.warn('TableWidget: Error updating table data:', e);
     }
-  }, [filteredData, memoizedConfig, scheduleRedraw, syncSelectedRows]);
+  }, [filteredData, scheduleRedraw, syncSelectedRows]);
 
   useEffect(() => {
     syncSelectedRows();
-  }, [syncSelectedRows]);
+  }, [syncSelectedRows, selectedRowsSignature]);
 
   useEffect(() => {
     if (!tableRef.current || typeof ResizeObserver === 'undefined') {
@@ -311,7 +430,7 @@ const TableWidget = ({
     return () => observer.disconnect();
   }, [scheduleRedraw]);
 
-  const showSearch = !error && config.searchFields && config.searchFields.length > 0;
+  const showSearch = !error && searchFields.length > 0;
 
   return (
     <div className={`table-widget ${isDarkMode ? 'dark' : ''}`} style={{
@@ -486,7 +605,13 @@ const generateColumns = (data, config, format, isDarkMode) => {
  * @param {string} height - Table height
  * @returns {Object} Tabulator configuration
  */
-const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm = '') => {
+const createTableConfig = (data, columns, config, isDarkMode, height, callbacks = {}) => {
+    const getConfig = typeof callbacks.getConfig === 'function'
+      ? callbacks.getConfig
+      : () => config;
+    const getSearchTerm = typeof callbacks.getSearchTerm === 'function'
+      ? callbacks.getSearchTerm
+      : () => '';
     const isRemote = config.serverPagination === true && typeof config.remoteDataLoader === 'function';
     const baseConfig = {
       columns: columns,
@@ -520,17 +645,17 @@ const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm
       // for programmatic selections during data refresh — callback must be idempotent.
       rowSelectionChanged: config.onRowSelectionChange
         ? function(data /*, rows */) {
-            try { config.onRowSelectionChange(data || []); }
+            try { getConfig().onRowSelectionChange?.(data || []); }
             catch (e) { console.warn('onRowSelectionChange handler threw:', e); }
           }
         : undefined,
       rowClick: config.onRowClick
         ? function(event, row) {
-            try { config.onRowClick(row.getData(), row, event); }
+            try { getConfig().onRowClick?.(row.getData(), row, event); }
             catch (e) { console.warn('onRowClick handler threw:', e); }
           }
         : undefined,
-      reactiveData: config.reactiveData !== false,
+      reactiveData: config.reactiveData === true,
       debugInvalidOptions: false,
       
       // Ensure proper sizing
@@ -558,10 +683,6 @@ const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm
           tableDebug('TableWidget: Pagination element NOT found');
         }
         
-        // Force redraw after a moment
-        setTimeout(() => {
-          this.redraw();
-        }, 50);
       },
       
       paginationInitialized: function() {
@@ -590,14 +711,15 @@ const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm
           ? params.sorters
           : (Array.isArray(params.sort) ? params.sort : []);
         const firstSorter = sorters[0] || {};
-        const pageSize = params.size || config.paginationSize || 25;
+        const latestConfig = getConfig();
+        const pageSize = params.size || latestConfig.paginationSize || 25;
         const page = params.page || 1;
-        const response = await config.remoteDataLoader({
+        const response = await latestConfig.remoteDataLoader({
           page,
           pageSize,
           sortField: firstSorter.field || firstSorter.column,
           sortDir: firstSorter.dir,
-          search: searchTerm,
+          search: getSearchTerm(),
         });
         const rows = Array.isArray(response?.data) ? response.data : [];
         const total = Number(response?.total || rows.length || 0);
@@ -631,6 +753,7 @@ const createTableConfig = (data, columns, config, isDarkMode, height, searchTerm
     delete customConfig.pagination;
     delete customConfig.paginationSize;
     delete customConfig.height; // Don't override height
+    delete customConfig.reactiveData;
 
     return { ...baseConfig, ...customConfig };
   };

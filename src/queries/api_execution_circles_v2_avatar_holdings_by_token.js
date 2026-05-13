@@ -55,15 +55,38 @@ const metric = {
   chartType: 'table',
   globalFilterField: 'avatar',
   useCached: false,
+  serverPagination: true,
+  serverSort: true,
+  maxPageSize: 500,
+  serverSortFields: [
+    'token_label',
+    'token_symbol',
+    'token_name',
+    'token_address',
+    'is_wrapped',
+    'balance',
+    'balance_demurraged',
+  ],
+  paginationSize: 50,
+  paginationSizeSelector: [25, 50, 100],
+  initialSort: [
+    { column: 'balance_demurraged', dir: 'desc' },
+    { column: 'token_address', dir: 'asc' },
+  ],
 
   tableConfig: {
     layout: 'fitColumns',
     responsiveLayout: false,
-    pagination: false,
+    pagination: true,
+    paginationSize: 50,
+    paginationSizeSelector: [25, 50, 100],
     height: '100%',
     rowHeight: 32,
     movableColumns: false,
-    initialSort: [{ column: 'balance_demurraged', dir: 'desc' }],
+    initialSort: [
+      { column: 'balance_demurraged', dir: 'desc' },
+      { column: 'token_address', dir: 'asc' },
+    ],
     columns: [
       {
         title: 'Token / Symbol',

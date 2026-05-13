@@ -2,6 +2,10 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('echarts', () => ({
+  getInstanceByDom: vi.fn()
+}));
+
 vi.mock('../services/metrics', () => ({
   default: {
     getMetricConfig: vi.fn(),
