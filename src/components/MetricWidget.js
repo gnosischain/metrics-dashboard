@@ -473,31 +473,22 @@ const MetricWidget = ({
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
 
-      // Only skip applying if the widget unmounted. Previously we also
-      // skipped when requestId !== requestSequenceRef.current to drop
-      // stale fetches during rapid filter changes — but every false
-      // positive here leaves the widget permanently in (loading=true,
-      // data=null) skeleton. We'd rather show possibly-stale data than
-      // an indefinite spinner; in practice AccountPortfolio widgets
-      // don't change filters mid-fetch anyway.
       if (!isMounted.current) {
         return;
       }
 
-      if (isMounted.current) {
+      // Only the latest in-flight call applies its result. Without this
+      // guard, every superseded fetchData call would also setData, which
+      // forces heavy children (Tabulator / ECharts) to rebuild N times
+      // per filter or render cycle — the trace showed 46 s of scripting
+      // dominated by renderTable → _virtualRenderFill → setHeight.
+      const isLatest = requestId === requestSequenceRef.current;
+      if (isLatest) {
         setData(result);
-        
-        if (widgetConfig.enableFiltering && result?.data?.length > 0) {
-          if (hasMultiLocalFilters) {
-            return;
-          }
 
-          // If this is a secondary filter (different field than global), we'll extract labels later from filtered data
-          // For now, extract from all data (will be updated when global filter is applied)
+        if (widgetConfig.enableFiltering && result?.data?.length > 0 && !hasMultiLocalFilters) {
           const uniqueLabels = [...new Set(result.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
           setAvailableLabels(uniqueLabels);
-          
-          // Only set local selectedLabel if not using global filter for this field
           if (!isGlobalFilterForThisField && !selectedLabel && uniqueLabels.length > 0) {
             setSelectedLabel(uniqueLabels[0]);
           }
@@ -535,7 +526,6 @@ const MetricWidget = ({
         setLoading(false);
       }
     }
-    void requestId;
   // Note: selectedLabel is intentionally excluded from dependencies.
   // Local filter changes should NOT trigger refetches - filtering is done client-side.
   // Only effectiveMetricId and global filter changes should trigger API calls.
