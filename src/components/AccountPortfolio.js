@@ -2605,7 +2605,11 @@ const PortfolioMetric = ({ item, filterValue, isDarkMode, onRowClick, lazy = fal
             onTableRowClick={onRowClick}
             tableConfigOverrides={item.tableConfigOverrides}
             tableHeight={item.tableHeight}
-            eagerFetch
+            // Only KPIs (top-of-section, always in viewport when tab
+            // opens) fetch eagerly. Charts further down defer to
+            // MetricWidget's IntersectionObserver so we don't kick off
+            // 8+ slow ClickHouse queries the user hasn't scrolled to.
+            eagerFetch={item.band === 'kpi'}
           />
         </SectionErrorBoundary>
       ) : (

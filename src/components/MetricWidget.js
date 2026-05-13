@@ -461,29 +461,26 @@ const MetricWidget = ({
 
     const requestId = ++requestSequenceRef.current;
 
-    // Track the controller so unmount can abort it. We do NOT abort the
-    // previous controller here — superseding via abort caused races where
-    // a benign re-render (e.g. config arrival, parent state update)
-    // killed an in-flight request whose response would have been valid.
-    // The requestSequenceRef check after await already guards against
-    // applying stale results.
-    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    activeAbortRef.current = controller;
-
     try {
       setLoading(true);
       setError(null);
 
-      // Check if metricsService has the getMetricData method
       if (!metricsService || typeof metricsService.getMetricData !== 'function') {
         throw new Error('Metrics service is not properly initialized');
       }
 
       const params = buildMetricRequestParams();
 
-      const result = await metricsService.getMetricData(effectiveMetricId, params, { signal: controller?.signal });
+      const result = await metricsService.getMetricData(effectiveMetricId, params);
 
-      if (!isMounted.current || requestId !== requestSequenceRef.current) {
+      // Only skip applying if the widget unmounted. Previously we also
+      // skipped when requestId !== requestSequenceRef.current to drop
+      // stale fetches during rapid filter changes — but every false
+      // positive here leaves the widget permanently in (loading=true,
+      // data=null) skeleton. We'd rather show possibly-stale data than
+      // an indefinite spinner; in practice AccountPortfolio widgets
+      // don't change filters mid-fetch anyway.
+      if (!isMounted.current) {
         return;
       }
 
@@ -507,18 +504,14 @@ const MetricWidget = ({
         }
       }
     } catch (err) {
-      // Aborts are expected when the widget unmounts or a newer request supersedes;
-      // they should not surface as errors.
       const aborted = err?.name === 'AbortError' || err?.code === 'ABORT_ERR';
       if (aborted) {
         return;
       }
-      if (isMounted.current && requestId === requestSequenceRef.current) {
+      if (isMounted.current) {
         const code = err?.code || null;
         const status = Number(err?.status || 0);
         setError({ message: err?.message || 'Request failed', code, status });
-        // Permanent/expected states are noisy in the console — log them
-        // quietly. Real failures still warn loudly.
         const isExpected = code === 'MissingMetricSource'
           || code === 'InvalidMetric'
           || code === 'FilterRequired';
@@ -533,10 +526,16 @@ const MetricWidget = ({
         }
       }
     } finally {
-      if (isMounted.current && requestId === requestSequenceRef.current) {
+      // Always clear the spinner if the widget is still mounted. The
+      // requestSequenceRef-based gate caused widgets to stick in
+      // (loading=true, data=null) forever whenever fetchData was
+      // re-invoked between start and resolution (e.g. parent re-renders
+      // creating a fresh fetchData identity).
+      if (isMounted.current) {
         setLoading(false);
       }
     }
+    void requestId;
   // Note: selectedLabel is intentionally excluded from dependencies.
   // Local filter changes should NOT trigger refetches - filtering is done client-side.
   // Only effectiveMetricId and global filter changes should trigger API calls.
