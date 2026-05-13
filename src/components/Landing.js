@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import MetricGrid from './MetricGrid';
 import IconComponent from './IconComponent';
 import dashboardsService from '../services/dashboards';
+import metricsService from '../services/metrics';
 
 const LANDING_RESOURCE_GROUPS = [
   {
@@ -50,6 +51,27 @@ const STRIP_METRIC_IDS = [
 ];
 
 const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = false }) => {
+  const [metricsCacheVersion, setMetricsCacheVersion] = useState(0);
+  const [overviewConfigsLoaded, setOverviewConfigsLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = metricsService.subscribe((version) => {
+      setMetricsCacheVersion(version);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (isBootLoading) return undefined;
+    let cancelled = false;
+    setOverviewConfigsLoaded(false);
+    const ids = Array.from(new Set([...LANDING_OVERVIEW_METRIC_IDS, ...STRIP_METRIC_IDS]));
+    metricsService.loadMetricConfigs(ids).then(() => {
+      if (!cancelled) setOverviewConfigsLoaded(true);
+    });
+    return () => { cancelled = true; };
+  }, [isBootLoading]);
+
   const sectorCards = useMemo(
     () => (isBootLoading ? [] : dashboards.filter((d) => d.id !== 'overview')),
     [dashboards, isBootLoading]
@@ -61,8 +83,9 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
     }
     const all = dashboardsService.getTabMetrics('overview', 'main') || [];
     const included = new Set(LANDING_OVERVIEW_METRIC_IDS);
-    return all.filter((m) => included.has(m.id));
-  }, [dashboards, isBootLoading]);
+    return metricsService.resolveTabMetrics(all.filter((m) => included.has(m.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboards, isBootLoading, metricsCacheVersion]);
 
   const overviewTabConfig = useMemo(
     () => (isBootLoading ? null : dashboardsService.getTab('overview', 'main') || null),
@@ -74,7 +97,8 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       return [];
     }
     const all = dashboardsService.getTabMetrics('overview', 'main') || [];
-    const map = new Map(all.map((m) => [m.id, m]));
+    const resolved = metricsService.resolveTabMetrics(all);
+    const map = new Map(resolved.map((m) => [m.id, m]));
     return STRIP_METRIC_IDS.map((id, idx) => {
       const base = map.get(id);
       if (!base) return null;
@@ -85,7 +109,8 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
         minHeight: '110px'
       };
     }).filter(Boolean);
-  }, [dashboards, isBootLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboards, isBootLoading, metricsCacheVersion]);
 
   const handleSectorClick = (dashboardId) => {
     if (!isBootLoading && typeof onNavigate === 'function') {
@@ -154,7 +179,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       </section>
 
       {/* Live metric strip */}
-      {stripMetrics.length > 0 && (
+      {overviewConfigsLoaded && stripMetrics.length > 0 && (
         <section className="landing-strip">
           <div className="landing-strip-inner">
             <MetricGrid
@@ -205,7 +230,7 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       )}
 
       {/* Overview trends */}
-      {overviewMetrics.length > 0 && (
+      {overviewConfigsLoaded && overviewMetrics.length > 0 && (
         <section className="landing-section landing-section-overview">
           <div className="landing-section-head">
             <div className="landing-section-eyebrow">At a glance</div>

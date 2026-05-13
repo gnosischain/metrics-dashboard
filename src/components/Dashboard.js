@@ -7,6 +7,7 @@ import AccountPortfolio from './AccountPortfolio';
 import IconComponent from './IconComponent';
 import Landing from './Landing';
 import dashboardsService from '../services/dashboards';
+import metricsService from '../services/metrics';
 import dashboardConfig from '../utils/dashboardConfig';
 import { buildMetricSearchIndex } from '../utils/metricSearch';
 import { normalizeFilterValue } from '../utils/filterValues';
@@ -147,6 +148,8 @@ const Dashboard = () => {
   const [tabCustomStates, setTabCustomStates] = useState({}); // Custom per-tab URL/application state (e.g. validator explorer)
   const [isLoading, setIsLoading] = useState(true);
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [activeTabConfigsLoaded, setActiveTabConfigsLoaded] = useState(false);
+  const [metricsCacheVersion, setMetricsCacheVersion] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
     return window.innerWidth <= 768;
@@ -175,11 +178,67 @@ const Dashboard = () => {
     () => (activeDashboard && activeTab ? dashboardsService.getTab(activeDashboard, activeTab) : null),
     [activeDashboard, activeTab]
   );
-  const tabMetrics = useMemo(
+  const rawTabMetrics = useMemo(
     () => (activeDashboard && activeTab ? dashboardsService.getTabMetrics(activeDashboard, activeTab) : []),
     [activeDashboard, activeTab]
   );
+  const tabMetrics = useMemo(
+    () => metricsService.resolveTabMetrics(rawTabMetrics),
+    // metricsCacheVersion bumps when new configs land in the cache, forcing re-resolution
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rawTabMetrics, metricsCacheVersion]
+  );
   const knownFilterFields = useMemo(() => getKnownFilterFields(dashboards), [dashboards]);
+
+  // Subscribe to metric-config cache updates so memos re-resolve once configs land.
+  useEffect(() => {
+    const unsubscribe = metricsService.subscribe((version) => {
+      setMetricsCacheVersion(version);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Preload the active tab's metric configs before rendering MetricGrid.
+  useEffect(() => {
+    if (!rawTabMetrics || rawTabMetrics.length === 0) {
+      setActiveTabConfigsLoaded(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setActiveTabConfigsLoaded(false);
+
+    const ids = rawTabMetrics.map((m) => m.id).filter(Boolean);
+    metricsService.loadMetricConfigs(ids).then(() => {
+      if (!cancelled) setActiveTabConfigsLoaded(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rawTabMetrics]);
+
+  // After the dashboards are wired, fetch the remaining configs in the background
+  // so the cross-dashboard search index can be enriched.
+  useEffect(() => {
+    if (!configLoaded || dashboards.length === 0) return;
+
+    const schedule = window.requestIdleCallback
+      ? (cb) => window.requestIdleCallback(cb, { timeout: 4000 })
+      : (cb) => window.setTimeout(cb, 1500);
+
+    const handle = schedule(() => {
+      metricsService.loadAllMetricConfigs();
+    });
+
+    return () => {
+      if (window.cancelIdleCallback && window.requestIdleCallback) {
+        window.cancelIdleCallback(handle);
+      } else {
+        window.clearTimeout(handle);
+      }
+    };
+  }, [configLoaded, dashboards.length]);
   
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -561,7 +620,17 @@ const Dashboard = () => {
 
     return tabCustomStates[activeTabFilterKey] || null;
   }, [activeTabConfig?.customView, activeTabFilterKey, tabCustomStates]);
-  const searchIndex = useMemo(() => buildMetricSearchIndex(dashboards), [dashboards]);
+  const searchIndex = useMemo(() => {
+    const enriched = dashboards.map((dashboard) => ({
+      ...dashboard,
+      tabs: (dashboard.tabs || []).map((tab) => ({
+        ...tab,
+        metrics: metricsService.resolveTabMetrics(tab.metrics || [])
+      }))
+    }));
+    return buildMetricSearchIndex(enriched);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboards, metricsCacheVersion]);
 
   const handleCustomTabStateChange = useCallback((nextStateOrUpdater) => {
     if (!activeTabFilterKey || !activeTabConfig?.customView) {
@@ -809,6 +878,8 @@ const Dashboard = () => {
                     portfolioState={currentCustomTabState}
                     onPortfolioStateChange={handleCustomTabStateChange}
                   />
+                ) : !activeTabConfigsLoaded ? (
+                  <div className="loading-indicator">Loading metrics...</div>
                 ) : (
                   <MetricGrid
                     metrics={tabMetrics}

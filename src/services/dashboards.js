@@ -1,5 +1,4 @@
 import yaml from 'js-yaml';
-import metricsService from './metrics';
 import { resolveDashboardPalette } from '../utils/dashboardPalettes';
 
 /**
@@ -87,23 +86,14 @@ class DashboardService {
         id: 'main',
         name: dashboard.name, // Use the dashboard name for the tab
         order: 1,
-        metrics: dashboardConfig.metrics.map(metric => {
-          console.log('DashboardService: Processing metric:', metric);
-          
-          // Get base metric config (may be undefined for pseudo-metrics like global_filter)
-          const metricConfig = metricsService.getMetricConfig(metric.id);
-          
-          // Return metric with grid positioning + layout properties
-          return {
-            ...metricConfig,
-            id: metric.id,
-            gridRow: metric.gridRow,
-            gridColumn: metric.gridColumn,
-            minHeight: metric.minHeight,
-            tabGroup: metric.tabGroup || null,
-            tabLabel: metric.tabLabel || null
-          };
-        }),
+        metrics: dashboardConfig.metrics.map(metric => ({
+          id: metric.id,
+          gridRow: metric.gridRow,
+          gridColumn: metric.gridColumn,
+          minHeight: metric.minHeight,
+          tabGroup: metric.tabGroup || null,
+          tabLabel: metric.tabLabel || null
+        })),
         // Flag to indicate this is a default tab (no tabs UI)
         isDefaultTab: true
       }];
@@ -147,23 +137,14 @@ class DashboardService {
           defaultResolution: tab.defaultResolution || 'weekly', // Default resolution
           timeRanges: tab.timeRanges || false, // Global time range buttons (true for defaults, or array)
           defaultTimeRange: tab.defaultTimeRange || 'ALL', // Default selected time range
-          metrics: (tab.metrics || []).map(metric => {
-            console.log('DashboardService: Processing tab metric:', metric);
-            
-            // Get base metric config (may be undefined for pseudo-metrics like global_filter)
-            const metricConfig = metricsService.getMetricConfig(metric.id);
-            
-            // Return metric with grid positioning + layout properties
-            return {
-              ...metricConfig,
-              id: metric.id,
-              gridRow: metric.gridRow,
-              gridColumn: metric.gridColumn,
-              minHeight: metric.minHeight,
-              tabGroup: metric.tabGroup || null,
-              tabLabel: metric.tabLabel || null
-            };
-          })
+          metrics: (tab.metrics || []).map(metric => ({
+            id: metric.id,
+            gridRow: metric.gridRow,
+            gridColumn: metric.gridColumn,
+            minHeight: metric.minHeight,
+            tabGroup: metric.tabGroup || null,
+            tabLabel: metric.tabLabel || null
+          }))
         };
       });
       
