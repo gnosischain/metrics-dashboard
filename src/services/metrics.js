@@ -161,7 +161,7 @@ class MetricsService {
    * @param {Object} params - Optional query params (from/to/filterField/filterValue, etc.)
    * @returns {Promise<Object>} The metric data
    */
-  async getMetricData(metricId, params = {}) {
+  async getMetricData(metricId, params = {}, options = {}) {
     const normalizedParams = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
     );
@@ -177,14 +177,17 @@ class MetricsService {
         return { content: metricConfig.content };
       }
 
-      const response = await api.get(`/metrics/${metricId}`, normalizedParams);
+      const response = await api.get(`/metrics/${metricId}`, normalizedParams, { signal: options.signal });
       const normalizedRows = this.normalizeMetricRows(response);
 
       return response && typeof response === 'object' && !Array.isArray(response)
         ? { ...response, data: normalizedRows }
         : { data: normalizedRows };
     } catch (error) {
-      console.error(`Error fetching metric ${metricId}:`, error);
+      const aborted = error?.name === 'AbortError' || error?.code === 'ABORT_ERR';
+      if (!aborted) {
+        console.error(`Error fetching metric ${metricId}:`, error);
+      }
       throw error;
     }
   }

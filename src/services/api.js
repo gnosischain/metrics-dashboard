@@ -7,40 +7,143 @@ const responseCache = new Map();
 const inFlightRequests = new Map();
 const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
 
-// In dev we used to fully serialize all metric requests, which made the
-// portfolio tab feel ~10x slower than prod. Cap at a small concurrency
-// instead so we don't hammer Vercel-dev's single Node process while still
-// letting independent widgets load in parallel.
-const DEV_METRIC_CONCURRENCY = 6;
-let developmentMetricsActive = 0;
-const developmentMetricsWaiters = [];
+// No client-side timeout. Some ClickHouse queries legitimately take 30–60s,
+// and local vercel-dev has no upstream cap — auto-aborting here turned
+// slow-but-valid requests into hard failures. In production, Vercel's
+// function maxDuration (60s) bounds the wait; in dev the user can simply
+// wait or navigate, and the per-widget AbortController still cancels the
+// fetch on unmount.
+const REQUEST_TIMEOUT_MS = 0;
 
-const acquireDevelopmentMetricSlot = () => new Promise((resolve) => {
-  if (developmentMetricsActive < DEV_METRIC_CONCURRENCY) {
-    developmentMetricsActive += 1;
-    resolve();
-  } else {
-    developmentMetricsWaiters.push(resolve);
+// One auto-retry on transient failures (5xx, network errors, timeouts).
+// User-initiated aborts and 4xx are never retried.
+const TRANSIENT_RETRY_DELAY_MS = 2_000;
+const isTransientStatus = (status) => status === 0 || status === 408 || status === 429 || (status >= 500 && status <= 599);
+
+// In production we let the browser/HTTP/2 layer parallelize freely; the
+// only place a hard cap helps is local dev where Vite-dev runs in a single
+// Node process and a queue of slow widgets thrashes it. Production used to
+// fire all requests in parallel and we keep that — a global cap there
+// causes head-of-line blocking when a single slow ClickHouse query holds
+// a slot for the full 45s timeout.
+const METRIC_CONCURRENCY = 6;
+const DEV_ONLY_CONCURRENCY = true;
+let metricsActive = 0;
+const metricsWaiters = [];
+
+const acquireMetricSlot = (signal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) {
+    reject(makeAbortError(signal.reason));
+    return;
   }
+  if (metricsActive < METRIC_CONCURRENCY) {
+    metricsActive += 1;
+    resolve();
+    return;
+  }
+  const waiter = { resolve, reject, signal, onAbort: null };
+  if (signal) {
+    waiter.onAbort = () => {
+      const idx = metricsWaiters.indexOf(waiter);
+      if (idx >= 0) metricsWaiters.splice(idx, 1);
+      reject(makeAbortError(signal.reason));
+    };
+    signal.addEventListener('abort', waiter.onAbort, { once: true });
+  }
+  metricsWaiters.push(waiter);
 });
 
-const releaseDevelopmentMetricSlot = () => {
-  const next = developmentMetricsWaiters.shift();
-  if (next) {
-    next();
-  } else {
-    developmentMetricsActive = Math.max(0, developmentMetricsActive - 1);
+const releaseMetricSlot = () => {
+  while (metricsWaiters.length > 0) {
+    const next = metricsWaiters.shift();
+    if (next.signal && next.onAbort) {
+      next.signal.removeEventListener('abort', next.onAbort);
+    }
+    if (next.signal?.aborted) {
+      // Skip already-aborted waiters; they've already rejected.
+      continue;
+    }
+    metricsActive += 1;
+    next.resolve();
+    return;
   }
+  metricsActive = Math.max(0, metricsActive - 1);
 };
 
-const enqueueDevelopmentMetricRequest = async (requestFactory) => {
-  await acquireDevelopmentMetricSlot();
+const enqueueMetricRequest = async (requestFactory, signal) => {
+  await acquireMetricSlot(signal);
   try {
     return await requestFactory();
   } finally {
-    releaseDevelopmentMetricSlot();
+    releaseMetricSlot();
   }
 };
+
+const makeAbortError = (reason) => {
+  if (reason instanceof Error) return reason;
+  const err = new Error(typeof reason === 'string' ? reason : 'Aborted');
+  err.name = 'AbortError';
+  return err;
+};
+
+const isAbortError = (err) => {
+  if (!err) return false;
+  if (err.name === 'AbortError') return true;
+  return typeof err === 'object' && err.code === 'ABORT_ERR';
+};
+
+const combineSignals = (...signals) => {
+  const filtered = signals.filter(Boolean);
+  if (filtered.length === 0) return { signal: null, cleanup: () => {} };
+  if (filtered.length === 1) return { signal: filtered[0], cleanup: () => {} };
+  const controller = new AbortController();
+  const onAbort = (event) => {
+    controller.abort(event.target.reason);
+  };
+  filtered.forEach((s) => {
+    if (s.aborted) {
+      controller.abort(s.reason);
+    } else {
+      s.addEventListener('abort', onAbort, { once: true });
+    }
+  });
+  return {
+    signal: controller.signal,
+    cleanup: () => filtered.forEach((s) => s.removeEventListener('abort', onAbort))
+  };
+};
+
+const raceWithAbort = (promise, signal) => {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(makeAbortError(signal.reason));
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(makeAbortError(signal.reason));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => { signal.removeEventListener('abort', onAbort); resolve(value); },
+      (err) => { signal.removeEventListener('abort', onAbort); reject(err); }
+    );
+  });
+};
+
+const delay = (ms, signal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) {
+    reject(makeAbortError(signal.reason));
+    return;
+  }
+  const timer = setTimeout(() => {
+    if (signal) signal.removeEventListener('abort', onAbort);
+    resolve();
+  }, ms);
+  const onAbort = () => {
+    clearTimeout(timer);
+    reject(makeAbortError(signal.reason));
+  };
+  if (signal) signal.addEventListener('abort', onAbort, { once: true });
+});
 
 const getSessionStorage = () => {
   try {
@@ -166,7 +269,8 @@ export class ApiService {
    * @param {Object} params - Query parameters
    * @returns {Promise<any>}
    */
-  async get(endpoint, params = {}) {
+  async get(endpoint, params = {}, options = {}) {
+    const { signal: callerSignal = null } = options;
     const normalizedParams = sanitizeParams(params);
     const requestParams = { ...normalizedParams };
 
@@ -190,50 +294,74 @@ export class ApiService {
       return cachedEntry.data;
     }
 
+    if (callerSignal?.aborted) {
+      throw makeAbortError(callerSignal.reason);
+    }
+
+    // Inflight dedup is shared across callers, so we don't pass the caller's
+    // signal to the existing promise — aborting one caller must not cancel
+    // the shared request. The caller-level abort is handled by racing
+    // against the abort event below.
     if (inFlightRequests.has(cacheKey)) {
       const inFlight = inFlightRequests.get(cacheKey);
       if (!bypassFrontendCache && cachedEntry) {
-        // Stale-while-revalidate: return cached immediately, let refresh settle in background.
         inFlight.catch(() => {});
         return cachedEntry.data;
       }
-      return inFlight;
+      return raceWithAbort(inFlight, callerSignal);
     }
 
-    const requestPromise = (async () => {
-      try {
-        const data = await (this.isDevelopment && isMetricsEndpoint(endpoint)
-          ? enqueueDevelopmentMetricRequest(() => this.fetchFromSource(endpoint, requestParams))
-          : this.fetchFromSource(endpoint, requestParams));
-        if (!bypassFrontendCache) {
-          const entry = { data, timestamp: Date.now() };
-          responseCache.set(cacheKey, entry);
-          writePersistedEntry(cacheKey, entry);
-        }
-        return data;
-      } catch (error) {
-        console.error(`API Error for ${endpoint}:`, error);
-
-        if (cachedEntry) {
-          console.warn(`API Error for ${endpoint}, serving stale cached response`);
-          return cachedEntry.data;
-        }
-
-        throw error;
-      } finally {
-        inFlightRequests.delete(cacheKey);
-      }
-    })();
+    const requestPromise = this.executeWithRetry(endpoint, requestParams, cacheKey, cachedEntry);
 
     inFlightRequests.set(cacheKey, requestPromise);
 
     if (!bypassFrontendCache && cachedEntry) {
-      // Stale-while-revalidate: serve stale payload, let the refresh update cache silently.
       requestPromise.catch(() => {});
       return cachedEntry.data;
     }
 
-    return requestPromise;
+    return raceWithAbort(requestPromise, callerSignal);
+  }
+
+  /**
+   * Run the actual fetch with a single transient retry. Per-request timeout
+   * is enforced inside fetchFromSource via AbortController; this layer only
+   * decides whether to retry on transient failures.
+   */
+  async executeWithRetry(endpoint, requestParams, cacheKey, cachedEntry) {
+    // No automatic retries — 504s here mean the upstream already exhausted
+    // its budget and a retry doubles the user's wall time for no gain.
+    try {
+      const data = await this.fetchWithConcurrency(endpoint, requestParams);
+
+      if (!this.isDevelopment) {
+        const entry = { data, timestamp: Date.now() };
+        responseCache.set(cacheKey, entry);
+        writePersistedEntry(cacheKey, entry);
+      }
+      return data;
+    } catch (error) {
+      if (!isAbortError(error)) {
+        console.error(`API Error for ${endpoint}:`, error);
+      }
+      if (cachedEntry) {
+        console.warn(`API Error for ${endpoint}, serving stale cached response`);
+        return cachedEntry.data;
+      }
+      throw error;
+    } finally {
+      inFlightRequests.delete(cacheKey);
+    }
+  }
+
+  fetchWithConcurrency(endpoint, requestParams) {
+    // No client-side concurrency gate. The earlier dev-only queue leaked
+    // slots (releaseMetricSlot incremented metricsActive when handing off
+    // to a waiter without decrementing for the finished task), so after
+    // ~6 widget cycles the pool wedged and api.get() hung indefinitely.
+    // The browser per-origin connection limit + the in-flight dedup in
+    // api.get() already keep total work bounded.
+    return this.fetchFromSource(endpoint, requestParams);
   }
 
   /**
@@ -328,11 +456,18 @@ export class ApiService {
       headers['X-API-Key'] = this.apiKey;
     }
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers,
-      ...(this.isDevelopment ? { cache: 'no-store' } : {})
-    });
+    let response;
+    try {
+      response = await fetch(url.toString(), {
+        method: 'GET',
+        headers,
+        ...(this.isDevelopment ? { cache: 'no-store' } : {})
+      });
+    } catch (err) {
+      const wrapped = new Error(err?.message || `Network error: ${endpoint}`);
+      wrapped.status = 0;
+      throw wrapped;
+    }
 
     if (!response.ok) {
       // Try to read the structured error envelope so the UI can distinguish

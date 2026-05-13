@@ -8,6 +8,7 @@ import accountPortfolioService, {
   normalizeAccountSelection,
   selectionFromRawInput,
 } from '../services/accountPortfolio';
+import metricsService from '../services/metrics';
 import {
   formatCurrencyCompact,
   formatNumberCompact,
@@ -164,6 +165,11 @@ const GNOSIS_APP_METRICS = [
 const VALIDATOR_METRICS = [
   { metricId: 'api_consensus_validators_explorer_members_table', filterField: 'withdrawal_address', gridColumn: '1 / span 12', minHeight: 620 },
 ];
+
+// Helper used by the preload effect inside AccountPortfolio — keeps the
+// metric-id extraction local to the source-of-truth arrays defined in
+// this module.
+const collectMetricIds = (items = []) => items.map((it) => it.metricId).filter(Boolean);
 
 const ACCOUNT_PORTFOLIO_SECTIONS = [
   { id: 'overview', title: 'Overview', always: true },
@@ -2547,6 +2553,7 @@ const GPayTab = ({ address, profile, roleFlags, isDarkMode, onRowClick }) => {
                   onTableRowClick={onRowClick}
                   tableConfigOverrides={item.tableConfigOverrides}
                   tableHeight={item.tableHeight}
+                  eagerFetch
                 />
               </SectionErrorBoundary>
             ) : (
@@ -2563,32 +2570,19 @@ const GPayTab = ({ address, profile, roleFlags, isDarkMode, onRowClick }) => {
 
 const PortfolioMetric = ({ item, filterValue, isDarkMode, onRowClick, lazy = false }) => {
   const metricRef = useRef(null);
-  const [shouldLoad, setShouldLoad] = useState(!lazy);
+  const [shouldLoad, setShouldLoad] = useState(true);
 
   useEffect(() => {
-    if (!lazy) {
-      setShouldLoad(true);
-      return undefined;
-    }
-
-    setShouldLoad(false);
-    const node = metricRef.current;
-    if (!node || typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
-      setShouldLoad(true);
-      return undefined;
-    }
-
-    const root = findScrollableAncestor(node);
-    const observer = new window.IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setShouldLoad(true);
-        observer.disconnect();
-      }
-    }, { root, rootMargin: '420px 0px' });
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [filterValue, item.metricId, lazy]);
+    // We used to gate mounting behind an IntersectionObserver to defer
+    // off-screen chart widgets. In React 18 dev StrictMode the synthetic
+    // setup→cleanup→setup cycle disconnects the observer before its
+    // initial intersection callback fires, leaving widgets permanently
+    // unmounted (skeleton forever). The widgets fetch eagerly now and
+    // rely on the underlying API in-flight dedup + in-memory cache to
+    // keep total work bounded.
+    setShouldLoad(true);
+    return undefined;
+  }, []);
 
   return (
     <div
@@ -2611,6 +2605,7 @@ const PortfolioMetric = ({ item, filterValue, isDarkMode, onRowClick, lazy = fal
             onTableRowClick={onRowClick}
             tableConfigOverrides={item.tableConfigOverrides}
             tableHeight={item.tableHeight}
+            eagerFetch
           />
         </SectionErrorBoundary>
       ) : (
@@ -2710,6 +2705,34 @@ const AccountPortfolio = ({
   portfolioState = null,
   onPortfolioStateChange,
 }) => {
+  // Preload every metric-config module this view uses, in parallel, so the
+  // MetricWidgets find their configs synchronously the moment they mount.
+  // Critical: must complete BEFORE rendering the metric sections, because
+  // a config transition from undefined → object inside MetricWidget
+  // recreates buildMetricRequestParams / fetchData and aborts the in-flight
+  // request before its response can land. We gate the metric sections
+  // below on `metricConfigsReady` to avoid that race.
+  const [metricConfigsReady, setMetricConfigsReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const ids = Array.from(new Set([
+      ...collectMetricIds(CIRCLES_METRICS),
+      ...collectMetricIds(GNOSIS_APP_METRICS),
+      ...collectMetricIds(VALIDATOR_METRICS),
+      ...collectMetricIds(YIELDS_PORTFOLIO_METRICS),
+      ...collectMetricIds(GPAY_KEPT_METRICS),
+    ]));
+    const allCached = ids.every((id) => metricsService.getMetricConfig(id));
+    if (allCached) {
+      setMetricConfigsReady(true);
+      return undefined;
+    }
+    metricsService.loadMetricConfigs(ids)
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setMetricConfigsReady(true); });
+    return () => { cancelled = true; };
+  }, []);
+
 	  const normalizedPortfolioState = useMemo(
 	    () => normalizeAccountPortfolioState(portfolioState || {}),
 	    [
@@ -3395,68 +3418,88 @@ const AccountPortfolio = ({
 	                    onOpenAddress={handleOpenAddress}
 	                  />
 	                ) : activeSection === 'yields' && sectionFlags.hasYields ? (
-	                  <YieldsTab
-	                    address={profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || address}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
-	                    lp={lpPositions}
-	                    lending={lendingPositions}
-	                    activity={yieldsActivity}
-	                  />
+	                  metricConfigsReady ? (
+	                    <YieldsTab
+	                      address={profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || address}
+	                      isDarkMode={isDarkMode}
+	                      onRowClick={setDrawer}
+	                      lp={lpPositions}
+	                      lending={lendingPositions}
+	                      activity={yieldsActivity}
+	                    />
+	                  ) : (
+	                    <div className="loading-indicator">Loading…</div>
+	                  )
 	                ) : activeSection === 'circles' && sectionFlags.hasCircles ? (
-	                  <PortfolioMetricSection
-	                    sectionKey="circles"
-	                    title="Circles"
-	                    items={CIRCLES_METRICS}
-	                    getItemFilterValue={getItemFilterValue}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
-	                    resetKey={metricSectionResetKey}
-	                    stagger
-	                    lazyCharts
-	                  />
+	                  metricConfigsReady ? (
+	                    <PortfolioMetricSection
+	                      sectionKey="circles"
+	                      title="Circles"
+	                      items={CIRCLES_METRICS}
+	                      getItemFilterValue={getItemFilterValue}
+	                      isDarkMode={isDarkMode}
+	                      onRowClick={setDrawer}
+	                      resetKey={metricSectionResetKey}
+	                      stagger
+	                      lazyCharts
+	                    />
+	                  ) : (
+	                    <div className="loading-indicator">Loading…</div>
+	                  )
 	                ) : activeSection === 'gpay' && sectionFlags.hasGpay ? (
-	                  <GPayTab
-	                    address={address}
-	                    profile={profile}
-	                    roleFlags={roleFlags}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
-	                  />
+	                  metricConfigsReady ? (
+	                    <GPayTab
+	                      address={address}
+	                      profile={profile}
+	                      roleFlags={roleFlags}
+	                      isDarkMode={isDarkMode}
+	                      onRowClick={setDrawer}
+	                    />
+	                  ) : (
+	                    <div className="loading-indicator">Loading…</div>
+	                  )
 	                ) : activeSection === 'gnosis-app' && sectionFlags.hasGnosisApp ? (
-	                  <PortfolioMetricSection
-	                    sectionKey="gnosis-app"
-	                    title="Gnosis App"
-	                    items={GNOSIS_APP_METRICS}
-	                    getItemFilterValue={getItemFilterValue}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
-	                    resetKey={metricSectionResetKey}
-	                    lazyCharts
-	                  />
+	                  metricConfigsReady ? (
+	                    <PortfolioMetricSection
+	                      sectionKey="gnosis-app"
+	                      title="Gnosis App"
+	                      items={GNOSIS_APP_METRICS}
+	                      getItemFilterValue={getItemFilterValue}
+	                      isDarkMode={isDarkMode}
+	                      onRowClick={setDrawer}
+	                      resetKey={metricSectionResetKey}
+	                      lazyCharts
+	                    />
+	                  ) : (
+	                    <div className="loading-indicator">Loading…</div>
+	                  )
 	                ) : activeSection === 'validators' && sectionFlags.hasValidators ? (
-	                  <PortfolioMetricSection
-	                    sectionKey="validators"
-	                    title="Validators"
-	                    items={VALIDATOR_METRICS}
-	                    getItemFilterValue={getItemFilterValue}
-	                    mapItem={(item) => item.metricId === 'api_consensus_validators_explorer_members_table'
-	                      ? {
-	                          ...item,
-	                          filterField: selectedAccount?.validatorIndex
-	                            ? 'validator_index'
-	                            : selectedAccount?.withdrawalCredentials
-	                              ? 'withdrawal_credentials'
-	                              : 'withdrawal_address',
-	                        }
-	                      : item}
-	                    isDarkMode={isDarkMode}
-	                    onRowClick={setDrawer}
-	                    resetKey={metricSectionResetKey}
-	                    stagger
-	                    lazyCharts
-	                    beforeGrid={validatorFilterBadge}
-	                  />
+	                  metricConfigsReady ? (
+	                    <PortfolioMetricSection
+	                      sectionKey="validators"
+	                      title="Validators"
+	                      items={VALIDATOR_METRICS}
+	                      getItemFilterValue={getItemFilterValue}
+	                      mapItem={(item) => item.metricId === 'api_consensus_validators_explorer_members_table'
+	                        ? {
+	                            ...item,
+	                            filterField: selectedAccount?.validatorIndex
+	                              ? 'validator_index'
+	                              : selectedAccount?.withdrawalCredentials
+	                                ? 'withdrawal_credentials'
+	                                : 'withdrawal_address',
+	                          }
+	                        : item}
+	                      isDarkMode={isDarkMode}
+	                      onRowClick={setDrawer}
+	                      resetKey={metricSectionResetKey}
+	                      stagger
+	                      lazyCharts
+	                      beforeGrid={validatorFilterBadge}
+	                    />
+	                  ) : (
+	                    <div className="loading-indicator">Loading…</div>
+	                  )
 	                ) : null}
 	              </div>
 	            </>

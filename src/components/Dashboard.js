@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense, lazy } from 'react';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import MetricGrid from './MetricGrid';
-import ValidatorExplorer from './ValidatorExplorer';
-import AccountPortfolio from './AccountPortfolio';
+// Heavy custom views — load only when the user opens those tabs so they
+// don't drag down first paint (or Landing) with their dependency trees.
+const ValidatorExplorer = lazy(() => import('./ValidatorExplorer'));
+const AccountPortfolio = lazy(() => import('./AccountPortfolio'));
 import IconComponent from './IconComponent';
 import Landing from './Landing';
 import dashboardsService from '../services/dashboards';
@@ -218,27 +220,10 @@ const Dashboard = () => {
     };
   }, [rawTabMetrics]);
 
-  // After the dashboards are wired, fetch the remaining configs in the background
-  // so the cross-dashboard search index can be enriched.
-  useEffect(() => {
-    if (!configLoaded || dashboards.length === 0) return;
-
-    const schedule = window.requestIdleCallback
-      ? (cb) => window.requestIdleCallback(cb, { timeout: 4000 })
-      : (cb) => window.setTimeout(cb, 1500);
-
-    const handle = schedule(() => {
-      metricsService.loadAllMetricConfigs();
-    });
-
-    return () => {
-      if (window.cancelIdleCallback && window.requestIdleCallback) {
-        window.cancelIdleCallback(handle);
-      } else {
-        window.clearTimeout(handle);
-      }
-    };
-  }, [configLoaded, dashboards.length]);
+  // Note: we no longer eagerly load every metric config in the background.
+  // Doing so on idle at boot pulled ~500 JS chunks the user may never need
+  // and slowed first paint. Search across non-active tabs is best-effort
+  // until those tabs are visited.
   
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -860,24 +845,28 @@ const Dashboard = () => {
             ) : activeDashboard && activeTab ? (
               <div className="tab-content">
                 {activeTabConfig?.customView === 'validatorExplorer' ? (
-                  <ValidatorExplorer
-                    isDarkMode={isDarkMode}
-                    tabConfig={activeTabConfig}
-                    dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
-                    dashboardPalette={activeDashboardPalette}
-                    explorerState={currentCustomTabState}
-                    onExplorerStateChange={handleCustomTabStateChange}
-                  />
+                  <Suspense fallback={<div className="loading-indicator">Loading…</div>}>
+                    <ValidatorExplorer
+                      isDarkMode={isDarkMode}
+                      tabConfig={activeTabConfig}
+                      dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
+                      dashboardPalette={activeDashboardPalette}
+                      explorerState={currentCustomTabState}
+                      onExplorerStateChange={handleCustomTabStateChange}
+                    />
+                  </Suspense>
                 ) : activeTabConfig?.customView === 'accountPortfolio' ? (
-                  <AccountPortfolio
-                    isDarkMode={isDarkMode}
-                    tabConfig={activeTabConfig}
-                    dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
-                    globalFilterValue={currentGlobalFilter}
-                    onGlobalFilterChange={handleGlobalFilterChange}
-                    portfolioState={currentCustomTabState}
-                    onPortfolioStateChange={handleCustomTabStateChange}
-                  />
+                  <Suspense fallback={<div className="loading-indicator">Loading…</div>}>
+                    <AccountPortfolio
+                      isDarkMode={isDarkMode}
+                      tabConfig={activeTabConfig}
+                      dashboard={dashboards.find((d) => d.id === activeDashboard) || null}
+                      globalFilterValue={currentGlobalFilter}
+                      onGlobalFilterChange={handleGlobalFilterChange}
+                      portfolioState={currentCustomTabState}
+                      onPortfolioStateChange={handleCustomTabStateChange}
+                    />
+                  </Suspense>
                 ) : !activeTabConfigsLoaded ? (
                   <div className="loading-indicator">Loading metrics...</div>
                 ) : (

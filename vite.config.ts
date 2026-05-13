@@ -54,10 +54,25 @@ export default defineConfig(({ mode }) => {
             return res;
           };
 
+          // Cache handlers across requests. We used to `delete require.cache`
+          // on every call so edits to api/*.js hot-reloaded — but the per-
+          // request module re-evaluation single-threaded Node's event loop
+          // and made 14 concurrent /api/metrics/* requests pile up pending
+          // for 60+ seconds. Set VITE_RELOAD_API=1 to opt back into the
+          // hot-reload behavior when actively editing API handlers.
+          const reloadApi = env.VITE_RELOAD_API === '1';
+          const handlerCache = new Map<string, any>();
           const loadApiHandler = (modulePath: string) => {
-            const resolved = require.resolve(modulePath);
-            delete require.cache[resolved];
-            return require(resolved);
+            if (reloadApi) {
+              const resolved = require.resolve(modulePath);
+              delete require.cache[resolved];
+              return require(resolved);
+            }
+            const cached = handlerCache.get(modulePath);
+            if (cached) return cached;
+            const handler = require(modulePath);
+            handlerCache.set(modulePath, handler);
+            return handler;
           };
 
           server.middlewares.use(async (req, res, next) => {

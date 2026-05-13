@@ -58,7 +58,12 @@ const MetricWidget = ({
   headerActions = null,
   onTableRowClick = null,
   tableConfigOverrides = null,
-  tableHeight = null
+  tableHeight = null,
+  // Skip MetricWidget's own IntersectionObserver gate. Use when a parent
+  // already lazy-mounts via its own IO (e.g. AccountPortfolio's
+  // PortfolioMetric) — stacking two IOs across StrictMode remounts means
+  // neither callback consistently fires and widgets stay in skeleton.
+  eagerFetch = false
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,15 +72,29 @@ const MetricWidget = ({
   const [selectedLocalFilters, setSelectedLocalFilters] = useState({});
   const [selectedValueMode, setSelectedValueMode] = useState(null);
   const [availableLabels, setAvailableLabels] = useState([]);
+  // Parents (Dashboard for tab metrics, AccountPortfolio for its
+  // section metrics) preload configs before rendering this widget so
+  // getMetricConfig returns synchronously below. As a last-resort
+  // safety net, kick off a load if we ever mount without a cached
+  // config — but don't force re-render here, since destabilising
+  // fetchData mid-flight causes pending requests to be aborted and
+  // their data discarded.
+  useEffect(() => {
+    if (!metricId) return;
+    if (metricsService.getMetricConfig(metricId)) return;
+    metricsService.loadMetricConfigs([metricId]).catch(() => {});
+  }, [metricId]);
   
   const isMounted = useRef(true);
   const requestSequenceRef = useRef(0);
+  const activeAbortRef = useRef(null);
   const cardRef = useRef(null);
   // IntersectionObserver-gated fetch: don't request data until the widget
   // is within ~300px of the viewport. The portfolio renders ~30 widgets;
   // without this, all 30 fire on mount even if the user only scrolls past
   // the first 4. Falls back to "fetch immediately" when IO is unavailable.
   const [shouldFetch, setShouldFetch] = useState(() => {
+    if (eagerFetch) return true;
     if (typeof window === 'undefined') return true;
     return typeof window.IntersectionObserver !== 'function';
   });
@@ -345,6 +364,13 @@ const MetricWidget = ({
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      // Intentionally do NOT abort activeAbortRef here. In dev StrictMode,
+      // useEffect cleanup runs synthetically between mount and remount, and
+      // aborting at that point cancels a request whose response would have
+      // landed on the live (remounted) instance. The shared inFlightRequests
+      // dedup in api.js means the abort can also tear down requests other
+      // widgets are awaiting. Letting the request complete is cheap and
+      // safe — the new render will read from the api cache.
     };
   }, []);
 
@@ -435,19 +461,28 @@ const MetricWidget = ({
 
     const requestId = ++requestSequenceRef.current;
 
+    // Track the controller so unmount can abort it. We do NOT abort the
+    // previous controller here — superseding via abort caused races where
+    // a benign re-render (e.g. config arrival, parent state update)
+    // killed an in-flight request whose response would have been valid.
+    // The requestSequenceRef check after await already guards against
+    // applying stale results.
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    activeAbortRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
-      
+
       // Check if metricsService has the getMetricData method
       if (!metricsService || typeof metricsService.getMetricData !== 'function') {
         throw new Error('Metrics service is not properly initialized');
       }
-      
+
       const params = buildMetricRequestParams();
 
-      const result = await metricsService.getMetricData(effectiveMetricId, params);
-      
+      const result = await metricsService.getMetricData(effectiveMetricId, params, { signal: controller?.signal });
+
       if (!isMounted.current || requestId !== requestSequenceRef.current) {
         return;
       }
@@ -472,6 +507,12 @@ const MetricWidget = ({
         }
       }
     } catch (err) {
+      // Aborts are expected when the widget unmounts or a newer request supersedes;
+      // they should not surface as errors.
+      const aborted = err?.name === 'AbortError' || err?.code === 'ABORT_ERR';
+      if (aborted) {
+        return;
+      }
       if (isMounted.current && requestId === requestSequenceRef.current) {
         const code = err?.code || null;
         const status = Number(err?.status || 0);

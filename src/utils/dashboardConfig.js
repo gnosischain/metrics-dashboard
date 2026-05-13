@@ -59,12 +59,16 @@ class DashboardConfig {
       throw new Error('Invalid dashboard.yml format: expected a top-level mapping');
     }
 
-    const resolvedConfig = {};
+    const entries = Object.entries(parsedMain);
 
-    for (const [sectorKey, sectorConfig] of Object.entries(parsedMain)) {
+    // Resolve every sector's source YAML in parallel. Previously this was a
+    // serial `for...of await` which on a cold dev cache meant 13 sequential
+    // ~1–2s fetches (~20–25s blocking first paint). Parallel reduces it to
+    // ~max(perFetch).
+    const resolvedEntries = await Promise.all(entries.map(async ([sectorKey, sectorConfig]) => {
       if (!sectorConfig || typeof sectorConfig !== 'object' || Array.isArray(sectorConfig)) {
         console.warn(`Skipping invalid sector config for "${sectorKey}"`);
-        continue;
+        return null;
       }
 
       const hasInlineLayout =
@@ -72,12 +76,10 @@ class DashboardConfig {
       const sourcePath =
         typeof sectorConfig.source === 'string' ? sectorConfig.source.trim() : '';
 
-      // Backwards compatibility: keep existing inline config when no source is defined.
       if (!sourcePath) {
         const inlineConfig = { ...sectorConfig };
         delete inlineConfig.source;
-        resolvedConfig[sectorKey] = inlineConfig;
-        continue;
+        return [sectorKey, inlineConfig];
       }
 
       try {
@@ -103,7 +105,7 @@ class DashboardConfig {
           delete mergedConfig.metrics;
         }
 
-        resolvedConfig[sectorKey] = mergedConfig;
+        return [sectorKey, mergedConfig];
       } catch (error) {
         if (hasInlineLayout) {
           console.warn(
@@ -112,15 +114,20 @@ class DashboardConfig {
           );
           const fallbackConfig = { ...sectorConfig };
           delete fallbackConfig.source;
-          resolvedConfig[sectorKey] = fallbackConfig;
-        } else {
-          console.warn(
-            `Failed to load source for "${sectorKey}" from ${sourcePath}; skipping this sector.`,
-            error
-          );
+          return [sectorKey, fallbackConfig];
         }
+        console.warn(
+          `Failed to load source for "${sectorKey}" from ${sourcePath}; skipping this sector.`,
+          error
+        );
+        return null;
       }
-    }
+    }));
+
+    const resolvedConfig = {};
+    resolvedEntries.forEach((entry) => {
+      if (entry) resolvedConfig[entry[0]] = entry[1];
+    });
 
     return yaml.dump(resolvedConfig, {
       noRefs: true,
@@ -134,33 +141,50 @@ class DashboardConfig {
    * @returns {Promise<boolean>} Success status
    */
   async loadConfig() {
-    // Skip if already loaded
     if (this.isLoaded) {
       return true;
     }
-    
-    try {
-      const mainYamlContent = await this.fetchYamlFile(this.configPath);
-      console.log('Loaded dashboard.yml content:', mainYamlContent.substring(0, 200) + '...');
-
-      const resolvedYamlContent = await this.resolveSourceConfigs(mainYamlContent);
-      const success = dashboardsService.loadFromYaml(resolvedYamlContent);
-      this.isLoaded = success;
-      console.log('Successfully loaded dashboard configuration from file');
-
-      try {
-        const alertsYaml = await this.fetchYamlFile('/alerts.yml');
-        alertsService.loadFromYaml(alertsYaml);
-      } catch (error) {
-        console.warn('No alerts.yml found or failed to parse; continuing without alerts.', error);
-      }
-
-      return success;
-    } catch (error) {
-      console.error('Error loading dashboard configuration:', error);
-      this.useDefaultConfig();
-      return true;
+    // Dedup overlapping calls — StrictMode mounts effects twice and a
+    // remount during the first load would otherwise re-issue every YAML
+    // fetch in parallel with the in-flight one.
+    if (this._loadPromise) {
+      return this._loadPromise;
     }
+
+    this._loadPromise = (async () => {
+      try {
+        const [mainYamlContent, alertsYamlSettled] = await Promise.all([
+          this.fetchYamlFile(this.configPath),
+          this.fetchYamlFile('/alerts.yml').catch((err) => ({ __error: err }))
+        ]);
+        console.log('Loaded dashboard.yml content:', mainYamlContent.substring(0, 200) + '...');
+
+        const resolvedYamlContent = await this.resolveSourceConfigs(mainYamlContent);
+        const success = dashboardsService.loadFromYaml(resolvedYamlContent);
+        this.isLoaded = success;
+        console.log('Successfully loaded dashboard configuration from file');
+
+        if (alertsYamlSettled && typeof alertsYamlSettled === 'string') {
+          try {
+            alertsService.loadFromYaml(alertsYamlSettled);
+          } catch (err) {
+            console.warn('Failed to parse alerts.yml; continuing without alerts.', err);
+          }
+        } else if (alertsYamlSettled?.__error) {
+          console.warn('No alerts.yml found or failed to load; continuing without alerts.', alertsYamlSettled.__error);
+        }
+
+        return success;
+      } catch (error) {
+        console.error('Error loading dashboard configuration:', error);
+        this.useDefaultConfig();
+        return true;
+      } finally {
+        this._loadPromise = null;
+      }
+    })();
+
+    return this._loadPromise;
   }
 
   /**
