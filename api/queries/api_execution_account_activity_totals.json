@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_activity_totals",
+  "query": "WITH edges AS (\n      SELECT * FROM (\n        SELECT date, transfer_count, \"to\" AS wallet_address, \"from\" AS counterparty\n        FROM dbt.int_execution_transfers_whitelisted_daily\n        WHERE date BETWEEN toDate('{from}') AND toDate('{to}')\n      ) WHERE 1 = 1 /*__FILTER_CONDITIONS__*/\n      UNION ALL\n      SELECT * FROM (\n        SELECT date, transfer_count, \"from\" AS wallet_address, \"to\" AS counterparty\n        FROM dbt.int_execution_transfers_whitelisted_daily\n        WHERE date BETWEEN toDate('{from}') AND toDate('{to}')\n      ) WHERE 1 = 1 /*__FILTER_CONDITIONS__*/\n    )\n    SELECT\n      sum(transfer_count) AS total_transfers,\n      count(DISTINCT date) AS active_days,\n      count(DISTINCT counterparty) AS counterparty_count\n    FROM edges\n    WHERE counterparty IS NOT NULL"
+}
