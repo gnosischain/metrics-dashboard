@@ -1,4 +1,4 @@
 {
   "id": "api_execution_tokens_top_holders_latest",
-  "query": "SELECT rank, address, symbol AS token, label, balance, balance_usd,\n           pct_of_total, cumulative_pct, change_usd_7d\n    FROM dbt.api_execution_tokens_top_holders_latest\n    WHERE rank <= 100\n    ORDER BY rank"
+  "query": "SELECT rank, address, symbol AS token, label, protocols, balance, balance_usd,\n           pct_of_total, cumulative_pct, change_usd_7d\n    FROM dbt.api_execution_tokens_top_holders_latest\n    WHERE rank <= 100\n    ORDER BY token, rank"
 }

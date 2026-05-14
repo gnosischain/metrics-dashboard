@@ -58,6 +58,19 @@ const metric = {
         },
       },
       {
+        title: 'Via',
+        field: 'protocols',
+        minWidth: 90,
+        widthGrow: 1.5,
+        sorter: 'string',
+        formatter: function (cell) {
+          const val = cell.getValue();
+          if (!val || val.length === 0) return '-';
+          const arr = Array.isArray(val) ? val : JSON.parse(val);
+          return arr.filter(Boolean).join(', ') || '-';
+        },
+      },
+      {
         title: 'Balance',
         field: 'balance',
         minWidth: 110,
@@ -142,11 +155,11 @@ const metric = {
   },
 
   query: `
-    SELECT rank, address, symbol AS token, label, balance, balance_usd,
+    SELECT rank, address, symbol AS token, label, protocols, balance, balance_usd,
            pct_of_total, cumulative_pct, change_usd_7d
     FROM dbt.api_execution_tokens_top_holders_latest
     WHERE rank <= 100
-    ORDER BY rank
+    ORDER BY token, rank
   `,
 };
 export default metric;
