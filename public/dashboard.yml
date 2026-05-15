@@ -42,6 +42,7 @@ Circles:
   source: /dashboards/circles.yml
 Trades:
   name: Trades
+  enabled: false
   order: 20
   icon: "⚡"
   iconClass: swap
@@ -105,6 +106,7 @@ GnosisRevenue:
   source: /dashboards/gnosis-revenue.yml
 DaoTreasury:
   name: DAO Treasury
+  enabled: false
   order: 86
   icon: 🏛️
   iconClass: landmark

@@ -153,6 +153,7 @@ tabs:
         minHeight: 450px
 
   - name: User Portfolio
+    enabled: false
     order: 5
     icon: "👤"
     iconClass: "user"

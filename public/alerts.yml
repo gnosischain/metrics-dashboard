@@ -12,6 +12,11 @@
 # Example entries below — delete or edit freely.
 
 alerts:
+  - scope: gnosisrevenue
+    level: warning
+    title: "Work in progress"
+    message: "Gnosis Revenue metrics are under active development — figures may be incomplete or subject to change."
+
  # - scope: consensus
  #   level: success
  #   message: "No known issues with consensus data."

@@ -104,6 +104,7 @@ tabs:
         minHeight: 450px
 
   - name: User
+    enabled: false
     order: 4
     icon: 👤
     iconClass: user

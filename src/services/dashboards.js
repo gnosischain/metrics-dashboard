@@ -55,7 +55,9 @@ class DashboardService {
    */
   processConfig(key, dashboardConfig) {
       // console.log('DashboardService: Processing config:', { key, dashboardConfig });
-    
+
+    if (dashboardConfig?.enabled === false) return;
+
     // Skip if no valid dashboard found
     if (!dashboardConfig || !dashboardConfig.name) {
       console.warn('DashboardService: Invalid dashboard configuration for key (missing name):', key);
@@ -106,7 +108,7 @@ class DashboardService {
     else if (Array.isArray(dashboardConfig.tabs)) {
       // console.log('DashboardService: Dashboard has explicit tabs:', { key, count: dashboardConfig.tabs.length });
       
-      dashboard.tabs = dashboardConfig.tabs.map(tab => {
+      dashboard.tabs = dashboardConfig.tabs.filter(tab => tab.enabled !== false).map(tab => {
         // console.log('DashboardService: Processing tab:', tab);
         
         return {
