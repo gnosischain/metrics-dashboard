@@ -202,6 +202,7 @@ tabs:
   # Placed at order:8 so the custom tab stays the default entry point.
   # ---------------------------------------------------------------------------
   - name: Validator Explorer (grid)
+    enabled: false
     order: 8
     icon: 🧪
     iconClass: validator
