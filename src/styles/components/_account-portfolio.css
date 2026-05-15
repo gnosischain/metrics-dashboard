@@ -674,6 +674,24 @@
   background: var(--color-surface);
 }
 
+/* Cap standalone (non-paginated) portfolio tables so a heavy account doesn't
+   produce a 3000px-tall scroll wall. Tables inside .ap-table-wrapper already
+   have their own cap. */
+.ap-card > .ap-table,
+.ap-card > .ap-cp-list,
+.account-portfolio-section > .ap-table {
+  display: block;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.ap-card > .ap-table > thead,
+.ap-card > .ap-cp-list > thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-surface);
+}
+
 .ap-table-pagination {
   display: flex;
   align-items: center;

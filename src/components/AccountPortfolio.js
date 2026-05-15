@@ -609,6 +609,29 @@ const ScopeBadge = ({ label, value, detail = null }) => (
   </div>
 );
 
+const addressRoleFor = (target, profile = null, roleFlags = null, selectedAddress = '', linkedEntities = []) => {
+  if (!target) return '';
+  const t = String(target).toLowerCase();
+  const selected = String(selectedAddress || '').toLowerCase();
+  const controlledGpay = String(profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || '').toLowerCase();
+  if (t === selected) {
+    if (profile?.is_safe || roleFlags?.is_safe) return 'Safe contract';
+    if (profile?.is_gpay_wallet || roleFlags?.is_gpay_wallet) return 'Gnosis Pay wallet';
+    if (profile?.is_validator_withdrawal_address || roleFlags?.is_validator_withdrawal_address) return 'Validator withdrawal';
+    return 'Selected address';
+  }
+  if (t === controlledGpay) return 'Controlled Gnosis Pay wallet';
+  const linked = (linkedEntities || []).find((row) => String(row?.entity_address || row?.entity_id || '').toLowerCase() === t);
+  if (linked) {
+    const r = String(linked.relation || '').toLowerCase();
+    if (r.includes('safe_owner')) return 'Linked Safe owner';
+    if (r.includes('safe')) return 'Linked Safe';
+    if (r.includes('validator')) return 'Validator withdrawal';
+    if (r.includes('gpay') || r.includes('pay_wallet')) return 'Gnosis Pay wallet';
+  }
+  return 'Linked address';
+};
+
 const searchResultFromSelection = (selection) => {
   if (!selection) return null;
   const isCredential = selection.sourceType === 'validator_credential';
@@ -864,6 +887,8 @@ const AccountSummaryCard = ({
   circlesTotalBalance = null,
   activityTotals = null,
   activityWindowDays = 90,
+  groupAddresses = [],
+  onOpenAddress = null,
 }) => {
   const displayName = profile?.display_name || selection?.displayLabel || address || selection?.withdrawalCredentials || 'Account';
   const selectedEth1Credential = isEth1WithdrawalCredential(selection?.withdrawalCredentials)
@@ -942,8 +967,17 @@ const AccountSummaryCard = ({
   const movementCount = totalsTransferCount || summary.token_transfer_count || movements.length || 0;
   const counterpartiesCount = totalsCounterpartyCount || summary.counterparty_count || counterpartySet.size || 0;
   const windowLabel = ACTIVITY_WINDOW_OPTIONS.find((o) => o.value === activityWindowDays)?.label || `${activityWindowDays}d`;
-  const firstActive = normalizeDisplayDate(firstMovementDate || summary.first_activity_date || profile?.first_seen_date);
-  const lastActive = normalizeDisplayDate(lastMovementDate || summary.last_activity_date || profile?.last_active_date);
+  // Canonical first-seen date: prefer model-provided creation/age date so a
+  // Safe deployed in 2020 reads as "5y old" rather than "3m" (which would be
+  // the 90-day movement-window edge). Fall back to first activity in any
+  // window only if no canonical date is available.
+  const canonicalFirstSeen = profile?.wallet_age_date
+    || profile?.safe_creation_date
+    || profile?.first_seen_date;
+  const firstActive = normalizeDisplayDate(
+    canonicalFirstSeen || summary.first_activity_date || firstMovementDate
+  );
+  const lastActive = normalizeDisplayDate(profile?.last_active_date || summary.last_activity_date || lastMovementDate);
   const circlesIdentity = getCirclesAvatarIdentity(profile, roleFlags, selection, circlesAvatar, address);
   const circlesInitial = circlesIdentity?.name?.trim()?.slice(0, 1)?.toUpperCase() || 'C';
   const displayBadges = circlesIdentity && !badges.some((badge) => String(badge).toLowerCase().includes('circle'))
@@ -970,8 +1004,10 @@ const AccountSummaryCard = ({
               type="button"
               className={`resolution-btn ${scope === 'linked' ? 'active' : ''}`}
               onClick={() => onScopeChange('linked')}
+              disabled={!linkedCount}
+              title={linkedCount ? `${linkedCount} linked addresses` : 'No linked addresses'}
             >
-              Linked group
+              {linkedCount ? `Linked group (${linkedCount})` : 'Linked group'}
             </button>
           </div>
         </div>
@@ -1024,6 +1060,37 @@ const AccountSummaryCard = ({
             </span>
           </div>
         </div>
+
+        {scope === 'linked' && Array.isArray(groupAddresses) && groupAddresses.length > 1 ? (
+          <div
+            className="account-portfolio-linked-group-panel"
+            style={{ marginTop: 12, padding: '10px 12px', border: '1px solid var(--ap-border, rgba(120,120,140,0.2))', borderRadius: 8 }}
+          >
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>
+              Linked addresses queried together ({groupAddresses.length})
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {groupAddresses.map((g) => {
+                const role = addressRoleFor(g, profile, roleFlags, address, linkedEntities) || 'Linked';
+                const isSelected = String(g).toLowerCase() === String(address || '').toLowerCase();
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    className="resolution-btn"
+                    onClick={() => onOpenAddress && onOpenAddress(g)}
+                    title={g}
+                    style={{ fontWeight: isSelected ? 600 : 400 }}
+                  >
+                    <span style={{ marginRight: 6 }}>{role}</span>
+                    <span className="ap-mono">{shortIdentifier(g)}</span>
+                    {isSelected ? <span style={{ marginLeft: 6, opacity: 0.7 }}>· selected</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="account-portfolio-summary-grid">
@@ -1173,6 +1240,12 @@ const AccountOverview = ({
   const summary = activitySummary || {};
   const firstActive = normalizeDisplayDate(summary.first_activity_date || movementSummary.first_activity_date || profile?.first_seen_date) || '-';
   const lastActive = normalizeDisplayDate(summary.last_activity_date || movementSummary.last_activity_date || profile?.last_active_date) || '-';
+  const walletAgeDate = normalizeDisplayDate(profile?.wallet_age_date) || '-';
+  const safeCreationDate = normalizeDisplayDate(profile?.safe_creation_date) || null;
+  const addressType = profile?.address_type || null;
+  const walletAgeLabel = addressType === 'safe' && safeCreationDate
+    ? `Safe · deployed ${safeCreationDate}`
+    : (walletAgeDate !== '-' ? walletAgeDate : '-');
   const activeDays = Number(summary.active_days || 0) || movementSummary.active_days || 0;
   const totalsTransferCount = Number(activityTotals?.total_transfers) || 0;
   const totalsCounterpartyCount = Number(activityTotals?.counterparty_count) || 0;
@@ -1269,6 +1342,7 @@ const AccountOverview = ({
           <EmptyOverviewRows>No activity in the last 90 days.</EmptyOverviewRows>
         ) : (
           <div className="account-portfolio-overview-field-grid account-portfolio-overview-field-grid--compact">
+            <OverviewField label="Wallet age" value={walletAgeLabel} title={addressType === 'safe' ? `Safe deployed ${safeCreationDate || '-'}` : undefined} />
             <OverviewField label="First active" value={firstActive} />
             <OverviewField label="Last active" value={lastActive} />
             <OverviewField label="Active days" value={formatNumberCompact(activeDays)} />
@@ -2504,11 +2578,14 @@ const GPAY_KEPT_METRICS = [
 ];
 
 const GPayTab = ({ address, profile, roleFlags, isDarkMode, onRowClick }) => {
-  // GPay-specific queries filter by wallet_address. If the selected account
-  // controls a GPay Safe, pass that; otherwise use the selected address.
-  const walletAddress = profile?.controlled_gpay_wallet
+  // GPay-specific queries filter by wallet_address. The parent resolves the
+  // correct address via tabAddress (defaults to controlled GPay wallet for
+  // this section, but the user can override). Use it directly so the override
+  // is respected.
+  const walletAddress = address
+    || profile?.controlled_gpay_wallet
     || roleFlags?.controls_gpay_wallet
-    || address;
+    || '';
   const isConfirmedGPay = hasGPayIdentity(profile, roleFlags);
   const visibleMetricCount = useStaggeredCount(GPAY_KEPT_METRICS.length, walletAddress, {
     enabled: Boolean(walletAddress && isConfirmedGPay),
@@ -2850,6 +2927,22 @@ const AccountPortfolio = ({
   const selectedFilterValue = address || '';
   const linkedFilterValue = groupAddresses.join(',');
   const activeAddressFilterValue = scope === 'linked' && linkedFilterValue ? linkedFilterValue : selectedFilterValue;
+
+  // Per-tab address resolution. GPay tab prefers the controlled GPay wallet
+  // when available; every other tab uses the selected address.
+  const controlledGpayWallet = profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || '';
+  const tabAddressDefaults = useMemo(() => ({
+    overview: address,
+    balances: address,
+    activity: address,
+    safes: address,
+    yields: address,
+    circles: address,
+    gpay: controlledGpayWallet || address,
+    'gnosis-app': address,
+    validators: address,
+  }), [address, controlledGpayWallet]);
+  const tabAddress = tabAddressDefaults[activeSection];
   const effectiveTokenBalances = useMemo(
     () => buildEffectiveHoldings(tokenBalances, balanceHistory),
     [tokenBalances, balanceHistory]
@@ -3187,7 +3280,7 @@ const AccountPortfolio = ({
     }
 
     return activeAddressFilterValue;
-  }, [activeAddressFilterValue, groupAddresses, profile?.controlled_gpay_wallet, scope, selectedAccount?.validatorIndex, selectedAccount?.withdrawalCredentials, selectedFilterValue]);
+  }, [activeAddressFilterValue, activeSection, groupAddresses, profile?.controlled_gpay_wallet, scope, selectedAccount?.validatorIndex, selectedAccount?.withdrawalCredentials, selectedFilterValue]);
 
 	  const sectionFlags = useMemo(() => {
 	    const p = profile || {};
@@ -3385,6 +3478,8 @@ const AccountPortfolio = ({
                 circlesTotalBalance={circlesTotalBalance}
                 activityTotals={activityTotals}
                 activityWindowDays={activityWindowDays}
+                groupAddresses={groupAddresses}
+                onOpenAddress={handleOpenAddress}
               />
 
 	              <nav className="account-portfolio-section-tabs" role="tablist" aria-label="Account portfolio sections">
@@ -3454,7 +3549,7 @@ const AccountPortfolio = ({
 	                ) : activeSection === 'yields' && sectionFlags.hasYields ? (
 	                  metricConfigsReady ? (
 	                    <YieldsTab
-	                      address={profile?.controlled_gpay_wallet || roleFlags?.controls_gpay_wallet || address}
+	                      address={tabAddress}
 	                      isDarkMode={isDarkMode}
 	                      onRowClick={setDrawer}
 	                      lp={lpPositions}
@@ -3483,7 +3578,7 @@ const AccountPortfolio = ({
 	                ) : activeSection === 'gpay' && sectionFlags.hasGpay ? (
 	                  metricConfigsReady ? (
 	                    <GPayTab
-	                      address={address}
+	                      address={tabAddress}
 	                      profile={profile}
 	                      roleFlags={roleFlags}
 	                      isDarkMode={isDarkMode}

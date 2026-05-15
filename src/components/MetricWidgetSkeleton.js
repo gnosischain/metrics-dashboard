@@ -1,43 +1,33 @@
 import React from 'react';
 
+// Unified circular-spinner loading state. Variant is kept for API-compatibility
+// (callers pass 'number' | 'text' | 'table' | 'chart') and only affects the
+// minimum height of the wrapper so KPIs don't reflow when data lands.
+const MIN_HEIGHT_BY_VARIANT = {
+  number: 84,
+  text: 120,
+  table: 160,
+  chart: 200,
+};
+
 const MetricWidgetSkeleton = ({ variant = 'chart' }) => {
-  if (variant === 'number') {
-    return (
-      <div className="metric-skeleton metric-skeleton-number" aria-hidden="true">
-        <div className="skeleton skeleton-title"></div>
-        <div className="skeleton skeleton-number-value"></div>
-        <div className="skeleton skeleton-badge"></div>
-      </div>
-    );
-  }
-
-  if (variant === 'text') {
-    return (
-      <div className="metric-skeleton metric-skeleton-text" aria-hidden="true">
-        <div className="skeleton skeleton-title"></div>
-        <div className="skeleton skeleton-line"></div>
-        <div className="skeleton skeleton-line"></div>
-        <div className="skeleton skeleton-line skeleton-line-short"></div>
-      </div>
-    );
-  }
-
-  if (variant === 'table') {
-    return (
-      <div className="metric-skeleton metric-skeleton-table" aria-hidden="true">
-        <div className="skeleton skeleton-title"></div>
-        <div className="skeleton skeleton-table-row"></div>
-        <div className="skeleton skeleton-table-row"></div>
-        <div className="skeleton skeleton-table-row"></div>
-        <div className="skeleton skeleton-table-row skeleton-line-short"></div>
-      </div>
-    );
-  }
-
+  const minHeight = MIN_HEIGHT_BY_VARIANT[variant] || MIN_HEIGHT_BY_VARIANT.chart;
   return (
-    <div className="metric-skeleton metric-skeleton-chart" aria-hidden="true">
-      <div className="skeleton skeleton-title"></div>
-      <div className="skeleton skeleton-chart"></div>
+    <div
+      className={`metric-skeleton metric-skeleton-${variant}`}
+      role="status"
+      aria-live="polite"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: `${minHeight}px`,
+        width: '100%',
+      }}
+    >
+      <div className="loading-indicator" aria-hidden="true">
+        <div className="loading-spinner" />
+      </div>
     </div>
   );
 };
