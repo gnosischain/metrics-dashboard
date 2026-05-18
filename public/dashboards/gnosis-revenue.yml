@@ -99,8 +99,24 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
 
-  - name: Methodology
+  - name: Gnosis App
     order: 5
+    enabled: false  # models not yet in prod
+    icon: 📱
+    iconClass: mobile
+    timeRanges: true
+    metrics:
+      - id: api_revenue_gnosis_app_cohorts_weekly
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_revenue_gnosis_app_cohorts_monthly
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Methodology
+    order: 6
     icon: 📘
     iconClass: file-text
     metrics:
