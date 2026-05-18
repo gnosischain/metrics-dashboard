@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_pools_fees_usd_daily",
+  "query": "SELECT\n      date,\n      token,\n      label AS pool,\n      value\n    FROM dbt.api_execution_pools_fees_usd_daily\n    ORDER BY date ASC, token, pool"
+}

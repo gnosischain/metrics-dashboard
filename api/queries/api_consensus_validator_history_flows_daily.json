@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validator_history_flows_daily",
+  "query": "SELECT\n      date,\n      validator_index,\n      label,\n      amount_gno\n    FROM (\n      SELECT\n        date,\n        validator_index,\n        arrayJoin([\n          ('Deposits',          deposits_amount_gno),\n          ('Withdrawals',       -withdrawals_amount_gno),\n          ('Consolidation In',  consolidation_inflow_gno),\n          ('Consolidation Out', -consolidation_outflow_gno)\n        ]) AS flow,\n        flow.1 AS label,\n        flow.2 AS amount_gno\n      FROM dbt.int_consensus_validators_income_daily\n      WHERE date BETWEEN '{from}' AND '{to}'\n        /*__FILTER_CONDITIONS__*/\n    )\n    WHERE amount_gno != 0\n    ORDER BY date ASC, label ASC"
+}

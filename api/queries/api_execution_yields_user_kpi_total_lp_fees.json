@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_yields_user_kpi_total_lp_fees",
+  "query": "SELECT wallet_address, total_lp_fees_usd AS value\n    FROM dbt.api_execution_yields_user_kpis\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

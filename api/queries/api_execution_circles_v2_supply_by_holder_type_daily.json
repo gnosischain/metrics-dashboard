@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_supply_by_holder_type_daily",
+  "query": "SELECT date, label, value, value_demurraged FROM dbt.api_execution_circles_v2_supply_by_holder_type_daily"
+}

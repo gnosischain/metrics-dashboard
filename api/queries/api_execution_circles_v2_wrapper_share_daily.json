@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_wrapper_share_daily",
+  "query": "SELECT date, 'wrapped'   AS state, wrapped_supply   AS value\n    FROM dbt.api_execution_circles_v2_wrapper_share_daily\n    UNION ALL\n    SELECT date, 'unwrapped' AS state, unwrapped_supply AS value\n    FROM dbt.api_execution_circles_v2_wrapper_share_daily\n    ORDER BY date, state"
+}

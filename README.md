@@ -152,6 +152,46 @@ How to add a new sector:
 2. Add a top-level entry in `public/dashboard.yml` with `name`, `order`, `icon`, `iconClass`, and `source`.
 3. Start the app and verify the new sector appears in navigation.
 
+### Tab-level control config
+
+Tabs can define shared controls in YAML. These controls are owned by `MetricGrid` and then passed down to the affected widgets.
+
+```yaml
+tabs:
+  - name: Per-token breakdown
+    globalFilterField: token
+    globalFilterLabel: Token
+    globalControlsPlacement: top
+    unitToggle: true
+    defaultUnit: native
+    timeRanges: true
+    defaultTimeRange: ALL
+    metrics:
+      - id: api_execution_tokens_supply_total
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 90px
+```
+
+Supported tab-level fields:
+
+- `globalFilterField`: field name shared across the tab, for example `token`, `token_class`, or `wallet_address`.
+- `globalFilterLabel`: optional UI label override. Defaults to a title-cased version of `globalFilterField`.
+- `globalControlsPlacement`: `grid` or `top`. `grid` keeps the historical in-grid `global_filter` card. `top` moves the tab-level filter bundle into the top toolbar next to `Date range`.
+- `unitToggle`: enables the shared tab-level `Native / USD` toggle.
+- `defaultUnit`: initial tab-level unit selection. Defaults to `native`.
+- `timeRanges`: `true` for the default `1M / 3M / 6M / 1Y / 2Y / ALL` set, or an explicit array of labels.
+- `defaultTimeRange`: initial selected tab-level range. Defaults to `ALL`.
+- `searchable`, `searchPlaceholder`: enable searchable top/global dropdowns for large option sets.
+- `globalFilterVertical`: only affects the in-grid `global_filter` card layout; ignored for top-toolbar placement.
+- `resolutionToggle`, `defaultResolution`: enable shared resolution controls for metrics that expose multiple resolutions.
+
+Notes:
+
+- `global_filter` is a pseudo-metric used only for layout. Use it only when `globalControlsPlacement: grid`.
+- When `globalControlsPlacement: top`, `MetricGrid` suppresses any accidental `global_filter` pseudo-metric and renders the global controls in the toolbar instead.
+- Global filter options are fetched once from a suitable metric in the tab and then reused across widgets.
+
 ## Dashboard Palette System
 
 Dashboards opt into named palette presets in `public/dashboard.yml`.
@@ -205,13 +245,24 @@ This is fully config-driven:
    - Data is fetched via `/api/metrics/:metricId`.
    - Text widgets can render static content without API calls.
 5. **Filters**
-   - `global_filter` is a pseudo-metric used only for UI placement in the grid.
+   - Global filters are tab-level controls configured in YAML with `globalFilterField`.
+   - `global_filter` is only a pseudo-metric for in-grid placement; newer tabs can render the same controls at the top level with `globalControlsPlacement: top`.
    - Global filter values are fetched once from a suitable metric and then reused across cards in the tab.
+   - Metrics participate in a global filter when they expose the same field as their `labelField`, or when they explicitly set `globalFilterField` in the metric config.
+   - Local dropdowns still work for secondary filters when a widget has a different `labelField` than the tab-level global filter.
 6. **Card text fields**
    - `description`: subtitle shown under the card title.
    - `metricDescription`: markdown content shown in the info popover.
 7. **Chart controls**
    - Chart cards include info popover, PNG download, and expand-to-modal controls.
+8. **Time ranges**
+   - Tab-level time ranges are configured in YAML with `timeRanges`.
+   - Per-widget time ranges still come from metric `enableZoom`, but they are hidden when a tab-level range is active.
+   - Time range selection filters the dataset before it reaches number cards, tables, and charts; it does not rely on ECharts percentage zoom.
+9. **Token symbols and icons**
+   - Dropdowns and global filters automatically render token icons when their field is `token`.
+   - Icon resolution is case-insensitive and comes from `src/utils/tokenIcons.js`.
+   - If a metric uses a different field name such as `label`, it will not automatically receive token icons unless the UI explicitly passes an icon map.
 
 ## Header Metric Search
 
@@ -413,6 +464,9 @@ To add a new metric:
 2. Ensure the metric is placed in dashboard YAML so it becomes visible and searchable:
    - Add it to `public/dashboards/<sector>.yml` under a `metrics` list in the target tab.
    - Metrics not placed in YAML are not rendered and are not included in header search.
+   - If the metric should participate in a tab-level global filter, make sure its filtering field matches the tab `globalFilterField` or set `globalFilterField` explicitly in the metric config.
+   - If the metric should inherit a tab-level unit toggle, define `unitFilterField` or `unitFields`.
+   - If the metric should show token icons in dropdowns, use `labelField: 'token'`.
 
 3. Run the export script to update the API:
    ```bash

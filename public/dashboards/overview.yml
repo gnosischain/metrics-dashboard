@@ -1,41 +1,61 @@
+# Overview dashboard — structured into 3 visual bands:
+#   A. Hero KPI row (6 tiles × 2 cols, Artemis-style)
+#   B. Two headline trend charts (6 cols each)
+#   C. Secondary KPI row (4 tiles × 3 cols)
+#
+# Band D (sector launcher tiles) was removed — sector discovery now lives on
+# the landing page (see src/components/Landing.js).
 metrics:
-  - id: overview_stake_api
+  # --- Band A: Hero KPIs (row 1) ---
+  - id: overview_kpi_transactions
     gridRow: 1
-    gridColumn: 1 / span 3
-    minHeight: 130px
-  - id: overview_stake_gno
+    gridColumn: 1 / span 2
+    minHeight: 140px
+  - id: overview_kpi_active_accounts
     gridRow: 1
-    gridColumn: 4 / span 3
-    minHeight: 130px
-  - id: overview_validators
+    gridColumn: 3 / span 2
+    minHeight: 140px
+  - id: overview_kpi_staked_gno
     gridRow: 1
-    gridColumn: 7 / span 3
-    minHeight: 130px
-  - id: overview_esg
+    gridColumn: 5 / span 2
+    minHeight: 140px
+  - id: overview_kpi_validators
     gridRow: 1
-    gridColumn: 10 / span 3
-    minHeight: 130px
-  - id: overview_payments
-    gridRow: 2
-    gridColumn: 1 / span 6
-    minHeight: 130px
-  - id: overview_stablecoins_supply_total
-    gridRow: 2
-    gridColumn: 7 / span 6
-    minHeight: 130px
+    gridColumn: 7 / span 2
+    minHeight: 140px
+  - id: overview_kpi_stablecoin_supply
+    gridRow: 1
+    gridColumn: 9 / span 2
+    minHeight: 140px
+  - id: overview_kpi_gpay_volume
+    gridRow: 1
+    gridColumn: 11 / span 2
+    minHeight: 140px
+
+  # --- Band B: Headline trend charts (rows 2-3) ---
   - id: overview_gno_supply_daily
-    gridRow: 3 / span 2
-    gridColumn: 1 / span 5
-    minHeight: 330px
-  - id: overview_transactions
-    gridRow: 3
-    gridColumn: 6 / span 3
-    minHeight: 159px
+    gridRow: 2 / span 2
+    gridColumn: 1 / span 6
+    minHeight: 340px
   - id: overview_stablecoins_supply_latest
-    gridRow: 3 / span 2
-    gridColumn: 9 / span 4
-    minHeight: 330px
-  - id: overview_active_accounts
+    gridRow: 2 / span 2
+    gridColumn: 7 / span 6
+    minHeight: 340px
+
+  # --- Band C: Secondary KPIs (row 4) ---
+  - id: overview_stake_api
     gridRow: 4
-    gridColumn: 6 / span 3
-    minHeight: 159px
+    gridColumn: 1 / span 3
+    minHeight: 120px
+  - id: overview_esg
+    gridRow: 4
+    gridColumn: 4 / span 3
+    minHeight: 120px
+  - id: overview_bridges_total_volume
+    gridRow: 4
+    gridColumn: 7 / span 3
+    minHeight: 120px
+  - id: overview_yields_lending_tvl
+    gridRow: 4
+    gridColumn: 10 / span 3
+    minHeight: 120px

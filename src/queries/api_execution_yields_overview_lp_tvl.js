@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_yields_overview_lp_tvl',
-  name: 'Total LP TVL',
-  description: 'Total TVL across all LP pools, in USD',
+  name: 'LP TVL',
+  metricDescription: 'Total value locked across all tracked Uniswap V3 and Swapr V3 liquidity pools. Change compares to 7 days ago.',
   format: 'formatValue',
   valueField: 'value',
   chartType: 'numberDisplay',
@@ -11,7 +11,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs 7 days ago'
   },
-  query: `SELECT value, change_pct FROM dbt.api_execution_yields_overview_lp_tvl`,
+  query: `SELECT value, change_pct FROM  dbt.api_execution_yields_overview_lp_tvl`,
 };
 
 export default metric;

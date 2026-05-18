@@ -27,7 +27,8 @@ export class LineChart extends BaseChart {
       // Add time context to config
       const enhancedConfig = {
         ...config,
-        timeContext: timeAnalysis
+        timeContext: timeAnalysis,
+        _seriesNames: processedData.series?.map(s => s.name) || []
       };
       
       const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series.length, isDarkMode);
@@ -46,22 +47,50 @@ export class LineChart extends BaseChart {
           ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
         },
         
-        series: processedData.series.map((series, index) => ({
-          name: series.name,
-          type: 'line',
-          data: series.data,
-          smooth: config.smooth || false,
-          symbol: 'circle',
-          symbolSize: config.symbolSize || 4,
-          lineStyle: {
-            width: config.lineWidth || 2,
-            color: colors[index]
-          },
-          itemStyle: {
-            color: colors[index]
-          },
-          connectNulls: false
-        })),
+        series: processedData.series.map((series, index) => {
+          const colorIdx = index;
+          const seriesOpts = {
+            name: series.name,
+            type: 'line',
+            data: series.data,
+            smooth: config.smooth || false,
+            symbol: config.symbol || 'circle',
+            symbolSize: config.symbolSize || 4,
+            lineStyle: {
+              width: config.lineWidth || 2,
+              color: colors[colorIdx]
+            },
+            itemStyle: {
+              color: colors[colorIdx]
+            },
+            connectNulls: false
+          };
+
+          if (config.seriesStyleMap) {
+            const metricLabel = series._metricLabel || series.name;
+            for (const [pattern, style] of Object.entries(config.seriesStyleMap)) {
+              if (metricLabel === pattern || series.name.includes(pattern)) {
+                if (style.color) {
+                  seriesOpts.lineStyle.color = style.color;
+                  seriesOpts.itemStyle.color = style.color;
+                }
+                Object.assign(seriesOpts.lineStyle, style.lineStyle || {});
+                if (style.symbolSize !== undefined) seriesOpts.symbolSize = style.symbolSize;
+                break;
+              }
+            }
+          }
+
+          // Attach ECharts marks (markLine / markArea) to the first series only so they
+          // render once instead of per-series. Config is passed through unchanged — the
+          // metric file defines it with standard ECharts syntax.
+          if (index === 0) {
+            if (config.markLine) seriesOpts.markLine = config.markLine;
+            if (config.markArea) seriesOpts.markArea = config.markArea;
+          }
+
+          return seriesOpts;
+        }),
         
         tooltip: {
           ...this.getTooltipConfig({ ...enhancedConfig, isDarkMode }),
@@ -105,7 +134,7 @@ export class LineChart extends BaseChart {
         throw new Error('Line chart data must be an array');
     }
 
-    const { xField = 'date', yField = 'value', seriesField = null } = config;
+    const { xField = 'date', yField = 'value', seriesField = null, multiYFields = null } = config;
     const firstItem = data[0] || {};
     const availableFields = Object.keys(firstItem);
 
@@ -115,7 +144,6 @@ export class LineChart extends BaseChart {
 
     console.log('LineChart.processData: Field mapping:', { actualXField, actualYField, actualSeriesField });
 
-    // Extract and sort categories
     const categories = [...new Set(data.map(item => item[actualXField]))]
       .sort((a, b) => {
         const dateA = new Date(a);
@@ -130,11 +158,43 @@ export class LineChart extends BaseChart {
 
     let processedSeries = [];
 
-    if (actualSeriesField) {
-        // Multi-series data
+    if (multiYFields && actualSeriesField) {
+        // Multi-Y-field mode: for each series group, create one series per yField
+        console.log('LineChart.processData: Processing multi-Y-field data');
+
+        const seriesGroups = {};
+        data.forEach(item => {
+            const groupName = item[actualSeriesField] || 'Unnamed';
+            if (!seriesGroups[groupName]) seriesGroups[groupName] = {};
+            seriesGroups[groupName][item[actualXField]] = item;
+        });
+
+        const groupNames = Object.keys(seriesGroups);
+        const singleGroup = groupNames.length === 1;
+
+        Object.entries(seriesGroups).forEach(([groupName, dateMap]) => {
+            multiYFields.forEach(yDef => {
+                const seriesData = categories.map(cat => {
+                    const row = dateMap[cat];
+                    if (!row) return null;
+                    const raw = row[yDef.field];
+                    if (raw === null || raw === undefined) return null;
+                    const num = typeof raw === 'number' ? raw : parseFloat(raw);
+                    return isNaN(num) ? null : num;
+                });
+                const label = yDef.label || yDef.suffix || yDef.field;
+                const name = singleGroup ? label : `${groupName} — ${label}`;
+                processedSeries.push({
+                    name,
+                    data: seriesData,
+                    _group: groupName,
+                    _metricLabel: label
+                });
+            });
+        });
+    } else if (actualSeriesField) {
         console.log('LineChart.processData: Processing multi-series data');
         
-        // Group data by series
         const seriesGroups = {};
         data.forEach(item => {
             const seriesName = item[actualSeriesField] || 'Unnamed Series';
@@ -146,7 +206,6 @@ export class LineChart extends BaseChart {
         
         console.log('LineChart.processData: Series groups found:', Object.keys(seriesGroups));
 
-        // Convert to ECharts format
         processedSeries = Object.entries(seriesGroups).map(([seriesName, dataMap]) => {
             const seriesData = categories.map(category => {
                 const rawValue = dataMap[category];
@@ -159,7 +218,6 @@ export class LineChart extends BaseChart {
             return { name: seriesName, data: seriesData };
         });
     } else {
-        // Single series data
         console.log('LineChart.processData: Processing single-series data');
         const seriesName = config.seriesName || actualYField || 'Value';
         

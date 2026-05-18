@@ -5,6 +5,7 @@ import '@fontsource/plus-jakarta-sans/500.css';
 import '@fontsource/plus-jakarta-sans/600.css';
 import '@fontsource/plus-jakarta-sans/700.css';
 import { Dashboard } from './components';
+import AppErrorBoundary from './components/AppErrorBoundary';
 import './styles/index.css'; // Single import for all styles
 
 /**
@@ -14,7 +15,9 @@ import './styles/index.css'; // Single import for all styles
 function App() {
   return (
     <div className="app">
-      <Dashboard />
+      <AppErrorBoundary>
+        <Dashboard />
+      </AppErrorBoundary>
     </div>
   );
 }

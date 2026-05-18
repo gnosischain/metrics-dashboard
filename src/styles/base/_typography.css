@@ -113,8 +113,8 @@
 }
 
 .text-widget p strong {
-  background: linear-gradient(to bottom, transparent 60%, var(--color-focus-ring) 60%);
-  padding: 0 2px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 /* ==================
@@ -160,7 +160,8 @@
 }
 
 .dark-mode .text-widget p strong {
-  background: linear-gradient(to bottom, transparent 60%, var(--color-focus-ring) 60%);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .dark-mode .text-widget ul li::before {
@@ -186,7 +187,7 @@
 
 .text-widget h2:hover,
 .text-widget h3:hover {
-  color: var(--primary-blue);
+  color: var(--color-text-primary);
 }
 
 .text-widget blockquote {
@@ -194,8 +195,7 @@
 }
 
 .text-widget blockquote:hover {
-  transform: translateX(2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* no hover transform — keep static for professional feel */
 }
 
 /* ==================

@@ -41,7 +41,7 @@ const metric = {
     maxNodeSize: 44,
     minLinkThickness: 1.25,
     maxLinkThickness: 5,
-    normalizeEdgeWidthToMax: true,
+    normalizeEdgeWidthToMax: false,
     linkCurveness: 0.16,
     parallelEdgeSeparation: 0.1,
     edgeLineTypes: ['solid', 'dashed', 'dotted', 'dashdot'],

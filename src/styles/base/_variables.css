@@ -14,10 +14,10 @@
   --primary-blue-active: #3730a3;
 
   /* Neutral Colors - Light Mode */
-  --color-background: #f1f5f9;
+  --color-background: #f8f9fb;
   --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  --color-border: #eef0f3;
+  --color-border-subtle: #f3f4f6;
   --color-border-hover: #cbd5e1;
 
   --color-text-primary: #0f172a;
@@ -38,6 +38,11 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #0ea5e9;
+
+  /* Brand accent — product-specific color (sidebar active, sparklines, primary buttons).
+     Defaults to primary-blue; overridden via [data-brand="..."] below. */
+  --brand-accent: var(--primary-blue);
+  --brand-soft:   var(--color-accent-softer);
 
   /* Chart Colors */
   --chart-axis-line: #cbd5e1;
@@ -62,12 +67,13 @@
   --font-family-base: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-family-mono: "Monaco", "Consolas", "Courier New", monospace;
 
-  --font-size-xs: 0.7rem; /* 11px */
+  --font-size-xs: 0.6875rem; /* 11px */
   --font-size-sm: 0.8125rem; /* 13px */
   --font-size-base: 0.9375rem; /* 15px */
   --font-size-lg: 1.125rem; /* 18px */
   --font-size-xl: 1.25rem; /* 20px */
   --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -100,10 +106,10 @@
      Shadows
      ================== */
 
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
-  --shadow-base: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 12px 20px -8px rgba(15, 23, 42, 0.18), 0 6px 10px -6px rgba(15, 23, 42, 0.12);
-  --shadow-lg: 0 24px 36px -14px rgba(15, 23, 42, 0.28), 0 10px 18px -10px rgba(15, 23, 42, 0.2);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --shadow-base: 0 2px 6px -1px rgba(15, 23, 42, 0.06), 0 1px 3px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.1), 0 2px 6px -2px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 24px -8px rgba(15, 23, 42, 0.16), 0 6px 12px -6px rgba(15, 23, 42, 0.1);
 
   /* ==================
      Transitions
@@ -151,13 +157,21 @@
   --color-tooltip-shadow: 0 14px 28px -14px rgba(2, 6, 23, 0.75);
 
   --color-error: #f87171;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-info:    #38bdf8;
 
   --chart-axis-line: #475569;
   --chart-axis-text: #94a3b8;
   --chart-grid-line: rgba(148, 163, 184, 0.18);
 
-  --shadow-sm: 0 1px 2px 0 rgba(2, 6, 23, 0.45);
-  --shadow-base: 0 4px 8px -2px rgba(2, 6, 23, 0.5), 0 2px 6px -2px rgba(2, 6, 23, 0.4);
-  --shadow-md: 0 16px 24px -12px rgba(2, 6, 23, 0.6), 0 8px 16px -10px rgba(2, 6, 23, 0.45);
-  --shadow-lg: 0 28px 44px -16px rgba(2, 6, 23, 0.72), 0 14px 24px -14px rgba(2, 6, 23, 0.58);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px -1px rgba(0, 0, 0, 0.15);
+  --shadow-base: 0 2px 6px -1px rgba(0, 0, 0, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.3), 0 2px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.4), 0 6px 12px -6px rgba(0, 0, 0, 0.3);
 }
+
+/* Brand overrides — apply via [data-brand="<id>"] on dashboard root */
+[data-brand="pay"]     { --brand-accent: #10b981; --brand-soft: rgba(16, 185, 129, 0.12); }
+[data-brand="app"]     { --brand-accent: #7b3fe4; --brand-soft: rgba(123, 63, 228, 0.12); }
+[data-brand="circles"] { --brand-accent: #3b82f6; --brand-soft: rgba(59, 130, 246, 0.12); }

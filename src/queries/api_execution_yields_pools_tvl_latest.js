@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_yields_pools_tvl_latest',
   name: 'Total TVL',
-  description: 'Total TVL across all pools for selected token, in USD',
+  metricDescription: 'Total value locked across all tracked pools for the selected token. Change compares to 7 days ago.',
   format: 'formatValue',
   valueField: 'value',
   chartType: 'numberDisplay',
@@ -14,7 +14,7 @@ const metric = {
     field: 'change_pct',
     period: 'vs 7 days ago'
   },
-  query: `SELECT token, value, change_pct FROM dbt.api_execution_yields_pools_tvl_latest`,
+  query: `SELECT token, value, change_pct FROM dbt.api_execution_pools_tvl_latest`,
 };
 
 export default metric;

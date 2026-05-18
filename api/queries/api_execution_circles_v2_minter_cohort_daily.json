@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_minter_cohort_daily",
+  "query": "SELECT date, cohort, cohort_order, cnt\n    FROM dbt.api_execution_circles_v2_minter_cohort_daily\n    ORDER BY date, cohort_order"
+}

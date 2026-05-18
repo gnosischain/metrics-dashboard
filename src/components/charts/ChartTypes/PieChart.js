@@ -4,8 +4,33 @@
 
 import { BaseChart } from './BaseChart';
 import { formatValue } from '../../../utils';
+import { getTokenIconUrl } from '../../../utils/tokenIcons.js';
 
 export class PieChart extends BaseChart {
+  static buildTokenRichStyles(names) {
+    const rich = {};
+    for (const name of names) {
+      const url = getTokenIconUrl(name);
+      if (url) {
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        rich[key] = {
+          backgroundColor: { image: url },
+          width: 16,
+          height: 16,
+          borderRadius: 8,
+        };
+      }
+    }
+    return rich;
+  }
+
+  static formatLabelWithIcon(name, suffix) {
+    const url = getTokenIconUrl(name);
+    if (!url) return suffix ? `${name}: ${suffix}` : name;
+    const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+    return suffix ? `{${key}|} ${name}: ${suffix}` : `{${key}|} ${name}`;
+  }
+
   static getOptions(data, config, isDarkMode) {
     if (!this.validateData(data)) {
       return this.getEmptyChartOptions(isDarkMode);
@@ -14,6 +39,7 @@ export class PieChart extends BaseChart {
     const processedData = this.processData(data, config);
     const colors = this.resolveSeriesPalette(config, processedData.data.length, isDarkMode);
     const totalValue = processedData.data.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const tokenRichStyles = this.buildTokenRichStyles(processedData.data.map(d => d.name));
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -50,20 +76,30 @@ export class PieChart extends BaseChart {
         },
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
+          fontSize: 12,
+          // Hide labels for empty/zero/unnamed slices to avoid label spaghetti
+          // (e.g. "Unknown: 0" radiating from every slice of an empty dataset).
+          show: true,
           formatter: (params) => {
+            const hasName = params.name && params.name !== 'Unknown' && params.name !== '—';
+            const hasValue = Number(params.value) > 0;
+            if (!hasName || !hasValue) return '';
             if (config.pieLabelValue === false) {
-              return params.name;
+              return PieChart.formatLabelWithIcon(params.name, null);
             }
-            if (config.useAbbreviatedLabels) {
-              const formattedValue = formatValue(params.value, config.format);
-              return `${params.name}: ${formattedValue}`;
+            if (config.showPercentage) {
+              return PieChart.formatLabelWithIcon(params.name, `${params.percent}%`);
             }
-            return config.showPercentage 
-              ? `${params.name}: ${params.percent}%` 
-              : `${params.name}: ${params.value}`;
+            return PieChart.formatLabelWithIcon(params.name, formatValue(params.value, config.format));
+          },
+          rich: {
+            ...tokenRichStyles
           }
         },
         labelLine: {
+          show: true,
+          showAbove: false,
+          smooth: true,
           lineStyle: {
             color: isDarkMode ? '#6b7280' : '#9ca3af'
           }
@@ -72,20 +108,39 @@ export class PieChart extends BaseChart {
       
       tooltip: {
         trigger: 'item',
+        backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+        borderWidth: 1,
+        borderRadius: 8,
+        textStyle: {
+          color: isDarkMode ? '#E2E8F0' : '#0F172A',
+          fontSize: 13
+        },
+        padding: [10, 14],
         formatter: (params) => {
           const value = formatValue(params.value, config.format);
-          return `${params.name}<br/><strong>${value}</strong> (${params.percent}%)`;
+          return `<div style="font-weight:600;margin-bottom:4px;">${params.name}</div><div>${value} <span style="opacity:0.7;">(${params.percent}%)</span></div>`;
         }
       },
-      
+
       legend: {
         show: config.showLegend !== false,
         type: 'scroll',
         orient: config.legendOrient || 'horizontal',
         bottom: config.legendOrient === 'vertical' ? 'center' : 0,
         right: config.legendOrient === 'vertical' ? 0 : 'center',
+        formatter: (name) => {
+          const url = getTokenIconUrl(name);
+          if (!url) return name;
+          const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+          return `{${key}|} ${name}`;
+        },
         textStyle: {
-          color: isDarkMode ? '#e5e7eb' : '#374151'
+          color: isDarkMode ? '#e5e7eb' : '#374151',
+          fontSize: 12,
+          rich: {
+            ...tokenRichStyles
+          }
         }
       }
     };
@@ -110,7 +165,7 @@ export class PieChart extends BaseChart {
 
     return {
       data: sortedData.map(item => ({
-        name: item[nameField] || 'Unknown',
+        name: item[nameField] || '—',
         value: parseFloat(item[valueField] || 0)
       }))
     };

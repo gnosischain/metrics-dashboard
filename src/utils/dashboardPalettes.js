@@ -38,11 +38,70 @@ export const GNOSIS_PAY_PALETTE = {
   heatmapScaleDark: ['#1B1A16', '#2E2C26', '#5B5954', '#919E3A', '#CBFB6C']
 };
 
+// Gnosis App: brand violet + warm orange accents.
+// Series alternate hue families so adjacent plot lines stay legible.
+const GNOSIS_APP_SERIES_ORDERED = [
+  '#7B3FE4', // brand violet
+  '#FF8A3D', // brand orange
+  '#4C1D95', // deep violet
+  '#F59E0B', // amber
+  '#A78BFA', // soft violet
+  '#EA580C', // burnt orange
+  '#6D28D9', // violet-700
+  '#FDBA74', // peach
+  '#2E1065', // ink violet
+  '#9A3412', // dark orange
+  '#C4B5FD', // lilac
+  '#FB923C'  // orange-400
+];
+
+export const GNOSIS_APP_PALETTE = {
+  id: 'gnosis-app',
+  seriesLight: [...GNOSIS_APP_SERIES_ORDERED],
+  seriesDark: [...GNOSIS_APP_SERIES_ORDERED],
+  numberAccentLight: '#7B3FE4',
+  numberAccentDark: '#FF8A3D',
+  heatmapScaleLight: ['#FFF7ED', '#FED7AA', '#FB923C', '#7B3FE4', '#4C1D95'],
+  heatmapScaleDark: ['#2E1065', '#6D28D9', '#A78BFA', '#FB923C', '#FDBA74']
+};
+
+// Circles: brand blue (primary) + red + light pink. Blue dominates;
+// red and pink alternate for high contrast against the blue series.
+const CIRCLES_SERIES_ORDERED = [
+  '#3B82F6', // brand blue (primary)
+  '#DC2626', // brand red
+  '#F472B6', // light pink
+  '#1D4ED8', // deep blue
+  '#FB7185', // rose-400
+  '#93C5FD', // light blue
+  '#BE123C', // dark red
+  '#EC4899', // pink-500
+  '#1E3A8A', // navy
+  '#FDA4AF', // rose-300
+  '#2563EB', // blue-600
+  '#FECDD3'  // rose-200
+];
+
+export const CIRCLES_PALETTE = {
+  id: 'circles',
+  seriesLight: [...CIRCLES_SERIES_ORDERED],
+  seriesDark: [...CIRCLES_SERIES_ORDERED],
+  numberAccentLight: '#3B82F6',
+  numberAccentDark: '#60A5FA',
+  heatmapScaleLight: ['#EFF6FF', '#BFDBFE', '#60A5FA', '#3B82F6', '#1E3A8A'],
+  heatmapScaleDark: ['#172554', '#1E3A8A', '#1D4ED8', '#3B82F6', '#93C5FD']
+};
+
 const NAMED_PALETTES = {
   standard: STANDARD_PALETTE,
   'gnosis-pay': GNOSIS_PAY_PALETTE,
   gnosispay: GNOSIS_PAY_PALETTE,
-  gnosis_pay: GNOSIS_PAY_PALETTE
+  gnosis_pay: GNOSIS_PAY_PALETTE,
+  'gnosis-app': GNOSIS_APP_PALETTE,
+  gnosisapp: GNOSIS_APP_PALETTE,
+  gnosis_app: GNOSIS_APP_PALETTE,
+  app: GNOSIS_APP_PALETTE,
+  circles: CIRCLES_PALETTE
 };
 
 const clonePalette = (palette) => ({

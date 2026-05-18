@@ -1,0 +1,39 @@
+tabs:
+  - name: Holdings
+    order: 1
+    icon: 🏛️
+    iconClass: landmark
+    metrics:
+      # Row 1: KPI tiles
+      - id: api_dao_treasury_kpi_total_holdings
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_dao_treasury_kpi_non_gno_holdings
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_dao_treasury_kpi_gno_held
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_dao_treasury_kpi_lending_total
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+
+      # Row 2: stacked area — holdings by asset class over time
+      - id: api_dao_treasury_holdings_by_class_ts
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+
+      # Row 3: allocation pie | holdings detail table
+      - id: api_dao_treasury_allocation_latest
+        gridRow: 3
+        gridColumn: 1 / span 5
+        minHeight: 420px
+      - id: api_dao_treasury_holdings_detail_latest
+        gridRow: 3
+        gridColumn: 6 / span 7
+        minHeight: 420px

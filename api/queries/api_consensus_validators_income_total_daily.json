@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_income_total_daily",
+  "query": "SELECT date, income_gno, income_gno_rolling_7d_median, income_gno_rolling_30d_median,\n                 validators_snapshot_count, anomaly_flag\n          FROM dbt.api_consensus_validators_income_total_daily\n          ORDER BY date"
+}

@@ -15,10 +15,10 @@ const metric = {
   showTotal: true,
    
   query: `
-    SELECT wallet_address, token, sum(value_usd) as value_usd
-    FROM dbt.api_execution_gpay_user_balances_daily
-    WHERE date = (SELECT MAX(date) FROM dbt.api_execution_gpay_user_balances_daily)
-    GROUP BY wallet_address, token  
+    SELECT wallet_address, token, value_usd, value_native, date
+    FROM dbt.api_execution_gpay_user_balances_latest
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 export default metric;

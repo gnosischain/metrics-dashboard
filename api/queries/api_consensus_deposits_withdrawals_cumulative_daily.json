@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_deposits_withdrawals_cumulative_daily",
+  "query": "SELECT\n      date,\n      label,\n      SUM(total_amount) OVER (PARTITION BY label ORDER BY date) AS cumulative_amount_gno\n    FROM dbt.int_consensus_deposits_withdrawals_daily\n    ORDER BY date, label"
+}

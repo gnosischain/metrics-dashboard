@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_wallets_cumulative_daily",
+  "query": "SELECT toDate(date) AS date,\n           onboarding_class AS label,\n           n_ga_wallets_cumulative AS value\n    FROM dbt.api_execution_gnosis_app_gpay_wallets_daily\n    ORDER BY date ASC, label ASC"
+}

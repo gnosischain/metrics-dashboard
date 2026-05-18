@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_movements_composed",
+  "query": "SELECT\n      d.date,\n      d.address,\n      d.token_address,\n      d.symbol,\n      d.token_class,\n      toFloat64(d.net_delta_raw) / pow(10, coalesce(w.decimals, 18)) AS net_delta,\n      if(toFloat64(d.net_delta_raw) >= 0, 'inflow', 'outflow') AS direction\n    FROM dbt.int_execution_tokens_address_diffs_daily AS d\n    LEFT JOIN (\n      SELECT address AS whitelist_address, decimals\n      FROM dbt.tokens_whitelist\n    ) AS w\n      ON lower(w.whitelist_address) = lower(d.token_address)\n    WHERE d.date BETWEEN toDate('{from}') AND toDate('{to}')\n      /*__FILTER_CONDITIONS__*/\n      AND d.net_delta_raw IS NOT NULL\n      AND toFloat64(d.net_delta_raw) != 0\n    ORDER BY d.date DESC, d.symbol ASC, d.token_address ASC\n    LIMIT 500"
+}

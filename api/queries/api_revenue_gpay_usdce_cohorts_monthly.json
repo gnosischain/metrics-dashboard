@@ -1,0 +1,4 @@
+{
+  "id": "api_revenue_gpay_usdce_cohorts_monthly",
+  "query": "SELECT month, cohort, fees_total, users_cnt\n    FROM dbt.api_revenue_gpay_usdce_cohorts_monthly\n    ORDER BY month ASC"
+}

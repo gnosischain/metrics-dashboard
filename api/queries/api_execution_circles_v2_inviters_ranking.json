@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_inviters_ranking",
+  "query": "SELECT\n      rank,\n      inviter,\n      display_name,\n      preview_image_url,\n      is_blacklisted,\n      invite_count,\n      toDate(first_invite_ts) AS first_invite,\n      toDate(last_invite_ts)  AS last_invite\n    FROM dbt.api_execution_circles_v2_inviters_ranking\n    ORDER BY rank\n    LIMIT 100"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validator_group_history_balance_daily",
+  "query": "SELECT\n      date,\n      withdrawal_credentials,\n      balance_gno\n    FROM dbt.api_consensus_validators_explorer_daily\n    WHERE date BETWEEN '{from}' AND '{to}'\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date ASC"
+}

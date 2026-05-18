@@ -42,6 +42,8 @@ const metric = {
       toFloat64(countIf(action = 'Crypto Withdrawal')) AS crypto_withdrawal,
       toFloat64(countIf(action = 'Refund')) AS refund
     FROM dbt.api_execution_gpay_user_activity
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
     GROUP BY wallet_address
   `,
 };

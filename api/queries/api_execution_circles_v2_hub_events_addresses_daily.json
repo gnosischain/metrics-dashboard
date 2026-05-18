@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_hub_events_addresses_daily",
+  "query": "SELECT date, event_name, n_distinct_addresses\n    FROM dbt.api_execution_circles_v2_hub_events_daily\n    ORDER BY date"
+}

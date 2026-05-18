@@ -5,23 +5,24 @@ tabs:
     iconClass: chart-line
     resolutionToggle: true
     defaultResolution: weekly
+    timeRanges: true
     metrics:
       - id: api_execution_gpay_total_volume
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_volume_7d
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_total_payments
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_payments_7d
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_volume_payments_by_token_weekly
         gridRow: 2
         gridColumn: 1 / span 6
@@ -40,20 +41,20 @@ tabs:
     metrics:
       - id: api_execution_gpay_total_funded
         gridRow: 1
-        gridColumn: 1 / span 6
-        minHeight: 150px
+        gridColumn: 7 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_active_users_7d
         gridRow: 1
-        gridColumn: 7 / span 6
-        minHeight: 150px
+        gridColumn: 10 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_funded_addresses_weekly
-        gridRow: 2
+        gridRow: 1 / span 2
         gridColumn: 1 / span 6
-        minHeight: 400px
+        minHeight: 432px
       - id: api_execution_gpay_payments_hourly
         gridRow: 2
         gridColumn: 7 / span 6
-        minHeight: 400px
+        minHeight: 300px
       - id: api_execution_gpay_activity_by_action_weekly
         gridRow: 3
         gridColumn: 1 / span 12
@@ -63,23 +64,24 @@ tabs:
     order: 3
     icon: 🎯
     iconClass: gauge
+    timeRanges: true
     metrics:
       - id: api_execution_gpay_kpi_mau_latest
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_kpi_payment_volume_latest
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_kpi_arpu_latest
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_kpi_repeat_purchase_rate_latest
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 150px
+        minHeight: 120px
       - id: api_execution_gpay_kpi_activity_monthly
         gridRow: 2
         gridColumn: 1 / span 6
@@ -121,55 +123,50 @@ tabs:
     order: 4
     icon: 🎁
     iconClass: gift
-    unitToggle: true
-    defaultUnit: usd
+    timeRanges: true
     metrics:
       - id: api_execution_gpay_cashback_recipients_total
         gridRow: 1
-        gridColumn: 1 / span 4
-        minHeight: 150px
+        gridColumn: 1 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_cashback_recipients_7d
-        gridRow: 2
-        gridColumn: 1 / span 4
-        minHeight: 150px
-      - id: global_filter
-        gridRow: 3
-        gridColumn: 1 / span 4
-        minHeight: 60px
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_cashback_recipients_weekly
         gridRow: 1 / span 3
-        gridColumn: 5 / span 8
-        minHeight: 384px
-      - id: api_execution_gpay_cashback_total
-        gridRow: 4
-        gridColumn: 1 / span 6
-        minHeight: 140px
-      - id: api_execution_gpay_cashback_7d
-        gridRow: 4
         gridColumn: 7 / span 6
-        minHeight: 140px
+        minHeight: 290px
+      - id: api_execution_gpay_cashback_total
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 158px
+      - id: api_execution_gpay_cashback_7d
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 158px
       - id: api_execution_gpay_cashback_weekly
-        gridRow: 5
+        gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_gpay_cashback_cumulative
-        gridRow: 5
+        gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 450px
       - id: api_execution_gpay_cashback_dist_weekly
-        gridRow: 6
+        gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 450px
       - id: api_execution_gpay_cashback_impact_monthly
-        gridRow: 7
+        gridRow: 5
         gridColumn: 1 / span 12
         minHeight: 450px
       - id: api_execution_gpay_cashback_cohort_retention_monthly
-        gridRow: 8
+        gridRow: 6
         gridColumn: 1 / span 12
         minHeight: 450px
       - id: api_execution_gpay_cashback_cohort_retention_users_monthly
-        gridRow: 9
+        gridRow: 7
         gridColumn: 1 / span 12
         minHeight: 450px
 
@@ -177,27 +174,28 @@ tabs:
     order: 5
     icon: 💰
     iconClass: wallet
+    timeRanges: true
     metrics:
       - id: api_execution_gpay_total_balance
         gridRow: 1
-        gridColumn: 1 / span 6
-        minHeight: 180px
+        gridColumn: 1 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_gno_total_balance
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 180px
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
       - id: api_execution_gpay_wallet_balance_composition
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 372px
+        minHeight: 280px
       - id: api_execution_gpay_balances_usd_daily
-        gridRow: 3
+        gridRow: 2 / span 2
         gridColumn: 1 / span 6
-        minHeight: 450px
+        minHeight: 500px
       - id: api_execution_gpay_balances_native_daily
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 450px
+        minHeight: 330px
       - id: api_execution_gpay_balance_cohorts_holders_daily
         gridRow: 4
         gridColumn: 1 / span 6
@@ -208,43 +206,50 @@ tabs:
         minHeight: 450px
 
   - name: User Portfolio
+    enabled: false
     order: 6
     icon: 👤
     iconClass: user
     globalFilterField: wallet_address
     globalFilterLabel: Wallet
     searchable: true
-    searchPlaceholder: Paste wallet address...
+    requireExplicitFilter: true
+    globalFilterSourceMetric: api_execution_gpay_user_top_wallets
+    explicitFilterValidationMetric: api_execution_gpay_user_lifetime_tenure_days
+    searchPlaceholder: Paste wallet address and press Enter...
+    globalControlsPlacement: top
+    emptyState:
+      title: Explore your Gnosis Pay portfolio
+      description: Paste a wallet address to load balances and activity cards.
+      emptyResultsTitle: This wallet is not a Gnosis Pay wallet
+      emptyResultsDescription: Try another wallet address.
+      iconClass: user
     globalFilterVertical: true
     metrics:
-      - id: global_filter
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 60px
       - id: api_execution_gpay_user_lifetime_tenure_days
-        gridRow: 1
-        gridColumn: 4 / span 3
+        gridRow: 1 
+        gridColumn: 1 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_inactivity_days
-        gridRow: 1
-        gridColumn: 7 / span 3
+        gridRow: 1 
+        gridColumn: 5 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_avg_monthly_payment_volume_usd
-        gridRow: 2
-        gridColumn: 4 / span 3
+        gridRow: 2 
+        gridColumn: 1 / span 8
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_total_deposit_volume_usd
-        gridRow: 2
-        gridColumn: 1 / span 3
+        gridRow: 3
+        gridColumn: 1 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_total_withdrawal_volume_usd
-        gridRow: 2
-        gridColumn: 7 / span 3
+        gridRow: 3
+        gridColumn: 5 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_actions_radar
-        gridRow: 1 / span 2
-        gridColumn: 10 / span 3
-        minHeight: 254px
+        gridRow: 1 / span 3
+        gridColumn: 9 / span 4
+        minHeight: 354px
       - id: api_execution_gpay_user_balances_latest
         gridRow: 4
         gridColumn: 1 / span 4
@@ -287,19 +292,19 @@ tabs:
       - id: api_execution_gpay_flows_total_volume_1d
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 130px
+        minHeight: 120px
       - id: api_execution_gpay_flows_total_volume_7d
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 130px
+        minHeight: 120px
       - id: api_execution_gpay_flows_total_volume_30d
         gridRow: 1
         gridColumn: 7 / span 3
-        minHeight: 130px
+        minHeight: 120px
       - id: api_execution_gpay_flows_total_volume_90d
         gridRow: 1
         gridColumn: 10 / span 3
-        minHeight: 130px
+        minHeight: 120px
       - id: api_execution_gpay_flows_snapshot
         gridRow: 2
         gridColumn: 1 / span 6
@@ -318,4 +323,3 @@ tabs:
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 3200px
-

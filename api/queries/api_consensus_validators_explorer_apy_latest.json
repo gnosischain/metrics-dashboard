@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_apy_latest",
+  "query": "SELECT withdrawal_credentials, apy_30d\n    FROM dbt.api_consensus_validators_explorer_latest\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

@@ -3,13 +3,39 @@ import * as echarts from 'echarts';
 import { Card, NumberWidget, TextWidget, TableWidget } from './index';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
+import TOKEN_ICON_URLS, { formatTokenSymbol } from '../utils/tokenIcons.js';
 import InfoPopover from './InfoPopover';
 import MetricWidgetSkeleton from './MetricWidgetSkeleton';
 import metricsService from '../services/metrics';
 import { downloadEChartInstanceAsPng } from '../utils/echarts/exportImage';
+import { filterDataByTimeRange } from '../utils/dates';
+import { normalizeFilterValue } from '../utils/filterValues';
+
+// IntersectionObserver's default root is the viewport. The dashboard scrolls
+// inside .dashboard-content, so a viewport-rooted observer never fires and
+// off-screen widgets stay skeletons forever. Walk ancestors to find the real
+// scroll container so the IO can attach to it.
+const findScrollableAncestor = (node) => {
+  if (!node || typeof window === 'undefined') return null;
+  let current = node.parentElement;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+};
 
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
 const UNIT_LABELS = { native: 'Native', usd: 'USD' };
+
+const getDisplayUnitLabel = (unitKey, unitConfig, firstRow) => {
+  if (!unitKey) return null;
+  return (unitConfig?.labelField && firstRow?.[unitConfig.labelField]) || unitConfig?.label || UNIT_LABELS[unitKey] || unitKey;
+};
 
 const MetricWidget = ({
   metricId,
@@ -23,7 +49,21 @@ const MetricWidget = ({
   selectedUnit = null,
   dashboardPalette = null,
   enableResolutionToggle = false,
-  enableUnitToggle = false
+  enableUnitToggle = false,
+  globalTimeRange = null,
+  hasSecondaryGlobalFilter = false,
+  secondaryGlobalFilterField = null,
+  secondaryGlobalFilterValue = null,
+  onSecondaryGlobalFilterChange = null,
+  headerActions = null,
+  onTableRowClick = null,
+  tableConfigOverrides = null,
+  tableHeight = null,
+  // Skip MetricWidget's own IntersectionObserver gate. Use when a parent
+  // already lazy-mounts via its own IO (e.g. AccountPortfolio's
+  // PortfolioMetric) — stacking two IOs across StrictMode remounts means
+  // neither callback consistently fires and widgets stay in skeleton.
+  eagerFetch = false
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,9 +72,32 @@ const MetricWidget = ({
   const [selectedLocalFilters, setSelectedLocalFilters] = useState({});
   const [selectedValueMode, setSelectedValueMode] = useState(null);
   const [availableLabels, setAvailableLabels] = useState([]);
+  // Parents (Dashboard for tab metrics, AccountPortfolio for its
+  // section metrics) preload configs before rendering this widget so
+  // getMetricConfig returns synchronously below. As a last-resort
+  // safety net, kick off a load if we ever mount without a cached
+  // config — but don't force re-render here, since destabilising
+  // fetchData mid-flight causes pending requests to be aborted and
+  // their data discarded.
+  useEffect(() => {
+    if (!metricId) return;
+    if (metricsService.getMetricConfig(metricId)) return;
+    metricsService.loadMetricConfigs([metricId]).catch(() => {});
+  }, [metricId]);
   
   const isMounted = useRef(true);
   const requestSequenceRef = useRef(0);
+  const activeAbortRef = useRef(null);
+  const cardRef = useRef(null);
+  // IntersectionObserver-gated fetch: don't request data until the widget
+  // is within ~300px of the viewport. The portfolio renders ~30 widgets;
+  // without this, all 30 fire on mount even if the user only scrolls past
+  // the first 4. Falls back to "fetch immediately" when IO is unavailable.
+  const [shouldFetch, setShouldFetch] = useState(() => {
+    if (eagerFetch) return true;
+    if (typeof window === 'undefined') return true;
+    return typeof window.IntersectionObserver !== 'function';
+  });
 
   // Per-chart resolution toggle (independent per widget)
   const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
@@ -95,36 +158,45 @@ const MetricWidget = ({
         valueField,
         enableFiltering = false, 
         enableZoom = false,
-        variant, 
+        variant,
         cardVariant,
         changeData,
         fontSize,
         titleFontSize,
         resolutions,
-        localFilterFields
+        localFilterFields,
+        timeRanges,
+        defaultTimeRange = 'ALL',
+        columns,
+        paginationSize,
+        paginationSizeSelector,
+        initialSort,
+        selectableRows,
+        rowSelectionEmits,
     } = metricConfig;
 
     let widgetType = 'chart';
     if (chartType === 'text') widgetType = 'text';
     if (chartType === 'number' || chartType === 'numberDisplay') widgetType = 'number';
+    if (chartType === 'kpi') widgetType = 'kpi';
     if (chartType === 'table') widgetType = 'table';
-    
-    const resolvedCardVariant = chartType === 'numberDisplay'
+
+    const resolvedCardVariant = (chartType === 'numberDisplay' || chartType === 'kpi')
       ? (cardVariant || 'outline')
       : (cardVariant || 'default');
 
-    return { 
-      type: widgetType, 
-      chartType, 
-      title: name, 
-      description, 
+    return {
+      type: widgetType,
+      chartType,
+      title: name,
+      description,
       metricDescription,
-      format, 
-      color, 
-      labelField, 
-      valueField, 
-      enableFiltering, 
-      enableZoom, 
+      format,
+      color,
+      labelField,
+      valueField,
+      enableFiltering,
+      enableZoom,
       variant,
       cardVariant: resolvedCardVariant,
       changeData,
@@ -132,7 +204,15 @@ const MetricWidget = ({
       titleFontSize,
       resolutions,
       localFilterFields,
-      config: metricConfig 
+      timeRanges,
+      defaultTimeRange,
+      columns,
+      paginationSize,
+      paginationSizeSelector,
+      initialSort,
+      selectableRows,
+      rowSelectionEmits,
+      config: metricConfig
     };
   }, [metricConfig]);
 
@@ -191,6 +271,8 @@ const MetricWidget = ({
       format: resolveFormat(metricConfig?.format, 'formatNumber')
     };
   }, [effectiveUnit, metricConfig, resolveFormat]);
+
+  // resolvedUnitLabel is defined after filteredData (see below)
 
   const valueModeOptions = useMemo(() => {
     if (!Array.isArray(metricConfig?.valueModeOptions)) {
@@ -265,17 +347,30 @@ const MetricWidget = ({
   }, [hasGlobalFilter, widgetConfig?.labelField, globalFilterField]);
   
   // Check if this widget should show a secondary filter (different field than global filter)
+  // Suppressed when a secondary global filter is handling this widget's labelField instead
+  const isSecondaryGlobalFilterForThisField = hasSecondaryGlobalFilter &&
+    !!secondaryGlobalFilterField &&
+    widgetConfig?.labelField === secondaryGlobalFilterField;
+
   const shouldShowSecondaryFilter = useMemo(() => {
-    return widgetConfig?.enableFiltering && 
-      globalFilterField && 
-      widgetConfig?.labelField && 
-      widgetConfig.labelField !== globalFilterField;
-  }, [widgetConfig?.enableFiltering, widgetConfig?.labelField, globalFilterField]);
+    return widgetConfig?.enableFiltering &&
+      globalFilterField &&
+      widgetConfig?.labelField &&
+      widgetConfig.labelField !== globalFilterField &&
+      !isSecondaryGlobalFilterForThisField;
+  }, [widgetConfig?.enableFiltering, widgetConfig?.labelField, globalFilterField, isSecondaryGlobalFilterForThisField]);
 
   useEffect(() => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      // Intentionally do NOT abort activeAbortRef here. In dev StrictMode,
+      // useEffect cleanup runs synthetically between mount and remount, and
+      // aborting at that point cancels a request whose response would have
+      // landed on the live (remounted) instance. The shared inFlightRequests
+      // dedup in api.js means the abort can also tear down requests other
+      // widgets are awaiting. Letting the request complete is cheap and
+      // safe — the new render will read from the api cache.
     };
   }, []);
 
@@ -303,10 +398,64 @@ const MetricWidget = ({
     setSelectedValueMode(valueModeOptions[0].key);
   }, [metricConfig?.defaultValueMode, selectedValueMode, valueModeByKey, valueModeOptions]);
 
+  const buildMetricRequestParams = useCallback((overrides = {}) => {
+    const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
+
+    const params = {};
+    if (hasGlobalFilter && globalFilterField && normalizedGlobalFilterValue) {
+      params.filterField = globalFilterField;
+      params.filterValue = normalizedGlobalFilterValue;
+    }
+    if (metricConfig?.useCached === false) {
+      params.useCached = 'false';
+    }
+    if (effectiveUnit && metricConfig?.unitFilterField) {
+      params.filterField2 = metricConfig.unitFilterField;
+      params.filterValue2 = effectiveUnit;
+    }
+    if (
+      hasSecondaryGlobalFilter &&
+      secondaryGlobalFilterField &&
+      secondaryGlobalFilterValue &&
+      (metricConfig?.applySecondaryGlobalFilter === true ||
+        widgetConfig?.labelField === secondaryGlobalFilterField)
+    ) {
+      params.filterField3 = secondaryGlobalFilterField;
+      params.filterValue3 = secondaryGlobalFilterValue;
+    }
+    if (metricConfig?.serverPagination === true) {
+      const initialSort = Array.isArray(metricConfig.initialSort) ? metricConfig.initialSort[0] : null;
+      params.page = overrides.page || 1;
+      params.pageSize = overrides.pageSize || metricConfig.paginationSize || 25;
+      params.includeTotal = 'true';
+      params.sortField = overrides.sortField || initialSort?.column || initialSort?.field || undefined;
+      params.sortDir = overrides.sortDir || initialSort?.dir || undefined;
+      params.search = overrides.search || undefined;
+    }
+
+    return Object.fromEntries(
+      Object.entries({ ...params, ...overrides }).filter(([, value]) =>
+        value !== undefined && value !== null && value !== ''
+      )
+    );
+  }, [
+    effectiveUnit,
+    globalFilterField,
+    globalFilterValue,
+    hasGlobalFilter,
+    hasSecondaryGlobalFilter,
+    metricConfig,
+    secondaryGlobalFilterField,
+    secondaryGlobalFilterValue,
+    widgetConfig?.labelField,
+  ]);
+
   const fetchData = useCallback(async () => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
     // The fetch will trigger once globalFilterValue is set.
-    if (hasGlobalFilter && !globalFilterValue) {
+    const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
+
+    if (hasGlobalFilter && !normalizedGlobalFilterValue) {
       return;
     }
 
@@ -315,60 +464,65 @@ const MetricWidget = ({
     try {
       setLoading(true);
       setError(null);
-      
-      // Check if metricsService has the getMetricData method
+
       if (!metricsService || typeof metricsService.getMetricData !== 'function') {
         throw new Error('Metrics service is not properly initialized');
       }
-      
-      // Build params for server-side filtering.
-      // Let server use its default date range (365 days) for full data.
-      // Server-side global filter reduces data transfer significantly.
-      const params = {};
-      if (globalFilterField && globalFilterValue) {
-        params.filterField = globalFilterField;
-        params.filterValue = globalFilterValue;
-      }
-      if (metricConfig?.useCached === false) {
-        params.useCached = 'false';
-      }
-      if (effectiveUnit && metricConfig?.unitFilterField) {
-        params.filterField2 = metricConfig.unitFilterField;
-        params.filterValue2 = effectiveUnit;
-      }
+
+      const params = buildMetricRequestParams();
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
-      
-      if (!isMounted.current || requestId !== requestSequenceRef.current) {
+
+      if (!isMounted.current) {
         return;
       }
 
-      if (isMounted.current) {
+      // Only the latest in-flight call applies its result. Without this
+      // guard, every superseded fetchData call would also setData, which
+      // forces heavy children (Tabulator / ECharts) to rebuild N times
+      // per filter or render cycle — the trace showed 46 s of scripting
+      // dominated by renderTable → _virtualRenderFill → setHeight.
+      const isLatest = requestId === requestSequenceRef.current;
+      if (isLatest) {
         setData(result);
-        
-        if (widgetConfig.enableFiltering && result?.data?.length > 0) {
-          if (hasMultiLocalFilters) {
-            return;
-          }
 
-          // If this is a secondary filter (different field than global), we'll extract labels later from filtered data
-          // For now, extract from all data (will be updated when global filter is applied)
+        if (widgetConfig.enableFiltering && result?.data?.length > 0 && !hasMultiLocalFilters) {
           const uniqueLabels = [...new Set(result.data.map(item => item[widgetConfig.labelField]))].filter(Boolean);
           setAvailableLabels(uniqueLabels);
-          
-          // Only set local selectedLabel if not using global filter for this field
           if (!isGlobalFilterForThisField && !selectedLabel && uniqueLabels.length > 0) {
             setSelectedLabel(uniqueLabels[0]);
           }
         }
       }
     } catch (err) {
-      if (isMounted.current && requestId === requestSequenceRef.current) {
-        setError(err.message);
-        console.error('Error fetching metric data:', err);
+      const aborted = err?.name === 'AbortError' || err?.code === 'ABORT_ERR';
+      if (aborted) {
+        return;
+      }
+      if (isMounted.current) {
+        const code = err?.code || null;
+        const status = Number(err?.status || 0);
+        setError({ message: err?.message || 'Request failed', code, status });
+        const isExpected = code === 'MissingMetricSource'
+          || code === 'InvalidMetric'
+          || code === 'FilterRequired';
+        if (isExpected) {
+          if (process.env.NODE_ENV === 'development') {
+            // eslint-disable-next-line no-console
+            console.debug(`Metric ${effectiveMetricId}: ${code}`);
+          }
+        } else {
+          // eslint-disable-next-line no-console
+          console.error('Error fetching metric data:', err);
+        }
       }
     } finally {
-      if (isMounted.current && requestId === requestSequenceRef.current) {
+      // Always clear the spinner if the widget is still mounted. The
+      // requestSequenceRef-based gate caused widgets to stick in
+      // (loading=true, data=null) forever whenever fetchData was
+      // re-invoked between start and resolution (e.g. parent re-renders
+      // creating a fresh fetchData identity).
+      if (isMounted.current) {
         setLoading(false);
       }
     }
@@ -382,13 +536,43 @@ const MetricWidget = ({
     globalFilterValue,
     hasGlobalFilter,
     hasMultiLocalFilters,
-    effectiveUnit,
-    metricConfig?.unitFilterField
+    // Refetch when the tab-level secondary filter (e.g. protocol) changes and this
+    // widget opts in via applySecondaryGlobalFilter or has labelField matching.
+    hasSecondaryGlobalFilter,
+    secondaryGlobalFilterField,
+    secondaryGlobalFilterValue,
+    metricConfig?.applySecondaryGlobalFilter,
+    buildMetricRequestParams,
   ]);
 
   useEffect(() => {
+    if (!shouldFetch) return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, shouldFetch]);
+
+  useEffect(() => {
+    if (shouldFetch) return undefined;
+    const node = cardRef.current;
+    if (!node || typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
+      setShouldFetch(true);
+      return undefined;
+    }
+    const root = findScrollableAncestor(node);
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setShouldFetch(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { root, rootMargin: '300px 0px', threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldFetch]);
 
   useEffect(() => {
     if (!hasMultiLocalFilters) return;
@@ -503,6 +687,15 @@ const MetricWidget = ({
       return data;
     }
     
+    // If this widget's secondary filter is managed globally, apply that value client-side
+    if (isSecondaryGlobalFilterForThisField) {
+      if (!secondaryGlobalFilterValue) return data;
+      return {
+        ...data,
+        data: data.data.filter(item => item[widgetConfig.labelField] === secondaryGlobalFilterValue)
+      };
+    }
+
     // If this widget uses a secondary filter (different field), apply that filter client-side
     if (shouldShowSecondaryFilter) {
       if (!selectedLabel) return data;
@@ -511,7 +704,7 @@ const MetricWidget = ({
         data: data.data.filter(item => item[widgetConfig.labelField] === selectedLabel)
       };
     }
-    
+
     // Fallback: original logic for widgets without global filter (local filter only)
     if (!effectiveSelectedLabel) return data;
     return {
@@ -529,17 +722,47 @@ const MetricWidget = ({
     selectedLocalFilters,
     isGlobalFilterForThisField,
     shouldShowSecondaryFilter,
-    selectedLabel
+    selectedLabel,
+    isSecondaryGlobalFilterForThisField,
+    secondaryGlobalFilterValue
   ]);
+
+  // Per-widget time range state (used when no global time range is active)
+  const LOCAL_TIME_RANGES = ['1M', '3M', '6M', '1Y', '2Y', 'ALL'];
+  const showLocalTimeRange = widgetConfig.enableZoom && !globalTimeRange;
+  const [localTimeRange, setLocalTimeRange] = useState('ALL');
+
+  // Effective time range: global overrides local
+  const effectiveTimeRange = globalTimeRange || (showLocalTimeRange ? localTimeRange : null);
+  const hasTimeRangeZoom = widgetConfig.enableZoom && !!effectiveTimeRange;
+
+  // Filter data by time range (the single source of truth for charts, tables, numbers)
+  const timeFilteredData = useMemo(() => {
+    if (!filteredData?.data || !effectiveTimeRange || effectiveTimeRange === 'ALL') {
+      return filteredData;
+    }
+    const xField = widgetConfig.config?.xField || widgetConfig.config?.categoryField || 'date';
+    const filtered = filterDataByTimeRange(filteredData.data, effectiveTimeRange, xField);
+    return { ...filteredData, data: filtered };
+  }, [filteredData, effectiveTimeRange, widgetConfig.config?.xField, widgetConfig.config?.categoryField]);
+
+  // Resolve the display label for the active unit (dynamic from filtered data or static)
+  const resolvedUnitLabel = useMemo(() => {
+    const unitFields = metricConfig?.unitFields;
+    if (!effectiveUnit || !unitFields) return null;
+    const unitConfig = unitFields[effectiveUnit];
+    if (!unitConfig) return null;
+    return getDisplayUnitLabel(effectiveUnit, unitConfig, timeFilteredData?.data?.[0]);
+  }, [effectiveUnit, metricConfig, timeFilteredData]);
 
   // Process change data for number widgets
   const processChangeData = useMemo(() => {
-    if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !filteredData?.data) {
+    if (widgetConfig.type !== 'number' || !widgetConfig.changeData || !timeFilteredData?.data) {
       return { showChange: false };
     }
 
     const changeConfig = widgetConfig.changeData;
-    const dataArray = Array.isArray(filteredData.data) ? filteredData.data : [filteredData.data];
+    const dataArray = Array.isArray(timeFilteredData.data) ? timeFilteredData.data : [timeFilteredData.data];
     
     if (dataArray.length === 0) return { showChange: false };
 
@@ -587,11 +810,41 @@ const MetricWidget = ({
       changeType,
       changePeriod
     };
-  }, [widgetConfig, filteredData]);
+  }, [widgetConfig, timeFilteredData]);
 
   const handleRefresh = useCallback(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-retry once for transient errors (network blips, ClickHouse timeouts).
+  // Permanent error codes are skipped — retrying yields the same response.
+  const autoRetriedRef = useRef(false);
+  useEffect(() => {
+    if (!error) {
+      autoRetriedRef.current = false;
+      return undefined;
+    }
+    if (autoRetriedRef.current) return undefined;
+    const code = error.code;
+    const status = error.status;
+    const isPermanent = code === 'MissingMetricSource'
+      || code === 'InvalidMetric'
+      || code === 'FilterRequired';
+    const isTransient = !isPermanent && (
+      !status
+      || status === 0
+      || status === 408
+      || status === 429
+      || (status >= 500 && status !== 502)
+    );
+    if (!isTransient) return undefined;
+    autoRetriedRef.current = true;
+    const jitter = 1200 + Math.floor(Math.random() * 600);
+    const handle = window.setTimeout(() => {
+      if (isMounted.current) fetchData();
+    }, jitter);
+    return () => window.clearTimeout(handle);
+  }, [error, fetchData]);
 
   // Extract available labels from data for secondary filters
   // Data is already filtered by global filter (server-side), so we extract secondary options from it
@@ -629,8 +882,9 @@ const MetricWidget = ({
   // 1. Not using global filter for this field, OR
   // 2. Using a secondary filter (different field than global filter)
   const showLocalDropdown = !hasMultiLocalFilters &&
-    widgetConfig.enableFiltering && 
-    !isGlobalFilterForThisField && 
+    widgetConfig.enableFiltering &&
+    !isGlobalFilterForThisField &&
+    !isSecondaryGlobalFilterForThisField &&
     (availableSecondaryLabels.length > 0 || availableLabels.length > 0);
 
   const showMultiLocalDropdowns = hasMultiLocalFilters &&
@@ -677,7 +931,7 @@ const MetricWidget = ({
 
   const chartRenderConfig = useMemo(() => {
     const metricHasValueField = !!widgetConfig.config?.valueField;
-    return {
+    const baseConfig = {
       ...widgetConfig.config,
       dashboardPalette,
       ...(!metricHasValueField ? { yField: effectiveValueConfig.yField } : {}),
@@ -685,8 +939,14 @@ const MetricWidget = ({
       format: effectiveValueConfig.format,
       visualMapCenter: effectiveValueConfig.visualMapCenter,
       visualMapPercentile: effectiveValueConfig.visualMapPercentile,
-      enableZoom: widgetConfig.enableZoom
+      enableZoom: widgetConfig.enableZoom,
+      ...(hasTimeRangeZoom ? { hideSlider: true } : {})
     };
+    // Override yAxis name with the resolved unit label (e.g. "USD", "EURE", "SDAI")
+    if (resolvedUnitLabel && baseConfig.yAxis) {
+      baseConfig.yAxis = { ...baseConfig.yAxis, name: resolvedUnitLabel };
+    }
+    return baseConfig;
   }, [
     widgetConfig.config,
     dashboardPalette,
@@ -695,14 +955,17 @@ const MetricWidget = ({
     effectiveValueConfig.valueField,
     effectiveValueConfig.format,
     effectiveValueConfig.visualMapCenter,
-    effectiveValueConfig.visualMapPercentile
+    effectiveValueConfig.visualMapPercentile,
+    resolvedUnitLabel,
+    hasTimeRangeZoom
   ]);
 
   const showResolutionSelector = supportsResolution && widgetConfig.resolutions;
   const showUnitSelector = supportsLocalUnitToggle;
 
-  const headerControls = (showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton) ? (
+  const headerControls = (headerActions || showMultiLocalDropdowns || showLocalDropdown || showResolutionSelector || showUnitSelector || showValueModeDropdown || showInfoPopover || showDownloadButton || showLocalTimeRange) ? (
     <>
+      {headerActions}
       {showMultiLocalDropdowns && multiLocalFilterFields.map((fieldName) => {
         const labels = localFilterOptionsByField[fieldName] || [];
         if (labels.length === 0) {
@@ -721,6 +984,8 @@ const MetricWidget = ({
             onSelectLabel={(nextSelectedValue) => handleMultiLocalFilterSelect(fieldName, nextSelectedValue)}
             labelField={fieldName}
             idPrefix={`${metricId}-${fieldName}`}
+            iconMap={fieldName === 'token' ? TOKEN_ICON_URLS : null}
+            formatLabel={fieldName === 'token' ? formatTokenSymbol : null}
           />
         );
       })}
@@ -729,6 +994,8 @@ const MetricWidget = ({
           labels={labelsForDropdown}
           selectedLabel={selectedLabelForDropdown}
           onSelectLabel={onLabelSelect}
+          iconMap={widgetConfig?.labelField === 'token' ? TOKEN_ICON_URLS : null}
+          formatLabel={widgetConfig?.labelField === 'token' ? formatTokenSymbol : null}
         />
       )}
       {showResolutionSelector && (
@@ -745,11 +1012,25 @@ const MetricWidget = ({
           ))}
         </div>
       )}
+      {showLocalTimeRange && (
+        <div className="resolution-toggle">
+          {LOCAL_TIME_RANGES.map(range => (
+            <button
+              key={range}
+              type="button"
+              className={`resolution-btn${localTimeRange === range ? ' active' : ''}`}
+              onClick={() => setLocalTimeRange(range)}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+      )}
       {showUnitSelector && !hasGroupedUnits && (
         <div className="resolution-toggle">
           {Object.entries(
             baseMetricConfig?.unitFields
-              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, v.label || k]))
+              ? Object.fromEntries(Object.entries(baseMetricConfig.unitFields).map(([k, v]) => [k, getDisplayUnitLabel(k, v, timeFilteredData?.data?.[0])]))
               : UNIT_LABELS
           ).map(([key, label]) => (
             <button
@@ -814,14 +1095,18 @@ const MetricWidget = ({
   ) : undefined;
 
   // Early returns must come AFTER all hooks
-  if (loading && !data) {
+  const showSkeleton = (loading && !data) ||
+    (data && isSecondaryGlobalFilterForThisField && !secondaryGlobalFilterValue);
+
+  if (showSkeleton) {
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
+      <Card
+        ref={cardRef}
+        minimal={minimal}
+        title={widgetConfig.title}
         subtitle={widgetConfig.description}
         headerControls={headerControls}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
+        chartType={widgetConfig.chartType}
       >
         <MetricWidgetSkeleton variant={widgetConfig.type} />
       </Card>
@@ -829,19 +1114,40 @@ const MetricWidget = ({
   }
 
   if (error) {
+    const errorCode = error?.code || null;
+    // InvalidMetric: the metric isn't registered. Hide the widget entirely
+    // rather than shaming the user with a configuration error.
+    if (errorCode === 'InvalidMetric') {
+      return null;
+    }
+    // MissingMetricSource / FilterRequired: permanent "no data for this
+    // address" states. Render a calm empty state, no retry button.
+    const isPermanent = errorCode === 'MissingMetricSource'
+      || errorCode === 'FilterRequired';
     return (
-      <Card 
-        minimal={minimal} 
-        title={widgetConfig.title} 
+      <Card
+        ref={cardRef}
+        minimal={minimal}
+        title={widgetConfig.title}
         subtitle={widgetConfig.description}
         headerControls={headerControls}
-        chartType={widgetConfig.chartType} // Pass chartType for styling
+        chartType={widgetConfig.chartType}
       >
-        <div className="error-container">
-          <p className="error-message">Error: {error}</p>
-          <button onClick={handleRefresh} className="refresh-button">
-            Retry
-          </button>
+        <div className={`metric-fallback ${isPermanent ? 'metric-fallback--empty' : 'metric-fallback--error'}`}>
+          {isPermanent ? (
+            <span className="metric-fallback__placeholder" aria-label="No data">—</span>
+          ) : (
+            <>
+              <span className="metric-fallback__message">Couldn’t load</span>
+              <button
+                type="button"
+                onClick={handleRefresh}
+                className="metric-fallback__retry"
+              >
+                Retry
+              </button>
+            </>
+          )}
         </div>
       </Card>
     );
@@ -853,7 +1159,7 @@ const MetricWidget = ({
         return <TextWidget content={data?.content || 'No content available'} minimal={true} />;
       
       case 'number':
-        const value = filteredData?.data?.[0]?.[effectiveValueConfig.valueField] || 0;
+        const value = timeFilteredData?.data?.[0]?.[effectiveValueConfig.valueField] || 0;
         return (
           <NumberWidget
             value={value}
@@ -871,22 +1177,157 @@ const MetricWidget = ({
             minimal={true}
           />
         );
-      
-      case 'table':
+
+      case 'kpi': {
+        // Time-series input: last row is the headline value, compute delta vs first row.
+        const rows = Array.isArray(timeFilteredData?.data) ? timeFilteredData.data : [];
+        const sparkField = metricConfig?.sparklineField || effectiveValueConfig.valueField || 'value';
+        const numericValues = rows
+          .map((r) => (r && r[sparkField] != null ? Number(r[sparkField]) : null))
+          .filter((n) => Number.isFinite(n));
+
+        const latest = numericValues.length > 0 ? numericValues[numericValues.length - 1] : 0;
+        const earliest = numericValues.length > 0 ? numericValues[0] : 0;
+        // Only compute a delta when we have at least two datapoints to compare.
+        const deltaPct = numericValues.length >= 2 && earliest !== 0 && Number.isFinite(earliest)
+          ? ((latest - earliest) / Math.abs(earliest)) * 100
+          : null;
+        const deltaType = deltaPct == null
+          ? 'neutral'
+          : (deltaPct > 0 ? 'positive' : (deltaPct < 0 ? 'negative' : 'neutral'));
+        const deltaStr = deltaPct == null ? '' : `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(2)}%`;
+
+        const linkTo = metricConfig?.linkTo || null;
+        const onLinkClick = linkTo
+          ? (dashboardId) => {
+              // Use a custom event that Dashboard.js listens for — a synthetic
+              // popstate does not reliably trigger React's popstate handler
+              // across all browsers, so we dispatch an explicit navigation
+              // event that Dashboard wires to its handleNavigation.
+              window.dispatchEvent(new CustomEvent('overview:navigate', {
+                detail: { dashboardId, tabId: metricConfig?.linkToTab || null }
+              }));
+            }
+          : null;
+
         return (
-          <TableWidget 
-            data={filteredData?.data || []} 
-            config={metricConfig.tableConfig || {}} 
+          <NumberWidget
+            value={latest}
+            format={effectiveValueConfig.format}
+            color={widgetConfig.color}
+            label={metricConfig?.kpiLabel || undefined}
+            isDarkMode={isDarkMode}
+            variant="kpi"
+            showChange={deltaPct != null}
+            changeValue={deltaStr}
+            changeType={deltaType}
+            changePeriod={metricConfig?.changePeriod || ''}
+            fontSize={widgetConfig.fontSize}
+            dashboardPalette={dashboardPalette}
+            sparkline={numericValues}
+            linkTo={linkTo}
+            onLinkClick={onLinkClick}
+          />
+        );
+      }
+
+      case 'table': {
+        // Build the config passed to TableWidget, merging any metric-level options
+        // (paginationSize, initialSort, selectableRows, columns, etc.) with a
+        // row-selection handler that cascades the selected row(s) to the tab's
+        // secondary global filter (so explorer-style tabs can overlay per-validator
+        // series on top of the aggregate). Only wired when:
+        //   * the metric declares `rowSelectionEmits` (e.g. ['validator_index']),
+        //   * the tab has a secondaryGlobalFilterField matching one of the emitted
+        //     fields,
+        //   * the parent provided an onSecondaryGlobalFilterChange handler.
+        const emits = Array.isArray(widgetConfig.rowSelectionEmits)
+          ? widgetConfig.rowSelectionEmits
+          : null;
+        const canCascadeSelection = !!(
+          emits &&
+          secondaryGlobalFilterField &&
+          emits.includes(secondaryGlobalFilterField) &&
+          typeof onSecondaryGlobalFilterChange === 'function'
+        );
+        const scopedTableOverrides = tableConfigOverrides && typeof tableConfigOverrides === 'object'
+          ? tableConfigOverrides
+          : {};
+        const tableConfig = {
+          ...(metricConfig.tableConfig || {}),
+          // Pass through the column / pagination / sort config defined on the metric
+          // itself (queries/*.js) so each table metric controls its own UX without
+          // going through tableConfig.
+          columns: widgetConfig.columns || metricConfig.tableConfig?.columns,
+          paginationSize: widgetConfig.paginationSize ?? metricConfig.tableConfig?.paginationSize,
+          paginationSizeSelector: widgetConfig.paginationSizeSelector ?? metricConfig.tableConfig?.paginationSizeSelector,
+          initialSort: widgetConfig.initialSort ?? metricConfig.tableConfig?.initialSort,
+          selectableRows: widgetConfig.selectableRows ?? metricConfig.tableConfig?.selectableRows,
+          ...scopedTableOverrides,
+          serverPagination: metricConfig.serverPagination === true,
+          totalRows: data?.total,
+          lastPage: data?.lastPage,
+          remoteDataLoader: metricConfig.serverPagination === true
+            ? async ({ page, pageSize, sortField, sortDir, search }) => {
+                const result = await metricsService.getMetricData(effectiveMetricId, buildMetricRequestParams({
+                  page,
+                  pageSize,
+                  sortField,
+                  sortDir,
+                  search,
+                  includeTotal: 'true',
+                }));
+                return result;
+              }
+            : undefined,
+          onRowClick: typeof onTableRowClick === 'function'
+            ? (row, tabulatorRow, event) => onTableRowClick({
+                metricId: effectiveMetricId,
+                row,
+                tabulatorRow,
+                event
+              })
+            : metricConfig.tableConfig?.onRowClick,
+          onRowSelectionChange: canCascadeSelection
+            ? (rows) => {
+                // Join selected values with comma so the API's IN-list filter picks
+                // them up (see metric's `applySecondaryGlobalFilter` on the chart side).
+                // Empty selection → null, clearing the filter and reverting charts to
+                // the credential-level aggregate.
+                if (!rows || rows.length === 0) {
+                  onSecondaryGlobalFilterChange(null);
+                  return;
+                }
+                const values = rows
+                  .map((r) => r && r[secondaryGlobalFilterField])
+                  .filter((v) => v !== null && v !== undefined && v !== '');
+                onSecondaryGlobalFilterChange(values.length > 0 ? values.join(',') : null);
+              }
+            : undefined,
+        };
+        return (
+          <TableWidget
+            data={timeFilteredData?.data || []}
+            config={tableConfig}
             minimal={true}
             isDarkMode={isDarkMode}
             format={widgetConfig.format}
+            height={tableHeight || undefined}
           />
         );
+      }
       
       case 'chart':
+        if (isSecondaryGlobalFilterForThisField && secondaryGlobalFilterValue && (timeFilteredData?.data?.length ?? 0) === 0) {
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-tertiary)', fontSize: '14px' }}>
+              No data available
+            </div>
+          );
+        }
         return (
           <EChartsContainer
-            data={filteredData?.data || []}
+            data={timeFilteredData?.data || []}
             chartType={widgetConfig.chartType}
             config={chartRenderConfig}
             isDarkMode={isDarkMode}
@@ -903,6 +1344,7 @@ const MetricWidget = ({
 
   return (
     <Card
+      ref={cardRef}
       minimal={minimal}
       title={widgetConfig.title}
       subtitle={widgetConfig.description}

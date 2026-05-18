@@ -10,8 +10,8 @@ const metric = {
   valueField: 'value',
   unitFilterField: 'unit',
   unitFields: {
-    native: { field: 'value', format: 'formatNumber' },
     usd: { field: 'value', format: 'formatNumberWithUSD' },
+    native: { field: 'value', format: 'formatNumber' },
   },
   query: `SELECT unit, value FROM dbt.api_execution_gpay_cashback_total`,
 };

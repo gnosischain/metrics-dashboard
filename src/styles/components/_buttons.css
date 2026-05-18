@@ -242,3 +242,43 @@ button.full-width,
 .button.full-width {
   width: 100%;
 }
+
+/* ==================
+   Stage 4: Unified .btn system (forward-use, additive — legacy .button retained)
+   ================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  height: 32px;
+  padding: 0 var(--spacing-md);
+  border-radius: var(--border-radius-base);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.btn:hover { background: var(--color-hover-background); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--brand-accent, var(--primary-blue));
+  border-color: var(--brand-accent, var(--primary-blue));
+  color: white;
+}
+.btn--primary:hover {
+  background: color-mix(in srgb, var(--brand-accent, var(--primary-blue)) 90%, black);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn--ghost:hover { background: var(--color-hover-background); }
+
+.btn--lg { height: 44px; padding: 0 var(--spacing-lg); font-size: var(--font-size-base); }
+.btn--pill { border-radius: var(--border-radius-full); }

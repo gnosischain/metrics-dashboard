@@ -49,6 +49,30 @@
   width: 100%;
 }
 
+.metrics-grid-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  padding: 0 0 0.5rem 0;
+}
+
+.metrics-grid-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  max-width: 100%;
+}
+
+.metrics-grid-toolbar-label {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 .metrics-grid-positioned {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -68,6 +92,71 @@
 .metrics-grid-positioned .grid-item-filter {
   overflow: visible;
 }
+
+.metrics-grid-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  min-height: 420px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.metrics-grid-empty-state-visual {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.metrics-grid-empty-state-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-accent-softer);
+  color: var(--primary-blue);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.metrics-grid-empty-state-spinner {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.metrics-grid-empty-state-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.metrics-grid-empty-state-description {
+  max-width: 420px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+
+.metrics-grid-empty-state.is-validating .metrics-grid-empty-state-icon-badge {
+  transform: scale(0.98);
+}
+
 
 /* ==================
    Metrics Grid - Responsive
@@ -90,6 +179,29 @@
   .metrics-grid-positioned .grid-item {
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
+    /* cap any YAML fixed height — prevents 600px+ desktop heights from leaving
+       giant blank chart skeletons on mobile */
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 360px;
+  }
+
+  /* Charts inside a card still need enough room to render legibly */
+  .metrics-grid-positioned .grid-item .chart-container,
+  .metrics-grid-positioned .grid-item .echarts-for-react {
+    min-height: 220px;
+  }
+
+  /* Pure number/filter tiles stay compact */
+  .metrics-grid-positioned .grid-item-filter,
+  .metrics-grid-positioned .grid-item-number {
+    max-height: none;
+    min-height: 0 !important;
+  }
+
+  .metrics-grid-empty-state {
+    min-height: 320px;
+    padding-inline: var(--spacing-md);
   }
 }
 
@@ -205,6 +317,21 @@
    ================== */
 
 @media (max-width: 767px) {
+  .metrics-grid-toolbar {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .metrics-grid-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .metrics-grid-toolbar-group {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
   .metrics-grid-positioned {
     display: flex;
     flex-direction: column;
@@ -218,9 +345,28 @@
     margin-bottom: 0;
     position: relative !important;
     margin-top: var(--spacing-sm) !important;
-    min-height: 450px !important;
+    /* Let content drive height on mobile — do NOT force 450px. */
+    height: auto !important;
+    min-height: 0 !important;
   }
-  
+
+  /* Charts need enough vertical room to be legible */
+  .metrics-grid-positioned .grid-item:has(.echarts-for-react),
+  .metrics-grid-positioned .grid-item:has(canvas) {
+    min-height: 280px !important;
+  }
+
+  /* Number-only tiles stay compact */
+  .metrics-grid-positioned .grid-item:has(.number-widget),
+  .metrics-grid-positioned .grid-item:has(.number-display-card) {
+    min-height: 100px !important;
+  }
+
+  /* Filter row: compact */
+  .metrics-grid-positioned .grid-item-filter {
+    min-height: 0 !important;
+  }
+
   /* Force single column on mobile */
   .grid {
     grid-template-columns: 1fr !important;
@@ -254,3 +400,4 @@
   pointer-events: none;
   z-index: var(--z-index-tooltip);
 }
+

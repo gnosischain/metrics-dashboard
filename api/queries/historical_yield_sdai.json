@@ -1,4 +1,4 @@
 {
   "id": "historical_yield_sdai",
-  "query": "SELECT * FROM dbt.fct_yields_sdai_apy_daily"
+  "query": "SELECT date, apy, label FROM dbt.fct_yields_savings_xdai_apy_daily"
 }

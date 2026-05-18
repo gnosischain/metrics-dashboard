@@ -14,9 +14,9 @@ const metric = {
   format: 'formatNumber',
   xField: 'date',
   yField: 'value',
-  labelField: 'label',
+  labelField: 'token',
   query: `
-    SELECT date, label, value
+    SELECT date, label as token, value
     FROM dbt.api_execution_gpay_balances_native_daily
   `,
 };

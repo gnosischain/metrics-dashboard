@@ -1,0 +1,4 @@
+{
+  "id": "overview_sector_esg",
+  "query": "SELECT date, ma7_value AS value\n    FROM dbt.api_esg_carbon_emissions_daily\n    WHERE date >= today() - INTERVAL 30 DAY\n    ORDER BY date ASC"
+}

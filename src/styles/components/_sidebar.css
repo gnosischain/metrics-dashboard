@@ -26,40 +26,6 @@
 }
 
 /* ==================
-   Sidebar Toggle
-   ================== */
-
-/* Toggle sits next to the sidebar (it's a sibling in the DOM) */
-.dashboard-sidebar + .sidebar-toggle {
-  position: absolute;
-  top: 8px;
-  left: var(--sidebar-width);
-
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  cursor: pointer;
-
-  z-index: 90;
-}
-
-/* When sidebar is collapsed, move toggle to collapsed edge */
-.dashboard-sidebar.collapsed + .sidebar-toggle {
-  left: var(--sidebar-width-collapsed);
-}
-
-.sidebar-toggle:hover {
-  background-color: var(--color-accent-softer);
-  color: var(--primary-blue);
-}
-
-/* ==================
    Navigation Structure
    ================== */
 
@@ -254,43 +220,33 @@
     top: var(--header-height);
     left: 0;
     bottom: 0;
-    width: var(--sidebar-width-collapsed);
+    width: 0;
     z-index: 500;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: width var(--transition-slow);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; 
+    transition: width var(--transition-slow), transform var(--transition-slow);
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
     height: calc(100dvh - var(--header-height));
   }
 
+  /* Collapsed on mobile = hidden (no rail). Toggle reveals full drawer. */
   .dashboard-sidebar.collapsed {
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .dashboard-sidebar.mobile-expanded,
+  .dashboard-sidebar.collapsed.mobile-expanded {
+    width: min(86vw, var(--sidebar-width)) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
 
-  /* widen drawer whenever mobile-expanded is true */
-  .dashboard-sidebar.mobile-expanded {
-    width: var(--sidebar-width);
-  }
-
-  /* dim/disable content behind drawer */
+  /* Dim content when drawer is open */
   .dashboard-sidebar.mobile-expanded ~ .dashboard-content {
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
     opacity: 0.25;
-  }
-
-  /* ONE toggle rule only (sibling selector) */
-  .dashboard-sidebar + .sidebar-toggle {
-    position: fixed;
-    top: calc(var(--header-height) + 8px);
-    left: var(--sidebar-width-collapsed);
-    z-index: 510; /* keep it above everything */
-  }
-
-  /* move toggle to expanded edge when open */
-  .dashboard-sidebar.mobile-expanded + .sidebar-toggle {
-    left: var(--sidebar-width);
   }
 
   .tab-item {
@@ -301,4 +257,14 @@
   .tab-item.active {
     background-color: var(--color-hover-background-strong);
   }
+}
+
+/* ==================
+   Keyboard focus indicators
+   ================== */
+.dashboard-header:focus-visible,
+.tab-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  border-radius: var(--border-radius-base);
 }

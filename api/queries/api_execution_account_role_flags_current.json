@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_account_role_flags_current",
+  "query": "SELECT\n      address,\n      is_safe,\n      is_safe_owner,\n      is_gpay_wallet,\n      is_ga_user,\n      controls_gpay_wallet,\n      is_circles_avatar,\n      circles_avatar_type,\n      is_circles_wrapper,\n      is_lp_provider,\n      pool_protocol,\n      is_pool,\n      is_lending_user,\n      is_validator_depositor,\n      has_dune_label,\n      dune_project\n    FROM dbt.int_execution_address_roles_current\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

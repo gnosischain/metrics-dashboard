@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_invite_funnel_cohort_monthly",
+  "query": "SELECT cohort_month, 'Invited'         AS stage, toUInt64(n_invited)         AS value FROM dbt.api_execution_circles_v2_invite_funnel_cohort_monthly\n    UNION ALL\n    SELECT cohort_month, '≥2 mint-days'    AS stage, toUInt64(n_minted_2_days)   AS value FROM dbt.api_execution_circles_v2_invite_funnel_cohort_monthly\n    UNION ALL\n    SELECT cohort_month, '≥7 mint-days'    AS stage, toUInt64(n_minted_7_days)   AS value FROM dbt.api_execution_circles_v2_invite_funnel_cohort_monthly\n    UNION ALL\n    SELECT cohort_month, '≥14 mint-days'   AS stage, toUInt64(n_minted_14_days)  AS value FROM dbt.api_execution_circles_v2_invite_funnel_cohort_monthly\n    UNION ALL\n    SELECT cohort_month, 'Active Minter'   AS stage, toUInt64(n_active_minter)   AS value FROM dbt.api_execution_circles_v2_invite_funnel_cohort_monthly\n    ORDER BY cohort_month, stage"
+}

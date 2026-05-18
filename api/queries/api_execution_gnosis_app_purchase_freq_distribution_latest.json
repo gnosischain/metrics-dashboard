@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_purchase_freq_distribution_latest",
+  "query": "SELECT bucket_order, bucket, n_users\n    FROM dbt.api_execution_gnosis_app_purchase_freq_distribution_latest\n    ORDER BY bucket_order"
+}

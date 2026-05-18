@@ -1,0 +1,324 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    metrics:
+      - id: api_execution_circles_v2_humans_cnt_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_groups_cnt_latest
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_orgs_cnt_latest
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_active_trusts_cnt_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_total_supply_latest
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_mints_7d
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_active_minters_latest
+        gridRow: 2
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_avg_trusts_per_avatar_latest
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_avatars_cumulative
+        gridRow: 3 / span 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_total_supply_daily
+        gridRow: 3 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Network
+    order: 2
+    icon: 🕸️
+    iconClass: network
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_avatars
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_avatars_cumulative
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_active_trusts_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_trust_flow_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_kpi_new_trusts_7d
+        gridRow: 3
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_trusts_distribution
+        gridRow: 3 / span 2
+        gridColumn: 4 / span 9
+        minHeight: 432px
+
+  - name: Supply
+    order: 3
+    icon: 💰
+    iconClass: coins
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_total_supply_daily
+        gridRow: 1
+        gridColumn: 1 / span 8
+        minHeight: 450px
+      - id: api_execution_circles_v2_token_count_daily
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 450px
+      - id: api_execution_circles_v2_supply_by_holder_type_daily
+        gridRow: 2
+        gridColumn: 1 / span 8
+        minHeight: 450px
+      - id: api_execution_circles_v2_holder_count_by_type_daily
+        gridRow: 2
+        gridColumn: 9 / span 4
+        minHeight: 450px
+      - id: api_execution_circles_v2_wrapper_share_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: User
+    enabled: false
+    order: 4
+    icon: 👤
+    iconClass: user
+    globalFilterField: avatar
+    globalFilterLabel: Avatar
+    globalFilterDisplayField: display_name
+    globalFilterSourceMetric: api_execution_circles_v2_avatar_search
+    searchable: true
+    requireExplicitFilter: true
+    explicitFilterValidationMetric: api_execution_circles_v2_avatar_metadata
+    searchPlaceholder: Search by name or paste address (0x...)
+    globalControlsPlacement: top
+    emptyState:
+      title: Explore a Circles user
+      description: Search by name or paste an avatar address to load user cards.
+      emptyResultsTitle: No Circles user found
+      emptyResultsDescription: Try another name or avatar address.
+      iconClass: user
+    globalFilterVertical: true
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_avatar_metadata
+        gridRow: 1
+        gridColumn: 1 / span 8
+        minHeight: 160px
+      - id: api_execution_circles_v2_avatar_personal_token_supply_latest
+        gridRow: 1
+        gridColumn: 9 / span 2
+        minHeight: 160px
+      - id: api_execution_circles_v2_avatar_personal_token_wrapped_latest
+        gridRow: 1
+        gridColumn: 11 / span 2
+        minHeight: 160px
+      - id: api_execution_circles_v2_avatar_total_balance_latest
+        gridRow: 2
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_avatar_trusts_given_latest
+        gridRow: 2
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_avatar_trusts_received_latest
+        gridRow: 2
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_avatar_tokens_held_count
+        gridRow: 2
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_avatar_balances_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_avatar_holdings_by_token
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 380px
+      - id: api_execution_circles_v2_avatar_token_distribution
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 380px
+      - id: api_execution_circles_v2_avatar_trusts_daily
+        gridRow: 5
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_avatar_mint_activity_daily
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_avatar_trust_network
+        gridRow: 6
+        gridColumn: 1 / span 6
+        minHeight: 560px
+      - id: api_execution_circles_v2_avatar_trust_relations
+        gridRow: 6
+        gridColumn: 7 / span 6
+        minHeight: 560px
+      - id: api_execution_circles_v2_avatar_metadata_history
+        gridRow: 8
+        gridColumn: 1 / span 12
+        minHeight: 360px
+
+  - name: Activity
+    order: 5
+    icon: 📈
+    iconClass: chart-line
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_hub_events_daily
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_hub_events_addresses_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_transfers_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_p2p_velocity_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_mints_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_trusts_daily
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Minters
+    order: 6
+    icon: ⛏️
+    iconClass: hammer
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_kpi_active_minters_latest
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_mints_7d
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_active_minters_daily
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_minter_cohort_daily
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_execution_circles_v2_invite_funnel_cohort_monthly
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_execution_circles_v2_inviters_ranking
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 480px
+
+  - name: Groups
+    order: 7
+    icon: 👥
+    iconClass: users
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_groups_cnt_latest
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_new_groups_7d
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_avg_members_per_group_latest
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_group_token_supply_latest
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_group_wrapped_pct_latest
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_groups_overview_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 420px
+      - id: api_execution_circles_v2_group_token_supply_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 420px
+      #- id: api_execution_circles_v2_group_size_distribution
+      #  gridRow: 4
+      #  gridColumn: 1 / span 6
+      #  minHeight: 400px
+      - id: api_execution_circles_v2_group_token_supply_top_latest
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 400px
+
+  - name: Backing
+    order: 8
+    icon: 🏦
+    iconClass: piggy-bank
+    timeRanges: true
+    metrics:
+      - id: api_execution_circles_v2_kpi_total_backers_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_new_backers_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_total_depositors_latest
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_depositors_in_backers_pct_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_backers_cumulative_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 420px
+      - id: api_execution_circles_v2_backing_events_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 420px

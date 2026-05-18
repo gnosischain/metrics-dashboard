@@ -1,0 +1,4 @@
+{
+  "id": "api_revenue_holdings_eure_cohorts_weekly",
+  "query": "SELECT week, cohort, annual_rolling_fees_total, users_cnt\n    FROM dbt.api_revenue_holdings_eure_cohorts_weekly\n    ORDER BY week ASC"
+}

@@ -73,4 +73,18 @@ describe('BarChart custom series colors and category sorting', () => {
 
     expect(options.xAxis.data).toEqual(['A', 'B', 'C']);
   });
+
+  it('reserves extra top grid space when a top legend is visible', () => {
+    const options = BarChart.getOptions([
+      { label: 'Safe', flow: 'Outflow', amount_usd: -40 },
+      { label: 'Safe', flow: 'Inflow', amount_usd: 90 }
+    ], {
+      xField: 'label',
+      yField: 'amount_usd',
+      seriesField: 'flow'
+    }, false);
+
+    expect(options.legend.show).toBe(true);
+    expect(options.grid.top).toBe('52px');
+  });
 });

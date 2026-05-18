@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_avatar_total_balance_latest",
+  "query": "SELECT avatar, sum(balance) AS balance, sum(balance_demurraged) AS balance_demurraged\n    FROM dbt.api_execution_circles_v2_avatar_balances_latest\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    GROUP BY avatar"
+}

@@ -3,6 +3,11 @@ const path = require('path');
 const axios = require('axios');
 const cacheManager = require('./cache');
 
+const DEBUG_METRICS = process.env.DEBUG_METRICS === 'true';
+const cronLog = (...args) => {
+  if (DEBUG_METRICS) console.log(...args);
+};
+
 function resolveDbtSchema() {
   const rawSchema = process.env.CLICKHOUSE_DBT_SCHEMA;
   const schema = (rawSchema ?? 'dbt').trim();
@@ -56,10 +61,10 @@ class CronManager {
     } catch (error) {
       console.error(`Failed to create timestamp directory: ${error.message}`);
       this.useMemoryOnly = true;
-      console.log('Using in-memory timestamp as fallback');
+      cronLog('Using in-memory timestamp as fallback');
     }
       
-    console.log(`Cron initialized with refresh interval: ${this.refreshInterval / (60 * 60 * 1000)} hours`);
+    cronLog(`Cron initialized with refresh interval: ${this.refreshInterval / (60 * 60 * 1000)} hours`);
   }
 
   getDbtSchema() {
@@ -127,7 +132,7 @@ class CronManager {
    */
   async refreshMetricCache(metricId, queries) {
     try {
-      console.log(`Refreshing cache for metric: ${metricId}`);
+      cronLog(`Refreshing cache for metric: ${metricId}`);
       
       // Get the query for this metric
       const query = queries[metricId];
@@ -191,8 +196,9 @@ class CronManager {
       // Apply dbt schema override if configured
       const finalQuery = applyDbtSchema(query);
 
-      // Execute the actual query
-      console.log(`Executing ClickHouse query to ${url}`);
+      // Execute the actual query. Keep the endpoint out of normal logs; metric
+      // requests can be very chatty in local development.
+      cronLog('Executing ClickHouse query');
       const response = await axios({
         method: 'post',
         url,
@@ -205,7 +211,7 @@ class CronManager {
           database: clickhouseDatabase,
           default_format: 'JSONEachRow'
         },
-        timeout: 15000 // 15 second timeout
+        timeout: 55000 // 55s — leave headroom under api/metrics.js maxDuration of 60s
       });
       
       // Handle JSONEachRow format (string with newline-separated JSON objects)
@@ -240,7 +246,7 @@ class CronManager {
       // Return empty array if no valid data
       return [];
     } catch (error) {
-      console.error('Query execution error:', error.message);
+      cronLog('Query execution error:', error.message);
       throw error;
     }
   }
@@ -251,24 +257,35 @@ class CronManager {
    * @returns {Promise<Object>} Result status for each metric
    */
   async refreshAllCaches(queries) {
+    if (this._refreshInProgress) {
+      cronLog('Cache refresh already in progress, skipping');
+      return {};
+    }
+    this._refreshInProgress = true;
+
+    // Write the timestamp up front. The full refresh takes ~100 minutes (406 metrics
+    // x 15s timeout) which never completes inside a Vercel serverless invocation.
+    // Updating at the end meant the marker was never written and every cold start
+    // re-ran the whole loop from metric #1, hammering ClickHouse.
+    this.updateTimestamp();
+
     try {
-      console.log('Starting cache refresh for all metrics');
-      
+      cronLog('Starting cache refresh for all metrics');
+
       const metricIds = Object.keys(queries);
       const results = {};
-      
+
       for (const metricId of metricIds) {
         results[metricId] = await this.refreshMetricCache(metricId, queries);
       }
-      
-      // Update timestamp after refreshing all
-      this.updateTimestamp();
-      
-      console.log('Completed cache refresh for all metrics');
+
+      cronLog('Completed cache refresh for all metrics');
       return results;
     } catch (error) {
       console.error('Error refreshing all caches:', error);
       return {};
+    } finally {
+      this._refreshInProgress = false;
     }
   }
   
@@ -279,12 +296,12 @@ class CronManager {
    */
   async checkAndRefreshIfNeeded(queries) {
     if (this.needsRefresh()) {
-      console.log('Cache refresh needed, performing refresh');
+      cronLog('Cache refresh needed, performing refresh');
       await this.refreshAllCaches(queries);
       return true;
     }
     
-    console.log('Cache refresh not needed');
+    cronLog('Cache refresh not needed');
     return false;
   }
 }

@@ -1,5 +1,6 @@
 import { formatValue } from '../../../utils';
 import { DARK_MODE_COLORS, DEFAULT_COLORS, generateColorPalette } from '../../../utils/colors';
+import { getTokenIconHtml, getTokenIconUrl } from '../../../utils/tokenIcons.js';
 
 export class BaseChart {
   static isPlainObject(value) {
@@ -255,18 +256,19 @@ export class BaseChart {
   static getAxisConfig(isDarkMode, type = 'category', config = {}) {
     const baseConfig = {
       axisLine: {
-        show: true,
+        show: type === 'category',
         lineStyle: {
           color: isDarkMode ? '#475569' : '#CBD5E1'
         }
       },
       axisTick: {
-        show: true,
-        alignWithLabel: type === 'category'
+        show: false
       },
       axisLabel: {
         show: true,
         color: isDarkMode ? '#94A3B8' : '#64748B',
+        fontSize: 11,
+        fontWeight: 400,
         hideOverlap: true,
         showMinLabel: true,
         showMaxLabel: true
@@ -488,10 +490,14 @@ export class BaseChart {
       if (config.showTotal && typeof p.value === 'number') {
         total += p.value;
       }
+      const tokenIcon = getTokenIconHtml(seriesName, 14);
+      const colorDot = `<div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:${tokenIcon ? '6px' : '8px'};flex-shrink:0;"></div>`;
+      const iconWithGap = tokenIcon ? `<span style="margin-right:4px;display:inline-flex;align-items:center;">${tokenIcon}</span>` : '';
+      const indicator = `${colorDot}${iconWithGap}`;
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
           <div style="display:flex;align-items:center;flex:1;min-width:0;">
-            <div style="width:8px;height:8px;border-radius:50%;background-color:${color};margin-right:8px;flex-shrink:0;"></div>
+            ${indicator}
             <span style="margin-right:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${seriesName}</span>
           </div>
           <span style="font-weight:600;white-space:nowrap;">${formattedValue}</span>
@@ -538,7 +544,23 @@ export class BaseChart {
   static getGridConfig(config = {}) {
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
-    const hasZoom = config.dataZoom || config.enableZoom;
+    // When hideSlider is set (global time range buttons), treat as no-zoom for grid spacing
+    const hasZoom = (config.dataZoom || config.enableZoom) && !config.hideSlider;
+    const legendItemCount =
+      Number.isFinite(config._legendItemCount)
+        ? config._legendItemCount
+        : Array.isArray(config._seriesNames)
+          ? config._seriesNames.length
+          : Array.isArray(config.legend?.data)
+            ? config.legend.data.length
+            : 0;
+    const legendTop = config.legend?.top ?? config.legendPosition ?? 'top';
+    const hasTopLegend =
+      config.enableLegend !== false &&
+      legendItemCount > 1 &&
+      legendTop !== 'bottom' &&
+      legendTop !== 'middle' &&
+      legendTop !== 'center';
     
     let bottomMargin, topMargin;
     
@@ -556,13 +578,17 @@ export class BaseChart {
         topMargin = isSmallCard ? '8%' : '10%';
       } else {
         bottomMargin = isSmallCard ? '8%' : '3%';
-        topMargin = isSmallCard ? '6%' : '10%';
+        topMargin = isSmallCard ? '4%' : '6%';
       }
+    }
+
+    if (hasTopLegend) {
+      topMargin = isSmallCard ? '44px' : '52px';
     }
 
     return {
       left: '3%',
-      right: '50px',
+      right: '3%',
       bottom: bottomMargin,
       top: topMargin,
       containLabel: true,
@@ -575,18 +601,51 @@ export class BaseChart {
       return { show: false };
     }
 
-    return {
+    // Build rich text styles for token icons in legend
+    const seriesNames = config._seriesNames || [];
+    const rich = {};
+    let hasIcons = false;
+    const showTokenIcons = config.legendTokenIcons !== false;
+    for (const name of seriesNames) {
+      const url = showTokenIcons ? getTokenIconUrl(name) : null;
+      if (url) {
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        rich[key] = {
+          backgroundColor: { image: url },
+          width: 14,
+          height: 14,
+          borderRadius: 7,
+        };
+        hasIcons = true;
+      }
+    }
+
+    const legendConfig = {
       show: true,
       type: 'scroll',
       orient: 'horizontal',
       top: 'top',
       left: 'center',
       textStyle: {
-        color: isDarkMode ? '#CBD5E1' : '#334155'
+        color: isDarkMode ? '#CBD5E1' : '#334155',
+        fontSize: 12,
+        fontWeight: 400,
+        ...(hasIcons ? { rich } : {})
       },
       itemGap: 20,
       ...config.legend
     };
+
+    if (hasIcons) {
+      legendConfig.formatter = (name) => {
+        const url = getTokenIconUrl(name);
+        if (!url) return name;
+        const key = name.replace(/[^a-zA-Z0-9_]/g, '_');
+        return `{${key}|} ${name}`;
+      };
+    }
+
+    return legendConfig;
   }
 
   static getTooltipConfig(config = {}) {
@@ -614,60 +673,79 @@ export class BaseChart {
       textStyle: {
         color: config.isDarkMode ? '#E2E8F0' : '#0F172A'
       },
-      padding: [10, 14],
+      padding: [12, 16],
       ...config.tooltip
     };
   }
 
   static getDataZoomConfig(config = {}) {
     if (!config.dataZoom && !config.enableZoom) return {};
-    
+
     const isSmallCard = config.cardSize === 'small' || config.isHalfWidth;
     const isDynamicHeight = config.dynamicHeight || config.isDynamicHeight;
-    
-    const dataZoomConfig = {
-      dataZoom: [
-        {
-          type: 'inside',
-          xAxisIndex: [0],
-          filterMode: 'filter'
-        },
-        {
-          type: 'slider',
-          xAxisIndex: [0],
-          filterMode: 'filter',
-          bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
-          height: isSmallCard ? 10 : 12,
-          showDetail: false,
-          showDataShadow: false,
-          brushSelect: false,
-          borderColor: 'transparent',
-          backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-          fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
-          labelFormatter: (value, valueStr) => {
-            return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
-          },
-          handleSize: '95%',
-          handleStyle: {
-            color: config.isDarkMode ? '#818CF8' : '#4F46E5',
-            borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
-          },
-          textStyle: {
-            color: config.isDarkMode ? '#94A3B8' : '#64748B'
-          },
-          dataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
-            areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
-          },
-          selectedDataBackground: {
-            lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
-            areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
-          }
-        }
-      ]
-    };
 
-    if (config.defaultZoom) {
+    const zoomComponents = [];
+
+    if (config.hideSlider) {
+      // Global time range mode: non-interactive inside zoom just for start/end filtering
+      zoomComponents.push({
+        type: 'inside',
+        xAxisIndex: [0],
+        filterMode: 'filter',
+        zoomLock: true,    // disable scroll-to-zoom
+        moveOnMouseMove: false,
+        moveOnMouseWheel: false,
+        preventDefaultMouseMove: false
+      });
+    } else {
+      // Normal interactive inside zoom
+      zoomComponents.push({
+        type: 'inside',
+        xAxisIndex: [0],
+        filterMode: 'filter'
+      });
+    }
+
+    // Only add slider when hideSlider is not set (time range buttons replace it)
+    if (!config.hideSlider) {
+      zoomComponents.push({
+        type: 'slider',
+        xAxisIndex: [0],
+        filterMode: 'filter',
+        bottom: isDynamicHeight ? 8 : (isSmallCard ? 10 : 12),
+        height: isSmallCard ? 10 : 12,
+        showDetail: false,
+        showDataShadow: false,
+        brushSelect: false,
+        borderColor: 'transparent',
+        backgroundColor: config.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+        fillerColor: config.isDarkMode ? 'rgba(129, 140, 248, 0.32)' : 'rgba(79, 70, 229, 0.24)',
+        labelFormatter: (value, valueStr) => {
+          return BaseChart.formatTimeSeriesLabel(valueStr, config.timeContext);
+        },
+        handleSize: '95%',
+        handleStyle: {
+          color: config.isDarkMode ? '#818CF8' : '#4F46E5',
+          borderColor: config.isDarkMode ? '#818CF8' : '#4F46E5'
+        },
+        textStyle: {
+          color: config.isDarkMode ? '#94A3B8' : '#64748B'
+        },
+        dataBackground: {
+          lineStyle: { color: config.isDarkMode ? '#475569' : '#CBD5E1', opacity: 0.2 },
+          areaStyle: { color: config.isDarkMode ? '#334155' : '#E2E8F0', opacity: 0.2 }
+        },
+        selectedDataBackground: {
+          lineStyle: { color: config.isDarkMode ? '#818CF8' : '#4F46E5' },
+          areaStyle: { color: config.isDarkMode ? 'rgba(129, 140, 248, 0.24)' : 'rgba(79, 70, 229, 0.2)' }
+        }
+      });
+    }
+
+    const dataZoomConfig = { dataZoom: zoomComponents };
+
+    // Apply defaultZoom only when no time-range filter is active (hideSlider means filtered data)
+    if (!config.hideSlider && config.defaultZoom) {
       dataZoomConfig.dataZoom.forEach((zoom) => {
         zoom.start = config.defaultZoom.start ?? 0;
         zoom.end = config.defaultZoom.end ?? 100;

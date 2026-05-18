@@ -1,0 +1,4 @@
+{
+  "id": "api_revenue_holdings_cohorts_monthly",
+  "query": "SELECT month, symbol, cohort, fees_total, users_cnt\n    FROM dbt.api_revenue_holdings_cohorts_monthly\n    ORDER BY month ASC"
+}

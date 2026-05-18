@@ -1,3 +1,5 @@
+import { getTokenIconHtml } from '../utils/tokenIcons.js';
+
 const metric = {
   id: 'api_execution_gpay_user_activity',
   name: 'Transaction History',
@@ -12,7 +14,7 @@ const metric = {
     pagination: true,
     paginationSize: 100,
     paginationSizeSelector: false,
-    responsiveLayout: 'collapse',
+    responsiveLayout: false,
     height: '100%',
     rowHeight: 40,
     movableColumns: false,
@@ -23,7 +25,7 @@ const metric = {
         title: 'Timestamp',
         field: 'timestamp',
         minWidth: 175,
-        sorter: 'datetime',
+        sorter: 'string',
         formatter: function(cell) {
           const value = cell.getValue();
           const txHash = String(cell.getRow()?.getData?.()?.transaction_hash || '').trim();
@@ -135,9 +137,17 @@ const metric = {
       {
         title: 'Token',
         field: 'symbol',
-        minWidth: 100,
+        minWidth: 120,
         sorter: 'string',
-        formatter: 'plaintext'
+        formatter: function(cell) {
+          const symbol = cell.getValue();
+          if (!symbol) return '-';
+          const icon = getTokenIconHtml(symbol);
+          const safe = String(symbol).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          return icon
+            ? `<span style="display:inline-flex;align-items:center;gap:6px;">${icon}${safe}</span>`
+            : safe;
+        }
       },
       {
         title: 'Amount',
@@ -175,6 +185,8 @@ const metric = {
   query: `
     SELECT wallet_address, timestamp, date, action, symbol, amount, amount_usd, transaction_hash
     FROM dbt.api_execution_gpay_user_activity
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

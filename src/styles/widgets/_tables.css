@@ -10,11 +10,19 @@
   height: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Allow horizontal scroll on narrow screens so wide tables don't force
+   viewport overflow */
+@media (max-width: 767px) {
+  .table-widget .tabulator .tabulator-tableHolder {
+    overflow-x: auto !important;
+  }
 }
 
 .table-widget.dark {
@@ -72,8 +80,7 @@
   padding: 10px 12px !important;
   font-weight: var(--font-weight-semibold) !important;
   font-size: var(--font-size-xs) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
+  letter-spacing: 0.01em !important;
   color: var(--color-text-tertiary) !important;
 }
 
@@ -95,14 +102,12 @@
 .table-widget .tabulator .tabulator-row {
   background: var(--color-surface) !important;
   border-bottom: 1px solid var(--color-border-subtle) !important;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base) !important;
+  transition: background-color var(--transition-base) !important;
   min-height: 40px !important;
 }
 
 .table-widget .tabulator .tabulator-row:hover {
   background: var(--color-accent-softer) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: var(--shadow-sm) !important;
 }
 
 .table-widget .tabulator .tabulator-row:last-child {
@@ -120,7 +125,7 @@
 }
 
 .table-widget .tabulator .tabulator-row:nth-child(even) {
-  background: rgba(148, 163, 184, 0.06) !important;
+  background: rgba(148, 163, 184, 0.03) !important;
 }
 
 .table-widget .tabulator .tabulator-row:nth-child(even):hover {
@@ -190,7 +195,7 @@
   font-size: var(--font-size-xs) !important;
   line-height: 1.2 !important;
   cursor: pointer !important;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast) !important;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast) !important;
   min-width: 28px !important;
   text-align: center !important;
 }
@@ -198,7 +203,6 @@
 .table-widget .tabulator .tabulator-page:hover {
   background: var(--color-accent-softer) !important;
   border-color: var(--color-border-hover) !important;
-  transform: translateY(-1px) !important;
 }
 
 .table-widget .tabulator .tabulator-page.active {
@@ -523,4 +527,57 @@
 
 .table-widget.dark .tabulator .tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary) !important;
+}
+
+/* ==================
+   Percentage Bar Cells
+   ==================
+   Inline horizontal bar used in Tabulator cells to render a percentage as
+   a filled track with the numeric label overlaid. Visualises top-holder /
+   cumulative-share columns where the visual ramp helps read the table at
+   a glance. */
+.pct-bar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--color-surface-hover, rgba(127, 127, 127, 0.08));
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.pct-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-accent-primary, #6c5ce7);
+  opacity: 0.18;
+  border-radius: inherit;
+  transition: width 200ms ease;
+  pointer-events: none;
+}
+
+.pct-bar__label {
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium, 500);
+  white-space: nowrap;
+}
+
+.pct-bar--empty {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+
+.dark-mode .pct-bar {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark-mode .pct-bar__fill {
+  opacity: 0.28;
 }

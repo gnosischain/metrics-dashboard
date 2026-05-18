@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_groups_overview_daily",
+  "query": "SELECT\n      date,\n      n_new_groups,\n      n_groups_total\n    FROM dbt.api_execution_circles_v2_groups_overview_daily\n    ORDER BY date"
+}

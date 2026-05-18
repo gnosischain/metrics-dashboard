@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_swap_fees_monthly",
+  "query": "SELECT month, n_filled_swaps, volume_usd, fee_usd_total, fee_pct_of_volume\n    FROM dbt.api_execution_gnosis_app_swap_fees_monthly\n    ORDER BY month"
+}

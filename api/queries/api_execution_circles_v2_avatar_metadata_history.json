@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_avatar_metadata_history",
+  "query": "SELECT\n      avatar,\n      metadata_digest,\n      ipfs_cid_v0,\n      metadata_name,\n      metadata_description,\n      metadata_image_url,\n      metadata_preview_image_url,\n      valid_from,\n      valid_to,\n      is_current,\n      transaction_hash,\n      log_index\n    FROM dbt.int_execution_circles_v2_avatar_metadata_history\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY valid_from DESC\n    LIMIT 100"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_search",
+  "query": "SELECT\n      withdrawal_credentials,\n      display_name\n    FROM dbt.api_consensus_validators_search"
+}

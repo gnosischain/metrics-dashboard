@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_execution_gpay_user_total_volume',
   name: 'Payments Volume',
-  description: 'Lifetime payment volume (USD)',
+  description: 'Lifetime',
   metricDescription: `
   All-time card payment volume in USD for the selected wallet. 
   Counts only wallet-to-merchant transfers (card spend at point of sale).
@@ -11,6 +11,11 @@ const metric = {
   format: 'formatCurrency',
   valueField: 'value',
   globalFilterField: 'wallet_address',
-  query: `SELECT wallet_address, value FROM dbt.api_execution_gpay_user_total_volume`,
+  query: `
+    SELECT wallet_address, value
+    FROM dbt.api_execution_gpay_user_total_volume
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
+  `,
 };
 export default metric;

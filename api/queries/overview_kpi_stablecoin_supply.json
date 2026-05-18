@@ -1,0 +1,4 @@
+{
+  "id": "overview_kpi_stablecoin_supply",
+  "query": "SELECT date, SUM(value_usd) AS value\n    FROM dbt.api_execution_tokens_supply_daily\n    WHERE token_class = 'STABLECOIN'\n      AND token NOT IN ('sDAI','WxDAI')\n      AND date >= today() - INTERVAL 30 DAY\n    GROUP BY date\n    ORDER BY date ASC"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_live_trades_stats_count",
+  "query": "SELECT trade_count AS value FROM playground_max.api_execution_live_trades_stats"
+}

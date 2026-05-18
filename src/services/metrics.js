@@ -1,7 +1,15 @@
 import api from './api';
-import queries from '../queries';
+import { queryLoaders, queryIds } from '../queries';
 
 class MetricsService {
+  constructor() {
+    this.configCache = new Map();
+    this.inflight = new Map();
+    this.cacheVersion = 0;
+    this.listeners = new Set();
+    this.allLoaded = false;
+  }
+
   /**
    * Normalize API payloads to a consistent row-array shape.
    * Supports raw arrays and common wrapped formats.
@@ -26,7 +34,6 @@ class MetricsService {
         return response.result;
       }
 
-      // Single-row object payload
       return [response];
     }
 
@@ -34,20 +41,118 @@ class MetricsService {
   }
 
   /**
-   * Get metric configuration by ID
+   * Get metric configuration by ID. Synchronous — returns undefined if the
+   * config has not been loaded yet via `loadMetricConfigs`.
    * @param {string} metricId - The metric ID
-   * @returns {Object} The metric configuration
+   * @returns {Object|undefined} The metric configuration
    */
   getMetricConfig(metricId) {
-    return queries.find(q => q.id === metricId);
+    if (!metricId) return undefined;
+    const cached = this.configCache.get(metricId);
+    if (!cached && queryLoaders.has(metricId) && import.meta.env?.VITE_DEBUG_METRICS === 'true') {
+      console.warn(`MetricsService: getMetricConfig("${metricId}") called before config loaded`);
+    }
+    return cached;
   }
 
   /**
-   * Get all available metrics
-   * @returns {Array} Array of metric configurations
+   * Get all loaded metric configurations. Only returns configs that have
+   * been resolved so far; callers that need every metric should await
+   * `loadAllMetricConfigs()` first.
+   * @returns {Array} Array of loaded metric configurations
    */
   getAllMetrics() {
-    return queries;
+    return Array.from(this.configCache.values());
+  }
+
+  /**
+   * Lazily load a set of metric configurations into the cache. Idempotent
+   * and de-duplicated — already-loaded ids resolve immediately, in-flight
+   * loads are awaited rather than re-issued.
+   * @param {string[]} ids
+   * @returns {Promise<void>}
+   */
+  async loadMetricConfigs(ids = []) {
+    const seen = new Set();
+    const pending = [];
+
+    for (const rawId of ids) {
+      const id = typeof rawId === 'string' ? rawId : null;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+
+      if (this.configCache.has(id)) continue;
+      const loader = queryLoaders.get(id);
+      if (!loader) continue;
+
+      let promise = this.inflight.get(id);
+      if (!promise) {
+        promise = loader()
+          .then((config) => {
+            if (config) {
+              this.configCache.set(id, config);
+            }
+          })
+          .catch((err) => {
+            console.error(`MetricsService: failed to load metric config "${id}":`, err);
+          })
+          .finally(() => {
+            this.inflight.delete(id);
+          });
+        this.inflight.set(id, promise);
+      }
+      pending.push(promise);
+    }
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    await Promise.all(pending);
+    this.cacheVersion += 1;
+    this.notifyListeners();
+  }
+
+  /**
+   * Load every known metric configuration. Used to populate the
+   * cross-dashboard search index after the initial render.
+   * @returns {Promise<void>}
+   */
+  async loadAllMetricConfigs() {
+    if (this.allLoaded) return;
+    await this.loadMetricConfigs(queryIds);
+    this.allLoaded = true;
+  }
+
+  /**
+   * Merge cached configs into a list of layout-only metric entries.
+   * Layout fields (gridRow, gridColumn, minHeight, tabGroup, tabLabel)
+   * take precedence over fields from the underlying config.
+   * @param {Array<{id: string} & object>} layoutEntries
+   * @returns {Array}
+   */
+  resolveTabMetrics(layoutEntries = []) {
+    if (!Array.isArray(layoutEntries)) return [];
+    return layoutEntries.map((entry) => {
+      const config = entry && entry.id ? this.configCache.get(entry.id) : undefined;
+      return { ...(config || {}), ...entry };
+    });
+  }
+
+  subscribe(listener) {
+    if (typeof listener !== 'function') return () => {};
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  notifyListeners() {
+    this.listeners.forEach((listener) => {
+      try {
+        listener(this.cacheVersion);
+      } catch (err) {
+        console.error('MetricsService: listener threw', err);
+      }
+    });
   }
 
   /**
@@ -56,33 +161,33 @@ class MetricsService {
    * @param {Object} params - Optional query params (from/to/filterField/filterValue, etc.)
    * @returns {Promise<Object>} The metric data
    */
-  async getMetricData(metricId, params = {}) {
+  async getMetricData(metricId, params = {}, options = {}) {
     const normalizedParams = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
     );
 
     try {
-      // Get metric configuration to check if it's a text widget
-      const metricConfig = this.getMetricConfig(metricId);
-      
-      // For text widgets with static content, return the content directly
-      if (metricConfig && metricConfig.chartType === 'text' && metricConfig.content) {
-        return {
-          content: metricConfig.content
-        };
+      let metricConfig = this.getMetricConfig(metricId);
+      if (!metricConfig && queryLoaders.has(metricId)) {
+        await this.loadMetricConfigs([metricId]);
+        metricConfig = this.getMetricConfig(metricId);
       }
-      
-      // For other widgets, fetch from API
-      const response = await api.get(`/metrics/${metricId}`, normalizedParams);
 
-      // Normalize all metric responses into an array for widget consumers.
+      if (metricConfig && metricConfig.chartType === 'text' && metricConfig.content) {
+        return { content: metricConfig.content };
+      }
+
+      const response = await api.get(`/metrics/${metricId}`, normalizedParams, { signal: options.signal });
       const normalizedRows = this.normalizeMetricRows(response);
 
-      return {
-        data: normalizedRows
-      };
+      return response && typeof response === 'object' && !Array.isArray(response)
+        ? { ...response, data: normalizedRows }
+        : { data: normalizedRows };
     } catch (error) {
-      console.error(`Error fetching metric ${metricId}:`, error);
+      const aborted = error?.name === 'AbortError' || error?.code === 'ABORT_ERR';
+      if (!aborted) {
+        console.error(`Error fetching metric ${metricId}:`, error);
+      }
       throw error;
     }
   }
@@ -100,11 +205,12 @@ class MetricsService {
   }
 
   /**
-   * Get metrics grouped by category
+   * Get loaded metrics grouped by category. Includes only configs already
+   * present in the cache.
    * @returns {Object} Metrics grouped by category
    */
   getMetricsByCategory() {
-    return queries.reduce((acc, metric) => {
+    return this.getAllMetrics().reduce((acc, metric) => {
       const category = metric.category || 'uncategorized';
       if (!acc[category]) {
         acc[category] = [];
@@ -115,6 +221,5 @@ class MetricsService {
   }
 }
 
-// Create and export singleton instance
 const metricsService = new MetricsService();
 export default metricsService;

@@ -121,6 +121,52 @@
   min-height: 150px;
 }
 
+/* Calm metric-level fallback used in place of the legacy red retry block.
+   --empty: permanent "no rows for this address" — render a quiet em-dash.
+   --error: transient failure — render a small inline retry link. */
+.metric-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  flex-grow: 1;
+  min-height: 96px;
+  padding: var(--spacing-md);
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+}
+
+.metric-fallback--empty .metric-fallback__placeholder {
+  font-size: 1.25rem;
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+  letter-spacing: 0.1em;
+}
+
+.metric-fallback--error .metric-fallback__message {
+  color: var(--color-text-secondary);
+}
+
+.metric-fallback__retry {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 120ms ease;
+}
+
+.metric-fallback__retry:hover,
+.metric-fallback__retry:focus-visible {
+  opacity: 1;
+  color: var(--color-text-primary);
+}
+
 /* ==================
    Chart Loading
    ================== */

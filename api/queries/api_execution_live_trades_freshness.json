@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_live_trades_freshness",
+  "query": "SELECT lag_seconds AS value FROM playground_max.api_execution_live_trades_freshness"
+}

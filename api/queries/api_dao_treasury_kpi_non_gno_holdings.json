@@ -1,0 +1,4 @@
+{
+  "id": "api_dao_treasury_kpi_non_gno_holdings",
+  "query": "SELECT value, change_pct FROM dbt.api_dao_treasury_kpi_non_gno_holdings"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_consolidations_daily",
+  "query": "SELECT date, role, cnt FROM dbt.api_consensus_consolidations_daily ORDER BY date, role"
+}

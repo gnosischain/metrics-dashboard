@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_attestations_pct_distance_1_daily",
+  "query": "SELECT date, pct_inclusion_distance_1 FROM dbt.api_consensus_attestations_performance_daily ORDER BY date"
+}

@@ -1,0 +1,187 @@
+{
+  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+    "symbol": "xDAI",
+    "icon_file": "xdai.png",
+    "source": "coingecko"
+  },
+  "0xcb444e90d8198415266c6a2724b7900fb12fc56e": {
+    "symbol": "EURe",
+    "icon_file": "eure.png",
+    "source": "coingecko"
+  },
+  "0x420CA0f9B9b604cE0fd9C18EF134C705e5Fa3430": {
+    "symbol": "EURe",
+    "icon_file": "eure.png",
+    "source": "coingecko"
+  },
+  "0x5Cb9073902F2035222B9749F8fB0c9BFe5527108": {
+    "symbol": "GBPe",
+    "icon_file": "gbpe.png",
+    "source": "coingecko"
+  },
+  "0x9c58bacc331c9aa871afd802db6379a98e80cedb": {
+    "symbol": "GNO",
+    "icon_file": "gno.png",
+    "source": "coingecko"
+  },
+  "0xA4eF9Da5BA71Cc0D2e5E877a910A37eC43420445": {
+    "symbol": "sGNO",
+    "icon_file": "sgno.png",
+    "source": "reused from GNO"
+  },
+  "0x5671b0B8aC13DC7813D36B99C21c53F6cd376a14": {
+    "symbol": "spGNO",
+    "icon_file": "spgno.png",
+    "source": "reused from GNO"
+  },
+  "0xA1Fa064A85266E2Ca82DEe5C5CcEC84DF445760e": {
+    "symbol": "aGnoGNO",
+    "icon_file": "agnogno.png",
+    "source": "reused from GNO"
+  },
+  "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d": {
+    "symbol": "WxDAI",
+    "icon_file": "wxdai.png",
+    "source": "coingecko"
+  },
+  "0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533": {
+    "symbol": "aGnoWXDAI",
+    "icon_file": "agnowxdai.png",
+    "source": "reused from xDAI"
+  },
+  "0xaf204776c7245bF4147c2612BF6e5972Ee483701": {
+    "symbol": "sDAI",
+    "icon_file": "sdai.png",
+    "source": "coingecko"
+  },
+  "0x7a5c3860a77a8DC1b225BD46d0fb2ac1C6D191BC": {
+    "symbol": "aGnosDAI",
+    "icon_file": "agnosdai.png",
+    "source": "reused from sDAI"
+  },
+  "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1": {
+    "symbol": "WETH",
+    "icon_file": "weth.png",
+    "source": "coingecko"
+  },
+  "0x8e5bBbb09Ed1ebdE8674Cda39A0c169401db4252": {
+    "symbol": "WBTC",
+    "icon_file": "wbtc.png",
+    "source": "coingecko"
+  },
+  "0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0": {
+    "symbol": "USDC.e",
+    "icon_file": "usdc_e.png",
+    "source": "coingecko"
+  },
+  "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83": {
+    "symbol": "USDC",
+    "icon_file": "usdc.png",
+    "source": "coingecko"
+  },
+  "0xc6B7AcA6DE8a6044E0e32d0c841a89244A10D284": {
+    "symbol": "aGnoUSDC",
+    "icon_file": "agnousdc.png",
+    "source": "reused from USDC"
+  },
+  "0xEdBC7449a9b594CA4E053D9737EC5Dc4CbCcBfb2": {
+    "symbol": "aGnoEURe",
+    "icon_file": "agnoeure.png",
+    "source": "reused from EURe"
+  },
+  "0xC0333cb85B59a788d8C7CAe5e1Fd6E229A3E5a65": {
+    "symbol": "aGnoUSDCe",
+    "icon_file": "agnousdce.png",
+    "source": "reused from USDC.e"
+  },
+  "0x5850D127a04ed0B4F1FCDFb051b3409FB9Fe6B90": {
+    "symbol": "spUSDC",
+    "icon_file": "spusdc.png",
+    "source": "reused from USDC"
+  },
+  "0xA34DB0ee8F84C4B90ed268dF5aBbe7Dcd3c277ec": {
+    "symbol": "spUSDC.e",
+    "icon_file": "spusdc_e.png",
+    "source": "reused from USDC.e"
+  },
+  "0x4ECaBa5870353805a9F068101A40E0f32ed605C6": {
+    "symbol": "USDT",
+    "icon_file": "usdt.png",
+    "source": "coingecko"
+  },
+  "0x08B0cAebE352c3613302774Cd9B82D08afd7bDC4": {
+    "symbol": "spUSDT",
+    "icon_file": "spusdt.png",
+    "source": "reused from USDT"
+  },
+  "0x177127622c4A00F3d409B75571e12cB3c8973d3c": {
+    "symbol": "COW",
+    "icon_file": "cow.png",
+    "source": "coingecko"
+  },
+  "0x4d18815D14fe5c3304e87B3FA18318baa5c23820": {
+    "symbol": "SAFE",
+    "icon_file": "safe.png",
+    "source": "coingecko"
+  },
+  "0xFECB3F7c54E2CAAE9dC6Ac9060A822D47E053760": {
+    "symbol": "BRLA",
+    "icon_file": "brla.png",
+    "source": "coingecko"
+  },
+  "0x1e2c4fb7ede391d116e6b41cd0608260e8801d59": {
+    "symbol": "bCSPX",
+    "icon_file": "bcspx.png",
+    "source": "coingecko"
+  },
+  "0x14a5f2872396802c3cc8942a39ab3e4118ee5038": {
+    "symbol": "bTSLA",
+    "icon_file": "btsla.png",
+    "source": "coingecko"
+  },
+  "0xac28c9178acc8ba4a11a29e013a3a2627086e422": {
+    "symbol": "bMSTR",
+    "icon_file": "bmstr.png",
+    "source": "coingecko"
+  },
+  "0x52d134c6db5889fad3542a09eaf7aa90c0fdf9e4": {
+    "symbol": "bIBTA",
+    "icon_file": "bibta.png",
+    "source": "coingecko"
+  },
+  "0xa34c5e0abe843e10461e2c9586ea03e55dbcc495": {
+    "symbol": "bNVDA",
+    "icon_file": "bnvda.png",
+    "source": "coingecko"
+  },
+  "0xbbcb0356bb9e6b3faa5cbf9e5f36185d53403ac9": {
+    "symbol": "bCOIN",
+    "icon_file": "bcoin.png",
+    "source": "coingecko"
+  },
+  "0x2f123cf3f37ce3328cc9b5b8415f9ec5109b45e7": {
+    "symbol": "bC3M",
+    "icon_file": "bc3m.png",
+    "source": "coingecko"
+  },
+  "0xca30c93b02514f86d5c86a6e375e3a330b435fb5": {
+    "symbol": "bIB01",
+    "icon_file": "bib01.png",
+    "source": "coingecko"
+  },
+  "0x20c64dee8fda5269a78f2d5bdba861ca1d83df7a": {
+    "symbol": "bHIGH",
+    "icon_file": "bhigh.png",
+    "source": "coingecko"
+  },
+  "0xd4dd9e2f021bb459d5a5f6c24c12fe09c5d45553": {
+    "symbol": "ZCHF",
+    "icon_file": "zchf.png",
+    "source": "coingecko"
+  },
+  "0x6165946250dd04740ab1409217e95a4f38374fe9": {
+    "symbol": "svZCHF",
+    "icon_file": "svzchf.png",
+    "source": "reused from ZCHF"
+  }
+}

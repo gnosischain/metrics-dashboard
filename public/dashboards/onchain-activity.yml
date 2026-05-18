@@ -7,23 +7,23 @@ tabs:
       - id: api_crawlers_data_distinct_projects_total
         gridRow: 1
         gridColumn: 1 / span 3
-        minHeight: 200px
+        minHeight: 120px
       - id: api_crawlers_data_distinct_sectors_total
         gridRow: 1
         gridColumn: 4 / span 3
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_total
         gridRow: 2
         gridColumn: 1 / span 3
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_active_accounts_total
         gridRow: 2
         gridColumn: 4 / span 3
-        minHeight: 200px
+        minHeight: 120px
       - id: text_onchain_projects_sectors_overview_info
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 412px
+        minHeight: 252px
       - id: text_onchain_projects_sectors_glossary
         gridRow: 3
         gridColumn: 1 / span 12
@@ -36,15 +36,15 @@ tabs:
       - id: api_execution_transactions_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 412px
+        minHeight: 252px
       - id: api_execution_transactions_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6
@@ -65,15 +65,15 @@ tabs:
       - id: api_execution_transactions_fees_native_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_fees_native_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_fees_native_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 412px
+        minHeight: 252px
       - id: api_execution_transactions_fees_native_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6
@@ -98,15 +98,15 @@ tabs:
       - id: api_execution_transactions_active_accounts_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_active_accounts_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 200px
+        minHeight: 120px
       - id: api_execution_transactions_active_accounts_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 412px
+        minHeight: 252px
       - id: api_execution_transactions_active_accounts_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6

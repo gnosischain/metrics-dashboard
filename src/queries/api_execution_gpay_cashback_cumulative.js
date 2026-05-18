@@ -10,8 +10,8 @@ const metric = {
   yField: 'value',
   unitFilterField: 'unit',
   unitFields: {
-    native: { field: 'value', format: 'formatNumber' },
     usd: { field: 'value', format: 'formatCurrency' },
+    native: { field: 'value', format: 'formatNumber' },
   },
   query: `
     SELECT unit, date, value

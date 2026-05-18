@@ -1,0 +1,287 @@
+tabs:
+  - name: Overview
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    resolutionToggle: true
+    defaultResolution: weekly
+    timeRanges: true
+    metrics:
+      # KPI row
+      - id: api_execution_gnosis_app_kpi_total_users
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_new_users_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_swaps_7d
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_topup_volume_7d
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      # Time series
+      - id: api_execution_gnosis_app_users_activity_weekly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 470px
+      - id: api_execution_gnosis_app_activity_by_action_weekly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 470px
+
+  - name: Activity
+    order: 2
+    icon: 👥
+    iconClass: users
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_execution_gnosis_app_kpi_weekly_economically_active_users_latest
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_mau_latest
+        gridRow: 2
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_dau_latest
+        gridRow: 2
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_weekly_active_users_latest
+        gridRow: 2
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_users_activity_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_cumulative_users_weekly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_weekly_active_users
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_weekly_economically_active_users
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_activity_by_action_weekly
+        gridRow: 5
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: Swaps
+    order: 3
+    icon: 🔄
+    iconClass: exchange
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_execution_gnosis_app_kpi_swaps_7d
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_swap_volume_7d
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 120px
+     # - id: api_execution_gnosis_app_kpi_swap_fees_7d
+     #   gridRow: 1
+     #   gridColumn: 7 / span 3
+     #   minHeight: 120px
+      - id: api_execution_gnosis_app_swaps_weekly_chart
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_execution_gnosis_app_swaps_by_pair_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_swaps_by_solver_weekly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+    #  - id: api_execution_gnosis_app_swap_fees_weekly
+    #    gridRow: 4
+    #    gridColumn: 1 / span 12
+    #    minHeight: 432px
+
+  - name: TopUps
+    order: 4
+    icon: 💰
+    iconClass: piggy-bank
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_execution_gnosis_app_kpi_topups_7d
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_topup_volume_7d
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: api_execution_gnosis_app_gpay_topups_weekly_chart
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_execution_gnosis_app_gpay_topups_by_token_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_gpay_topups_cohort_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+
+  - name: GP Wallets
+    order: 5
+    icon: 🏦
+    iconClass: vault
+    metrics:
+      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_gp_wallets_onboarded
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_gp_wallets_imported
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_gpay_wallets_cumulative_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 500px
+
+  - name: Marketplace
+    order: 6
+    icon: 🛒
+    iconClass: shopping-cart
+    metrics:
+      - id: api_execution_gnosis_app_kpi_marketplace_buys_total
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_marketplace_buys_7d
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_marketplace_payers_7d
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_marketplace_cumulative_buys_chart
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 470px
+      - id: api_execution_gnosis_app_marketplace_buys_daily_chart
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_marketplace_cumulative_payers_chart
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_marketplace_offers_leaderboard
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 420px
+
+  - name: Token Offers
+    order: 7
+    icon: 🎁
+    iconClass: gift
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_execution_gnosis_app_kpi_token_offer_claims_7d
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_token_offer_claimers_7d
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_token_offer_volume_7d
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_gnosis_app_token_offer_claims_weekly_chart
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_execution_gnosis_app_token_offer_claims_by_offer_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_token_offer_claims_cohort_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_execution_gnosis_app_token_offer_offers_leaderboard
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 420px
+      - id: api_execution_gnosis_app_token_offer_claim_funnel_daily
+        gridRow: 5
+        gridColumn: 1 / span 12
+        minHeight: 432px
+
+#  - name: Retention
+#    order: 8
+#    icon: 🔁
+#    iconClass: rotate
+#    timeRanges: true
+#    metrics:
+#      # Analytical-only KPI tiles (no duplicates of topic-tab KPIs)
+#      - id: api_execution_gnosis_app_kpi_retention_pct_latest
+#        gridRow: 1
+#        gridColumn: 1 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_kpi_churn_rate_latest
+#        gridRow: 1
+#        gridColumn: 4 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
+#        gridRow: 1
+#        gridColumn: 7 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_retention_monthly_heatmap
+#        gridRow: 2
+#        gridColumn: 1 / span 12
+#        minHeight: 500px
+#      - id: api_execution_gnosis_app_retention_by_action_monthly_heatmap
+#        gridRow: 3
+#        gridColumn: 1 / span 12
+#        minHeight: 500px
+#      - id: api_execution_gnosis_app_churn_monthly_chart
+#        gridRow: 4
+#        gridColumn: 1 / span 12
+#        minHeight: 450px
+#      - id: api_execution_gnosis_app_purchase_freq_distribution_latest
+#        gridRow: 5
+#        gridColumn: 1 / span 6
+#        minHeight: 432px
+#      - id: api_execution_gnosis_app_time_to_first_conversion_cohort_monthly
+#        gridRow: 5
+#        gridColumn: 7 / span 6
+#        minHeight: 432px

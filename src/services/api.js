@@ -2,9 +2,215 @@ import config from '../utils/config';
 import { isDevelopment } from '../utils/env';
 
 const CACHE_DURATION_MS = 5 * 60 * 1000;
+const STORAGE_KEY_PREFIX = 'api-cache:v1:';
 const responseCache = new Map();
 const inFlightRequests = new Map();
 const isMetricsEndpoint = (endpoint = '') => endpoint === '/metrics' || endpoint.startsWith('/metrics/');
+
+// No client-side timeout. Some ClickHouse queries legitimately take 30–60s,
+// and local vercel-dev has no upstream cap — auto-aborting here turned
+// slow-but-valid requests into hard failures. In production, Vercel's
+// function maxDuration (60s) bounds the wait; in dev the user can simply
+// wait or navigate, and the per-widget AbortController still cancels the
+// fetch on unmount.
+const REQUEST_TIMEOUT_MS = 0;
+
+// One auto-retry on transient failures (5xx, network errors, timeouts).
+// User-initiated aborts and 4xx are never retried.
+const TRANSIENT_RETRY_DELAY_MS = 2_000;
+const isTransientStatus = (status) => status === 0 || status === 408 || status === 429 || (status >= 500 && status <= 599);
+
+// In production we let the browser/HTTP/2 layer parallelize freely; the
+// only place a hard cap helps is local dev where Vite-dev runs in a single
+// Node process and a queue of slow widgets thrashes it. Production used to
+// fire all requests in parallel and we keep that — a global cap there
+// causes head-of-line blocking when a single slow ClickHouse query holds
+// a slot for the full 45s timeout.
+const METRIC_CONCURRENCY = 6;
+const DEV_ONLY_CONCURRENCY = true;
+let metricsActive = 0;
+const metricsWaiters = [];
+
+const acquireMetricSlot = (signal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) {
+    reject(makeAbortError(signal.reason));
+    return;
+  }
+  if (metricsActive < METRIC_CONCURRENCY) {
+    metricsActive += 1;
+    resolve();
+    return;
+  }
+  const waiter = { resolve, reject, signal, onAbort: null };
+  if (signal) {
+    waiter.onAbort = () => {
+      const idx = metricsWaiters.indexOf(waiter);
+      if (idx >= 0) metricsWaiters.splice(idx, 1);
+      reject(makeAbortError(signal.reason));
+    };
+    signal.addEventListener('abort', waiter.onAbort, { once: true });
+  }
+  metricsWaiters.push(waiter);
+});
+
+const releaseMetricSlot = () => {
+  while (metricsWaiters.length > 0) {
+    const next = metricsWaiters.shift();
+    if (next.signal && next.onAbort) {
+      next.signal.removeEventListener('abort', next.onAbort);
+    }
+    if (next.signal?.aborted) {
+      // Skip already-aborted waiters; they've already rejected.
+      continue;
+    }
+    metricsActive += 1;
+    next.resolve();
+    return;
+  }
+  metricsActive = Math.max(0, metricsActive - 1);
+};
+
+const enqueueMetricRequest = async (requestFactory, signal) => {
+  await acquireMetricSlot(signal);
+  try {
+    return await requestFactory();
+  } finally {
+    releaseMetricSlot();
+  }
+};
+
+const makeAbortError = (reason) => {
+  if (reason instanceof Error) return reason;
+  const err = new Error(typeof reason === 'string' ? reason : 'Aborted');
+  err.name = 'AbortError';
+  return err;
+};
+
+const isAbortError = (err) => {
+  if (!err) return false;
+  if (err.name === 'AbortError') return true;
+  return typeof err === 'object' && err.code === 'ABORT_ERR';
+};
+
+const combineSignals = (...signals) => {
+  const filtered = signals.filter(Boolean);
+  if (filtered.length === 0) return { signal: null, cleanup: () => {} };
+  if (filtered.length === 1) return { signal: filtered[0], cleanup: () => {} };
+  const controller = new AbortController();
+  const onAbort = (event) => {
+    controller.abort(event.target.reason);
+  };
+  filtered.forEach((s) => {
+    if (s.aborted) {
+      controller.abort(s.reason);
+    } else {
+      s.addEventListener('abort', onAbort, { once: true });
+    }
+  });
+  return {
+    signal: controller.signal,
+    cleanup: () => filtered.forEach((s) => s.removeEventListener('abort', onAbort))
+  };
+};
+
+const raceWithAbort = (promise, signal) => {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(makeAbortError(signal.reason));
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(makeAbortError(signal.reason));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => { signal.removeEventListener('abort', onAbort); resolve(value); },
+      (err) => { signal.removeEventListener('abort', onAbort); reject(err); }
+    );
+  });
+};
+
+const delay = (ms, signal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) {
+    reject(makeAbortError(signal.reason));
+    return;
+  }
+  const timer = setTimeout(() => {
+    if (signal) signal.removeEventListener('abort', onAbort);
+    resolve();
+  }, ms);
+  const onAbort = () => {
+    clearTimeout(timer);
+    reject(makeAbortError(signal.reason));
+  };
+  if (signal) signal.addEventListener('abort', onAbort, { once: true });
+});
+
+const getSessionStorage = () => {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window.sessionStorage || null;
+  } catch {
+    return null;
+  }
+};
+
+const readPersistedEntry = (cacheKey) => {
+  const storage = getSessionStorage();
+  if (!storage) return null;
+  try {
+    const raw = storage.getItem(STORAGE_KEY_PREFIX + cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.timestamp !== 'number') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writePersistedEntry = (cacheKey, entry) => {
+  const storage = getSessionStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(STORAGE_KEY_PREFIX + cacheKey, JSON.stringify(entry));
+  } catch {
+    // Quota exceeded or serialization failure — fall back to memory-only cache.
+  }
+};
+
+const hydrateCacheFromStorage = () => {
+  const storage = getSessionStorage();
+  if (!storage) return;
+  try {
+    const now = Date.now();
+    const staleKeys = [];
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!key || !key.startsWith(STORAGE_KEY_PREFIX)) continue;
+      const raw = storage.getItem(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed.timestamp !== 'number') {
+          staleKeys.push(key);
+          continue;
+        }
+        if (now - parsed.timestamp > CACHE_DURATION_MS) {
+          staleKeys.push(key);
+          continue;
+        }
+        responseCache.set(key.slice(STORAGE_KEY_PREFIX.length), parsed);
+      } catch {
+        staleKeys.push(key);
+      }
+    }
+    staleKeys.forEach((key) => {
+      try { storage.removeItem(key); } catch { /* ignore */ }
+    });
+  } catch {
+    // ignore hydration errors
+  }
+};
 
 const sanitizeParams = (params = {}) =>
   Object.fromEntries(
@@ -35,6 +241,10 @@ export class ApiService {
     this.useMockData = config.api.useMockData;
     this.isDevelopment = isDevelopment;
 
+    if (!this.isDevelopment) {
+      hydrateCacheFromStorage();
+    }
+
     console.log('ApiService initialized:', {
       baseUrl: this.baseUrl,
       useMockData: this.useMockData,
@@ -59,65 +269,99 @@ export class ApiService {
    * @param {Object} params - Query parameters
    * @returns {Promise<any>}
    */
-  async get(endpoint, params = {}) {
+  async get(endpoint, params = {}, options = {}) {
+    const { signal: callerSignal = null } = options;
     const normalizedParams = sanitizeParams(params);
     const requestParams = { ...normalizedParams };
 
     if (this.isDevelopment && isMetricsEndpoint(endpoint) && requestParams.useCached === undefined) {
-      requestParams.useCached = 'false';
+      requestParams.useCached = 'true';
     }
 
     const bypassFrontendCache = this.isDevelopment;
     const cacheKey = this.getCacheKey(endpoint, requestParams);
-    const cachedEntry = bypassFrontendCache ? null : responseCache.get(cacheKey);
+    let cachedEntry = bypassFrontendCache ? null : responseCache.get(cacheKey);
+    if (!bypassFrontendCache && !cachedEntry) {
+      const persisted = readPersistedEntry(cacheKey);
+      if (persisted) {
+        responseCache.set(cacheKey, persisted);
+        cachedEntry = persisted;
+      }
+    }
     const hasFreshCache = cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_DURATION_MS;
 
     if (!bypassFrontendCache && hasFreshCache) {
       return cachedEntry.data;
     }
 
-    if (inFlightRequests.has(cacheKey)) {
-      return inFlightRequests.get(cacheKey);
+    if (callerSignal?.aborted) {
+      throw makeAbortError(callerSignal.reason);
     }
 
-    const requestPromise = (async () => {
-      try {
-        const data = await this.fetchFromSource(endpoint, requestParams);
-        if (!bypassFrontendCache) {
-          responseCache.set(cacheKey, {
-            data,
-            timestamp: Date.now()
-          });
-        }
-        return data;
-      } catch (error) {
-        console.error(`API Error for ${endpoint}:`, error);
-
-        if (cachedEntry) {
-          console.warn(`API Error for ${endpoint}, serving stale cached response`);
-          return cachedEntry.data;
-        }
-
-        if (!this.useMockData) {
-          console.log(`API failed, falling back to mock data for ${endpoint}`);
-          const mockData = await this.getMockData(endpoint, requestParams);
-          if (!bypassFrontendCache) {
-            responseCache.set(cacheKey, {
-              data: mockData,
-              timestamp: Date.now()
-            });
-          }
-          return mockData;
-        }
-
-        throw error;
-      } finally {
-        inFlightRequests.delete(cacheKey);
+    // Inflight dedup is shared across callers, so we don't pass the caller's
+    // signal to the existing promise — aborting one caller must not cancel
+    // the shared request. The caller-level abort is handled by racing
+    // against the abort event below.
+    if (inFlightRequests.has(cacheKey)) {
+      const inFlight = inFlightRequests.get(cacheKey);
+      if (!bypassFrontendCache && cachedEntry) {
+        inFlight.catch(() => {});
+        return cachedEntry.data;
       }
-    })();
+      return raceWithAbort(inFlight, callerSignal);
+    }
+
+    const requestPromise = this.executeWithRetry(endpoint, requestParams, cacheKey, cachedEntry);
 
     inFlightRequests.set(cacheKey, requestPromise);
-    return requestPromise;
+
+    if (!bypassFrontendCache && cachedEntry) {
+      requestPromise.catch(() => {});
+      return cachedEntry.data;
+    }
+
+    return raceWithAbort(requestPromise, callerSignal);
+  }
+
+  /**
+   * Run the actual fetch with a single transient retry. Per-request timeout
+   * is enforced inside fetchFromSource via AbortController; this layer only
+   * decides whether to retry on transient failures.
+   */
+  async executeWithRetry(endpoint, requestParams, cacheKey, cachedEntry) {
+    // No automatic retries — 504s here mean the upstream already exhausted
+    // its budget and a retry doubles the user's wall time for no gain.
+    try {
+      const data = await this.fetchWithConcurrency(endpoint, requestParams);
+
+      if (!this.isDevelopment) {
+        const entry = { data, timestamp: Date.now() };
+        responseCache.set(cacheKey, entry);
+        writePersistedEntry(cacheKey, entry);
+      }
+      return data;
+    } catch (error) {
+      if (!isAbortError(error)) {
+        console.error(`API Error for ${endpoint}:`, error);
+      }
+      if (cachedEntry) {
+        console.warn(`API Error for ${endpoint}, serving stale cached response`);
+        return cachedEntry.data;
+      }
+      throw error;
+    } finally {
+      inFlightRequests.delete(cacheKey);
+    }
+  }
+
+  fetchWithConcurrency(endpoint, requestParams) {
+    // No client-side concurrency gate. The earlier dev-only queue leaked
+    // slots (releaseMetricSlot incremented metricsActive when handing off
+    // to a waiter without decrementing for the finished task), so after
+    // ~6 widget cycles the pool wedged and api.get() hung indefinitely.
+    // The browser per-origin connection limit + the in-flight dedup in
+    // api.get() already keep total work bounded.
+    return this.fetchFromSource(endpoint, requestParams);
   }
 
   /**
@@ -126,6 +370,18 @@ export class ApiService {
   clearCache() {
     responseCache.clear();
     inFlightRequests.clear();
+    const storage = getSessionStorage();
+    if (!storage) return;
+    try {
+      const toRemove = [];
+      for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (key && key.startsWith(STORAGE_KEY_PREFIX)) toRemove.push(key);
+      }
+      toRemove.forEach((key) => {
+        try { storage.removeItem(key); } catch { /* ignore */ }
+      });
+    } catch { /* ignore */ }
   }
 
   /**
@@ -151,6 +407,20 @@ export class ApiService {
         inFlightRequests.delete(key);
       }
     }
+
+    const storage = getSessionStorage();
+    if (!storage) return;
+    try {
+      const storagePrefix = STORAGE_KEY_PREFIX + prefix;
+      const toRemove = [];
+      for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (key && key.startsWith(storagePrefix)) toRemove.push(key);
+      }
+      toRemove.forEach((key) => {
+        try { storage.removeItem(key); } catch { /* ignore */ }
+      });
+    } catch { /* ignore */ }
   }
 
   /**
@@ -186,14 +456,39 @@ export class ApiService {
       headers['X-API-Key'] = this.apiKey;
     }
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers,
-      ...(this.isDevelopment ? { cache: 'no-store' } : {})
-    });
+    let response;
+    try {
+      response = await fetch(url.toString(), {
+        method: 'GET',
+        headers,
+        ...(this.isDevelopment ? { cache: 'no-store' } : {})
+      });
+    } catch (err) {
+      const wrapped = new Error(err?.message || `Network error: ${endpoint}`);
+      wrapped.status = 0;
+      throw wrapped;
+    }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+      // Try to read the structured error envelope so the UI can distinguish
+      // permanent states (MissingMetricSource, InvalidMetric, FilterRequired)
+      // from transient ones (timeouts, 5xx). Fall back to status-only text
+      // when the body isn't JSON.
+      let body = null;
+      try {
+        body = await response.json();
+      } catch {
+        // ignore — non-JSON body
+      }
+      const code = body?.error || body?.code || null;
+      const detail = body?.message || response.statusText || '';
+      const error = new Error(
+        `HTTP ${response.status}${code ? ` (${code})` : ''}${detail ? `: ${detail}` : ''}`
+      );
+      error.status = response.status;
+      error.code = code;
+      error.body = body;
+      throw error;
     }
 
     return response.json();

@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_income_daily",
+  "query": "SELECT withdrawal_credentials, date, 'gain' AS label, consensus_income_amount_gno AS amount_gno\n    FROM dbt.api_consensus_validators_explorer_daily\n    WHERE consensus_income_amount_gno > 0\n      /*__FILTER_CONDITIONS__*/\n    UNION ALL\n    SELECT withdrawal_credentials, date, 'loss' AS label, consensus_income_amount_gno AS amount_gno\n    FROM dbt.api_consensus_validators_explorer_daily\n    WHERE consensus_income_amount_gno < 0\n      /*__FILTER_CONDITIONS__*/"
+}

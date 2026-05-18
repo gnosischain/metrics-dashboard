@@ -1,0 +1,4 @@
+{
+  "id": "api_consensus_validators_explorer_apy_daily",
+  "query": "SELECT *\n    FROM dbt.api_consensus_validators_explorer_apy_dist_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
+}

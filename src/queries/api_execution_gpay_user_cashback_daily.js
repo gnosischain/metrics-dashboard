@@ -17,6 +17,8 @@ const metric = {
   query: `
     SELECT wallet_address, date, value
     FROM dbt.api_execution_gpay_user_cashback_daily
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 export default metric;

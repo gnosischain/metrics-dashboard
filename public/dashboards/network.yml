@@ -7,27 +7,27 @@ tabs:
       - id: api_p2p_clients_latest_discv4
         gridRow: 1
         gridColumn: 1 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_visits_latest_discv4
         gridRow: 1
         gridColumn: 3 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_crawls_latest_discv4
         gridRow: 1
         gridColumn: 5 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_clients_latest_discv5
         gridRow: 1
         gridColumn: 7 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_visits_latest_discv5
         gridRow: 1
         gridColumn: 9 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_crawls_latest_discv5
         gridRow: 1
         gridColumn: 11 / span 2
-        minHeight: 130px
+        minHeight: 120px
       - id: api_p2p_topology_latest
         gridRow: 2
         gridColumn: 1 / span 12
@@ -40,6 +40,7 @@ tabs:
     order: 2
     icon: 💻
     iconClass: monitor
+    timeRanges: true
     metrics:
       - id: api_p2p_discv4_clients_latest
         gridRow: 1
@@ -65,6 +66,7 @@ tabs:
     order: 3
     icon: 🗺️
     iconClass: fork
+    timeRanges: true
     metrics:
       - id: api_p2p_discv5_current_fork_daily
         gridRow: 1
@@ -86,6 +88,7 @@ tabs:
     order: 4
     icon: 🔬
     iconClass: search
+    timeRanges: true
     metrics:
       - id: text_probelab
         gridRow: 1

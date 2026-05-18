@@ -1,20 +1,33 @@
 /**
- * Dynamic query loader
- * 
- * This file automatically imports all metric definitions from the current directory
- * and exports them as an array.
+ * Lazy query loader
+ *
+ * Each metric definition under this directory is exposed as a dynamic
+ * importer keyed by id (filename without extension). Modules are evaluated
+ * only when requested via `queryLoaders.get(id)()`, which lets Vite split
+ * them out of the initial bundle.
  */
 
-const queryModuleEntries = Object.entries(
-  import.meta.glob('./*.js', { eager: true })
-)
+const queryModules = import.meta.glob('./*.js');
+
+const idFromPath = (path) => path.replace(/^\.\//, '').replace(/\.js$/, '');
+
+const queryLoaders = new Map();
+const queryIds = [];
+
+Object.entries(queryModules)
   .filter(([path]) => !path.endsWith('/index.js'))
-  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath));
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .forEach(([path, loader]) => {
+    const id = idFromPath(path);
+    queryLoaders.set(id, async () => {
+      const mod = await loader();
+      return mod?.default;
+    });
+    queryIds.push(id);
+  });
 
-const queryModules = queryModuleEntries
-  .map(([, moduleExports]) => moduleExports?.default)
-  .filter(Boolean);
+if (import.meta.env?.VITE_DEBUG_METRICS === 'true') {
+  console.log(`Registered ${queryIds.length} metric query loaders (lazy)`);
+}
 
-console.log(`Loaded ${queryModules.length} metric queries dynamically`);
-
-export default queryModules;
+export { queryLoaders, queryIds };

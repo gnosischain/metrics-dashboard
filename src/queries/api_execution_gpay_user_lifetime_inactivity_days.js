@@ -13,6 +13,8 @@ const metric = {
       wallet_address,
       dateDiff('day', toDate(last_activity_date), today()) AS value
     FROM dbt.api_execution_gpay_user_lifetime_metrics
+    WHERE 1 = 1
+      /*__FILTER_CONDITIONS__*/
   `,
 };
 

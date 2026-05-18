@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_user_activity_daily",
+  "query": "SELECT *\n    FROM dbt.api_execution_gnosis_app_user_activity_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date DESC"
+}

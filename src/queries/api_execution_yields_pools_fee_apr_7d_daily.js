@@ -1,8 +1,8 @@
 const metric = {
   id: 'api_execution_yields_pools_fee_apr_7d_daily',
-  name: 'Pools Fee APR (7D)',
-  description: '7D trailing fee APR for Uniswap V3 / Swapr V3 pools',
-  metricDescription: 'Daily 7-day trailing fee APR by pool for the selected token. Values are fee-yield estimates, not total return.',
+  name: 'Fee APR',
+  description: '7D trailing by pool',
+  metricDescription: 'Daily 7-day trailing fee APR by pool for the selected token. Values are fee-yield estimates annualised from recent fee revenue relative to pool TVL.',
   chartType: 'line',
   isTimeSeries: true,
   stacked: false,
@@ -33,9 +33,7 @@ const metric = {
       token,
       label AS pool,
       value
-    FROM dbt.api_execution_yields_pools_fee_apr_7d_daily
-    WHERE date >= '{from}'
-      AND date <= '{to}'
+    FROM dbt.api_execution_pools_fee_apr_7d_daily
     ORDER BY date ASC, token, pool
   `,
 };

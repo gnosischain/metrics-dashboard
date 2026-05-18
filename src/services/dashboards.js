@@ -1,5 +1,4 @@
 import yaml from 'js-yaml';
-import metricsService from './metrics';
 import { resolveDashboardPalette } from '../utils/dashboardPalettes';
 
 /**
@@ -18,19 +17,19 @@ class DashboardService {
    */
   loadFromYaml(yamlContent) {
     try {
-      console.log('DashboardService: Starting YAML parsing...');
-      console.log('YAML content preview:', yamlContent.substring(0, 300));
+      // console.log('DashboardService: Starting YAML parsing...');
+      // console.log('YAML content preview:', yamlContent.substring(0, 300));
       
       // Try to parse the YAML document
       const parsedYaml = yaml.load(yamlContent);
-      console.log('DashboardService: YAML parsed successfully:', parsedYaml);
+      // console.log('DashboardService: YAML parsed successfully:', parsedYaml);
       
       this.dashboards = [];
       
       // Process as a collection of dashboards
       // Each top-level key could be a dashboard identifier
       Object.entries(parsedYaml).forEach(([key, config]) => {
-      console.log('DashboardService: Processing dashboard:', { key, config });
+      // console.log('DashboardService: Processing dashboard:', { key, config });
         // Process the dashboard configuration
         this.processConfig(key, config);
       });
@@ -38,8 +37,8 @@ class DashboardService {
       // Sort dashboards by order
       this.dashboards.sort((a, b) => a.order - b.order);
       
-      console.log('DashboardService: Loaded dashboards from YAML configuration:', this.dashboards.length);
-      console.log('DashboardService: Final dashboards:', this.dashboards.map(d => ({id: d.id, name: d.name, tabCount: d.tabs?.length || 0})));
+      // console.log('DashboardService: Loaded dashboards from YAML configuration:', this.dashboards.length);
+      // console.log('DashboardService: Final dashboards:', this.dashboards.map(d => ({id: d.id, name: d.name, tabCount: d.tabs?.length || 0})));
       
       this.isLoaded = true;
       return true;
@@ -55,8 +54,10 @@ class DashboardService {
    * @param {Object} dashboardConfig - Dashboard configuration object
    */
   processConfig(key, dashboardConfig) {
-      console.log('DashboardService: Processing config:', { key, dashboardConfig });
-    
+      // console.log('DashboardService: Processing config:', { key, dashboardConfig });
+
+    if (dashboardConfig?.enabled === false) return;
+
     // Skip if no valid dashboard found
     if (!dashboardConfig || !dashboardConfig.name) {
       console.warn('DashboardService: Invalid dashboard configuration for key (missing name):', key);
@@ -70,49 +71,45 @@ class DashboardService {
       order: dashboardConfig.order || 999,
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
-      palette: resolveDashboardPalette(dashboardConfig.palette)
+      tagline: dashboardConfig.tagline || '',
+      palette: resolveDashboardPalette(dashboardConfig.palette),
+      brand: dashboardConfig.brand || '',
+      hasDefaultTab: dashboardConfig.hasDefaultTab === true
     };
     
-    console.log('DashboardService: Created dashboard object:', dashboard);
+    // console.log('DashboardService: Created dashboard object:', dashboard);
     
     // Check if this is a dashboard with direct metrics (no tabs)
     if (Array.isArray(dashboardConfig.metrics)) {
-      console.log('DashboardService: Dashboard has direct metrics (no tabs):', key);
+      // console.log('DashboardService: Dashboard has direct metrics (no tabs):', key);
       
       // Create a single default tab with the metrics
       dashboard.tabs = [{
         id: 'main',
         name: dashboard.name, // Use the dashboard name for the tab
         order: 1,
-        metrics: dashboardConfig.metrics.map(metric => {
-          console.log('DashboardService: Processing metric:', metric);
-          
-          // Get base metric config (may be undefined for pseudo-metrics like global_filter)
-          const metricConfig = metricsService.getMetricConfig(metric.id);
-          
-          // Return metric with grid positioning properties
-          return {
-            ...metricConfig,
-            id: metric.id,
-            gridRow: metric.gridRow,
-            gridColumn: metric.gridColumn,
-            minHeight: metric.minHeight
-          };
-        }),
+        metrics: dashboardConfig.metrics.map(metric => ({
+          id: metric.id,
+          gridRow: metric.gridRow,
+          gridColumn: metric.gridColumn,
+          minHeight: metric.minHeight,
+          tabGroup: metric.tabGroup || null,
+          tabLabel: metric.tabLabel || null
+        })),
         // Flag to indicate this is a default tab (no tabs UI)
         isDefaultTab: true
       }];
       
       // Flag to indicate this dashboard has no tabs UI
       dashboard.hasDefaultTab = true;
-      console.log('DashboardService: Dashboard configured with default tab:', key);
+      // console.log('DashboardService: Dashboard configured with default tab:', key);
     } 
     // Handle dashboards with explicit tabs
     else if (Array.isArray(dashboardConfig.tabs)) {
-      console.log('DashboardService: Dashboard has explicit tabs:', { key, count: dashboardConfig.tabs.length });
+      // console.log('DashboardService: Dashboard has explicit tabs:', { key, count: dashboardConfig.tabs.length });
       
-      dashboard.tabs = dashboardConfig.tabs.map(tab => {
-        console.log('DashboardService: Processing tab:', tab);
+      dashboard.tabs = dashboardConfig.tabs.filter(tab => tab.enabled !== false).map(tab => {
+        // console.log('DashboardService: Processing tab:', tab);
         
         return {
           id: tab.name.toLowerCase().replace(/\s+/g, '-'),
@@ -120,36 +117,42 @@ class DashboardService {
           order: tab.order || 999,
           icon: tab.icon || '', // Emoji fallback for tab
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
+          customView: tab.customView || null, // Optional custom tab surface instead of MetricGrid
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
+          secondaryGlobalFilterField: tab.secondaryGlobalFilterField || null, // Cascading secondary filter field
+          globalFilterDisplayField: tab.globalFilterDisplayField || null, // Optional column to use as the display label in the search dropdown (e.g. metadata_name); the value column stays globalFilterField
+          globalFilterSourceMetric: tab.globalFilterSourceMetric || null, // Optional metric ID to use for the options fetch; defaults to first panel metric. Lets a tab pin a dedicated lightweight lookup mart.
+          globalFilterSourceField: tab.globalFilterSourceField || null, // Optional column name on the source metric whose value populates the dropdown. Defaults to globalFilterField. Use when the source metric names the address column differently than the downstream filter (e.g. dropdown sourced from `user_address` while cards filter on `wallet_address`).
+          globalControlsPlacement: tab.globalControlsPlacement || null, // Optional explicit control placement; MetricGrid resolves the default behavior.
           unitToggle: tab.unitToggle || false, // Enable unit toggle (Native/USD) for this tab
           defaultUnit: tab.defaultUnit || 'native', // Default unit selection
           searchable: tab.searchable || false, // Enable searchable filter input
+          requireExplicitFilter: tab.requireExplicitFilter || false, // Skip auto-selection of a default value; cards stay empty until user picks. When combined with globalFilterSourceMetric, the option list is still loaded so search works.
+          explicitFilterValidationMetric: tab.explicitFilterValidationMetric || null, // Optional metric used to validate explicit filter values before rendering cards.
+          emptyState: tab.emptyState && typeof tab.emptyState === 'object'
+            ? { ...tab.emptyState }
+            : null, // Optional empty-state copy and icon metadata for explicit-filter tabs.
           globalFilterVertical: tab.globalFilterVertical || false, // Stack label above filter input
           searchPlaceholder: tab.searchPlaceholder || '', // Placeholder for search input
           resolutionToggle: tab.resolutionToggle || false, // Enable per-chart resolution toggle (D/W/M)
           defaultResolution: tab.defaultResolution || 'weekly', // Default resolution
-          metrics: (tab.metrics || []).map(metric => {
-            console.log('DashboardService: Processing tab metric:', metric);
-            
-            // Get base metric config (may be undefined for pseudo-metrics like global_filter)
-            const metricConfig = metricsService.getMetricConfig(metric.id);
-            
-            // Return metric with grid positioning properties
-            return {
-              ...metricConfig,
-              id: metric.id,
-              gridRow: metric.gridRow,
-              gridColumn: metric.gridColumn,
-              minHeight: metric.minHeight
-            };
-          })
+          timeRanges: tab.timeRanges || false, // Global time range buttons (true for defaults, or array)
+          defaultTimeRange: tab.defaultTimeRange || 'ALL', // Default selected time range
+          metrics: (tab.metrics || []).map(metric => ({
+            id: metric.id,
+            gridRow: metric.gridRow,
+            gridColumn: metric.gridColumn,
+            minHeight: metric.minHeight,
+            tabGroup: metric.tabGroup || null,
+            tabLabel: metric.tabLabel || null
+          }))
         };
       });
       
       // Sort tabs by order
       dashboard.tabs.sort((a, b) => a.order - b.order);
-      console.log('DashboardService: Dashboard tabs processed:', { key, tabs: dashboard.tabs.map(t => t.name) });
+      // console.log('DashboardService: Dashboard tabs processed:', { key, tabs: dashboard.tabs.map(t => t.name) });
     }
     // No metrics or tabs defined
     else {
@@ -157,7 +160,7 @@ class DashboardService {
       console.warn('DashboardService: Dashboard has no tabs or metrics defined:', dashboardConfig.name);
     }
     
-    console.log('DashboardService: Adding dashboard to collection:', key);
+    // console.log('DashboardService: Adding dashboard to collection:', key);
     this.dashboards.push(dashboard);
   }
 
@@ -166,7 +169,7 @@ class DashboardService {
    * @returns {Array} List of dashboards
    */
   getAllDashboards() {
-    console.log('DashboardService: getAllDashboards() returning dashboards:', this.dashboards.length);
+    // console.log('DashboardService: getAllDashboards() returning dashboards:', this.dashboards.length);
     return this.dashboards;
   }
 
@@ -177,7 +180,7 @@ class DashboardService {
    */
   getDashboard(dashboardId) {
     const dashboard = this.dashboards.find(dashboard => dashboard.id === dashboardId);
-    console.log('DashboardService: getDashboard found:', { dashboardId, found: !!dashboard });
+    // console.log('DashboardService: getDashboard found:', { dashboardId, found: !!dashboard });
     return dashboard || null;
   }
 
@@ -189,7 +192,7 @@ class DashboardService {
   getDashboardTabs(dashboardId) {
     const dashboard = this.getDashboard(dashboardId);
     const tabs = dashboard ? dashboard.tabs : [];
-    console.log('DashboardService: getDashboardTabs returning tabs:', { dashboardId, count: tabs.length });
+    // console.log('DashboardService: getDashboardTabs returning tabs:', { dashboardId, count: tabs.length });
     return tabs;
   }
 
@@ -204,7 +207,7 @@ class DashboardService {
     if (!dashboard) return null;
     
     const tab = dashboard.tabs.find(tab => tab.id === tabId);
-    console.log('DashboardService: getTab found:', { dashboardId, tabId, found: !!tab });
+    // console.log('DashboardService: getTab found:', { dashboardId, tabId, found: !!tab });
     return tab || null;
   }
 
@@ -217,7 +220,7 @@ class DashboardService {
   getTabMetrics(dashboardId, tabId) {
     const tab = this.getTab(dashboardId, tabId);
     const metrics = tab ? tab.metrics : [];
-    console.log('DashboardService: getTabMetrics returning metrics:', { dashboardId, tabId, count: metrics.length });
+    // console.log('DashboardService: getTabMetrics returning metrics:', { dashboardId, tabId, count: metrics.length });
     return metrics;
   }
 }
