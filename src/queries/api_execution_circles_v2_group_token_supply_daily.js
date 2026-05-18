@@ -9,7 +9,7 @@ const metric = {
 
 Resolution: a \`token_address\` is mapped to its issuer avatar via the wrapper registry (\`int_execution_circles_v2_wrappers\`); ERC-1155 native ids equal the issuer avatar address. We then filter to issuers with \`avatar_type = 'Group'\`.
 
-Note: the two series are additive only in the on-chain sense — the wrapper contract holds an equal amount of native tokens for every wrapped token it issues. Use \`supply_total\` from the underlying fct table for an unduplicated total.`,
+Note: the two series are additive only in the on-chain sense — the wrapper contract holds an equal amount of native tokens for every wrapped token it issues.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,
@@ -23,5 +23,10 @@ Note: the two series are additive only in the on-chain sense — the wrapper con
   symbolSize: 2,
   lineWidth: 2,
   areaOpacity: 0.5,
+  query: `
+    SELECT date, label, value, value_demurraged
+    FROM dbt.api_execution_circles_v2_group_token_supply_daily
+    ORDER BY date, label
+  `,
 };
 export default metric;

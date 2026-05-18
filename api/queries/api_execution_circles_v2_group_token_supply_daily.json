@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_group_token_supply_daily",
-  "query": "SELECT date, 'ERC-1155 (native)' AS label, supply_native_erc1155 AS value\n    FROM dbt.api_execution_circles_v2_group_token_supply_daily\n    UNION ALL\n    SELECT date, 'ERC-20 (wrapped)' AS label, supply_wrapped_erc20 AS value\n    FROM dbt.api_execution_circles_v2_group_token_supply_daily\n    ORDER BY date, label"
+  "query": "SELECT date, label, value, value_demurraged\n    FROM dbt.api_execution_circles_v2_group_token_supply_daily\n    ORDER BY date, label"
 }
