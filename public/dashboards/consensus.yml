@@ -118,20 +118,20 @@ tabs:
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 450px
-      - id: api_consensus_validators_income_total_daily
-        gridRow: 5
-        gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_consensus_validators_apy_mean_daily
-        gridRow: 5
-        gridColumn: 7 / span 6
-        minHeight: 450px
+      #- id: api_consensus_validators_income_total_daily
+      #  gridRow: 5
+      #  gridColumn: 1 / span 6
+      #  minHeight: 450px
+      #- id: api_consensus_validators_apy_mean_daily
+      #  gridRow: 5
+      #  gridColumn: 7 / span 6
+      #  minHeight: 450px
       - id: api_consensus_deposits_withdrawals_cumulative_daily
-        gridRow: 6
+        gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_consensus_consolidations_daily
-        gridRow: 6
+        gridRow: 5
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Queues
@@ -178,6 +178,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Validator Explorer
+    enabled: false
     order: 7
     icon: 🔎
     iconClass: validator

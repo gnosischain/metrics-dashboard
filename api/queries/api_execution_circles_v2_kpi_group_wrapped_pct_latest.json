@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_kpi_group_wrapped_pct_latest",
+  "query": "SELECT value, change_pct FROM dbt.api_execution_circles_v2_kpi_group_wrapped_pct_latest"
+}

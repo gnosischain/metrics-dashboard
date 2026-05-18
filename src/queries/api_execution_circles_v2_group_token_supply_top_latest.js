@@ -33,10 +33,10 @@ const renderAvatarThumb = (imageUrl, displayName, key) => {
     + `</span>`;
 };
 
-const formatInviter = (cell) => {
+const formatGroupProfile = (cell) => {
   const row = cell.getRow().getData();
   const display = String(row.display_name || '').trim();
-  const address = String(row.inviter || '').trim();
+  const address = String(row.group_avatar || '').trim();
   const safeDisplay = display
     ? escapeHtml(display)
     : '<span style="color:var(--color-text-secondary,#94a3b8);">—</span>';
@@ -57,10 +57,29 @@ const formatInviter = (cell) => {
     + `</div>`;
 };
 
+const formatNumberCell = (digits = 0) => (cell) => {
+  const v = cell.getValue();
+  if (v == null) return '-';
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v);
+  return n.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+};
+
+const formatPctCell = (cell) => {
+  const v = cell.getValue();
+  if (v == null) return '-';
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v);
+  return n.toFixed(1) + '%';
+};
+
 const metric = {
-  id: 'api_execution_circles_v2_inviters_ranking',
-  name: 'Top Inviters',
-  description: 'Leaderboard of top inviters by humans invited',
+  id: 'api_execution_circles_v2_group_token_supply_top_latest',
+  name: 'Top Groups by Supply',
+  description: 'Leaderboard of Circles v2 groups by personal-token supply',
+  metricDescription: `Top 100 Circles v2 groups ranked by current personal-token supply.
+
+\`Supply\` is total CRC in circulation for that group's token (native ERC-1155 + ERC-20 wrapper combined). \`Wrapped %\` shows how much sits in the ERC-20 wrapper contract. \`Members\` is the group's outgoing trust-list size.`,
   chartType: 'table',
   tableConfig: {
     layout: 'fitColumns',
@@ -70,27 +89,28 @@ const metric = {
     rowHeight: 56,
     movableColumns: false,
     columns: [
-      { title: '#',            field: 'rank',           width: 70,  sorter: 'number',  hozAlign: 'right' },
-      { title: 'Inviter',      field: 'display_name',   minWidth: 320, widthGrow: 3, sorter: 'string', formatter: formatInviter },
-      { title: 'Blacklisted',  field: 'is_blacklisted', width: 110, sorter: 'boolean', formatter: 'tickCross', hozAlign: 'center' },
-      { title: 'Invites',      field: 'invite_count',   width: 110, sorter: 'number',  hozAlign: 'right' },
-      { title: 'First invite', field: 'first_invite',   width: 130, sorter: 'string' },
-      { title: 'Last invite',  field: 'last_invite',    width: 130, sorter: 'string' },
+      { title: '#',         field: 'rank',         width: 70,  sorter: 'number', hozAlign: 'right' },
+      { title: 'Group',     field: 'display_name', minWidth: 320, widthGrow: 3, sorter: 'string', formatter: formatGroupProfile },
+      { title: 'Supply',    field: 'supply',       width: 140, sorter: 'number', hozAlign: 'right', formatter: formatNumberCell(0) },
+      { title: 'Wrapped',   field: 'wrapped',      width: 140, sorter: 'number', hozAlign: 'right', formatter: formatNumberCell(0) },
+      { title: 'Wrapped %', field: 'wrapped_pct',  width: 110, sorter: 'number', hozAlign: 'right', formatter: formatPctCell },
+      { title: 'Members',   field: 'n_members',    width: 110, sorter: 'number', hozAlign: 'right', formatter: formatNumberCell(0) },
     ],
+    initialSort: [{ column: 'rank', dir: 'asc' }],
   },
   query: `
     SELECT
       rank,
-      inviter,
+      group_avatar,
       display_name,
       preview_image_url,
-      is_blacklisted,
-      invite_count,
-      toDate(first_invite_ts) AS first_invite,
-      toDate(last_invite_ts)  AS last_invite
-    FROM dbt.api_execution_circles_v2_inviters_ranking
+      supply,
+      wrapped,
+      unwrapped,
+      wrapped_pct,
+      n_members
+    FROM dbt.api_execution_circles_v2_group_token_supply_top_latest
     ORDER BY rank
-    LIMIT 100
   `,
 };
 export default metric;

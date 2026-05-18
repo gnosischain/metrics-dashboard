@@ -226,11 +226,11 @@ tabs:
     metrics:
       - id: api_execution_circles_v2_kpi_active_minters_latest
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 6
         minHeight: 120px
       - id: api_execution_circles_v2_kpi_mints_7d
         gridRow: 1
-        gridColumn: 4 / span 3
+        gridColumn: 7 / span 6
         minHeight: 120px
       - id: api_execution_circles_v2_active_minters_daily
         gridRow: 2
@@ -259,10 +259,38 @@ tabs:
         gridRow: 1
         gridColumn: 1 / span 4
         minHeight: 120px
-      - id: api_execution_circles_v2_groups_overview_daily
+      - id: api_execution_circles_v2_kpi_new_groups_7d
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_avg_members_per_group_latest
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_group_token_supply_latest
         gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_group_wrapped_pct_latest
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: api_execution_circles_v2_groups_overview_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 420px
+      - id: api_execution_circles_v2_group_token_supply_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 420px
+      #- id: api_execution_circles_v2_group_size_distribution
+      #  gridRow: 4
+      #  gridColumn: 1 / span 6
+      #  minHeight: 400px
+      - id: api_execution_circles_v2_group_token_supply_top_latest
+        gridRow: 4
         gridColumn: 1 / span 12
-        minHeight: 450px
+        minHeight: 400px
 
   - name: Backing
     order: 8
@@ -270,11 +298,27 @@ tabs:
     iconClass: piggy-bank
     timeRanges: true
     metrics:
-      - id: api_execution_circles_v2_backing_events_daily
+      - id: api_execution_circles_v2_kpi_total_backers_latest
         gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 450px
-      - id: api_execution_circles_v2_backing_depositors_current
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_new_backers_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_total_depositors_latest
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_kpi_depositors_in_backers_pct_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_execution_circles_v2_backers_cumulative_daily
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 480px
+        minHeight: 420px
+      - id: api_execution_circles_v2_backing_events_daily
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 420px

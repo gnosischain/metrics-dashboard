@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_token_supply_top_latest",
+  "query": "SELECT\n      rank,\n      group_avatar,\n      display_name,\n      preview_image_url,\n      supply,\n      wrapped,\n      unwrapped,\n      wrapped_pct,\n      n_members\n    FROM dbt.api_execution_circles_v2_group_token_supply_top_latest\n    ORDER BY rank"
+}
