@@ -6,6 +6,7 @@ const metric = {
   sparklineField: 'value',
   format: 'formatCurrencyCompact',
   changePeriod: 'vs 30d ago',
+  metricDescription: 'Total USD value of stablecoins circulating on Gnosis Chain, excluding sDAI and WxDAI.',
   query: `
     SELECT date, SUM(value_usd) AS value
     FROM dbt.api_execution_tokens_supply_daily
