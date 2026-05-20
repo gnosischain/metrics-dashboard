@@ -685,11 +685,14 @@ const MetricGrid = ({
               metricStyle.height = metric.minHeight;
             }
 
+            const spanMatch = metric.gridColumn ? metric.gridColumn.toString().match(/span\s+(\d+)/) : null;
+            const colSpanClass = spanMatch ? ` col-span-${spanMatch[1]}` : '';
+
             if (metric.id === 'global_filter') {
               return (
                 <div
                   key={metric.id}
-                  className="grid-item grid-item-filter"
+                  className={`grid-item grid-item-filter${colSpanClass}`}
                   style={metricStyle}
                 >
                   <GlobalFilterWidget
@@ -724,7 +727,7 @@ const MetricGrid = ({
               return (
                 <div
                   key={`tabgroup-${metric.tabGroup}-${activeId}`}
-                  className="grid-item"
+                  className={`grid-item${colSpanClass}`}
                   style={metricStyle}
                 >
                   {renderMetricWidget(activeMetric, tabToggle)}
@@ -735,7 +738,7 @@ const MetricGrid = ({
             return (
               <div
                 key={metric.id}
-                className="grid-item"
+                className={`grid-item${colSpanClass}`}
                 style={metricStyle}
               >
                 {renderMetricWidget(metric)}

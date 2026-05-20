@@ -162,10 +162,43 @@
    Metrics Grid - Responsive
    ================== */
 
-/* tablets: 6 columns */
+/* tablets: 6 columns — reflow explicit grid placement to prevent fr-track
+   collapse when items are pinned to columns beyond the 6-col template.
+   col-span-N classes (added by MetricGrid) provide span-only positioning
+   that beats the inline "start / span N" values. */
 @media (max-width: 1024px) {
   .metrics-grid-positioned {
     grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto !important;
+  }
+
+  .metrics-grid-positioned .grid-item {
+    grid-row: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .metrics-grid-positioned .col-span-1 { grid-column: span 1 !important; }
+  .metrics-grid-positioned .col-span-2 { grid-column: span 2 !important; }
+  .metrics-grid-positioned .col-span-3 { grid-column: span 3 !important; }
+  .metrics-grid-positioned .col-span-4 { grid-column: span 4 !important; }
+  .metrics-grid-positioned .col-span-5 { grid-column: span 5 !important; }
+  .metrics-grid-positioned .col-span-6,
+  .metrics-grid-positioned .col-span-7,
+  .metrics-grid-positioned .col-span-8,
+  .metrics-grid-positioned .col-span-9,
+  .metrics-grid-positioned .col-span-10,
+  .metrics-grid-positioned .col-span-11,
+  .metrics-grid-positioned .col-span-12 { grid-column: span 6 !important; }
+
+  .metrics-grid-positioned .grid-item .chart-container,
+  .metrics-grid-positioned .grid-item .echarts-for-react {
+    min-height: 200px;
+  }
+
+  .metrics-grid-positioned .grid-item-filter,
+  .metrics-grid-positioned .grid-item-number {
+    min-height: 0 !important;
   }
 }
 
