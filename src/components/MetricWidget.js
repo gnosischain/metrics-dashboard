@@ -198,6 +198,7 @@ const MetricWidget = ({
         initialSort,
         selectableRows,
         rowSelectionEmits,
+        refreshInterval,
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -237,6 +238,7 @@ const MetricWidget = ({
       initialSort,
       selectableRows,
       rowSelectionEmits,
+      refreshInterval,
       config: metricConfig
     };
   }, [metricConfig]);
@@ -475,7 +477,7 @@ const MetricWidget = ({
     widgetConfig?.labelField,
   ]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async ({ skipCache = false } = {}) => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
     // The fetch will trigger once globalFilterValue is set.
     const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
@@ -495,6 +497,7 @@ const MetricWidget = ({
       }
 
       const params = buildMetricRequestParams();
+      if (skipCache) params.useCached = 'false';
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
 
@@ -840,6 +843,19 @@ const MetricWidget = ({
   const handleRefresh = useCallback(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-refresh for live metrics — polls on the interval defined in the
+  // metric config (refreshInterval in ms). Clears the frontend cache and
+  // sends useCached=false so the server also re-runs the query.
+  useEffect(() => {
+    const interval = widgetConfig?.refreshInterval;
+    if (!interval || !shouldFetch) return undefined;
+    const id = setInterval(() => {
+      metricsService.clearCache(effectiveMetricId);
+      fetchData({ skipCache: true });
+    }, interval);
+    return () => clearInterval(id);
+  }, [widgetConfig?.refreshInterval, shouldFetch, effectiveMetricId, fetchData]);
 
   // Auto-retry once for transient errors (network blips, ClickHouse timeouts).
   // Permanent error codes are skipped — retrying yields the same response.

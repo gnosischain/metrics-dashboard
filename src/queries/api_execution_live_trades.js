@@ -51,6 +51,7 @@ const metric = {
   metricDescription: 'DEX swaps from the last 30 minutes of cached data across Uniswap V3, Swapr V3, Balancer V2 and Balancer V3. Multi-hop router paths are collapsed to one row per transaction. Times are relative to your browser clock — note that the underlying indexer may lag the chain; see the "Data lag" tile at the top of the page.',
   chartType: 'table',
   enableFiltering: true,
+  refreshInterval: 45000,
 
   tableConfig: {
     layout: 'fitColumns',
