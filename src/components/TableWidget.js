@@ -618,7 +618,7 @@ const createTableConfig = (data, columns, config, isDarkMode, height, callbacks 
       index: config.indexField || undefined,
       height: height, // Use the provided height (not 'auto')
       layout: config.layout || 'fitColumns',
-      responsiveLayout: config.responsiveLayout !== false ? 'collapse' : false,
+      ...(config.responsiveLayout ? { responsiveLayout: config.responsiveLayout } : {}),
       
       
       pagination: config.pagination !== false ? (isRemote || (data && data.length > 0) ? true : false) : false,
