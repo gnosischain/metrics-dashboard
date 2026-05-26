@@ -54,25 +54,29 @@ tabs:
       # Row 1: lifetime KPI tiles (ignore time window)
       - id: api_execution_trades_stats_lifetime_volume
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 4
         minHeight: 120px
       - id: api_execution_trades_stats_lifetime_trades
         gridRow: 1
-        gridColumn: 4 / span 3
+        gridColumn: 5 / span 4
         minHeight: 120px
       - id: api_execution_trades_stats_lifetime_traders
         gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_trades_stats_lifetime_first_trade
-        gridRow: 1
-        gridColumn: 10 / span 3
+        gridColumn: 9 / span 4
         minHeight: 120px
 
-      # Row 2: volume over time, daily, stacked by protocol
+      # Row 2: volume / trade count / weekly unique traders — all stacked by protocol except traders
       - id: api_execution_trades_stats_volume_ts
         gridRow: 2
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 4
+        minHeight: 360px
+      - id: api_execution_trades_stats_trades_ts
+        gridRow: 2
+        gridColumn: 5 / span 4
+        minHeight: 360px
+      - id: api_execution_trades_stats_traders_weekly
+        gridRow: 2
+        gridColumn: 9 / span 4
         minHeight: 360px
 
       # Row 3: aggregator share (stacked 100%) | top tokens (weekly stacked bars)
@@ -150,7 +154,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 400px
 
-      # Row 5: batch analytics + top pairs
+      # Row 5: avg trades per batch (single line) + top pairs
       - id: api_execution_cow_batch_metrics_ts
         gridRow: 5
         gridColumn: 1 / span 6

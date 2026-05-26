@@ -1,12 +1,12 @@
 const metric = {
   id: 'api_execution_cow_batch_metrics_ts',
-  name: 'Batch Composition',
-  description: 'Share of batches by matching type',
-  metricDescription: 'Daily share of CoW Protocol settlement batches by routing type. "Pure CoW" = multiple trades matched directly with zero AMM interactions. "Partial CoW" = multi-trade batch where some peer matching happened (num_trades > num_interactions). "Pure DEX" = single-trade batches and multi-trade batches fully routed through AMMs. Pure CoW peaked at ~34% in Oct 2021 and is near zero on Gnosis Chain since 2022.',
+  name: 'Avg Trades per Batch',
+  description: 'Average trades settled per settlement batch',
+  metricDescription: 'Daily average number of trades settled per CoW Protocol batch auction. Values above 1.0 indicate days where the solver matched multiple orders in a single settlement (CoW matching). On Gnosis Chain this peaked at ~2.8 in mid-2021 and has trended toward ~1.02 today, reflecting that most batches now route through external DEX liquidity rather than internal order matching.',
   chartType: 'line',
   isTimeSeries: true,
   enableZoom: false,
-  format: 'formatPercentage',
+  format: 'formatDecimal',
 
   smooth: true,
   symbolSize: 0,
@@ -14,8 +14,7 @@ const metric = {
 
   xField: 'date',
   yField: 'value',
-  seriesField: 'label',
 
-  query: `SELECT date, label, value FROM dbt.api_execution_cow_batch_metrics_ts`,
+  query: `SELECT date, value FROM dbt.api_execution_cow_batch_metrics_ts`,
 };
 export default metric;
