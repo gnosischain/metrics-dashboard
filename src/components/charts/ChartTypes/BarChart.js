@@ -203,6 +203,10 @@ export class BarChart extends BaseChart {
   }
 
   static sortCategories(categories, data, xField, yField, seriesField, config = {}) {
+    if (config?.preserveOrder) {
+      return [...categories];
+    }
+
     if (config?.categorySort === 'absNetDesc' && seriesField) {
       const categorySums = {};
       data.forEach((item) => {
