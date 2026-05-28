@@ -111,20 +111,24 @@ tabs:
     timeRanges: true
     defaultTimeRange: 'ALL'
     metrics:
-      # Row 1: KPI tiles (7d window)
+      # Row 1: KPI tiles (7d window) — 6 × span 2
       - id: api_execution_cow_kpi_volume_7d
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_trades_7d
         gridRow: 1
-        gridColumn: 4 / span 3
+        gridColumn: 3 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_traders_7d
         gridRow: 1
-        gridColumn: 7 / span 2
+        gridColumn: 5 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_fees_7d
+        gridRow: 1
+        gridColumn: 7 / span 2
+        minHeight: 120px
+      - id: api_execution_cow_kpi_solver_value_7d
         gridRow: 1
         gridColumn: 9 / span 2
         minHeight: 120px
@@ -143,10 +147,14 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 3: fees over time, stacked by source (onchain vs api)
+      # Row 3: fees + solver value side by side
       - id: api_execution_cow_fees_ts
         gridRow: 3
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_execution_cow_solver_value_ts
+        gridRow: 3
+        gridColumn: 7 / span 6
         minHeight: 360px
 
       # Row 4: solver competition (full width)
