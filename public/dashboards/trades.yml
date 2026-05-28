@@ -89,18 +89,19 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 4: fixed-window distributions (last 30d)
+      # Row 4: distributions (time-window-aware, matches tab selector)
+      # 3+3+6: hop and size are compact; net flow needs width for 10 token labels
       - id: api_execution_trades_stats_hop_distribution
         gridRow: 4
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 320px
       - id: api_execution_trades_stats_size_distribution
         gridRow: 4
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 320px
       - id: api_execution_trades_stats_net_flow
         gridRow: 4
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 6
         minHeight: 320px
 
   - name: CoW Protocol
