@@ -42,7 +42,6 @@ Circles:
   source: /dashboards/circles.yml
 Trades:
   name: Trades
-  enabled: false
   order: 20
   icon: "⚡"
   iconClass: swap

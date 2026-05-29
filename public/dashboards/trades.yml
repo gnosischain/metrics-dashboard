@@ -10,22 +10,26 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 90px
 
-      # Row 2: 4 KPI tiles (last 30 min)
+      # Row 2: 5 KPI tiles (last 30 min)
       - id: api_execution_live_trades_stats_count
         gridRow: 2
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 120px
       - id: api_execution_live_trades_stats_volume
         gridRow: 2
-        gridColumn: 4 / span 3
+        gridColumn: 3 / span 3
         minHeight: 120px
       - id: api_execution_live_trades_stats_traders
         gridRow: 2
-        gridColumn: 7 / span 3
+        gridColumn: 6 / span 2
         minHeight: 120px
       - id: api_execution_live_trades_stats_aggregator
         gridRow: 2
-        gridColumn: 10 / span 3
+        gridColumn: 8 / span 3
+        minHeight: 120px
+      - id: api_execution_live_trades_stats_multihop
+        gridRow: 2
+        gridColumn: 11 / span 2
         minHeight: 120px
 
       # Row 3: last 48h hourly volume, stacked by protocol
@@ -50,25 +54,29 @@ tabs:
       # Row 1: lifetime KPI tiles (ignore time window)
       - id: api_execution_trades_stats_lifetime_volume
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 4
         minHeight: 120px
       - id: api_execution_trades_stats_lifetime_trades
         gridRow: 1
-        gridColumn: 4 / span 3
+        gridColumn: 5 / span 4
         minHeight: 120px
       - id: api_execution_trades_stats_lifetime_traders
         gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_trades_stats_lifetime_first_trade
-        gridRow: 1
-        gridColumn: 10 / span 3
+        gridColumn: 9 / span 4
         minHeight: 120px
 
-      # Row 2: volume over time, daily, stacked by protocol
+      # Row 2: volume / trade count / weekly unique traders — all stacked by protocol except traders
       - id: api_execution_trades_stats_volume_ts
         gridRow: 2
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 4
+        minHeight: 360px
+      - id: api_execution_trades_stats_trades_ts
+        gridRow: 2
+        gridColumn: 5 / span 4
+        minHeight: 360px
+      - id: api_execution_trades_stats_traders_weekly
+        gridRow: 2
+        gridColumn: 9 / span 4
         minHeight: 360px
 
       # Row 3: aggregator share (stacked 100%) | top tokens (weekly stacked bars)
@@ -81,18 +89,19 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 4: fixed-window distributions (last 30d)
+      # Row 4: distributions (time-window-aware, matches tab selector)
+      # 3+3+6: hop and size are compact; net flow needs width for 10 token labels
       - id: api_execution_trades_stats_hop_distribution
         gridRow: 4
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 320px
       - id: api_execution_trades_stats_size_distribution
         gridRow: 4
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 320px
       - id: api_execution_trades_stats_net_flow
         gridRow: 4
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 6
         minHeight: 320px
 
   - name: CoW Protocol
@@ -102,20 +111,24 @@ tabs:
     timeRanges: true
     defaultTimeRange: 'ALL'
     metrics:
-      # Row 1: KPI tiles (7d window)
+      # Row 1: KPI tiles (7d window) — 6 × span 2
       - id: api_execution_cow_kpi_volume_7d
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_trades_7d
         gridRow: 1
-        gridColumn: 4 / span 3
+        gridColumn: 3 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_traders_7d
         gridRow: 1
-        gridColumn: 7 / span 2
+        gridColumn: 5 / span 2
         minHeight: 120px
       - id: api_execution_cow_kpi_fees_7d
+        gridRow: 1
+        gridColumn: 7 / span 2
+        minHeight: 120px
+      - id: api_execution_cow_kpi_solver_value_7d
         gridRow: 1
         gridColumn: 9 / span 2
         minHeight: 120px
@@ -134,10 +147,14 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 360px
 
-      # Row 3: fees over time, stacked by source (onchain vs api)
+      # Row 3: fees + solver value side by side
       - id: api_execution_cow_fees_ts
         gridRow: 3
-        gridColumn: 1 / span 12
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_execution_cow_solver_value_ts
+        gridRow: 3
+        gridColumn: 7 / span 6
         minHeight: 360px
 
       # Row 4: solver competition (full width)
@@ -146,8 +163,8 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 400px
 
-      # Row 5: batch analytics + top pairs
-      - id: api_execution_cow_batch_metrics_ts
+      # Row 5: batch routing breakdown + top pairs
+      - id: api_execution_cow_batch_routing_ts
         gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 360px

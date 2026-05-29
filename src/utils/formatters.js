@@ -45,8 +45,10 @@ export const formatPercentage = (value, decimals = 2) => {
  * @returns {string} Formatted duration
  */
 export const formatDuration = (seconds) => {
-  if (seconds === null || seconds === undefined || isNaN(seconds)) return '0 sec';
-  
+  const s = Number(seconds);
+  if (!isFinite(s)) return '0 sec';
+  seconds = s;
+
   if (seconds < 60) {
     return seconds.toFixed(2) + ' sec';
   } else if (seconds < 3600) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import IconComponent from './IconComponent';
 
 /**
@@ -15,34 +15,37 @@ import IconComponent from './IconComponent';
 const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigation, isCollapsed }) => {
   // Track expanded state for dashboards
   const [expandedDashboards, setExpandedDashboards] = useState({});
-  
-  useEffect(() => {
-    // Only initialize if we have dashboards and haven't initialized yet
-    if (dashboards.length > 0 && Object.keys(expandedDashboards).length === 0) {
-      const initialState = {};
-      dashboards.forEach(dashboard => {
-        initialState[dashboard.id] = true;
-      });
-      setExpandedDashboards(initialState);
-    }
-  }, [dashboards, expandedDashboards]);
+  const navRef = useRef(null);
 
+  useEffect(() => {
+    if (!navRef.current) return;
+    const activeEl = navRef.current.querySelector('.tab-item.active, .dashboard-header.active');
+    if (!activeEl) return;
+    const sidebar = navRef.current.closest('.dashboard-sidebar');
+    if (!sidebar) return;
+    const elRect = activeEl.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const isAbove = elRect.top < sidebarRect.top;
+    const isBelow = elRect.bottom > sidebarRect.bottom;
+    if (isAbove || isBelow) {
+      sidebar.scrollTop += elRect.top - sidebarRect.top - 80;
+    }
+  }, [activeDashboard, activeTab]);
+  
   // Toggle dashboard expansion
   const toggleDashboard = (dashboardId) => {
     setExpandedDashboards(prev => ({
       ...prev,
-      [dashboardId]: !prev[dashboardId]
+      [dashboardId]: !(prev[dashboardId] ?? true)
     }));
   };
-  
-  // Determine if a dashboard should be expanded
+
+  // Determine if a dashboard should be expanded (all expanded by default)
   const isDashboardExpanded = (dashboardId) => {
-    // If explicitly set in state, use that value
     if (expandedDashboards[dashboardId] !== undefined) {
       return expandedDashboards[dashboardId];
     }
-    // Otherwise, expand if it's the active dashboard
-    return dashboardId === activeDashboard;
+    return true;
   };
   
   // Get the first tab ID for a dashboard
@@ -56,7 +59,7 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
   // If collapsed, show only icons
   if (isCollapsed) {
     return (
-      <div className="tab-navigation collapsed">
+      <div className="tab-navigation collapsed" ref={navRef}>
         <ul className="dashboard-list">
           {dashboards.map(dashboard => (
             <li key={dashboard.id} className="dashboard-item">
@@ -89,7 +92,7 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
 
   // Normal expanded view
   return (
-    <div className="tab-navigation">
+    <div className="tab-navigation" ref={navRef}>
       <ul className="dashboard-list">
         {dashboards.map(dashboard => {
           // Get the first tab for this dashboard

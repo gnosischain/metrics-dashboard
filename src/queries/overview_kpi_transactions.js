@@ -6,6 +6,7 @@ const metric = {
   sparklineField: 'value',
   format: 'formatNumberCompact',
   changePeriod: 'vs 30d ago',
+  metricDescription: 'All successful transactions on Gnosis Chain on the most recent complete day.',
   query: `
     SELECT date, SUM(value) AS value
     FROM dbt.api_execution_transactions_cnt_daily

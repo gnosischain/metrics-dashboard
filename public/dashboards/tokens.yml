@@ -56,3 +56,7 @@ tabs:
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 350px
+      - id: api_execution_tokens_top_holders_latest
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 600px

@@ -19,6 +19,7 @@ const metric = {
   yField: 'value',
   seriesField: 'label',
 
+  refreshInterval: 300000,
   query: `SELECT date, label, value FROM dbt.api_execution_live_trades_hourly_48h`,
 };
 

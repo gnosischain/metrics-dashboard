@@ -89,6 +89,8 @@ const MetricWidget = ({
   const requestSequenceRef = useRef(0);
   const activeAbortRef = useRef(null);
   const cardRef = useRef(null);
+  const effectiveTimeRangeRef = useRef(null);
+  const prevEffectiveTimeRangeRef = useRef(null);
   // IntersectionObserver-gated fetch: don't request data until the widget
   // is within ~300px of the viewport. The portfolio renders ~30 widgets;
   // without this, all 30 fire on mount even if the user only scrolls past
@@ -173,6 +175,7 @@ const MetricWidget = ({
         initialSort,
         selectableRows,
         rowSelectionEmits,
+        refreshInterval,
     } = metricConfig;
 
     let widgetType = 'chart';
@@ -212,6 +215,7 @@ const MetricWidget = ({
       initialSort,
       selectableRows,
       rowSelectionEmits,
+      refreshInterval,
       config: metricConfig
     };
   }, [metricConfig]);
@@ -433,6 +437,16 @@ const MetricWidget = ({
       params.search = overrides.search || undefined;
     }
 
+    // For metrics backed by a view with a pre-computed time_window column, filter
+    // to the active time range. effectiveTimeRangeRef avoids stale-closure issues —
+    // the ref is always updated during render before any effects fire.
+    if (metricConfig?.timeWindowField) {
+      const WINDOW_MAP = { '1M': '1m', '3M': '3m', '6M': '6m', '1Y': '1y' };
+      const effRange = effectiveTimeRangeRef.current;
+      params.filterField = metricConfig.timeWindowField;
+      params.filterValue = WINDOW_MAP[effRange] || '1y';
+    }
+
     return Object.fromEntries(
       Object.entries({ ...params, ...overrides }).filter(([, value]) =>
         value !== undefined && value !== null && value !== ''
@@ -450,7 +464,7 @@ const MetricWidget = ({
     widgetConfig?.labelField,
   ]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async ({ skipCache = false } = {}) => {
     // If this widget uses global filter but the value isn't set yet, skip fetch.
     // The fetch will trigger once globalFilterValue is set.
     const normalizedGlobalFilterValue = normalizeFilterValue(globalFilterField, globalFilterValue);
@@ -470,6 +484,7 @@ const MetricWidget = ({
       }
 
       const params = buildMetricRequestParams();
+      if (skipCache) params.useCached = 'false';
 
       const result = await metricsService.getMetricData(effectiveMetricId, params);
 
@@ -738,13 +753,29 @@ const MetricWidget = ({
 
   // Filter data by time range (the single source of truth for charts, tables, numbers)
   const timeFilteredData = useMemo(() => {
-    if (!filteredData?.data || !effectiveTimeRange || effectiveTimeRange === 'ALL') {
+    if (!filteredData?.data || !effectiveTimeRange || effectiveTimeRange === 'ALL' || widgetConfig.config?.isTimeSeries === false) {
       return filteredData;
     }
     const xField = widgetConfig.config?.xField || widgetConfig.config?.categoryField || 'date';
     const filtered = filterDataByTimeRange(filteredData.data, effectiveTimeRange, xField);
     return { ...filteredData, data: filtered };
-  }, [filteredData, effectiveTimeRange, widgetConfig.config?.xField, widgetConfig.config?.categoryField]);
+  }, [filteredData, effectiveTimeRange, widgetConfig.config?.xField, widgetConfig.config?.categoryField, widgetConfig.config?.isTimeSeries]);
+
+  // Keep ref current so stale-closure callbacks (buildMetricRequestParams) can
+  // always read the latest effective time range without needing it in their dep array.
+  effectiveTimeRangeRef.current = effectiveTimeRange;
+
+  // Re-fetch time_window-filtered metrics when the time range changes.
+  // Time-series metrics filter client-side so they don't need a refetch here.
+  // Skip the first run — initial fetch is handled by the shouldFetch useEffect above.
+  useEffect(() => {
+    if (prevEffectiveTimeRangeRef.current === effectiveTimeRange) return;
+    const isFirstRun = prevEffectiveTimeRangeRef.current === null;
+    prevEffectiveTimeRangeRef.current = effectiveTimeRange;
+    if (isFirstRun || !metricConfig?.timeWindowField || !shouldFetch) return;
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveTimeRange, shouldFetch, metricConfig?.timeWindowField]);
 
   // Resolve the display label for the active unit (dynamic from filtered data or static)
   const resolvedUnitLabel = useMemo(() => {
@@ -815,6 +846,19 @@ const MetricWidget = ({
   const handleRefresh = useCallback(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-refresh for live metrics — polls on the interval defined in the
+  // metric config (refreshInterval in ms). Clears the frontend cache and
+  // sends useCached=false so the server also re-runs the query.
+  useEffect(() => {
+    const interval = widgetConfig?.refreshInterval;
+    if (!interval || !shouldFetch) return undefined;
+    const id = setInterval(() => {
+      metricsService.clearCache(effectiveMetricId);
+      fetchData({ skipCache: true });
+    }, interval);
+    return () => clearInterval(id);
+  }, [widgetConfig?.refreshInterval, shouldFetch, effectiveMetricId, fetchData]);
 
   // Auto-retry once for transient errors (network blips, ClickHouse timeouts).
   // Permanent error codes are skipped — retrying yields the same response.

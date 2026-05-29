@@ -51,13 +51,13 @@ const metric = {
   metricDescription: 'DEX swaps from the last 30 minutes of cached data across Uniswap V3, Swapr V3, Balancer V2 and Balancer V3. Multi-hop router paths are collapsed to one row per transaction. Times are relative to your browser clock — note that the underlying indexer may lag the chain; see the "Data lag" tile at the top of the page.',
   chartType: 'table',
   enableFiltering: true,
+  refreshInterval: 45000,
 
   tableConfig: {
     layout: 'fitColumns',
     pagination: true,
     paginationSize: 25,
     paginationSizeSelector: [10, 25, 50, 100],
-    responsiveLayout: 'collapse',
     height: '100%',
     movableColumns: false,
     searchFields: ['token_sold', 'token_bought', 'via', 'trader', 'aggregator'],
@@ -142,12 +142,16 @@ const metric = {
         // Tabulator's 'datetime' sorter requires Luxon (not loaded here).
         title: 'Time',
         field: 'block_timestamp',
-        minWidth: 90,
+        minWidth: 110,
         widthGrow: 1,
         sorter: 'string',
         headerFilter: false,
-        formatter: (cell) => fmtTimeAgo(cell.getValue()),
-        tooltip: (cell) => String(cell.getValue() || ''),
+        formatter: (cell) => {
+          const v = cell.getValue();
+          const ago = fmtTimeAgo(v);
+          const utc = v ? String(v).slice(0, 16).replace('T', ' ') + ' UTC' : '';
+          return `<div style="line-height:1.35;"><div>${ago}</div><div style="font-size:10px;opacity:0.45;margin-top:1px;">${utc}</div></div>`;
+        },
       },
       {
         title: 'Tx',
