@@ -163,8 +163,8 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 400px
 
-      # Row 5: avg trades per batch (single line) + top pairs
-      - id: api_execution_cow_batch_metrics_ts
+      # Row 5: batch routing breakdown + top pairs
+      - id: api_execution_cow_batch_routing_ts
         gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 360px
