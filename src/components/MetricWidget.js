@@ -84,7 +84,20 @@ const MetricWidget = ({
     if (metricsService.getMetricConfig(metricId)) return;
     metricsService.loadMetricConfigs([metricId]).catch(() => {});
   }, [metricId]);
-  
+
+  // Re-resolve the config memos when the metrics cache changes. With lazy
+  // per-metric chunks, a config (especially a *_daily / *_monthly resolution
+  // variant) can land AFTER this widget has already rendered. The memos below
+  // are keyed only on the metric id, so without a cache-version dependency
+  // they stay pinned to the stale (undefined) value and the widget gets stuck.
+  // metricsService already exposes this notify channel (it bumps cacheVersion
+  // on every loadMetricConfigs); we just have to listen to it.
+  const [configVersion, setConfigVersion] = useState(0);
+  useEffect(() => {
+    const unsubscribe = metricsService.subscribe((version) => setConfigVersion(version));
+    return unsubscribe;
+  }, []);
+
   const isMounted = useRef(true);
   const requestSequenceRef = useRef(0);
   const activeAbortRef = useRef(null);
@@ -100,7 +113,8 @@ const MetricWidget = ({
   });
 
   // Per-chart resolution toggle (independent per widget)
-  const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const baseMetricConfig = useMemo(() => metricsService.getMetricConfig(metricId), [metricId, configVersion]);
 
   // Per-chart unit toggle (independent per widget)
   const unitFieldGroups = baseMetricConfig?.unitFieldGroups;
@@ -141,7 +155,18 @@ const MetricWidget = ({
   // Use global filter if provided, otherwise use local state
   const effectiveSelectedLabel = (hasGlobalFilter && globalSelectedLabel) ? globalSelectedLabel : (isUsingGlobalFilter ? globalSelectedLabel : selectedLabel);
 
-  const metricConfig = useMemo(() => metricsService.getMetricConfig(effectiveMetricId), [effectiveMetricId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const metricConfig = useMemo(() => metricsService.getMetricConfig(effectiveMetricId), [effectiveMetricId, configVersion]);
+
+  // The active resolution/unit variant may not be cached yet — parents only
+  // preload each metric's default-resolution config, so toggling to D/M points
+  // at an id that was never loaded. Pull it on demand (one small lazy chunk);
+  // the memo above re-resolves once it lands via the cache subscription.
+  useEffect(() => {
+    if (!effectiveMetricId) return;
+    if (metricsService.getMetricConfig(effectiveMetricId)) return;
+    metricsService.loadMetricConfigs([effectiveMetricId]).catch(() => {});
+  }, [effectiveMetricId]);
 
   const widgetConfig = useMemo(() => {
     if (!metricConfig) {
@@ -1096,6 +1121,12 @@ const MetricWidget = ({
 
   // Early returns must come AFTER all hooks
   const showSkeleton = (loading && !data) ||
+    // Config not resolved yet. With lazy per-metric chunks, the active
+    // resolution/unit variant can still be in flight while its data has
+    // already arrived (loading=false). Render the skeleton until the config
+    // lands (the cache subscription above re-resolves it) instead of falling
+    // through to the "Unknown widget type" dead-end.
+    !metricConfig ||
     (data && isSecondaryGlobalFilterForThisField && !secondaryGlobalFilterValue);
 
   if (showSkeleton) {

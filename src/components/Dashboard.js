@@ -213,6 +213,22 @@ const Dashboard = () => {
     const ids = rawTabMetrics.map((m) => m.id).filter(Boolean);
     metricsService.loadMetricConfigs(ids).then(() => {
       if (!cancelled) setActiveTabConfigsLoaded(true);
+
+      // Preload the D/W/M resolution variants for any toggle metric on this
+      // tab. Each metric only ships its default-resolution config in `ids`, so
+      // without this the first click on D/M points at an unloaded *_daily /
+      // *_monthly config and the widget briefly drops to a skeleton while it
+      // lazy-loads. This stays within the lazy-by-tab budget: only the active
+      // tab's toggle siblings (a handful of small configs) are fetched.
+      const siblingIds = ids.flatMap((id) => {
+        const config = metricsService.getMetricConfig(id);
+        if (!Array.isArray(config?.resolutions)) return [];
+        const base = id.replace(/_(daily|weekly|monthly)$/, '');
+        return config.resolutions.map((res) => `${base}_${res}`);
+      });
+      if (siblingIds.length > 0) {
+        metricsService.loadMetricConfigs(siblingIds).catch(() => {});
+      }
     });
 
     return () => {
