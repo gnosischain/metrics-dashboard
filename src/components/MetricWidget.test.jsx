@@ -9,7 +9,9 @@ vi.mock('echarts', () => ({
 vi.mock('../services/metrics', () => ({
   default: {
     getMetricConfig: vi.fn(),
-    getMetricData: vi.fn()
+    getMetricData: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+    loadMetricConfigs: vi.fn(() => Promise.resolve())
   }
 }));
 
@@ -243,6 +245,85 @@ describe('MetricWidget local filter behavior', () => {
       expect(screen.getByTestId('table-widget')).toHaveAttribute('data-pagination-size', '100');
       expect(screen.getByTestId('table-widget')).toHaveAttribute('data-responsive-layout', 'collapse');
       expect(screen.getByTestId('table-widget')).toHaveAttribute('data-row-height', '40');
+    });
+  });
+});
+
+describe('MetricWidget resolution toggle (lazy variant configs)', () => {
+  beforeAll(async () => {
+    metricsService = (await import('../services/metrics')).default;
+    MetricWidget = (await import('./MetricWidget')).default;
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Regression: switching D/W/M swaps the metric id to a *_daily / *_monthly
+  // sibling whose config is loaded lazily. Before the fix, the config memo was
+  // keyed only on the id and never re-resolved when the variant landed, so the
+  // widget got stuck on the "Unknown widget type" dead-end. It must instead
+  // self-heal to the variant chart once the config arrives.
+  it('renders the daily variant chart (never "Unknown widget type") when its config loads lazily after clicking D', async () => {
+    const weekly = {
+      id: 'pay_weekly',
+      chartType: 'bar',
+      name: 'Payments',
+      description: 'Weekly',
+      isTimeSeries: true,
+      xField: 'date',
+      yField: 'value',
+      seriesField: 'label',
+      resolutions: ['daily', 'weekly', 'monthly'],
+      defaultResolution: 'weekly'
+    };
+    const daily = { ...weekly, id: 'pay_daily', description: 'Daily' };
+
+    // weekly is cached up front; daily is only available once loadMetricConfigs runs.
+    const cache = { pay_weekly: weekly };
+    const lazy = { pay_daily: daily };
+    let notify = null;
+
+    metricsService.getMetricConfig.mockImplementation((id) => cache[id]);
+    metricsService.subscribe.mockImplementation((cb) => {
+      notify = cb;
+      return () => { notify = null; };
+    });
+    metricsService.loadMetricConfigs.mockImplementation(async (ids = []) => {
+      let changed = false;
+      ids.forEach((id) => {
+        if (lazy[id] && !cache[id]) {
+          cache[id] = lazy[id];
+          changed = true;
+        }
+      });
+      if (changed && notify) notify(Date.now());
+    });
+    metricsService.getMetricData.mockResolvedValue({
+      data: [{ date: '2026-06-20', label: 'EURe', value: 10 }]
+    });
+
+    render(<MetricWidget metricId="pay_weekly" enableResolutionToggle />);
+
+    // Weekly chart renders first.
+    await waitFor(() => {
+      expect(screen.getByTestId('chart-data')).toBeInTheDocument();
+    });
+
+    // Toggle to daily — its config is not in the cache yet.
+    fireEvent.click(screen.getByRole('button', { name: 'D' }));
+
+    // It must recover to the chart and never surface the dead-end string.
+    await waitFor(() => {
+      expect(screen.getByTestId('chart-data')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Unknown widget type')).toBeNull();
+
+    // The daily variant config was lazily requested and its data fetched.
+    expect(metricsService.loadMetricConfigs).toHaveBeenCalledWith(['pay_daily']);
+    await waitFor(() => {
+      const fetchedDaily = metricsService.getMetricData.mock.calls.some((c) => c[0] === 'pay_daily');
+      expect(fetchedDaily).toBe(true);
     });
   });
 });
