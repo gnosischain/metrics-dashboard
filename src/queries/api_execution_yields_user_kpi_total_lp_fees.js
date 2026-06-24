@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_yields_user_kpi_total_lp_fees',
   name: 'LP Fees Collected',
   description: 'Lifetime (USD)',
-  metricDescription: 'Total fees claimed via Collect events across all LP positions for the selected wallet.',
+  metricDescription: 'Total LP swap fees for the selected wallet. Uniswap/Swapr V3: fees from Collect events. Balancer V2/V3: pool swap fees attributed by the wallet contribution share, net of the protocol fee.',
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatCurrency',
