@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_migration_usd_stranded_old_safes",
+  "query": "SELECT round(sumIf(b.balance_usd, b.address IN (SELECT address FROM dbt.int_execution_gpay_safe_canonical)), 2) AS value FROM dbt.int_execution_gpay_balances_daily b WHERE b.date = (SELECT max(date) FROM dbt.int_execution_gpay_balances_daily)"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_kpi_active_wallets_30d",
+  "query": "SELECT toInt64(countIf(is_active_30d)) AS value FROM dbt.fct_execution_gnosis_app_gt_wallet_metrics_public"
+}

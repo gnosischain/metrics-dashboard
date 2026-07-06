@@ -1,0 +1,4 @@
+{
+  "id": "growth_kpi_attributed_conversion_pct",
+  "query": "SELECT round(100.0 * sumIf(new_accounts, utm_campaign != 'unknown') / nullIf(sum(new_accounts), 0), 1) AS value FROM dbt.api_mixpanel_ga_growth_campaign_weekly"
+}

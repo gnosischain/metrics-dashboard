@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_migration_stranded_old_safes",
+  "query": "SELECT o.old_safe AS old_safe, c.gp_user_id AS gp_user_id, round(o.usd_stranded, 2) AS usd_stranded, c.canonical_address AS new_safe, toInt64(if(a.new_safe != '', 1, 0)) AS new_safe_active FROM (SELECT lower(b.address) AS old_safe, sum(b.balance_usd) AS usd_stranded FROM dbt.int_execution_gpay_balances_daily b WHERE b.date = (SELECT max(date) FROM dbt.int_execution_gpay_balances_daily) AND b.balance_usd IS NOT NULL GROUP BY lower(b.address) HAVING sum(b.balance_usd) > 0) o INNER JOIN dbt.int_execution_gpay_safe_canonical c ON o.old_safe = c.address LEFT JOIN (SELECT DISTINCT lower(wallet_address) AS new_safe FROM dbt.int_execution_gpay_activity WHERE date >= toDate('2026-06-04')) a ON c.canonical_address = a.new_safe ORDER BY usd_stranded DESC LIMIT 50"
+}

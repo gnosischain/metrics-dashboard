@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_kpi_retention_1m",
+  "query": "SELECT round(avg(retention_pct)*100,1) AS value FROM dbt.fct_execution_gnosis_app_gt_wallet_cohort_retention_monthly WHERE basis='app_tagged' AND month_index=1 AND cohort_month >= addMonths(toStartOfMonth(today()), -6)"
+}

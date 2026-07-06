@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_migration_refunded_cards",
+  "query": "SELECT toInt64(countIf(is_lost = 1)) AS value FROM dbt.int_execution_gpay_safe_switchover"
+}
