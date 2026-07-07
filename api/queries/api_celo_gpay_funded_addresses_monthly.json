@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_funded_addresses_monthly",
+  "query": "SELECT date, value\n    FROM dbt.api_celo_gpay_funded_addresses_monthly"
+}

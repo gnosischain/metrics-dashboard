@@ -15,6 +15,13 @@ const DashboardHeader = ({ dashboard, tabConfig, children = null }) => {
     dashboard?.icon ||
     (primary ? primary.charAt(0) : '•');
 
+  // Multi-chain dashboards: surface the active chain next to the title so the
+  // page (and any screenshot of it) is self-describing, independent of the
+  // switcher control.
+  const activeChainEntry = tabConfig?.chain && Array.isArray(dashboard?.chains)
+    ? dashboard.chains.find((chain) => chain.id === tabConfig.chain) || null
+    : null;
+
   const alerts = alertsService.getAlertsForTab(dashboard?.id, tabConfig?.id);
 
   return (
@@ -32,6 +39,16 @@ const DashboardHeader = ({ dashboard, tabConfig, children = null }) => {
                 {primary && <h1 className="dashboard-view-header-title">{primary}</h1>}
                 {secondary && (
                   <span className="dashboard-view-header-subtitle">{secondary}</span>
+                )}
+                {activeChainEntry && (
+                  <span className="dashboard-view-header-chain-badge">
+                    <span
+                      className="chain-badge-dot"
+                      style={activeChainEntry.color ? { background: activeChainEntry.color } : undefined}
+                      aria-hidden="true"
+                    />
+                    {activeChainEntry.label}
+                  </span>
                 )}
               </div>
             )}

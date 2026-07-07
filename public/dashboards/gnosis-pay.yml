@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    chain: gnosis
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -33,6 +34,7 @@ tabs:
         minHeight: 470px
 
   - name: Activity
+    chain: gnosis
     order: 2
     icon: 👥
     iconClass: users
@@ -61,6 +63,7 @@ tabs:
         minHeight: 450px
 
   - name: KPI
+    chain: gnosis
     order: 3
     icon: 🎯
     iconClass: gauge
@@ -120,6 +123,7 @@ tabs:
         minHeight: 500px
 
   - name: Cashback
+    chain: gnosis
     order: 4
     icon: 🎁
     iconClass: gift
@@ -171,6 +175,7 @@ tabs:
         minHeight: 450px
 
   - name: Balances
+    chain: gnosis
     order: 5
     icon: 💰
     iconClass: wallet
@@ -206,6 +211,7 @@ tabs:
         minHeight: 450px
 
   - name: User Portfolio
+    chain: gnosis
     enabled: false
     order: 6
     icon: 👤
@@ -285,6 +291,7 @@ tabs:
       
 
   - name: Flows
+    chain: gnosis
     order: 7
     icon: 🔀
     iconClass: flow
@@ -315,6 +322,7 @@ tabs:
         minHeight: 500px
 
   - name: Glossary
+    chain: gnosis
     order: 8
     icon: 📝
     iconClass: file-text
@@ -323,3 +331,175 @@ tabs:
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 3200px
+
+  # ── Celo (Gnosis Pay 2.0 with MiniPay) ──────────────────────────────────
+  # Same product, second deployment. USDC/USDT only; no Cashback / Flows /
+  # User Portfolio yet. Tab names mirror the Gnosis Chain tabs so the chain
+  # switcher lands on the equivalent view.
+
+  - name: Overview
+    chain: celo
+    order: 11
+    icon: 📊
+    iconClass: chart-line
+    description: Gnosis Pay 2.0 on Celo, launched with MiniPay — payments settled in USDC and USDT.
+    resolutionToggle: true
+    defaultResolution: weekly
+    timeRanges: true
+    metrics:
+      - id: api_celo_gpay_total_volume
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_volume_7d
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_total_payments
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_payments_7d
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_volume_payments_by_token_weekly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 470px
+      - id: api_celo_gpay_payments_by_token_weekly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 470px
+
+  - name: Activity
+    chain: celo
+    order: 12
+    icon: 👥
+    iconClass: users
+    resolutionToggle: true
+    defaultResolution: weekly
+    metrics:
+      - id: api_celo_gpay_total_funded
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_active_users_7d
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_funded_addresses_weekly
+        gridRow: 1 / span 2
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_celo_gpay_payments_hourly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 300px
+      - id: api_celo_gpay_activity_by_action_weekly
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 450px
+
+  - name: KPI
+    chain: celo
+    order: 13
+    icon: 🎯
+    iconClass: gauge
+    timeRanges: true
+    metrics:
+      - id: api_celo_gpay_kpi_mau_latest
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_kpi_payment_volume_latest
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_kpi_arpu_latest
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_kpi_repeat_purchase_rate_latest
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_kpi_activity_monthly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_celo_gpay_kpi_flows_monthly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_celo_gpay_churn_monthly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_celo_gpay_churn_rates_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: api_celo_gpay_retention_pct_monthly
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: api_celo_gpay_retention_monthly
+        gridRow: 5
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_celo_gpay_retention_volume_monthly
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: api_celo_gpay_retention_by_action_users_monthly
+        gridRow: 6
+        gridColumn: 1 / span 12
+        minHeight: 500px
+      - id: api_celo_gpay_retention_by_action_monthly
+        gridRow: 7
+        gridColumn: 1 / span 12
+        minHeight: 500px
+
+  - name: Balances
+    chain: celo
+    order: 14
+    icon: 💰
+    iconClass: wallet
+    timeRanges: true
+    metrics:
+      - id: api_celo_gpay_total_balance
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_celo_gpay_wallet_balance_composition
+        gridRow: 1 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 280px
+      - id: api_celo_gpay_balances_usd_daily
+        gridRow: 2 / span 2
+        gridColumn: 1 / span 6
+        minHeight: 500px
+      - id: api_celo_gpay_balances_native_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 330px
+      - id: api_celo_gpay_balance_cohorts_holders_daily
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_celo_gpay_balance_cohorts_value_daily
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+
+  - name: Glossary
+    chain: celo
+    order: 15
+    icon: 📝
+    iconClass: file-text
+    metrics:
+      - id: text_celo_gpay_glossary
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 2600px

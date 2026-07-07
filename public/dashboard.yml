@@ -18,9 +18,16 @@ GnosisPay:
   order: 10
   icon: 💳
   iconClass: credit-card
-  tagline: Card issuance, spend volume, and merchant activity.
+  tagline: Card issuance, spend volume, and merchant activity — on Gnosis Chain, and on Celo with MiniPay.
   palette: gnosis-pay
   brand: pay
+  chains:
+    - id: gnosis
+      label: Gnosis Chain
+      color: "#3E6957"
+    - id: celo
+      label: Celo
+      color: "#FCFF52"
   source: /dashboards/gnosis-pay.yml
 GnosisApp:
   name: Gnosis App

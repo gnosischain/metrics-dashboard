@@ -93,7 +93,8 @@ const MetricGrid = ({
   onGlobalFilterChange = null,
   secondaryGlobalFilterValue = null,
   onSecondaryGlobalFilterChange = null,
-  dashboardPalette = null
+  dashboardPalette = null,
+  headerControls = null
 }) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
@@ -642,6 +643,7 @@ const MetricGrid = ({
     <div className="metrics-grid-container">
       {(dashboard || tabConfig) && (
         <DashboardHeader dashboard={dashboard} tabConfig={tabConfig}>
+          {headerControls}
           {showTimeRangeControls && (
             <div className="dashboard-view-header-timerange" data-testid="time-range-controls">
               {timeRanges.map(range => (

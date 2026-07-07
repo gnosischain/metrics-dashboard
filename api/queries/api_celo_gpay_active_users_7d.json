@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_active_users_7d",
+  "query": "SELECT value, change_pct FROM dbt.api_celo_gpay_active_users_7d"
+}

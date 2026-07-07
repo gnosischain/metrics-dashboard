@@ -160,6 +160,79 @@ Explorer:
     });
   });
 
+  it('parses multi-chain dashboards with chain-prefixed ids for non-default-chain tabs', () => {
+    const yaml = `
+GnosisPay:
+  name: Gnosis Pay
+  order: 1
+  chains:
+    - id: gnosis
+      label: Gnosis Chain
+      color: "#3E6957"
+    - id: celo
+      label: Celo
+  tabs:
+    - name: Overview
+      chain: gnosis
+      order: 1
+      metrics:
+        - id: api_execution_gpay_total_volume
+    - name: Cashback
+      chain: gnosis
+      order: 2
+      metrics:
+        - id: api_execution_gpay_cashback_total
+    - name: Overview
+      chain: celo
+      order: 11
+      metrics:
+        - id: api_celo_gpay_total_volume
+`;
+
+    const loaded = dashboardsService.loadFromYaml(yaml);
+    expect(loaded).toBe(true);
+
+    const dashboard = dashboardsService.getDashboard('gnosispay');
+    expect(dashboard.chains).toEqual([
+      { id: 'gnosis', label: 'Gnosis Chain', color: '#3E6957' },
+      { id: 'celo', label: 'Celo', color: null }
+    ]);
+    expect(dashboard.defaultChain).toBe('gnosis');
+
+    // Default-chain tab keeps its plain slug id (existing links keep working);
+    // the Celo variant gets a chain-prefixed id so both stay addressable.
+    const gnosisOverview = dashboardsService.getTab('gnosispay', 'overview');
+    const celoOverview = dashboardsService.getTab('gnosispay', 'celo-overview');
+
+    expect(gnosisOverview).toMatchObject({ chain: 'gnosis', baseId: 'overview' });
+    expect(gnosisOverview.metrics[0].id).toBe('api_execution_gpay_total_volume');
+    expect(celoOverview).toMatchObject({ chain: 'celo', baseId: 'overview', chainLabel: 'Celo' });
+    expect(celoOverview.metrics[0].id).toBe('api_celo_gpay_total_volume');
+  });
+
+  it('leaves single-chain dashboards untouched by chain parsing', () => {
+    const yaml = `
+Plain:
+  name: Plain
+  order: 1
+  tabs:
+    - name: Overview
+      order: 1
+      metrics:
+        - id: some_metric
+`;
+
+    const loaded = dashboardsService.loadFromYaml(yaml);
+    expect(loaded).toBe(true);
+
+    const dashboard = dashboardsService.getDashboard('plain');
+    expect(dashboard.chains).toBeNull();
+    expect(dashboard.defaultChain).toBeNull();
+
+    const tab = dashboardsService.getTab('plain', 'overview');
+    expect(tab).toMatchObject({ id: 'overview', baseId: 'overview', chain: null, chainLabel: null });
+  });
+
   it('supports explicit single-tab dashboards without sidebar subtabs', () => {
     const yaml = `
 Account Portfolio:
