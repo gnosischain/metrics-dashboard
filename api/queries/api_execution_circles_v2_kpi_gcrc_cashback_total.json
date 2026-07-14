@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_kpi_gcrc_cashback_total",
+  "query": "SELECT total_amount AS value FROM dbt.api_execution_circles_v2_gcrc_cashback_total"
+}

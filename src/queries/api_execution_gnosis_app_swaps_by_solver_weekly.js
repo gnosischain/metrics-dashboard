@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_gnosis_app_swaps_by_solver_weekly',
   name: 'Swaps by Solver',
   description: 'Weekly filled trades by solver',
-  metricDescription: 'Weekly filled CoW swap count broken down by solver (top 10).',
+  metricDescription: `Weekly count of **filled** CoW Protocol swaps broken down by the settling **solver**, on Monday-started weeks, showing the top 10 solvers by total filled swaps. A swap is attributed to the Gnosis App when its CoW \`PreSignature\` was relayed by an active Cometh ERC-4337 bundler for a known Gnosis App user; only filled orders (\`was_filled = 1\`) are counted, and \`solver\` is the CoW solver address that settled the order. Since 2025-11-12; unit: swap count.`,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

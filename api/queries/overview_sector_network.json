@@ -1,4 +1,0 @@
-{
-  "id": "overview_sector_network",
-  "query": "SELECT date, SUM(value) AS value\n    FROM dbt.api_p2p_discv5_clients_daily\n    WHERE metric = 'Clients'\n      AND date >= today() - INTERVAL 30 DAY\n    GROUP BY date\n    ORDER BY date ASC"
-}

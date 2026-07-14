@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Lending and pool TVL, best APY and top opportunities
     order: 1
     icon: "📊"
     iconClass: "chart-line"
@@ -30,6 +31,7 @@ tabs:
         minHeight: 450px
 
   - name: Savings xDAI
+    description: sDAI savings rate, supply and historical yield
     order: 2
     icon: "💎"
     iconClass: "savings"
@@ -48,6 +50,7 @@ tabs:
         minHeight: 450px
 
   - name: Lending
+    description: TVL, lenders, borrowers and activity by protocol
     order: 3
     icon: "💰"
     iconClass: "lending"
@@ -95,6 +98,7 @@ tabs:
         minHeight: 500px
 
   - name: Pools
+    description: Pool TVL, volume, fees, APR and LP activity
     order: 4
     icon: "📊"
     iconClass: "pool"
@@ -149,6 +153,7 @@ tabs:
         minHeight: 450px
 
   - name: User Portfolio
+    description: Wallet LP and lending positions, fees and activity
     enabled: false
     order: 5
     icon: "👤"

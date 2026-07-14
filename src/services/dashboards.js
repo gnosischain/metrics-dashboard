@@ -142,6 +142,11 @@ class DashboardService {
           baseId,
           chain,
           chainLabel,
+          // New per-tab multi-chain model: a tab lists the chains its cards can
+          // switch between (each card carries a `celoId`). A per-tab chain toggle
+          // swaps only that tab's data — unlike the legacy `chain:`-per-tab model
+          // above, it does not split the tab across the sidebar menu.
+          chains: Array.isArray(tab.chains) ? tab.chains.map(String) : null,
           name: tab.name,
           order: tab.order || 999,
           icon: tab.icon || '', // Emoji fallback for tab
@@ -171,8 +176,10 @@ class DashboardService {
           defaultTimeRange: tab.defaultTimeRange || 'ALL', // Default selected time range
           metrics: (tab.metrics || []).map(metric => ({
             id: metric.id,
+            celoId: metric.celoId || null, // Non-default-chain variant id for the per-tab chain toggle
             gridRow: metric.gridRow,
             gridColumn: metric.gridColumn,
+            celoGridColumn: metric.celoGridColumn || null, // Optional column override when the non-default chain is selected
             minHeight: metric.minHeight,
             tabGroup: metric.tabGroup || null,
             tabLabel: metric.tabLabel || null

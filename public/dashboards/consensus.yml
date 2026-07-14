@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Active validators, total staked, graffiti and credentials
     order: 1
     icon: 📊
     iconClass: activity
@@ -20,7 +21,8 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 6
         minHeight: 460px
-  - name: Performace
+  - name: Performance
+    description: Blocks, attestations and inclusion delay over time
     order: 2
     icon: ↔️
     iconClass: gauge
@@ -51,6 +53,7 @@ tabs:
         gridColumn: 9 / span 4
         minHeight: 380px
   - name: Staking
+    description: APY distribution, deposits and withdrawals volume
     order: 3
     icon: 📈
     iconClass: yield
@@ -89,6 +92,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Validators
+    description: Active counts, balances, credentials and consolidations
     order: 4
     icon: 👷
     iconClass: validator
@@ -96,11 +100,11 @@ tabs:
     metrics:
       - id: api_consensus_info_active_ongoing_latest
         gridRow: 1
-        gridColumn: 3 / span 4
+        gridColumn: 1 / span 6
         minHeight: 120px
       - id: api_consensus_info_active_stake_latest
         gridRow: 1
-        gridColumn: 7 / span 4
+        gridColumn: 7 / span 6
         minHeight: 120px
       - id: api_consensus_validators_active_daily
         gridRow: 2
@@ -135,6 +139,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Queues
+    description: Validator status breakdown and activation backlog
     order: 5
     icon: ⏱️
     iconClass: stopwatch
@@ -165,6 +170,7 @@ tabs:
         gridColumn: 1 / span 6
         minHeight: 450px
   - name: Blobs
+    description: Commitment counts and zero-commitment blocks per day
     order: 6
     icon: 🧩
     iconClass: blob
@@ -178,6 +184,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Validator Explorer
+    description: Lifetime profiles by index, pubkey or credential
     enabled: false
     order: 7
     icon: 🔎
@@ -203,6 +210,7 @@ tabs:
   # Placed at order:8 so the custom tab stays the default entry point.
   # ---------------------------------------------------------------------------
   - name: Validator Explorer (grid)
+    description: Operator KPIs, balance, income and members table
     enabled: false
     order: 8
     icon: 🧪

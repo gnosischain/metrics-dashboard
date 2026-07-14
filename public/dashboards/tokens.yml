@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Token supply distribution by class and sector
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -23,6 +24,7 @@ tabs:
         gridColumn: 5 / span 8
         minHeight: 624px
   - name: Per-token breakdown
+    description: Supply, holders, volume and balance cohorts per token
     order: 2
     icon: 🪙
     iconClass: coins

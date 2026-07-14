@@ -2,7 +2,7 @@ const metric = {
   "id": "growth_ga_card_funded_usd_weekly",
   "name": "GA card funding (USD, weekly)",
   "description": "Money loaded onto GA-controlled cards",
-  "metricDescription": "Weekly USD inflows (Fiat Top Up + Crypto Deposit) on Gnosis-App-CONTROLLED Gnosis Pay Safes, split by onboarding_class (onboarded_via_ga vs imported). GA-scoped via is_currently_ga_owned - NOT the all-GP total (the GP-wide figure lives on the gnosis-pay dashboard). Source: fct_execution_gnosis_app_gpay_volume_daily.",
+  metricDescription: `Weekly USD **loaded onto** Gnosis-App-controlled Gnosis Pay cards — \`Fiat Top Up\` plus \`Crypto Deposit\` inflows (money added, not current balance; balance = inflows minus spend). Split by \`onboarding_class\`: \`onboarded_via_ga\` (the GP Safe's first owner was a Gnosis App user) vs \`imported\` (a GA owner was added to an existing GP Safe later). Scoped to GA-controlled wallets and counted only from the moment each wallet became GA-owned (\`first_ga_owner_at\`), so this is NOT the all-Gnosis-Pay total (that lives on the gnosis-pay dashboard). Unit: USD; the current incomplete day is excluded.`,
   "chartType": "bar",
   "isTimeSeries": true,
   "enableZoom": true,

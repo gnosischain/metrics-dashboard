@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_inviter_farm_quota",
+  "query": "SELECT\n      inviter,\n      invites_claimed,\n      n_claim_events,\n      current_quota,\n      toDate(first_claim_at) AS first_claim,\n      toDate(last_claim_at)  AS last_claim\n    FROM dbt.api_execution_circles_v2_inviter_farm_quota\n    ORDER BY invites_claimed DESC\n    LIMIT 200"
+}

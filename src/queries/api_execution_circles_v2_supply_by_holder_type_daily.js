@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_supply_by_holder_type_daily',
   name: 'Supply by Holder Type',
   description: 'Daily CRC supply broken down by holder category',
-  metricDescription: 'Daily CRC supply broken down by holder type. Categories include avatar types (Human, Group, Org) and Dune-labelled sectors such as DEXes, wallets, and AA accounts.',
+  metricDescription: `Daily CRC supply split by the category of the address holding it. Each holder is labelled by its Circles avatar type (\`Human\`, \`Group\`, \`Organization\`) when it is a registered avatar; otherwise by a crawler/Dune-style label \`project\` (e.g. \`DEX\`, \`Wallets and AA\`); otherwise \`Other\`. Values sum positive balances only — the zero address and any zero/negative balances are excluded — in CRC. Toggle **Static** (nominal \`supply\`) vs **Demurraged** (demurrage-adjusted \`demurraged_supply\`); the current incomplete day is excluded.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

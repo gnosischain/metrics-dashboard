@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_swaps",
+  "query": "SELECT app_scope, status, n_swaps\n    FROM dbt.api_execution_gnosis_app_gt_swaps\n    ORDER BY app_scope, status"
+}

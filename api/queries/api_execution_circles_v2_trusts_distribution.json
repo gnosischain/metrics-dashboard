@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_trusts_distribution",
-  "query": "SELECT direction, trust_bucket, avatar_count\n    FROM dbt.api_execution_circles_v2_trusts_distribution\n    ORDER BY direction, trust_bucket"
+  "query": "SELECT direction, trust_bucket, avatar_count\n    FROM dbt.api_execution_circles_v2_trusts_distribution\n    ORDER BY\n      direction,\n      multiIf(\n        trust_bucket = '0',      0,\n        trust_bucket = '1-5',    1,\n        trust_bucket = '6-10',   2,\n        trust_bucket = '11-25',  3,\n        trust_bucket = '26-50',  4,\n        trust_bucket = '51-100', 5,\n        trust_bucket = '100+',   6,\n        99)"
 }

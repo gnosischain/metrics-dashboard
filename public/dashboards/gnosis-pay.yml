@@ -1,6 +1,11 @@
 tabs:
+  # Shared tabs carry `chains: [gnosis, celo]` and a per-card `celoId`. A per-tab
+  # chain toggle swaps only that tab's card data (api_execution_gpay_* ↔
+  # api_celo_gpay_*) — the sidebar menu never changes. Gnosis-only tabs
+  # (Cashback / User Portfolio / Flows) omit `chains` and show no toggle.
   - name: Overview
-    chain: gnosis
+    chains: [gnosis, celo]
+    description: Payment volume, counts and token mix
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -9,32 +14,39 @@ tabs:
     timeRanges: true
     metrics:
       - id: api_execution_gpay_total_volume
+        celoId: api_celo_gpay_total_volume
         gridRow: 1
         gridColumn: 1 / span 3
         minHeight: 120px
       - id: api_execution_gpay_volume_7d
+        celoId: api_celo_gpay_volume_7d
         gridRow: 1
         gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gpay_total_payments
+        celoId: api_celo_gpay_total_payments
         gridRow: 1
         gridColumn: 7 / span 3
         minHeight: 120px
       - id: api_execution_gpay_payments_7d
+        celoId: api_celo_gpay_payments_7d
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
       - id: api_execution_gpay_volume_payments_by_token_weekly
+        celoId: api_celo_gpay_volume_payments_by_token_weekly
         gridRow: 2
         gridColumn: 1 / span 6
         minHeight: 470px
       - id: api_execution_gpay_payments_by_token_weekly
+        celoId: api_celo_gpay_payments_by_token_weekly
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 470px
 
   - name: Activity
-    chain: gnosis
+    chains: [gnosis, celo]
+    description: Funded wallets, active users and hourly activity
     order: 2
     icon: 👥
     iconClass: users
@@ -42,88 +54,107 @@ tabs:
     defaultResolution: weekly
     metrics:
       - id: api_execution_gpay_total_funded
+        celoId: api_celo_gpay_total_funded
         gridRow: 1
         gridColumn: 7 / span 3
         minHeight: 120px
       - id: api_execution_gpay_active_users_7d
+        celoId: api_celo_gpay_active_users_7d
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
       - id: api_execution_gpay_funded_addresses_weekly
+        celoId: api_celo_gpay_funded_addresses_weekly
         gridRow: 1 / span 2
         gridColumn: 1 / span 6
         minHeight: 432px
       - id: api_execution_gpay_payments_hourly
+        celoId: api_celo_gpay_payments_hourly
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 300px
       - id: api_execution_gpay_activity_by_action_weekly
+        celoId: api_celo_gpay_activity_by_action_weekly
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
 
   - name: KPI
-    chain: gnosis
+    chains: [gnosis, celo]
+    description: MAU, ARPU, retention and churn
     order: 3
     icon: 🎯
     iconClass: gauge
     timeRanges: true
     metrics:
       - id: api_execution_gpay_kpi_mau_latest
+        celoId: api_celo_gpay_kpi_mau_latest
         gridRow: 1
         gridColumn: 1 / span 3
         minHeight: 120px
       - id: api_execution_gpay_kpi_payment_volume_latest
+        celoId: api_celo_gpay_kpi_payment_volume_latest
         gridRow: 1
         gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gpay_kpi_arpu_latest
+        celoId: api_celo_gpay_kpi_arpu_latest
         gridRow: 1
         gridColumn: 7 / span 3
         minHeight: 120px
       - id: api_execution_gpay_kpi_repeat_purchase_rate_latest
+        celoId: api_celo_gpay_kpi_repeat_purchase_rate_latest
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
       - id: api_execution_gpay_kpi_activity_monthly
+        celoId: api_celo_gpay_kpi_activity_monthly
         gridRow: 2
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_gpay_kpi_flows_monthly
+        celoId: api_celo_gpay_kpi_flows_monthly
         gridRow: 2
         gridColumn: 7 / span 6
         minHeight: 450px
       - id: api_execution_gpay_churn_monthly
+        celoId: api_celo_gpay_churn_monthly
         gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 500px
       - id: api_execution_gpay_churn_rates_monthly
+        celoId: api_celo_gpay_churn_rates_monthly
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 500px
       - id: api_execution_gpay_retention_pct_monthly
+        celoId: api_celo_gpay_retention_pct_monthly
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 500px
       - id: api_execution_gpay_retention_monthly
+        celoId: api_celo_gpay_retention_monthly
         gridRow: 5
         gridColumn: 1 / span 6
         minHeight: 500px
       - id: api_execution_gpay_retention_volume_monthly
+        celoId: api_celo_gpay_retention_volume_monthly
         gridRow: 5
         gridColumn: 7 / span 6
         minHeight: 500px
       - id: api_execution_gpay_retention_by_action_users_monthly
+        celoId: api_celo_gpay_retention_by_action_users_monthly
         gridRow: 6
         gridColumn: 1 / span 12
         minHeight: 500px
       - id: api_execution_gpay_retention_by_action_monthly
+        celoId: api_celo_gpay_retention_by_action_monthly
         gridRow: 7
         gridColumn: 1 / span 12
         minHeight: 500px
 
   - name: Cashback
-    chain: gnosis
+    description: Cashback recipients, spend and cohort retention
     order: 4
     icon: 🎁
     iconClass: gift
@@ -138,7 +169,7 @@ tabs:
         gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gpay_cashback_recipients_weekly
-        gridRow: 1 / span 3
+        gridRow: 1 / span 2
         gridColumn: 7 / span 6
         minHeight: 290px
       - id: api_execution_gpay_cashback_total
@@ -175,13 +206,16 @@ tabs:
         minHeight: 450px
 
   - name: Balances
-    chain: gnosis
+    chains: [gnosis, celo]
+    description: Wallet balances, composition and holder cohorts
     order: 5
     icon: 💰
     iconClass: wallet
     timeRanges: true
     metrics:
       - id: api_execution_gpay_total_balance
+        celoId: api_celo_gpay_total_balance
+        celoGridColumn: 1 / span 6
         gridRow: 1
         gridColumn: 1 / span 3
         minHeight: 120px
@@ -190,28 +224,33 @@ tabs:
         gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gpay_wallet_balance_composition
+        celoId: api_celo_gpay_wallet_balance_composition
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
         minHeight: 280px
       - id: api_execution_gpay_balances_usd_daily
+        celoId: api_celo_gpay_balances_usd_daily
         gridRow: 2 / span 2
         gridColumn: 1 / span 6
         minHeight: 500px
       - id: api_execution_gpay_balances_native_daily
+        celoId: api_celo_gpay_balances_native_daily
         gridRow: 3
         gridColumn: 7 / span 6
         minHeight: 330px
       - id: api_execution_gpay_balance_cohorts_holders_daily
+        celoId: api_celo_gpay_balance_cohorts_holders_daily
         gridRow: 4
         gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_execution_gpay_balance_cohorts_value_daily
+        celoId: api_celo_gpay_balance_cohorts_value_daily
         gridRow: 4
         gridColumn: 7 / span 6
         minHeight: 450px
 
   - name: User Portfolio
-    chain: gnosis
+    description: Per-wallet balances, activity and lifetime stats
     enabled: false
     order: 6
     icon: 👤
@@ -233,15 +272,15 @@ tabs:
     globalFilterVertical: true
     metrics:
       - id: api_execution_gpay_user_lifetime_tenure_days
-        gridRow: 1 
+        gridRow: 1
         gridColumn: 1 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_inactivity_days
-        gridRow: 1 
+        gridRow: 1
         gridColumn: 5 / span 4
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_avg_monthly_payment_volume_usd
-        gridRow: 2 
+        gridRow: 2
         gridColumn: 1 / span 8
         minHeight: 120px
       - id: api_execution_gpay_user_lifetime_total_deposit_volume_usd
@@ -288,10 +327,10 @@ tabs:
         gridRow: 7
         gridColumn: 7 / span 6
         minHeight: 450px
-      
+
 
   - name: Flows
-    chain: gnosis
+    description: Deposit and withdrawal flows by counterparty
     order: 7
     icon: 🔀
     iconClass: flow
@@ -322,184 +361,14 @@ tabs:
         minHeight: 500px
 
   - name: Glossary
-    chain: gnosis
+    chains: [gnosis, celo]
+    description: Field definitions and data sources
     order: 8
     icon: 📝
     iconClass: file-text
     metrics:
       - id: text_gpay_glossary
+        celoId: text_celo_gpay_glossary
         gridRow: 1
         gridColumn: 1 / span 12
         minHeight: 3200px
-
-  # ── Celo (Gnosis Pay 2.0 with MiniPay) ──────────────────────────────────
-  # Same product, second deployment. USDC/USDT only; no Cashback / Flows /
-  # User Portfolio yet. Tab names mirror the Gnosis Chain tabs so the chain
-  # switcher lands on the equivalent view.
-
-  - name: Overview
-    chain: celo
-    order: 11
-    icon: 📊
-    iconClass: chart-line
-    description: Gnosis Pay 2.0 on Celo, launched with MiniPay — payments settled in USDC and USDT.
-    resolutionToggle: true
-    defaultResolution: weekly
-    timeRanges: true
-    metrics:
-      - id: api_celo_gpay_total_volume
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_volume_7d
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_total_payments
-        gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_payments_7d
-        gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_volume_payments_by_token_weekly
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 470px
-      - id: api_celo_gpay_payments_by_token_weekly
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 470px
-
-  - name: Activity
-    chain: celo
-    order: 12
-    icon: 👥
-    iconClass: users
-    resolutionToggle: true
-    defaultResolution: weekly
-    metrics:
-      - id: api_celo_gpay_total_funded
-        gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_active_users_7d
-        gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_funded_addresses_weekly
-        gridRow: 1 / span 2
-        gridColumn: 1 / span 6
-        minHeight: 432px
-      - id: api_celo_gpay_payments_hourly
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 300px
-      - id: api_celo_gpay_activity_by_action_weekly
-        gridRow: 3
-        gridColumn: 1 / span 12
-        minHeight: 450px
-
-  - name: KPI
-    chain: celo
-    order: 13
-    icon: 🎯
-    iconClass: gauge
-    timeRanges: true
-    metrics:
-      - id: api_celo_gpay_kpi_mau_latest
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_kpi_payment_volume_latest
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_kpi_arpu_latest
-        gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_kpi_repeat_purchase_rate_latest
-        gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_kpi_activity_monthly
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_celo_gpay_kpi_flows_monthly
-        gridRow: 2
-        gridColumn: 7 / span 6
-        minHeight: 450px
-      - id: api_celo_gpay_churn_monthly
-        gridRow: 3
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: api_celo_gpay_churn_rates_monthly
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 500px
-      - id: api_celo_gpay_retention_pct_monthly
-        gridRow: 4
-        gridColumn: 1 / span 12
-        minHeight: 500px
-      - id: api_celo_gpay_retention_monthly
-        gridRow: 5
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: api_celo_gpay_retention_volume_monthly
-        gridRow: 5
-        gridColumn: 7 / span 6
-        minHeight: 500px
-      - id: api_celo_gpay_retention_by_action_users_monthly
-        gridRow: 6
-        gridColumn: 1 / span 12
-        minHeight: 500px
-      - id: api_celo_gpay_retention_by_action_monthly
-        gridRow: 7
-        gridColumn: 1 / span 12
-        minHeight: 500px
-
-  - name: Balances
-    chain: celo
-    order: 14
-    icon: 💰
-    iconClass: wallet
-    timeRanges: true
-    metrics:
-      - id: api_celo_gpay_total_balance
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_celo_gpay_wallet_balance_composition
-        gridRow: 1 / span 2
-        gridColumn: 7 / span 6
-        minHeight: 280px
-      - id: api_celo_gpay_balances_usd_daily
-        gridRow: 2 / span 2
-        gridColumn: 1 / span 6
-        minHeight: 500px
-      - id: api_celo_gpay_balances_native_daily
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 330px
-      - id: api_celo_gpay_balance_cohorts_holders_daily
-        gridRow: 4
-        gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_celo_gpay_balance_cohorts_value_daily
-        gridRow: 4
-        gridColumn: 7 / span 6
-        minHeight: 450px
-
-  - name: Glossary
-    chain: celo
-    order: 15
-    icon: 📝
-    iconClass: file-text
-    metrics:
-      - id: text_celo_gpay_glossary
-        gridRow: 1
-        gridColumn: 1 / span 12
-        minHeight: 2600px

@@ -74,6 +74,84 @@ describe('BarChart custom series colors and category sorting', () => {
     expect(options.xAxis.data).toEqual(['A', 'B', 'C']);
   });
 
+  it('paints only below-zero bars with negativeColor on a single series', () => {
+    const options = BarChart.getOptions([
+      { date: '2025-01-01', value: 5 },
+      { date: '2025-01-02', value: 0 },
+      { date: '2025-01-03', value: -3 }
+    ], {
+      xField: 'date',
+      yField: 'value',
+      negativeColor: '#ef4444'
+    }, false);
+
+    const data = options.series[0].data;
+    // positive and zero stay plain numbers (default series color)
+    expect(data[0]).toBe(5);
+    expect(data[1]).toBe(0);
+    // negative becomes an object carrying the red itemStyle
+    expect(data[2]).toEqual({ value: -3, itemStyle: { color: '#ef4444' } });
+  });
+
+  it('is a no-op when negativeColor is not set (other charts unaffected)', () => {
+    const options = BarChart.getOptions([
+      { date: '2025-01-01', value: 5 },
+      { date: '2025-01-03', value: -3 }
+    ], {
+      xField: 'date',
+      yField: 'value'
+    }, false);
+
+    // data stays as plain numbers — identical to prior behavior
+    expect(options.series[0].data).toEqual([5, -3]);
+  });
+
+  it('does not apply negativeColor to multi-series (stacked) bars', () => {
+    const options = BarChart.getOptions([
+      { label: 'A', flow: 'Inflow', amount_usd: 90 },
+      { label: 'A', flow: 'Outflow', amount_usd: -40 }
+    ], {
+      xField: 'label',
+      yField: 'amount_usd',
+      seriesField: 'flow',
+      negativeColor: '#ef4444'
+    }, false);
+
+    // multi-series data remains plain numbers; negativeColor is single-series only
+    for (const series of options.series) {
+      for (const point of series.data) {
+        expect(typeof point).toBe('number');
+      }
+    }
+  });
+
+  it('appends a line overlay series from lineOverlayField (one point per category)', () => {
+    const options = BarChart.getOptions([
+      { date: '2025-01-01', label: 'New', value: 3, active: 10 },
+      { date: '2025-01-01', label: 'Returning', value: 5, active: 10 },
+      { date: '2025-01-02', label: 'New', value: 4, active: 9 },
+      { date: '2025-01-02', label: 'Returning', value: 4, active: 9 }
+    ], {
+      xField: 'date', yField: 'value', seriesField: 'label', stacked: true,
+      lineOverlayField: 'active', lineOverlayLabel: 'Active'
+    }, false);
+
+    const line = options.series.find((s) => s.type === 'line');
+    expect(line).toBeTruthy();
+    expect(line.name).toBe('Active');
+    expect(line.data).toEqual([10, 9]); // one Active value per date
+    // the bar series are still present
+    expect(options.series.filter((s) => s.type === 'bar').map((s) => s.name).sort()).toEqual(['New', 'Returning']);
+  });
+
+  it('adds no line series when lineOverlayField is unset (no-op)', () => {
+    const options = BarChart.getOptions([
+      { date: '2025-01-01', label: 'New', value: 3 },
+      { date: '2025-01-01', label: 'Returning', value: 5 }
+    ], { xField: 'date', yField: 'value', seriesField: 'label' }, false);
+    expect(options.series.some((s) => s.type === 'line')).toBe(false);
+  });
+
   it('reserves extra top grid space when a top legend is visible', () => {
     const options = BarChart.getOptions([
       { label: 'Safe', flow: 'Outflow', amount_usd: -40 },

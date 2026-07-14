@@ -73,13 +73,37 @@ const formatPctCell = (cell) => {
   return n.toFixed(1) + '%';
 };
 
+// Same-tab in-app navigation (mirrors the yields opportunities drill-down):
+// pushState + popstate lets Dashboard hydrate the target tab's global filter
+// from the URL without a full reload. We navigate on a plain left click and
+// only defer to the browser default for modifier / middle clicks (open in new
+// tab) — deliberately NOT gating on event.defaultPrevented, which Tabulator's
+// rowClick may already have set.
+const navigateInApp = (href, event) => {
+  if (!href || typeof window === 'undefined') return false;
+  if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || Number(event.button) > 0)) {
+    return false;
+  }
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const nextUrl = href.startsWith('?') ? `${window.location.pathname}${href}` : href;
+  const currentUrl = `${window.location.pathname}${window.location.search}`;
+  if (nextUrl === currentUrl) return false;
+  window.history.pushState({}, '', href);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  return true;
+};
+
 const metric = {
   id: 'api_execution_circles_v2_group_token_supply_top_latest',
   name: 'Top Groups by Supply',
   description: 'Leaderboard of Circles v2 groups by personal-token supply',
-  metricDescription: `Top 100 Circles v2 groups ranked by current personal-token supply.
+  metricDescription: `Leaderboard of the **top 100 Circles v2 groups by current personal-token supply** (groups with zero supply excluded), from \`fct_execution_circles_v2_group_token_supply_current\`.
 
-\`Supply\` is total CRC in circulation for that group's token (native ERC-1155 + ERC-20 wrapper combined). \`Wrapped %\` shows how much sits in the ERC-20 wrapper contract. \`Members\` is the group's outgoing trust-list size.`,
+- \`Supply\` — total CRC of that group's personal token in circulation across every holder, native ERC-1155 plus ERC-20 wrapper combined (balances below a 0.001 CRC dust threshold are ignored).
+- \`Wrapped\` / \`Wrapped %\` — the CRC amount, and its share of supply, held in the ERC-20 wrapper form.
+- \`Members\` — the group's size, i.e. distinct trustees on its outgoing trust list.
+
+Figures are raw (non-demurraged) CRC, ranked by supply descending. Click a row to open that group in the Group Explorer.`,
   chartType: 'table',
   tableConfig: {
     layout: 'fitColumns',
@@ -97,6 +121,10 @@ const metric = {
       { title: 'Members',   field: 'n_members',    width: 110, sorter: 'number', hozAlign: 'right', formatter: formatNumberCell(0) },
     ],
     initialSort: [{ column: 'rank', dir: 'asc' }],
+    onRowClick: (rowData, _row, event) => {
+      const g = String(rowData.group_avatar || '').toLowerCase();
+      if (g) navigateInApp(`?dashboard=circles&tab=group-explorer&group_address=${g}`, event);
+    },
   },
   query: `
     SELECT

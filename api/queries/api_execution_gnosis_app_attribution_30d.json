@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_attribution_30d",
+  "query": "SELECT event_kind, model, sum(credit) AS value\n    FROM (\n      SELECT event_kind, 'First touch' AS model, first_touch      AS credit FROM dbt.api_execution_gnosis_app_attribution_30d\n      UNION ALL SELECT event_kind, 'Last touch',   last_touch       FROM dbt.api_execution_gnosis_app_attribution_30d\n      UNION ALL SELECT event_kind, 'Linear',       linear           FROM dbt.api_execution_gnosis_app_attribution_30d\n      UNION ALL SELECT event_kind, 'Time decay',   time_decay_hl_7d FROM dbt.api_execution_gnosis_app_attribution_30d\n    )\n    WHERE event_kind IN (\n      SELECT event_kind FROM dbt.api_execution_gnosis_app_attribution_30d\n      GROUP BY event_kind ORDER BY sum(linear) DESC LIMIT 10\n    )\n    GROUP BY event_kind, model\n    ORDER BY event_kind, model"
+}

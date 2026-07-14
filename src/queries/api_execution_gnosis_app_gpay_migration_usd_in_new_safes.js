@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gpay_migration_usd_in_new_safes",
   "name": "Value in new Safes",
   "description": "USD now held in migrated new Safes",
-  "metricDescription": "Latest USD held across migrated NEW (canonical) Safes. NOTE: do not add to 'stranded in old' \u2014 refunded pairs can hold value in both at once.",
+  "metricDescription": `**USD held in migrated NEW (canonical) Safes.** Sums the latest daily balance (\`balance_usd\`, across all tokens) of every NEW Safe that a Gnosis Pay Safe was migrated into during the June 2026 post-exploit migration (the \`canonical_address\` targets in \`int_execution_gpay_safe_canonical\`). Balances come from \`int_execution_gpay_balances_daily\` at its most recent completed date (\`today()\` is excluded). Do NOT add this to **Stranded in old Safes**: for refunded (exploited) pairs the same value can be counted in both the old and new Safe at once.`,
   "chartType": "numberDisplay",
   "format": "formatCurrencyCompact",
   "valueField": "value",

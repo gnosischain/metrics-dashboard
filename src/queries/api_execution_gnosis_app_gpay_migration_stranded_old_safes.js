@@ -4,7 +4,7 @@ const metric = {
   id: 'api_execution_gnosis_app_gpay_migration_stranded_old_safes',
   name: 'Stranded funds — old Safes still holding USD',
   description: 'Migrated users who have not moved funds to their new card (outreach list)',
-  metricDescription: "Top migrated OLD Safes that still hold USD at the latest balance date — funds not yet moved to the new card. 'New card' shows whether that user's new Safe has been active since the migration. Actionable for outreach.",
+  metricDescription: `Outreach list: the top 50 migrated **old** Safes still holding a positive USD balance at the latest \`int_execution_gpay_balances_daily\` date — funds the user has not yet moved to their new card. \`usd_stranded\` sums all token USD balances held by the old Safe on that latest date; joined via \`int_execution_gpay_safe_canonical\` to the user's \`gp_user_id\` and new (canonical) Safe. **New card** reads \`active\` when that new Safe has any \`int_execution_gpay_activity\` since \`2026-06-04\`, else \`dormant\`. Ranked by USD stranded, top 50.`,
   chartType: 'table',
   columns: [
     { field: 'old_safe', title: 'Old Safe', formatter: (cell) => formatTruncateHex(cell.getValue()) },

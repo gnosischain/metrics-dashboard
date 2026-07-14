@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_kpi_avg_members_per_group_latest',
   name: 'Avg Members / Group',
   description: 'Mean group size (members per group)',
-  metricDescription: 'Average member count across Circles v2 groups, where membership = the group\'s outgoing trust list. Median shown as tooltip context.',
+  metricDescription: `**Avg Members / Group** is the mean member count across all Circles v2 group avatars. A group's members are the distinct addresses on its outgoing trust list (rows where \`truster = group\`), the Circles v2 group-membership semantic; groups with zero current members are included as 0, which pulls the average down. Median member count is provided as tooltip context. This is a current snapshot with no upstream time series, so no change delta is shown.`,
   chartType: 'numberDisplay',
   format: 'formatNumber',
   valueField: 'value',

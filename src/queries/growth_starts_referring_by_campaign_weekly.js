@@ -2,7 +2,7 @@ const metric = {
   "id": "growth_starts_referring_by_campaign_weekly",
   "name": "Starts referring by campaign",
   "description": "Attributed referral starts per campaign x week",
-  "metricDescription": "First on-chain referral milestone (invited_by appears on a new Circles Human registration) credited to a UTM campaign, by week. Causally gated + clipped to >=2025-10. 'unknown' excluded.",
+  "metricDescription": `Weekly count of Gnosis App users hitting the \`starts_referring\` milestone — the first time an address appears as \`invited_by\` on a new Circles Human registration — credited to the UTM marketing campaign that acquired them, split by campaign. Attribution is **first-touch** only (one campaign per user, no double-counting) and **causally gated**: a campaign is credited only when its touch timestamp precedes the conversion, otherwise the touch is dropped to \`unknown\`; the untagged/organic \`unknown\` bucket is excluded here. Clipped to weeks >= 2025-10-01 (the Mixpanel-tracking era; earlier "attributions" would be back-stamped). Only about 4-7% of in-era conversions carry a causally valid campaign. Unit: new users (count) per campaign x week.`,
   "chartType": "bar",
   "isTimeSeries": true,
   "enableZoom": true,

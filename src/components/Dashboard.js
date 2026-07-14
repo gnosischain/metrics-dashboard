@@ -33,18 +33,6 @@ const getTabFilterKeyFor = (dashboardId, tabId) => {
   return `${dashboardId}:${tabId}`;
 };
 
-// Pick a readable text color for a solid chain-brand fill (e.g. dark text on
-// Celo yellow, white text on Gnosis green).
-const readableTextOn = (hexColor) => {
-  const hex = String(hexColor || '').replace('#', '');
-  if (hex.length !== 6) return '#ffffff';
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 150 ? '#15211c' : '#ffffff';
-};
-
 const resolveRequestedView = (search = window.location.search) => {
   const params = new URLSearchParams(search);
   return params.has('dashboard') ? 'dashboard' : 'landing';
@@ -222,7 +210,9 @@ const Dashboard = () => {
     let cancelled = false;
     setActiveTabConfigsLoaded(false);
 
-    const ids = rawTabMetrics.map((m) => m.id).filter(Boolean);
+    // Load each card's default id AND its non-default-chain variant (`celoId`)
+    // so the per-tab chain toggle swaps data without a skeleton flash.
+    const ids = rawTabMetrics.flatMap((m) => [m.id, m.celoId]).filter(Boolean);
     metricsService.loadMetricConfigs(ids).then(() => {
       if (!cancelled) setActiveTabConfigsLoaded(true);
 
@@ -585,79 +575,11 @@ const Dashboard = () => {
   );
   const activeDashboardPalette = activeDashboardConfig?.palette || null;
 
-  // Multi-chain dashboards: the active chain is derived from the active tab
-  // (chain-tagged tabs carry it; URL deep links to e.g. ?tab=celo-overview
-  // therefore restore the chain for free).
-  const activeChain = activeDashboardConfig?.chains
-    ? (activeTabConfig?.chain || activeDashboardConfig.defaultChain)
-    : null;
-
-  // Switch chain: land on the same tab (by base name) on the target chain,
-  // falling back to the target chain's first tab when there is no counterpart
-  // (e.g. Cashback exists on Gnosis Chain only).
-  const handleChainSwitch = useCallback((chainId) => {
-    if (!activeDashboardConfig?.chains || !chainId || chainId === activeChain) {
-      return;
-    }
-    const allTabs = dashboardsService.getDashboardTabs(activeDashboard);
-    const targetTabs = allTabs.filter(
-      (tab) => (tab.chain || activeDashboardConfig.defaultChain) === chainId
-    );
-    if (targetTabs.length === 0) {
-      return;
-    }
-    const counterpart = targetTabs.find((tab) => tab.baseId === activeTabConfig?.baseId) || targetTabs[0];
-    handleNavigation(activeDashboard, counterpart.id);
-  }, [activeChain, activeDashboard, activeDashboardConfig, activeTabConfig?.baseId, handleNavigation]);
-
-  // Sidebar view of dashboards: multi-chain dashboards only list the active
-  // chain's tabs (default chain when the dashboard is not active).
-  const navDashboards = useMemo(() => dashboards.map((dashboard) => {
-    if (!dashboard.chains) {
-      return dashboard;
-    }
-    const visibleChain = dashboard.id === activeDashboard
-      ? (activeTabConfig?.chain || dashboard.defaultChain)
-      : dashboard.defaultChain;
-    return {
-      ...dashboard,
-      tabs: (dashboard.tabs || []).filter(
-        (tab) => (tab.chain || dashboard.defaultChain) === visibleChain
-      )
-    };
-  }), [dashboards, activeDashboard, activeTabConfig?.chain]);
-
-  // The active segment is filled with the chain's brand color so the current
-  // side of the toggle is legible at a glance (green = Gnosis Chain,
-  // yellow = Celo); inactive segments show a small color dot as a preview.
-  const chainSwitcher = activeDashboardConfig?.chains && activeDashboardConfig.chains.length > 1 ? (
-    <div className="chain-switcher" role="group" aria-label="Chain">
-      {activeDashboardConfig.chains.map((chain) => {
-        const isActive = activeChain === chain.id;
-        return (
-          <button
-            key={chain.id}
-            type="button"
-            className={`chain-switcher-btn${isActive ? ' active' : ''}`}
-            aria-pressed={isActive}
-            style={isActive && chain.color
-              ? { background: chain.color, color: readableTextOn(chain.color) }
-              : undefined}
-            onClick={() => handleChainSwitch(chain.id)}
-          >
-            {chain.color && !isActive && (
-              <span
-                className="chain-switcher-dot"
-                style={{ background: chain.color }}
-                aria-hidden="true"
-              />
-            )}
-            {chain.label}
-          </button>
-        );
-      })}
-    </div>
-  ) : null;
+  // Multi-chain dashboards no longer split their tabs across the sidebar or
+  // carry a dashboard-level chain switcher. Chain selection is now a per-tab
+  // control rendered inside MetricGrid (tabs list `chains:` and each card a
+  // `celoId`), so toggling a chain swaps only the current tab's card data and
+  // the menu stays stable. The sidebar therefore lists every tab as-is.
 
   const getActiveDashboardName = () => {
     return activeDashboardConfig ? activeDashboardConfig.name : '';
@@ -937,7 +859,7 @@ const Dashboard = () => {
             className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileExpanded ? 'mobile-expanded' : ''}`}
           >
             <TabNavigation
-              dashboards={navDashboards}
+              dashboards={dashboards}
               activeDashboard={activeDashboard}
               tabs={tabs}
               activeTab={activeTab}
@@ -987,7 +909,6 @@ const Dashboard = () => {
                     secondaryGlobalFilterValue={currentSecondaryGlobalFilter}
                     onSecondaryGlobalFilterChange={handleSecondaryGlobalFilterChange}
                     dashboardPalette={activeDashboardPalette}
-                    headerControls={chainSwitcher}
                   />
                 )}
               </div>

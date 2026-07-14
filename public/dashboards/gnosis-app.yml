@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: User totals, new signups and monthly registrations
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -7,56 +8,38 @@ tabs:
     defaultResolution: weekly
     timeRanges: true
     metrics:
-      # KPI row
+      # KPI row (Swaps / TopUp KPIs live on their own tabs — no cross-tab repeats)
       - id: api_execution_gnosis_app_kpi_total_users
         gridRow: 1
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 6
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_new_users_7d
         gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_swaps_7d
-        gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_topup_volume_7d
-        gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      # Time series
-      - id: api_execution_gnosis_app_users_activity_weekly
-        gridRow: 2
-        gridColumn: 1 / span 6
-        minHeight: 470px
-      - id: api_execution_gnosis_app_activity_by_action_weekly
-        gridRow: 2
         gridColumn: 7 / span 6
-        minHeight: 470px
+        minHeight: 120px
       # GT onboarding — new identity/profile registrations (envio_ga avatar.created_at)
+      # (User Activity + Activity-by-Action charts live on the Activity tab; Overview is KPI + onboarding)
       - id: api_execution_gnosis_app_gt_registrations_monthly
-        gridRow: 3
+        gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 440px
 
   - name: Activity
+    description: Active users, repeat purchases and actions by type
     order: 2
     icon: 👥
     iconClass: users
     resolutionToggle: true
     defaultResolution: weekly
     metrics:
+      # GP Wallets KPI lives on the GP Wallets tab (removed here to avoid a deep+deep repeat)
       - id: api_execution_gnosis_app_kpi_weekly_economically_active_users_latest
         gridRow: 1
-        gridColumn: 1 / span 4
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
-        gridRow: 1
-        gridColumn: 5 / span 4
+        gridColumn: 1 / span 6
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_repeat_purchase_rate_latest
         gridRow: 1
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 6
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_mau_latest
         gridRow: 2
@@ -70,28 +53,26 @@ tabs:
         gridRow: 2
         gridColumn: 9 / span 4
         minHeight: 120px
-      - id: api_execution_gnosis_app_users_activity_weekly
+      # WAU = the Gnosis-Pay-inclusive definition (counts card-wallet transactions as active)
+      - id: api_execution_gnosis_app_weekly_active_users_incl_gpay
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
-      - id: api_execution_gnosis_app_cumulative_users_weekly
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 432px
-      - id: api_execution_gnosis_app_weekly_active_users
-        gridRow: 4
-        gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_weekly_economically_active_users
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 440px
+      - id: api_execution_gnosis_app_cumulative_users_weekly
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 440px
+      - id: api_execution_gnosis_app_activity_by_action_weekly
         gridRow: 4
         gridColumn: 7 / span 6
-        minHeight: 432px
-      - id: api_execution_gnosis_app_activity_by_action_weekly
-        gridRow: 5
-        gridColumn: 1 / span 12
-        minHeight: 450px
+        minHeight: 440px
 
   - name: Swaps
+    description: Volume, counts and breakdowns by pair and solver
     order: 3
     icon: 🔄
     iconClass: exchange
@@ -113,21 +94,22 @@ tabs:
       - id: api_execution_gnosis_app_swaps_weekly_chart
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 440px
       - id: api_execution_gnosis_app_swaps_by_pair_weekly
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_swaps_by_solver_weekly
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
     #  - id: api_execution_gnosis_app_swap_fees_weekly
     #    gridRow: 4
     #    gridColumn: 1 / span 12
     #    minHeight: 432px
 
   - name: TopUps
+    description: Volume, counts, token mix and cohort retention
     order: 4
     icon: 💰
     iconClass: piggy-bank
@@ -145,17 +127,18 @@ tabs:
       - id: api_execution_gnosis_app_gpay_topups_weekly_chart
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 440px
       - id: api_execution_gnosis_app_gpay_topups_by_token_weekly
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_gpay_topups_cohort_monthly
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
 
   - name: GP Wallets
+    description: Counts, onboarding, imports and cumulative growth
     order: 5
     icon: 🏦
     iconClass: vault
@@ -175,9 +158,10 @@ tabs:
       - id: api_execution_gnosis_app_gpay_wallets_cumulative_daily
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 500px
+        minHeight: 440px
 
   - name: Marketplace
+    description: Buys, payers and top offer leaderboard
     order: 6
     icon: 🛒
     iconClass: shopping-cart
@@ -197,21 +181,22 @@ tabs:
       - id: api_execution_gnosis_app_marketplace_cumulative_buys_chart
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 470px
+        minHeight: 440px
       - id: api_execution_gnosis_app_marketplace_buys_daily_chart
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_marketplace_cumulative_payers_chart
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_marketplace_offers_leaderboard
         gridRow: 4
         gridColumn: 1 / span 12
-        minHeight: 420px
+        minHeight: 460px
 
   - name: Token Offers
+    description: Claims, claimers, volume and conversion funnel
     order: 7
     icon: 🎁
     iconClass: gift
@@ -230,29 +215,26 @@ tabs:
         gridRow: 1
         gridColumn: 9 / span 4
         minHeight: 120px
-      - id: api_execution_gnosis_app_token_offer_claims_weekly_chart
+      - id: api_execution_gnosis_app_token_offer_claims_weekly
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 400px
+        minHeight: 440px
       - id: api_execution_gnosis_app_token_offer_claims_by_offer_weekly
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_token_offer_claims_cohort_monthly
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_token_offer_offers_leaderboard
         gridRow: 4
         gridColumn: 1 / span 12
-        minHeight: 420px
-      - id: api_execution_gnosis_app_token_offer_claim_funnel_daily
-        gridRow: 5
-        gridColumn: 1 / span 12
-        minHeight: 432px
+        minHeight: 460px
 
   # GROUND-TRUTH (envio_ga) wallet analytics — the _gt sector
   - name: Wallets
+    description: Power users, engagement tiers, swaps and referrals
     order: 8
     icon: 👛
     iconClass: wallet
@@ -276,95 +258,111 @@ tabs:
       - id: api_execution_gnosis_app_gt_active_wallets_weekly
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_gt_engagement_tiers
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: api_execution_gnosis_app_gt_app_generation
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
-
-  - name: Retention
-    order: 9
-    icon: 🔁
-    iconClass: rotate
-    metrics:
-      - id: api_execution_gnosis_app_gt_kpi_retention_1m
-        gridRow: 1
-        gridColumn: 1 / span 4
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gt_retention_cohort_heatmap
-        gridRow: 2
+        minHeight: 440px
+      # Current-vs-legacy swaps + referral graph
+      - id: api_execution_gnosis_app_gt_swaps
+        gridRow: 4
         gridColumn: 1 / span 12
-        minHeight: 520px
-
-  # June-2026 Gnosis Pay exploit -> Safe migration recovery + reactivation
-  - name: Migration
-    order: 10
-    icon: 🔀
-    iconClass: shuffle
-    metrics:
-      # Row 1 — migration -> reactivation funnel
-      - id: api_execution_gnosis_app_gpay_migration_migrated_cards
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_funded_cards
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_reactivated_any
-        gridRow: 1
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_reactivated_spend
-        gridRow: 1
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      # Row 2 — money + status
-      - id: api_execution_gnosis_app_gpay_migration_reactivation_rate_funded
-        gridRow: 2
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_refunded_cards
-        gridRow: 2
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_usd_in_new_safes
-        gridRow: 2
-        gridColumn: 7 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_gpay_migration_usd_stranded_old_safes
-        gridRow: 2
-        gridColumn: 10 / span 3
-        minHeight: 120px
-      # Row 3 — reactivation + money curves
-      - id: api_execution_gnosis_app_gpay_migration_reactivation_weekly
-        gridRow: 3
-        gridColumn: 1 / span 6
-        minHeight: 432px
-      - id: api_execution_gnosis_app_gpay_migration_money_daily_usd
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 432px
-      # Row 4 — card spend + refunds landing
-      - id: api_execution_gnosis_app_gpay_migration_card_spend_weekly_usd
-        gridRow: 4
-        gridColumn: 1 / span 6
-        minHeight: 432px
-      - id: api_execution_gnosis_app_gpay_migration_refunds_daily_safes
-        gridRow: 4
-        gridColumn: 7 / span 6
-        minHeight: 432px
-      # Row 5 — stranded funds outreach table
-      - id: api_execution_gnosis_app_gpay_migration_stranded_old_safes
+        minHeight: 440px
+      - id: api_execution_gnosis_app_gt_referrals
         gridRow: 5
         gridColumn: 1 / span 12
-        minHeight: 480px
+        minHeight: 460px
+
+#  - name: Retention
+#    description: Cohort heatmap and monthly churn rates
+#    order: 9
+#    icon: 🔁
+#    iconClass: rotate
+#    metrics:
+#      - id: api_execution_gnosis_app_gt_kpi_retention_1m
+#        gridRow: 1
+#        gridColumn: 1 / span 4
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gt_retention_cohort_heatmap
+#        gridRow: 2
+#        gridColumn: 1 / span 12
+#        minHeight: 500px
+#      - id: api_execution_gnosis_app_churn_monthly_chart
+#        gridRow: 3
+#        gridColumn: 1 / span 12
+#        minHeight: 440px
+
+  # June-2026 Gnosis Pay exploit -> Safe migration recovery + reactivation
+#  - name: Migration
+#    description: Card recovery, reactivation and stranded funds
+#    order: 10
+#    icon: 🔀
+#    iconClass: shuffle
+#    metrics:
+#      # Row 1 — migration -> reactivation funnel
+#      - id: api_execution_gnosis_app_gpay_migration_migrated_cards
+#        gridRow: 1
+#        gridColumn: 1 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_funded_cards
+#        gridRow: 1
+#        gridColumn: 4 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_reactivated_any
+#        gridRow: 1
+#        gridColumn: 7 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_reactivated_spend
+#        gridRow: 1
+#        gridColumn: 10 / span 3
+#        minHeight: 120px
+#      # Row 2 — money + status
+#      - id: api_execution_gnosis_app_gpay_migration_reactivation_rate_funded
+#        gridRow: 2
+#        gridColumn: 1 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_refunded_cards
+#        gridRow: 2
+#        gridColumn: 4 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_usd_in_new_safes
+#        gridRow: 2
+#        gridColumn: 7 / span 3
+#        minHeight: 120px
+#      - id: api_execution_gnosis_app_gpay_migration_usd_stranded_old_safes
+#        gridRow: 2
+#        gridColumn: 10 / span 3
+#        minHeight: 120px
+#      # Row 3 — reactivation + money curves
+#      - id: api_execution_gnosis_app_gpay_migration_reactivation_weekly
+#        gridRow: 3
+#        gridColumn: 1 / span 6
+#        minHeight: 440px
+#      - id: api_execution_gnosis_app_gpay_migration_money_daily_usd
+#        gridRow: 3
+#        gridColumn: 7 / span 6
+#        minHeight: 440px
+#      # Row 4 — card spend + refunds landing
+#      - id: api_execution_gnosis_app_gpay_migration_card_spend_weekly_usd
+#        gridRow: 4
+#        gridColumn: 1 / span 6
+#        minHeight: 440px
+#      - id: api_execution_gnosis_app_gpay_migration_refunds_daily_safes
+#        gridRow: 4
+#        gridColumn: 7 / span 6
+#        minHeight: 440px
+#      # Row 5 — stranded funds outreach table
+#      - id: api_execution_gnosis_app_gpay_migration_stranded_old_safes
+#        gridRow: 5
+#        gridColumn: 1 / span 12
+#        minHeight: 460px
 
   - name: Growth
+    description: Active users, card money and campaign attribution
     order: 11
     icon: 📈
     iconClass: trending-up
@@ -388,23 +386,46 @@ tabs:
       - id: growth_ga_wau_weau_weekly
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 432px
+        minHeight: 440px
       # Row 3 — GA-CONTROLLED card money (funding loaded vs spend), by onboarding class.
       # GA-scoped (is_currently_ga_owned) — the all-GP totals live on the gnosis-pay dashboard.
       - id: growth_ga_card_funded_usd_weekly
         gridRow: 3
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: growth_ga_card_spend_usd_weekly
         gridRow: 3
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
       # Row 4 — campaign-attributed app conversions (sparse by design: ~4-7% attribute)
       - id: growth_app_topup_by_campaign_weekly
         gridRow: 4
         gridColumn: 1 / span 6
-        minHeight: 432px
+        minHeight: 440px
       - id: growth_starts_referring_by_campaign_weekly
         gridRow: 4
         gridColumn: 7 / span 6
-        minHeight: 432px
+        minHeight: 440px
+
+#  - name: Attribution
+#    description: Channel conversions, funnel and purchase frequency
+#    order: 12
+#    icon: 🎯
+#    iconClass: target
+#    metrics:
+#      - id: api_execution_gnosis_app_attribution_30d
+#        gridRow: 1
+#        gridColumn: 1 / span 12
+#        minHeight: 440px
+#      - id: api_execution_gnosis_app_funnel_summary
+#        gridRow: 2
+#        gridColumn: 1 / span 6
+#        minHeight: 440px
+#      - id: api_execution_gnosis_app_purchase_freq_distribution_latest
+#        gridRow: 2
+#        gridColumn: 7 / span 6
+#        minHeight: 440px
+#      - id: api_execution_gnosis_app_time_to_first_conversion_cohort_monthly
+#        gridRow: 3
+#        gridColumn: 1 / span 12
+#        minHeight: 440px

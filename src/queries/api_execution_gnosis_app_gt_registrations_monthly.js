@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gt_registrations_monthly",
   "name": "New Registrations",
   "description": "Identity/profile creation per month (v1 vs v2)",
-  "metricDescription": "New Circles identity/profile registrations per month (avatar.created_at = account creation; 100% have a profile). Broader than the heuristic new_users (new-to-bundler); spans v1+v2.",
+  "metricDescription": `Monthly count of new Circles identity registrations, taken from each avatar's on-chain registration timestamp (\`created_at\`) — because every avatar carries a \`profile_id\`, avatar registration equals account/profile creation. Bars are stacked by protocol version: \`v2\` (\`circles_version = 2\`) vs \`v1\` (\`circles_version = 1\`). This counts every registration back to 2020, so it is broader than the heuristic \`new_users\` metric, which counts only addresses new to the current app's bundler. The current, incomplete month is excluded.`,
   "chartType": "bar",
   "isTimeSeries": true,
   "stacked": true,

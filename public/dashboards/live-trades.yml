@@ -1,5 +1,6 @@
 tabs:
   - name: Feed
+    description: Real-time trade stream with volume, traders and aggregator share
     order: 1
     icon: "⚡"
     iconClass: "activity"

@@ -666,12 +666,12 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
   const effectiveFilter3Provided = isSafeIdentifier(filterField3) && typeof filterValue3 === 'string' && filterValue3.length > 0;
   const hasEffectiveFilters = effectiveFilterProvided || effectiveFilter2Provided || effectiveFilter3Provided;
 
-  // Backwards-compatible cache key:
-  // - If no extra params are provided, keep the original metricId cache key.
-  // - If params are provided, include them so cached results don't mix.
+  // Cache key = metricId + a hash of the SQL query (so editing a card's query
+  // auto-invalidates its cache) + any date/filter/pagination params (so cached
+  // results for different params don't mix). The query-hash component must
+  // match the one cron's warmup uses (api/cron.js) so warmed cache is read.
   const cacheKey = (() => {
-    if (!effectiveFromToProvided && !effectiveFilterProvided && !effectiveFilter2Provided && !effectiveFilter3Provided && !paginatedRequest) return metricId;
-    const parts = [metricId];
+    const parts = [metricId, `q=${cacheManager.queryHash(query)}`];
     if (hasEffectiveFilters) parts.push(`filteredCache=${FILTERED_QUERY_CACHE_VERSION}`);
     if (effectiveFromToProvided) parts.push(`from=${fromParam}`, `to=${toParam}`);
     if (effectiveFilterProvided) parts.push(`filterField=${filterField}`, `filterValue=${cacheValue(filterValue)}`);

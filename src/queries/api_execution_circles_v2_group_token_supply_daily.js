@@ -1,15 +1,13 @@
 const metric = {
   id: 'api_execution_circles_v2_group_token_supply_daily',
-  name: 'Group Token Supply',
+  name: 'Group Token Supply (daily)',
   description: 'Native ERC-1155 vs wrapped ERC-20 supply across all groups',
-  metricDescription: `**Daily aggregate supply of Circles v2 group personal tokens**, stacked by where the supply lives:
+  metricDescription: `**Daily circulating supply of all Circles v2 group personal tokens**, in CRC, stacked by the form the supply is held in:
 
-- \`ERC-1155 (native)\` — held as the native ERC-1155 personal token.
-- \`ERC-20 (wrapped)\` — held as the ERC-20 wrapper deployed via ERC20Lift.
+- \`ERC-1155 (native)\` — supply held as the native Circles ERC-1155 personal token.
+- \`ERC-20 (wrapped)\` — supply held via the ERC-20 wrapper deployed through ERC20Lift.
 
-Resolution: a \`token_address\` is mapped to its issuer avatar via the wrapper registry (\`int_execution_circles_v2_wrappers\`); ERC-1155 native ids equal the issuer avatar address. We then filter to issuers with \`avatar_type = 'Group'\`.
-
-Note: the two series are additive only in the on-chain sense — the wrapper contract holds an equal amount of native tokens for every wrapped token it issues.`,
+Only tokens whose issuer avatar has \`avatar_type = 'Group'\` are counted; a \`token_address\` is mapped to its issuer via the wrapper registry (\`int_execution_circles_v2_wrappers\`), and native ERC-1155 ids equal the issuer avatar address. Figures are raw (non-demurraged) CRC and the current incomplete day is excluded. Caveat: the two series are additive only on-chain — native supply also includes the ERC-1155 tokens that wrapper contracts hold as 1:1 backing for the ERC-20 wrapped supply, so the stacked total counts the wrapped amount on both sides.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

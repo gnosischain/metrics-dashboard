@@ -58,6 +58,20 @@ class CacheManager {
   }
 
   /**
+   * Short, stable hash of a metric's SQL query, for composing cache keys so
+   * that editing a card's query automatically invalidates its cached result
+   * (the cache key previously ignored the query text and served stale data
+   * until the TTL expired). Returns '0' for an empty/missing query.
+   * @param {string} query - The (raw, pre-substitution) SQL query string
+   * @returns {string} 12-char hex digest
+   */
+  queryHash(query) {
+    const s = String(query == null ? '' : query);
+    if (!s) return '0';
+    return crypto.createHash('sha1').update(s).digest('hex').slice(0, 12);
+  }
+
+  /**
    * Check if a cache file exists and is valid (not expired)
    * @param {string} metricId - Metric identifier
    * @returns {boolean} True if valid cache exists

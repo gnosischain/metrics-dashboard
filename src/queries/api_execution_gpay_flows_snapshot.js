@@ -6,6 +6,7 @@ const metric = {
   chartType: 'graph',
   enableFiltering: true,
   labelField: 'window',
+  localFilterFields: ['window'],
   sourceIdField: 'from_label',
   sourceNameField: 'from_label',
   targetIdField: 'to_label',
@@ -58,6 +59,7 @@ const metric = {
       amount_usd,
       tf_cnt
     FROM dbt.api_execution_gpay_flows_snapshot
+    ORDER BY multiIf(window = '30D', 0, window = '7D', 1, window = '90D', 2, window = '1D', 3, 4)
   `
 };
 

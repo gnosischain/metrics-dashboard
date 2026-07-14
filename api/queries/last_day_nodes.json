@@ -1,4 +1,0 @@
-{
-  "id": "last_day_nodes",
-  "query": "SELECT SUM(cnt) AS value FROM dbt.p2p_peers_geo_latest"
-}

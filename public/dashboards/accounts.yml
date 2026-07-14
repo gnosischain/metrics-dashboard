@@ -1,5 +1,6 @@
 tabs:
   - name: Account Portfolio
+    description: Balances, movements, payments, yields, Circles and validators by address
     order: 1
     icon: 👤
     iconClass: user

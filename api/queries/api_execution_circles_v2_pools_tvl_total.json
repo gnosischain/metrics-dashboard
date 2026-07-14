@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_pools_tvl_total",
+  "query": "SELECT round(sum(tvl_usd), 2) AS value FROM dbt.api_execution_circles_v2_pools_latest"
+}

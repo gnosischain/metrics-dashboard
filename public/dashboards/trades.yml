@@ -1,5 +1,6 @@
 tabs:
   - name: Live Feed
+    description: Real-time trade stream, freshness and hourly volume by protocol
     order: 1
     icon: "⚡"
     iconClass: zap
@@ -45,6 +46,7 @@ tabs:
         minHeight: 600px
 
   - name: Stats
+    description: Lifetime volume, trade counts, aggregator share and token flows
     order: 2
     icon: "📊"
     iconClass: bar-chart
@@ -105,6 +107,7 @@ tabs:
         minHeight: 320px
 
   - name: CoW Protocol
+    description: Volume, fees, solver competition and batch routing
     order: 3
     icon: "🐄"
     iconClass: cow-protocol

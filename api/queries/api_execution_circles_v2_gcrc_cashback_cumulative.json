@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_gcrc_cashback_cumulative",
+  "query": "SELECT week AS date, cumulative_amount, cumulative_recipients\n    FROM dbt.api_execution_circles_v2_gcrc_cashback_cumulative\n    ORDER BY week"
+}

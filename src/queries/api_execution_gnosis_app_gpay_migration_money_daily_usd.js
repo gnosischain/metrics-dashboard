@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gpay_migration_money_daily_usd",
   "name": "Value: old vs new Safes (daily)",
   "description": "USD migrating from old to new Safes",
-  "metricDescription": "Daily USD held in migrated OLD Safes (pending move) vs NEW Safes since 2026-05-15 \u2014 the money moving across the migration. Series are NOT additive for refunded pairs.",
+  metricDescription: `Two daily USD lines since 2026-05-15: total value held in migrated **old** Safes (funds still pending move) versus in the **new** canonical Safes, summing \`balance_usd\` across all tokens from \`int_execution_gpay_balances_daily\` for the old (\`address\`) and new (\`canonical_address\`) sides of \`int_execution_gpay_safe_canonical\`. Tracks the money shifting across the migration boundary. Unit: USD (rounded). Note: the two lines are not strictly additive for refunded pairs \u2014 exploit-recovery refunds land on the new Safe days after migration while a residual balance can linger on the old Safe.`,
   "chartType": "line",
   "isTimeSeries": true,
   "enableZoom": true,

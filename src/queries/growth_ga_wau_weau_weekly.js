@@ -2,7 +2,7 @@ const metric = {
   "id": "growth_ga_wau_weau_weekly",
   "name": "GA WAU vs WEAU (weekly)",
   "description": "In-app WAU vs economically-active WAU",
-  "metricDescription": "Gnosis App weekly active users (in-app) vs weekly economically-active users (WEAU, a strict subset). WEAU counts non-blacklisted economically-active addresses.",
+  metricDescription: `Two weekly series for the Gnosis App. **WAU (in-app)** = distinct addresses with at least one non-onboarding in-app action that week (\`activity_kind != 'onboard'\`; the headline WAU population, same as DAU/MAU). **WEAU (economically active)** = the strict subset of those addresses that also earned >= 1 Circles reward (gCRC cashback or CRC inviter fee) in the same week; only non-blacklisted addresses (\`is_blacklisted=0\`) are counted here, so WEAU/WAU reads as a clean activation rate. Latest incomplete week excluded. Unit: distinct-address counts.`,
   "chartType": "line",
   "isTimeSeries": true,
   "enableZoom": true,

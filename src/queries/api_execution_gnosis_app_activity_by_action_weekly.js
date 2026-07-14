@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_gnosis_app_activity_by_action_weekly',
   name: 'Activity by Action',
   description: 'Weekly actions by kind',
-  metricDescription: 'Weekly Gnosis App activity segmented by activity_kind (swap_signed, swap_filled, topup, marketplace_buy, circles_trust, etc.).',
+  metricDescription: `Weekly Gnosis App on-chain actions broken down by \`activity_kind\`: CoW swaps (\`swap_signed\` = order signed, \`swap_filled\` = order settled on-chain), Gnosis Pay \`topup\`, \`marketplace_buy\`, \`token_offer_claim\`, and Circles heuristic actions (\`circles_trust\`, \`circles_personal_mint\`, \`circles_register_human\`, \`circles_invite_human\`, \`circles_fee\`, etc.). Toggle between **Events** (\`n_events\`, total actions) and **Unique Users** (\`n_users\`, distinct addresses per kind that week). The \`onboard\` first-seen marker is excluded and the current incomplete week is dropped; weeks start Monday.`,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

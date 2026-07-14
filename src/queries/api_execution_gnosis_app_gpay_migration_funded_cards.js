@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gpay_migration_funded_cards",
   "name": "Ever-funded cards",
   "description": "Held funds at some point (real base)",
-  "metricDescription": "Migrated cards whose old OR new Safe ever held a positive USD balance. The rest are empty shells never used \u2014 so this is the honest denominator for adoption, not the 66k total.",
+  metricDescription: `Count of migrated Gnosis Pay cards (rows in \`int_execution_gpay_safe_canonical\`, one per old Safe migrated to a new canonical Safe after the June 2026 exploit) whose old **or** new Safe ever recorded a positive USD balance (\`balance_usd > 0\` on any day in \`int_execution_gpay_balances_daily\`). Cards that never held funds are excluded as empty shells, making this the real adoption denominator rather than the full migrated-card total. Unit: count of cards.`,
   "chartType": "numberDisplay",
   "format": "formatNumber",
   "valueField": "value",

@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gt_retention_cohort_heatmap",
   "name": "Retention Cohorts (GT)",
   "description": "App-tagged activity cohorts \u00d7 months since",
-  "metricDescription": "Ground-truth wallet retention: each row is a cohort (month of first app-tagged action), each column is months-since. % = share of the cohort active again; # = wallet count. Denominator is the cohort size.",
+  "metricDescription": `Ground-truth wallet retention by acquisition cohort. Each row is a cohort — the calendar month of a wallet's first app-tagged action — and each column is months since that month; the \`%\` cell is the share of the cohort active again that month and \`#\` is the retained-wallet count. The denominator is the cohort size (distinct active wallets, not the raw identity registry), so month 0 is always 100%. \`app_tagged\` means a deliberate app-feature action that day — a swap, an auto-topup config, or a \`MetriFee\`/\`PayTopUp\`/\`AutoTopup\` transfer; generic \`MetriTransfer\` P2P sends are excluded. Sourced from the ground-truth \`envio_ga\` feed.`,
   "chartType": "heatmap",
   "xField": "x",
   "yField": "y",

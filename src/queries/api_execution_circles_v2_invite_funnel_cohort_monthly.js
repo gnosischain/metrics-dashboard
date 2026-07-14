@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_invite_funnel_cohort_monthly',
   name: 'Invite Funnel',
   description: 'Invitee cohort cadence drop-off',
-  metricDescription: 'For each invitation-month cohort, the five-stage drop-off in mint cadence: Invited → ≥2 mint days in first 30d → ≥7 → ≥14 → Active Minter (canonical: mint_days_14dw = 14 AND mint_14dw ≥ 80% of 336). Skips the trivial acceptance mint that fires for every accepted invite.',
+  metricDescription: `Monthly cohort funnel showing mint-cadence drop-off among invited humans, grouped by the month they were invited (\`toStartOfMonth(invited_at)\`). An invited human is a \`Human\` avatar whose \`invited_by\` is a real address (non-zero), i.e. onboarded through an accepted invite. Five stages: **Invited** → **≥2 / ≥7 / ≥14 mint-days** (distinct days with a personal \`personalMint\` in the first 30 days — group mints and migration backfills are excluded; the acceptance-day mint counts as day one, so ≥2 means at least one genuine return day) → **Active Minter** (ever reached the canonical \`mint_days_14dw = 14\` AND \`mint_14dw ≥ 80% of 336\`). Values are counts of avatars per stage; cohorts with \`invited_at\` today are excluded.`,
   chartType: 'bar',
   isTimeSeries: true,
   enableZoom: true,

@@ -2,11 +2,11 @@ const metric = {
   id: 'api_execution_gnosis_app_gpay_topups_cohort_monthly',
   name: 'TopUp Retention',
   description: 'First-topup cohort × subsequent activity',
-  metricDescription: `Each row is a cohort of users grouped by the month of their first Gnosis App → Gnosis Pay TopUp. Each column is a calendar month. Tracks their subsequent TopUp activity.
+  metricDescription: `Each row is a cohort of Gnosis App users grouped by the month of their **first** Gnosis Pay top-up; each column is a later calendar month, tracking that cohort's subsequent top-up activity. A **top-up** is a Gnosis Pay "Crypto Deposit" into a currently GA-owned wallet, counted from the 2025-11-12 GA launch onward; the current, incomplete month is excluded. Toggle the cell value:
 
-- % — What percentage of the cohort topped up that month.
-- \\# — How many users from the cohort topped up.
-- $ — Total TopUp USD volume from that cohort.`,
+- **%** — share of the cohort active that month, measured on users (\`retention_pct\`) or on USD volume (\`amount_retention_pct\`), each relative to the cohort's own first month.
+- \\# — distinct cohort users who topped up that month.
+- **$** — total top-up USD volume from the cohort that month.`,
   chartType: 'heatmap',
   xField: 'x',
   yField: 'y',

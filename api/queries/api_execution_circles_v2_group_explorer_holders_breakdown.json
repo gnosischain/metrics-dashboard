@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_holders_breakdown",
+  "query": "SELECT\n      group_address,\n      holder,\n      display_name,\n      is_wrapped,\n      balance\n    FROM dbt.api_execution_circles_v2_group_holders\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY balance DESC\n    LIMIT 50"
+}

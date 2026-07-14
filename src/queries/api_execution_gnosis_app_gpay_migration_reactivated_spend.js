@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gpay_migration_reactivated_spend",
   "name": "Reactivated (card spend)",
   "description": "Made a card payment since migration",
-  "metricDescription": "Migrated cards whose NEW Safe has made a card payment (action='Payment') since 2026-06-04 \u2014 the strict 'using the card again' definition (~23% of ever-funded).",
+  metricDescription: `Distinct migrated cards whose **new** canonical Safe made at least one card payment (\`action = 'Payment'\` in \`int_execution_gpay_activity\` \u2014 a token transfer from the Safe to the Gnosis Pay merchant settlement address) on or after the 2026-06-04 cutover. This is the strict "actually using the card again" measure; deposits, cashback, top-ups and withdrawals do not count. Counts new Safes via \`uniqExact(canonical_address)\`. Unit: count of cards.`,
   "chartType": "numberDisplay",
   "format": "formatNumber",
   "valueField": "value",

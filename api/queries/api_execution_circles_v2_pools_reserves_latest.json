@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_pools_reserves_latest",
+  "query": "SELECT\n      pool,\n      token_symbol,\n      round(reserve, 2)   AS reserve,\n      round(price_usd, 6) AS price_usd,\n      round(tvl_usd, 2)   AS tvl_usd\n    FROM dbt.api_execution_circles_v2_pools_reserves_latest\n    ORDER BY pool, tvl_usd DESC"
+}

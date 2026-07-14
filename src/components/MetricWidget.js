@@ -767,10 +767,14 @@ const MetricWidget = ({
     secondaryGlobalFilterValue
   ]);
 
-  // Per-widget time range state (used when no global time range is active)
+  // Per-widget time range state (used when no global time range is active).
+  // A card may set `defaultTimeRange` to open on a specific window (e.g. '1Y').
   const LOCAL_TIME_RANGES = ['1M', '3M', '6M', '1Y', '2Y', 'ALL'];
   const showLocalTimeRange = widgetConfig.enableZoom && !globalTimeRange;
-  const [localTimeRange, setLocalTimeRange] = useState('ALL');
+  const configuredLocalRange = widgetConfig?.defaultTimeRange || widgetConfig?.config?.defaultTimeRange;
+  const [localTimeRange, setLocalTimeRange] = useState(
+    LOCAL_TIME_RANGES.includes(configuredLocalRange) ? configuredLocalRange : 'ALL'
+  );
 
   // Effective time range: global overrides local
   const effectiveTimeRange = globalTimeRange || (showLocalTimeRange ? localTimeRange : null);

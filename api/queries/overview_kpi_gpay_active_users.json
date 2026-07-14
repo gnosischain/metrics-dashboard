@@ -1,0 +1,4 @@
+{
+  "id": "overview_kpi_gpay_active_users",
+  "query": "SELECT date, active_users AS value\n    FROM dbt.fct_execution_gpay_activity_daily\n    WHERE date >= today() - INTERVAL 30 DAY\n    ORDER BY date ASC"
+}

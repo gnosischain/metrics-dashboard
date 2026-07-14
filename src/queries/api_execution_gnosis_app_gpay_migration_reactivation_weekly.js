@@ -2,7 +2,7 @@ const metric = {
   "id": "api_execution_gnosis_app_gpay_migration_reactivation_weekly",
   "name": "Card reactivation (cumulative)",
   "description": "Migrated cards that went active, weekly",
-  "metricDescription": "Cumulative distinct migrated NEW Safes that have become active per week since the migration: 'any activity' vs 'card spend'.",
+  "metricDescription": `Cumulative count of distinct **new** (migrated) Safes that have become active, bucketed by the Monday-start week in which each Safe **first** acted (activity from \`2026-06-01\` on). Each Safe is counted once, in its first-active week, then summed cumulatively across weeks. Two series: **any activity** = first \`int_execution_gpay_activity\` row of any action; **card spend** = first row with \`action = 'Payment'\` (a spend to the Gnosis Pay merchant contract). Count.`,
   "chartType": "line",
   "isTimeSeries": true,
   "enableZoom": true,
