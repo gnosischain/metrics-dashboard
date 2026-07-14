@@ -398,14 +398,14 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 440px
       # Row 4 — campaign-attributed app conversions (sparse by design: ~4-7% attribute)
-      - id: growth_app_topup_by_campaign_weekly
-        gridRow: 4
-        gridColumn: 1 / span 6
-        minHeight: 440px
-      - id: growth_starts_referring_by_campaign_weekly
-        gridRow: 4
-        gridColumn: 7 / span 6
-        minHeight: 440px
+    #  - id: growth_app_topup_by_campaign_weekly
+    #    gridRow: 4
+    #    gridColumn: 1 / span 6
+    #    minHeight: 440px
+    #  - id: growth_starts_referring_by_campaign_weekly
+    #    gridRow: 4
+    #    gridColumn: 7 / span 6
+    #    minHeight: 440px
 
 #  - name: Attribution
 #    description: Channel conversions, funnel and purchase frequency
