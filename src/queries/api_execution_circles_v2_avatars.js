@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_avatars',
   name: 'New Avatars Daily',
   description: 'Daily new avatar registrations by type',
-  metricDescription: 'Daily count of new Circles v2 avatar registrations, stacked by avatar type (Human, Group, Org).',
+  metricDescription: `Count of new Circles v2 avatars registered each day, stacked by \`avatar_type\`. Each avatar is one on-chain Hub registration event: **Human** (\`RegisterHuman\`), **Group** (\`RegisterGroup\`), or **Org** (\`RegisterOrganization\`). Counts registrations only — there is no activity or de-registration filter. Daily grain; the current (incomplete) day is excluded.`,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

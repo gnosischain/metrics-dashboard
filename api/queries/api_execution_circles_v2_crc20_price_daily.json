@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_crc20_price_daily",
+  "query": "SELECT date,\n           round(sum(price_vwap_usd * total_crc_volume) / nullIf(sum(total_crc_volume), 0), 6) AS price_usd,\n           round(sum(total_crc_volume), 2) AS volume_crc,\n           sum(trade_count)                AS trades,\n           uniqExact(crc20_token)          AS tokens_traded\n    FROM dbt.api_execution_circles_v2_crc20_prices_daily\n    WHERE date < today()\n      AND total_crc_volume >= 100  -- drop dust token-days that would skew the cross-token index\n    GROUP BY date\n    ORDER BY date"
+}

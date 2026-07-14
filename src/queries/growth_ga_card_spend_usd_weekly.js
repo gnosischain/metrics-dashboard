@@ -1,0 +1,15 @@
+const metric = {
+  "id": "growth_ga_card_spend_usd_weekly",
+  "name": "GA card spend (USD, weekly)",
+  "description": "Card payments on GA-controlled cards",
+  metricDescription: `Weekly USD **card payments** (\`action='Payment'\`, actual merchant spend) on Gnosis-App-controlled Gnosis Pay cards, split by \`onboarding_class\` (\`onboarded_via_ga\` = the GP Safe's first owner was a GA user; \`imported\` = a GA owner joined an existing GP Safe later). Scoped to GA-controlled wallets and counted only from \`first_ga_owner_at\` onward, so this is the GA slice, NOT the all-Gnosis-Pay total (which lives on the gnosis-pay dashboard). Unit: USD; the current incomplete day is excluded.`,
+  "chartType": "bar",
+  "isTimeSeries": true,
+  "enableZoom": true,
+  "xField": "date",
+  "yField": "value",
+  "seriesField": "label",
+  "format": "formatCurrency",
+  "query": "SELECT toString(toStartOfWeek(date, 1)) AS date, onboarding_class AS label, toInt64(round(sum(spend_usd))) AS value FROM dbt.api_execution_gnosis_app_gpay_volume_daily WHERE date >= '2024-01-01' GROUP BY date, label ORDER BY date"
+};
+export default metric;

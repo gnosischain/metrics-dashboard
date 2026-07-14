@@ -7,6 +7,18 @@ import metricsService from '../services/metrics';
 import { getDateRange } from '../utils';
 import { normalizeFilterValue } from '../utils/filterValues';
 
+// Pick a readable text color for a solid chain-brand fill (dark text on Celo
+// yellow, white on Gnosis green) so the active chain-toggle segment stays legible.
+const readableTextOn = (hexColor) => {
+  const hex = String(hexColor || '').replace('#', '');
+  if (hex.length !== 6) return '#ffffff';
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 150 ? '#15211c' : '#ffffff';
+};
+
 const EXPLICIT_FILTER_VALIDATION_STATES = {
   IDLE: 'idle',
   VALIDATING: 'validating',
@@ -93,7 +105,8 @@ const MetricGrid = ({
   onGlobalFilterChange = null,
   secondaryGlobalFilterValue = null,
   onSecondaryGlobalFilterChange = null,
-  dashboardPalette = null
+  dashboardPalette = null,
+  headerControls = null
 }) => {
   const [globalFilterOptions, setGlobalFilterOptions] = useState([]);
   const [loadingGlobalFilter, setLoadingGlobalFilter] = useState(false);
@@ -114,6 +127,21 @@ const MetricGrid = ({
   // Unit toggle state (Native/USD)
   const [selectedUnit, setSelectedUnit] = useState(tabConfig?.defaultUnit || 'native');
   const hasUnitToggle = tabConfig?.unitToggle === true;
+
+  // Per-tab chain toggle: swap each card's data source between the dashboard's
+  // chains (each card carries a `celoId`). State is per-tab and resets on tab
+  // change, so the toggle affects ONLY the current tab — the sidebar menu never
+  // changes. Cards without a variant for the selected chain are hidden.
+  const tabChainIds = Array.isArray(tabConfig?.chains) ? tabConfig.chains : null;
+  const dashboardChains = Array.isArray(dashboard?.chains) ? dashboard.chains : null;
+  const hasChainToggle = !!(tabChainIds && tabChainIds.length > 1 && dashboardChains);
+  const defaultChainId = dashboard?.defaultChain || (tabChainIds ? tabChainIds[0] : null);
+  const [selectedChain, setSelectedChain] = useState(defaultChainId);
+  const chainOptions = useMemo(() => {
+    if (!hasChainToggle) return [];
+    return tabChainIds.map((id) => dashboardChains.find((c) => c.id === id) || { id, label: id, color: null });
+  }, [hasChainToggle, tabChainIds, dashboardChains]);
+  const isNonDefaultChain = hasChainToggle && !!selectedChain && selectedChain !== defaultChainId;
   const explicitFilterEmptyState = useMemo(
     () => resolveExplicitFilterEmptyState(tabConfig, explicitFilterValidationState),
     [tabConfig, explicitFilterValidationState]
@@ -137,6 +165,10 @@ const MetricGrid = ({
   useEffect(() => {
     setSelectedUnit(tabConfig?.defaultUnit || 'native');
   }, [tabConfig?.id, tabConfig?.defaultUnit]);
+
+  useEffect(() => {
+    setSelectedChain(defaultChainId);
+  }, [tabConfig?.id, defaultChainId]);
 
   useEffect(() => {
     setSelectedTimeRange(tabConfig?.defaultTimeRange || 'ALL');
@@ -289,6 +321,20 @@ const MetricGrid = ({
 
     return renderedMetrics.filter(metric => metric.id === 'global_filter');
   }, [renderedMetrics, showExplicitFilterEmptyState, globalControlsPlacement]);
+
+  // Resolve each card to the selected chain's variant: swap `id` → `celoId` (and
+  // apply `celoGridColumn` if set); drop cards that have no variant for the
+  // selected chain. On the default chain this is a no-op.
+  const chainResolvedMetrics = useMemo(() => {
+    if (!isNonDefaultChain) return metricsToRender;
+    return metricsToRender
+      .map((metric) => {
+        if (metric.id === 'global_filter') return metric;
+        if (!metric.celoId) return null;
+        return { ...metric, id: metric.celoId, gridColumn: metric.celoGridColumn || metric.gridColumn };
+      })
+      .filter(Boolean);
+  }, [metricsToRender, isNonDefaultChain]);
 
   // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
   const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);
@@ -579,7 +625,7 @@ const MetricGrid = ({
     secondaryCascadesOnPrimary ? null : secondaryGlobalFilterValue,
   ]);
 
-  const { templateRows } = processGridStructure(metricsToRender);
+  const { templateRows } = processGridStructure(chainResolvedMetrics);
 
   const gridStyle = {
     gridTemplateRows: templateRows.join(' ')
@@ -642,6 +688,35 @@ const MetricGrid = ({
     <div className="metrics-grid-container">
       {(dashboard || tabConfig) && (
         <DashboardHeader dashboard={dashboard} tabConfig={tabConfig}>
+          {headerControls}
+          {hasChainToggle && (
+            <div className="chain-switcher" role="group" aria-label="Chain">
+              {chainOptions.map((chain) => {
+                const isActive = selectedChain === chain.id;
+                return (
+                  <button
+                    key={chain.id}
+                    type="button"
+                    className={`chain-switcher-btn${isActive ? ' active' : ''}`}
+                    aria-pressed={isActive}
+                    style={isActive && chain.color
+                      ? { background: chain.color, color: readableTextOn(chain.color) }
+                      : undefined}
+                    onClick={() => setSelectedChain(chain.id)}
+                  >
+                    {chain.color && !isActive && (
+                      <span
+                        className="chain-switcher-dot"
+                        style={{ background: chain.color }}
+                        aria-hidden="true"
+                      />
+                    )}
+                    {chain.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {showTimeRangeControls && (
             <div className="dashboard-view-header-timerange" data-testid="time-range-controls">
               {timeRanges.map(range => (
@@ -675,9 +750,9 @@ const MetricGrid = ({
           )}
         </DashboardHeader>
       )}
-      {metricsToRender.length > 0 && (
+      {chainResolvedMetrics.length > 0 && (
         <div className="metrics-grid-positioned" style={gridStyle}>
-          {metricsToRender.map(metric => {
+          {chainResolvedMetrics.map(metric => {
             const metricStyle = {};
             if (metric.gridRow) metricStyle.gridRow = metric.gridRow;
             if (metric.gridColumn) metricStyle.gridColumn = metric.gridColumn;
@@ -685,11 +760,14 @@ const MetricGrid = ({
               metricStyle.height = metric.minHeight;
             }
 
+            const spanMatch = metric.gridColumn ? metric.gridColumn.toString().match(/span\s+(\d+)/) : null;
+            const colSpanClass = spanMatch ? ` col-span-${spanMatch[1]}` : '';
+
             if (metric.id === 'global_filter') {
               return (
                 <div
                   key={metric.id}
-                  className="grid-item grid-item-filter"
+                  className={`grid-item grid-item-filter${colSpanClass}`}
                   style={metricStyle}
                 >
                   <GlobalFilterWidget
@@ -724,7 +802,7 @@ const MetricGrid = ({
               return (
                 <div
                   key={`tabgroup-${metric.tabGroup}-${activeId}`}
-                  className="grid-item"
+                  className={`grid-item${colSpanClass}`}
                   style={metricStyle}
                 >
                   {renderMetricWidget(activeMetric, tabToggle)}
@@ -735,7 +813,7 @@ const MetricGrid = ({
             return (
               <div
                 key={metric.id}
-                className="grid-item"
+                className={`grid-item${colSpanClass}`}
                 style={metricStyle}
               >
                 {renderMetricWidget(metric)}
@@ -744,7 +822,7 @@ const MetricGrid = ({
           })}
         </div>
       )}
-      {!showExplicitFilterEmptyState && metricsToRender.length === 0 && (
+      {!showExplicitFilterEmptyState && chainResolvedMetrics.length === 0 && (
         <div className="metrics-grid-empty-state" data-testid="metric-grid-empty-state">
           <div className="metrics-grid-empty-state-title">No metrics in this view yet</div>
           <div className="metrics-grid-empty-state-description">Pick another tab or check back soon.</div>

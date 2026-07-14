@@ -102,11 +102,34 @@ export default defineConfig(({ mode }) => {
       }
     : null;
 
+  // Build-only: strip the inline SQL (`query` template literal) from client
+  // bundles. The frontend fetches data by metric id (/api/metrics/<id>); the
+  // backend reads the SQL from api/queries/<id>.json, and scripts/export-queries.js
+  // reads the source .js directly — so the query string is dead weight on the
+  // client. `apply: 'build'` keeps dev HMR and vitest untouched.
+  const stripMetricSql = {
+    name: 'strip-metric-sql',
+    apply: 'build' as const,
+    enforce: 'pre' as const,
+    transform(code: string, id: string) {
+      if (!/\/src\/queries\/.+\.js(\?|$)/.test(id) || id.includes('/index.js')) return null;
+      // Match the `query` field (key may be quoted, value may use backtick,
+      // single- or double-quote) and blank it. Escapes are honored so the match
+      // spans the whole literal.
+      const out = code.replace(
+        /(?:"query"|'query'|query)\s*:\s*(?:`(?:[^`\\]|\\.)*`|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g,
+        "query: ''"
+      );
+      return out === code ? null : { code: out, map: null };
+    },
+  };
+
   return {
     plugins: [
       react({
         include: /\.[jt]sx?$/
       }),
+      stripMetricSql,
       localApiPlugin
     ].filter(Boolean),
     envPrefix: ['VITE_', 'REACT_APP_'],

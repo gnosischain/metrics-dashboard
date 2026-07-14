@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_active_wallets_weekly",
+  "query": "SELECT date, label, value FROM (SELECT period_start AS date, 'Any action' AS label, toInt64(active_wallets) AS value FROM dbt.fct_execution_gnosis_app_gt_active_wallets WHERE period_type='week' UNION ALL SELECT period_start AS date, 'App-tagged' AS label, toInt64(active_wallets_app_tagged) AS value FROM dbt.fct_execution_gnosis_app_gt_active_wallets WHERE period_type='week') ORDER BY date ASC, label ASC"
+}

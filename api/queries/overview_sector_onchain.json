@@ -1,4 +1,0 @@
-{
-  "id": "overview_sector_onchain",
-  "query": "SELECT today() AS date, value\n    FROM dbt.api_crawlers_data_distinct_projects_total"
-}

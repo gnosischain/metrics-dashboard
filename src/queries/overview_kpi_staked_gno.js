@@ -6,6 +6,7 @@ const metric = {
   sparklineField: 'value',
   format: 'formatNumberCompact',
   changePeriod: 'vs 30d ago',
+  metricDescription: 'Total GNO staked in the Gnosis Chain consensus layer.',
   query: `
     SELECT date, value
     FROM dbt.api_consensus_staked_daily

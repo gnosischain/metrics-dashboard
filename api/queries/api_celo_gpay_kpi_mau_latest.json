@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_kpi_mau_latest",
+  "query": "SELECT mau AS value\n    FROM dbt.api_celo_gpay_kpi_monthly\n    ORDER BY month DESC\n    LIMIT 1"
+}

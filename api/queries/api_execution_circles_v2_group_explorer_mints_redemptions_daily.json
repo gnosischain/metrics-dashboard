@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_mints_redemptions_daily",
+  "query": "SELECT date, kind AS label, amount AS value\n    FROM dbt.api_execution_circles_v2_group_mints_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date, label"
+}

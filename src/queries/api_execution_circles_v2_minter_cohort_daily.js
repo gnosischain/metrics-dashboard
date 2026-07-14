@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_minter_cohort_daily',
   name: 'Minter Cohort Distribution',
   description: 'Avatars by 14-day mint coverage cohort',
-  metricDescription: 'Daily distribution of Circles v2 avatars (mint_days_14dw = 14) bucketed by share of the 336 CRC theoretical maximum minted in the last 14 days. Blacklisted avatars excluded.',
+  metricDescription: `Daily count of Circles v2 personal minters, split into cohorts by how fully they minted. Only avatars that minted on **every one** of the trailing 14 days (\`mint_days_14dw = 14\`) are included; each is bucketed by its actual 14-day mint total (\`mint_14dw\`) as a share of **336 CRC** — the theoretical maximum (24 CRC/day over 14 days). Buckets: \`<1%\`, \`[1%, 20%[\`, \`[20%, 40%[\`, \`[40%, 60%[\`, \`[60%, 80%[\`, \`+80%\`. Blacklisted avatars (per the \`circles_blacklisted\` snapshot) are excluded, and the current incomplete day is dropped.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

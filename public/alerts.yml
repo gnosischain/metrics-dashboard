@@ -12,10 +12,10 @@
 # Example entries below — delete or edit freely.
 
 alerts:
-  - scope: gnosisrevenue
-    level: warning
-    title: "Work in progress"
-    message: "Gnosis Revenue metrics are under active development — figures may be incomplete or subject to change."
+  - scope: trades.cow-protocol
+    level: info
+    title: "Indexing in progress"
+    message: "CoW Protocol data is still being indexed — figures may be incomplete and will fill in as the backfill completes."
 
  # - scope: consensus
  #   level: success

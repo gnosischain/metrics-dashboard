@@ -64,6 +64,20 @@ class DashboardService {
       return;
     }
     
+    // Optional multi-chain config: a dashboard can host per-chain tab variants
+    // (e.g. Gnosis Pay on Gnosis Chain vs Celo). Each entry: { id, label }.
+    // The first entry is the default chain; its tabs keep their plain slug ids
+    // so existing deep links stay valid.
+    const chains = Array.isArray(dashboardConfig.chains)
+      ? dashboardConfig.chains
+          .filter((chain) => chain && chain.id)
+          .map((chain) => ({
+            id: String(chain.id),
+            label: chain.label || String(chain.id),
+            color: chain.color || null
+          }))
+      : null;
+
     // Create dashboard object with icon support
     const dashboard = {
       id: key.toLowerCase().replace(/\s+/g, '-'),
@@ -74,6 +88,8 @@ class DashboardService {
       tagline: dashboardConfig.tagline || '',
       palette: resolveDashboardPalette(dashboardConfig.palette),
       brand: dashboardConfig.brand || '',
+      chains: chains && chains.length > 0 ? chains : null,
+      defaultChain: chains && chains.length > 0 ? chains[0].id : null,
       hasDefaultTab: dashboardConfig.hasDefaultTab === true
     };
     
@@ -110,13 +126,32 @@ class DashboardService {
       
       dashboard.tabs = dashboardConfig.tabs.filter(tab => tab.enabled !== false).map(tab => {
         // console.log('DashboardService: Processing tab:', tab);
-        
+
+        const baseId = tab.name.toLowerCase().replace(/\s+/g, '-');
+        const chain = tab.chain ? String(tab.chain) : null;
+        // Non-default-chain tabs get a chain-prefixed id so same-named tabs
+        // (e.g. "Overview" on both chains) stay unique and URL-addressable.
+        // Default-chain tabs keep the plain slug so existing links keep working.
+        const isNonDefaultChain = chain && dashboard.defaultChain && chain !== dashboard.defaultChain;
+        const chainLabel = chain && dashboard.chains
+          ? (dashboard.chains.find((c) => c.id === chain)?.label || chain)
+          : null;
+
         return {
-          id: tab.name.toLowerCase().replace(/\s+/g, '-'),
+          id: isNonDefaultChain ? `${chain}-${baseId}` : baseId,
+          baseId,
+          chain,
+          chainLabel,
+          // New per-tab multi-chain model: a tab lists the chains its cards can
+          // switch between (each card carries a `celoId`). A per-tab chain toggle
+          // swaps only that tab's data — unlike the legacy `chain:`-per-tab model
+          // above, it does not split the tab across the sidebar menu.
+          chains: Array.isArray(tab.chains) ? tab.chains.map(String) : null,
           name: tab.name,
           order: tab.order || 999,
           icon: tab.icon || '', // Emoji fallback for tab
           iconClass: tab.iconClass || '', // Icon class for tab SVG icon
+          description: tab.description || null, // Optional context line rendered under the page title
           customView: tab.customView || null, // Optional custom tab surface instead of MetricGrid
           globalFilterField: tab.globalFilterField || null, // Preserve global filter field if defined
           globalFilterLabel: tab.globalFilterLabel || null, // Optional custom label for the filter
@@ -141,8 +176,10 @@ class DashboardService {
           defaultTimeRange: tab.defaultTimeRange || 'ALL', // Default selected time range
           metrics: (tab.metrics || []).map(metric => ({
             id: metric.id,
+            celoId: metric.celoId || null, // Non-default-chain variant id for the per-tab chain toggle
             gridRow: metric.gridRow,
             gridColumn: metric.gridColumn,
+            celoGridColumn: metric.celoGridColumn || null, // Optional column override when the non-default chain is selected
             minHeight: metric.minHeight,
             tabGroup: metric.tabGroup || null,
             tabLabel: metric.tabLabel || null

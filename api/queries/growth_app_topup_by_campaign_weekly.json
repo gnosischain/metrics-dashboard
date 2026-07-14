@@ -1,0 +1,4 @@
+{
+  "id": "growth_app_topup_by_campaign_weekly",
+  "query": "SELECT toString(week) AS date, utm_campaign AS label, toInt64(sum(new_accounts)) AS value FROM dbt.api_mixpanel_ga_growth_campaign_weekly WHERE conversion_kind='topup' AND utm_campaign != 'unknown' GROUP BY date, label ORDER BY date"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_pool_search",
+  "query": "SELECT pool_address, display_name\n    FROM dbt.api_execution_circles_v2_pool_search"
+}

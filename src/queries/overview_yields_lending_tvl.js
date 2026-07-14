@@ -3,9 +3,9 @@ const metric = {
   name: 'Lending TVL',
   valueField: 'value',
   chartType: 'number',
-  format: null,
-  fontSize: '2.6rem',
-  query: `SELECT CONCAT('+$',toString(floor(value/1000000)), 'M') AS value FROM dbt.api_execution_yields_overview_lending_tvl`
+  format: 'formatCurrencyCompact',
+  metricDescription: 'Total value locked across lending markets on Gnosis Chain.',
+  query: `SELECT value FROM dbt.api_execution_yields_overview_lending_tvl`
 };
 
 export default metric;

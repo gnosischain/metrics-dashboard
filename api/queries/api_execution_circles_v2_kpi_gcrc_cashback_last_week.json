@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_kpi_gcrc_cashback_last_week",
+  "query": "SELECT amount AS value FROM dbt.api_execution_circles_v2_gcrc_cashback_weekly ORDER BY week DESC LIMIT 1"
+}

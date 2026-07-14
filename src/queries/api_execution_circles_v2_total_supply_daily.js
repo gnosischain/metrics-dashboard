@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_total_supply_daily',
   name: 'Total CRC Supply',
   description: 'Network-wide CRC supply (nominal and demurraged)',
-  metricDescription: 'Daily total CRC supply across all Circles v2 tokens. Toggle between static and demurrage-adjusted values.',
+  metricDescription: `Daily network-wide total CRC supply, summed across every Circles v2 token (each token's supply is the negative of its zero-address balance), in CRC. Toggle **Static** (nominal \`total_supply\`) vs **Demurraged** (\`total_demurraged_supply\`), which applies Circles' demurrage — the ~7%/year decay applied to every CRC balance — so the demurraged series reflects present-day redeemable value rather than the nominal amount ever minted. The current incomplete day is excluded.`,
   chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,

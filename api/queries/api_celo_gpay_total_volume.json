@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_total_volume",
+  "query": "SELECT value FROM dbt.api_celo_gpay_total_volume"
+}

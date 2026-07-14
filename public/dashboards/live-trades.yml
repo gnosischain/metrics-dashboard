@@ -1,5 +1,6 @@
 tabs:
   - name: Feed
+    description: Real-time trade stream with volume, traders and aggregator share
     order: 1
     icon: "⚡"
     iconClass: "activity"
@@ -10,26 +11,36 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 90px
 
-      # Row 2: 4 KPI tiles
+      # Row 2: 5 KPI tiles (count, volume, traders, aggregator share, multihop share)
       - id: api_execution_live_trades_stats_count
         gridRow: 2
-        gridColumn: 1 / span 3
+        gridColumn: 1 / span 2
         minHeight: 120px
       - id: api_execution_live_trades_stats_volume
         gridRow: 2
-        gridColumn: 4 / span 3
+        gridColumn: 3 / span 3
         minHeight: 120px
       - id: api_execution_live_trades_stats_traders
         gridRow: 2
-        gridColumn: 7 / span 3
+        gridColumn: 6 / span 2
         minHeight: 120px
       - id: api_execution_live_trades_stats_aggregator
         gridRow: 2
-        gridColumn: 10 / span 3
+        gridColumn: 8 / span 3
+        minHeight: 120px
+      - id: api_execution_live_trades_stats_multihop
+        gridRow: 2
+        gridColumn: 11 / span 2
         minHeight: 120px
 
-      # Row 3: the main trades feed
-      - id: api_execution_live_trades
+      # Row 3: 48h hourly volume chart
+      - id: api_execution_live_trades_hourly_48h
         gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 280px
+
+      # Row 4: the main trades feed
+      - id: api_execution_live_trades
+        gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 600px

@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_migration_reactivated_spend",
+  "query": "SELECT toInt64(uniqExact(c.canonical_address)) AS value FROM dbt.int_execution_gpay_safe_canonical c INNER JOIN dbt.int_execution_gpay_activity a ON lower(a.wallet_address) = c.canonical_address WHERE a.date >= '2026-06-04' AND a.action = 'Payment'"
+}

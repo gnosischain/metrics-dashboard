@@ -2,11 +2,11 @@ const metric = {
   id: 'api_execution_gnosis_app_token_offer_claims_cohort_monthly',
   name: 'Token Offer Retention',
   description: 'First-claim cohort × subsequent activity',
-  metricDescription: `Each row is a cohort of users grouped by the month of their first token-offer claim (CRC → offer_token via ERC20TokenOfferCycle). Each column is a calendar month. Tracks their subsequent claim activity.
+  metricDescription: `Each row (\`y\`) groups Gnosis App users by the month of their **first** token-offer claim (spending CRC to receive an offer token via a Circles v2 \`ERC20TokenOfferCycle\`, Cometh-routed); each column (\`x\`) is a later calendar month showing how much of that cohort kept claiming. The current partial month is excluded, and USD is valued on the received token only (CRC spent has no USD feed).
 
-- % — What percentage of the cohort claimed that month.
-- \\# — How many users from the cohort claimed.
-- $ — Total received-side USD volume from that cohort.`,
+- **%** (\`retention_pct\`) — share of the cohort's first-month size that claimed in that month; the amount view uses \`amount_retention_pct\` (USD claimed vs the cohort's initial month).
+- **\\#** (\`value_abs\`) — distinct cohort users who claimed that month.
+- **$** (\`value_usd\`) — total received-side USD claimed by the cohort that month.`,
   chartType: 'heatmap',
   xField: 'x',
   yField: 'y',

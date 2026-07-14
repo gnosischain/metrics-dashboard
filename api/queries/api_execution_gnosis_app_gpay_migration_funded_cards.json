@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gpay_migration_funded_cards",
+  "query": "SELECT toInt64(countIf((lower(address) IN (SELECT DISTINCT lower(address) FROM dbt.int_execution_gpay_balances_daily WHERE balance_usd > 0) OR lower(canonical_address) IN (SELECT DISTINCT lower(address) FROM dbt.int_execution_gpay_balances_daily WHERE balance_usd > 0)))) AS value FROM dbt.int_execution_gpay_safe_canonical"
+}

@@ -16,6 +16,8 @@ const inlineFilterMarker = '/*__FILTER_CONDITIONS__*/';
 const scopedPrefixRequiresInlineFilter = [
   'api_execution_account_',
   'api_execution_circles_v2_avatar_',
+  'api_execution_circles_v2_group_explorer_',
+  'api_execution_circles_v2_pool_explorer_',
   'api_execution_gnosis_app_user_',
   'api_execution_gpay_user_',
   'api_execution_yields_user_',
@@ -104,7 +106,7 @@ queryFiles.forEach(file => {
     // Write to the api/queries directory
     const outputPath = path.join(apiQueriesDir, `${id}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(jsonObj, null, 2));
-    
+
     exportedCount++;
     console.log(`Exported ${id} to ${outputPath}`);
   } catch (error) {
@@ -113,6 +115,26 @@ queryFiles.forEach(file => {
 });
 
 console.log(`Query export complete! Exported ${exportedCount} queries`);
+
+// --- Prune stale outputs: remove api/queries/<id>.json with no source src/queries/<id>.js ---
+// Keyed on the SOURCE FILE existing (id === filename by convention), NOT on what parsed/exported
+// this run — some cards use JSON-style keys the exporter can't parse but whose JSON is committed.
+const liveIds = new Set();
+for (const file of queryFiles) {
+  liveIds.add(file.replace(/\.js$/, ''));
+  const m = fs.readFileSync(path.join(srcQueriesDir, file), 'utf8').match(/id:\s*['"]([^'"]+)['"]/);
+  if (m) liveIds.add(m[1]);
+}
+let prunedCount = 0;
+for (const jsonFile of fs.readdirSync(apiQueriesDir).filter((f) => f.endsWith('.json'))) {
+  const jsonId = jsonFile.replace(/\.json$/, '');
+  if (!liveIds.has(jsonId)) {
+    fs.unlinkSync(path.join(apiQueriesDir, jsonFile));
+    prunedCount++;
+    console.log(`Pruned stale query ${jsonFile}`);
+  }
+}
+console.log(`Pruned ${prunedCount} stale queries`);
 
 if (inlineFilterWarnings.length > 0) {
   console.error(

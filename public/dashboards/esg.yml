@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Annualised carbon emissions, energy use and network footprint
     order: 1
     icon: 📊
     iconClass: bar-chart-2
@@ -21,6 +22,7 @@ tabs:
         gridColumn: 1 / span 6
         minHeight: 490px
   - name: Breakdown
+    description: Emissions by category, annual estimates and node counts
     order: 2
     icon: ''
     iconClass: search
@@ -39,6 +41,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 450px
   - name: Methodology
+    description: Calculation methodology, definitions and data sources
     order: 3
     icon: 📝
     iconClass: file-text

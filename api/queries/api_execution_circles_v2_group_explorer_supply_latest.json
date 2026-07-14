@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_supply_latest",
+  "query": "SELECT supply AS value\n    FROM dbt.api_execution_circles_v2_group_explorer_profile\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

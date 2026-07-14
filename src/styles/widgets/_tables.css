@@ -1,5 +1,21 @@
 /* Modern Table Widget Styles */
 
+/* The _expand cell has Tabulator's default 12px horizontal padding, leaving
+   only ~10px of content width — the ▸ character (11px) overflows and triggers
+   CSS text-overflow: ellipsis, rendering as "> ...". Remove the padding so
+   the arrow fits cleanly in the 34px column. */
+.table-widget .tabulator-cell[tabulator-field="_expand"] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  cursor: pointer;
+}
+
+.table-widget .tabulator-cell[tabulator-field="_expand"]:hover .expand-toggle {
+  opacity: 1 !important;
+}
+
 /* ==================
    Modern Table Base Styles
    ================== */

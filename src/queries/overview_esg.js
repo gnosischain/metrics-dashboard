@@ -1,11 +1,11 @@
 const metric = {
   id: 'overview_esg',
-  name: 'Annualised CO2e',
+  name: 'Annualised CO₂e (t)',
   valueField: 'value',
   chartType: 'number',
-  format: null,
-  fontSize: '2.6rem',    
-  query: `SELECT  CONCAT(toString(round(annual_co2_tonnes_projected)), 't') AS value FROM dbt.api_esg_carbon_emissions_annualised_latest`
+  format: 'formatNumberCompact',
+  metricDescription: 'Projected annual carbon emissions of Gnosis Chain, in tonnes of CO₂-equivalent.',
+  query: `SELECT round(annual_co2_tonnes_projected) AS value FROM dbt.api_esg_carbon_emissions_annualised_latest`
 };
 
 export default metric;

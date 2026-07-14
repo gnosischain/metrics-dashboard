@@ -1,7 +1,7 @@
 const metric = {
   id: 'api_consensus_validators_balances_daily',
-  name: 'Staked mGNO',
-  description: 'Daily amount of staked mGNO (effective balance)',
+  name: 'Staked GNO',
+  description: 'Daily amount of staked GNO (effective balance)',
   chartType: 'line', 
   isTimeSeries: true,
   enableZoom: true,

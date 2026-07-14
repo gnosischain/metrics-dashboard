@@ -8,6 +8,12 @@
       "port": 5173
     },
     {
+      "name": "dev-preview-5390",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "5390", "--strictPort"],
+      "port": 5390
+    },
+    {
       "name": "dev-proxy-3000",
       "runtimeExecutable": "node",
       "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "5174"],

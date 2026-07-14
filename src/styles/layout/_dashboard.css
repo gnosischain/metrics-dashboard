@@ -296,6 +296,87 @@
   color: #991b1b;
 }
 
+/* Chain switcher — dashboard-level segmented control for multi-chain
+   dashboards (e.g. Gnosis Pay on Gnosis Chain vs Celo). Pill-shaped to read
+   as a primary context switch, distinct from the rectangular per-tab
+   time-range control. */
+.chain-switcher {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  height: 32px;
+  align-items: stretch;
+  background: var(--color-hover-background);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.chain-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  padding: 0 13px;
+  line-height: 1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.chain-switcher-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.chain-switcher-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+}
+
+.chain-switcher-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+/* Chain badge next to the page title: mirrors the switcher's active chain so
+   the current context is readable in the content itself (screenshots, deep
+   links), not only in the toggle. */
+.dashboard-view-header-chain-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: var(--color-hover-background);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  white-space: nowrap;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.chain-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
 .dashboard-view-header-timerange {
   display: inline-flex;
   gap: 1px;

@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Projects, sectors, transactions and active accounts
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -29,6 +30,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 1200px
   - name: Transactions
+    description: Counts by project and sector over time
     order: 3
     icon: 🔁
     iconClass: transaction
@@ -58,6 +60,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 420px
   - name: Gas & Fees
+    description: Native fees and gas used by project and sector
     order: 4
     icon: ⛽️
     iconClass: gas-usage
@@ -91,6 +94,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 420px
   - name: Initiator Accounts
+    description: Active sending accounts by project and sector
     order: 5
     icon: 👥
     iconClass: users

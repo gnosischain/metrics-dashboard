@@ -30,6 +30,18 @@ export class BarChart extends BaseChart {
       ? config.seriesColorsByName
       : null;
 
+    // Optional: paint bars with a negative value in a distinct color (e.g. red for
+    // net outflows/removals on a diverging single-series bar). Only affects bars that
+    // are actually below zero, so it is a no-op on all-positive series.
+    const negativeColor = (typeof config?.negativeColor === 'string' && config.negativeColor.trim())
+      ? config.negativeColor.trim()
+      : null;
+    const applyNegativeColor = (values) => (
+      negativeColor
+        ? values.map((v) => (Number(v) < 0 ? { value: v, itemStyle: { color: negativeColor } } : v))
+        : values
+    );
+
     const resolveSeriesColor = (seriesName, index) => {
       if (seriesColorsByName && typeof seriesName === 'string') {
         const configuredColor = seriesColorsByName[seriesName];
@@ -47,30 +59,9 @@ export class BarChart extends BaseChart {
       : (config.seriesField && Array.isArray(processedData.series) && processedData.series.length > 1);
     const isHorizontal = !!config.horizontal;
 
-    return {
-      ...this.getBaseOptions(isDarkMode),
-
-      xAxis: isHorizontal ? {
-        type: 'value',
-        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
-      } : {
-        type: 'category',
-        data: processedData.categories,
-        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
-      },
-
-      yAxis: isHorizontal ? {
-        type: 'category',
-        data: processedData.categories,
-        inverse: true,
-        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
-      } : {
-        type: 'value',
-        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
-      },
-      
-      series: processedData.series ?
-        processedData.series.map((series, index) => {
+    // Build the bar series array (multi-series stacked, or single-series).
+    const seriesArray = processedData.series
+      ? processedData.series.map((series, index) => {
           const seriesOpts = {
             name: series.name,
             type: 'bar',
@@ -96,9 +87,10 @@ export class BarChart extends BaseChart {
           }
 
           return seriesOpts;
-        }) : [{
+        })
+      : [{
           type: 'bar',
-          data: processedData.values,
+          data: applyNegativeColor(processedData.values),
           itemStyle: {
             color: colors[0],
             borderRadius: 0,
@@ -110,8 +102,57 @@ export class BarChart extends BaseChart {
           barMaxWidth: config.barMaxWidth || 50,
           ...(config.markLine ? { markLine: config.markLine } : {}),
           ...(config.markArea ? { markArea: config.markArea } : {})
-        }],
-      
+        }];
+
+    // Optional line overlay drawn on top of the bars (opt-in via config.lineOverlayField)
+    // — e.g. an "Active" total line over a New/Returning/Reactivated stacked composition.
+    // One point per category, read once from the raw rows. No-op when the field is unset.
+    const overlayField = typeof config?.lineOverlayField === 'string' ? config.lineOverlayField : null;
+    if (overlayField) {
+      const xf = config.xField || 'date';
+      const byCat = {};
+      for (const row of (Array.isArray(data) ? data : [])) {
+        const c = row[xf];
+        if (byCat[c] === undefined && row[overlayField] != null) byCat[c] = Number(row[overlayField]);
+      }
+      seriesArray.push({
+        name: config.lineOverlayLabel || 'Total',
+        type: 'line',
+        data: processedData.categories.map((c) => (byCat[c] ?? null)),
+        smooth: false,
+        symbol: 'circle',
+        symbolSize: 4,
+        lineStyle: { width: 2 },
+        itemStyle: { color: config.lineOverlayColor || '#111827' },
+        emphasis: { focus: 'series' },
+        z: 3
+      });
+    }
+
+    return {
+      ...this.getBaseOptions(isDarkMode),
+
+      xAxis: isHorizontal ? {
+        type: 'value',
+        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
+      } : {
+        type: 'category',
+        data: processedData.categories,
+        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
+      },
+
+      yAxis: isHorizontal ? {
+        type: 'category',
+        data: processedData.categories,
+        inverse: true,
+        ...this.getAxisConfig(isDarkMode, 'category', enhancedConfig)
+      } : {
+        type: 'value',
+        ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig)
+      },
+
+      series: seriesArray,
+
       tooltip: {
         ...this.getTooltipConfig({ ...enhancedConfig, isDarkMode }),
         trigger: 'axis',
@@ -203,6 +244,10 @@ export class BarChart extends BaseChart {
   }
 
   static sortCategories(categories, data, xField, yField, seriesField, config = {}) {
+    if (config?.preserveOrder) {
+      return [...categories];
+    }
+
     if (config?.categorySort === 'absNetDesc' && seriesField) {
       const categorySums = {};
       data.forEach((item) => {

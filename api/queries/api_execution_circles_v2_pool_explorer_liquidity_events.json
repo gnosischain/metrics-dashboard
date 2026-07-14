@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_pool_explorer_liquidity_events",
+  "query": "SELECT\n      ts,\n      event_kind,\n      token0_symbol,\n      round(amount0, 6) AS amount0,\n      token1_symbol,\n      round(amount1, 6) AS amount1,\n      round(amount_usd, 2) AS amount_usd,\n      lp,\n      tx_hash\n    FROM dbt.api_execution_circles_v2_pool_explorer_liquidity_events\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY ts DESC\n    LIMIT 200"
+}

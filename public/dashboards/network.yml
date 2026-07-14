@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Peer discovery counts and network topology
     order: 1
     icon: 📊
     iconClass: activity
@@ -37,6 +38,7 @@ tabs:
    #     gridColumn: 9 / span 4
    #     minHeight: 490px
   - name: Clients
+    description: Client software distribution across discv4 and discv5
     order: 2
     icon: 💻
     iconClass: monitor
@@ -63,6 +65,7 @@ tabs:
         gridColumn: 7 / span 6
         minHeight: 450px
   - name: Forks
+    description: Current and next fork adoption over time
     order: 3
     icon: 🗺️
     iconClass: fork
@@ -85,6 +88,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 1060px
   - name: Probelab
+    description: Crawler client versions, QUIC, cloud and geography
     order: 4
     icon: 🔬
     iconClass: search
@@ -115,6 +119,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 500px
   - name: Methodology
+    description: Data collection methods and protocol overview
     order: 5
     icon: 📝
     iconClass: file-text
@@ -128,6 +133,7 @@ tabs:
         gridColumn: 1 / span 12
         minHeight: 4300px
   - name: Glossary
+    description: Field definitions and terminology
     order: 6
     icon: 📖
     iconClass: book-open

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_yields_user_fee_collections_daily',
   name: 'LP Fee Income',
   description: 'Daily fees collected by pool',
-  metricDescription: 'Daily LP fee income from Collect events across all V3 pools for the selected wallet. Each bar segment represents a different pool.',
+  metricDescription: 'Daily LP fee income from Collect events across V3 pools (Uniswap/Swapr) for the selected wallet. Each bar segment is a pool. Note: Balancer fees are not Collect-based and are not shown here; they are included in the lifetime "LP Fees Collected" KPI.',
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

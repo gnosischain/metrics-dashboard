@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_score_mints_daily",
+  "query": "SELECT date, n_mints, n_minters, avg_score, round(amount, 2) AS amount\n    FROM dbt.api_execution_circles_v2_score_mints_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
+}

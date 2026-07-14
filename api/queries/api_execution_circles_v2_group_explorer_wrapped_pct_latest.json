@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_wrapped_pct_latest",
+  "query": "SELECT wrapped_pct AS value\n    FROM dbt.api_execution_circles_v2_group_explorer_profile\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

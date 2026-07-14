@@ -1,4 +1,4 @@
 {
   "id": "api_execution_trades_stats_hop_distribution",
-  "query": "SELECT label, value FROM dbt.api_execution_trades_stats_hop_distribution ORDER BY bucket_order"
+  "query": "SELECT label, value, bucket_order, time_window FROM dbt.api_execution_trades_stats_hop_distribution ORDER BY bucket_order"
 }

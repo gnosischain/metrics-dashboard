@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_gcrc_cashback_recipients_ranking",
+  "query": "SELECT rank, address, display_name, preview_image_url, total_amount, n_weeks, last_week\n    FROM dbt.api_execution_circles_v2_gcrc_cashback_recipients_ranking\n    ORDER BY rank"
+}

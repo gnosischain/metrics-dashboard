@@ -1,5 +1,6 @@
 tabs:
   - name: Holdings
+    description: Total value, allocation and holdings by asset class
     order: 1
     icon: 🏛️
     iconClass: landmark

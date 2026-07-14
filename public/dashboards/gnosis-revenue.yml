@@ -1,5 +1,6 @@
 tabs:
   - name: Overview
+    description: Active user totals by cohort, weekly and monthly
     order: 1
     icon: 📊
     iconClass: chart-line
@@ -15,6 +16,7 @@ tabs:
         minHeight: 500px
 
   - name: Holdings
+    description: Stablecoin balances by cohort across EURe, USDC.e, BRLA and zCHF
     order: 2
     icon: 🏦
     iconClass: wallet
@@ -54,6 +56,7 @@ tabs:
         minHeight: 450px
 
   - name: sDAI
+    description: sDAI holdings by cohort, weekly and monthly
     order: 3
     icon: 🐷
     iconClass: piggy-bank
@@ -69,6 +72,7 @@ tabs:
         minHeight: 450px
 
   - name: Gnosis Pay
+    description: Card balances by cohort across EURe, GBPe and USDC.e
     order: 4
     icon: 💳
     iconClass: gnosis-pay
@@ -100,6 +104,7 @@ tabs:
         minHeight: 450px
 
   - name: Gnosis App
+    description: App balances by cohort, weekly and monthly
     order: 5
     enabled: false  # models not yet in prod
     icon: 📱
@@ -116,6 +121,7 @@ tabs:
         minHeight: 450px
 
   - name: Methodology
+    description: Field definitions and data sources
     order: 6
     icon: 📘
     iconClass: file-text

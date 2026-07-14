@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_collateral_daily",
+  "query": "SELECT date, collateral AS value\n    FROM dbt.api_execution_circles_v2_group_collateral_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
+}

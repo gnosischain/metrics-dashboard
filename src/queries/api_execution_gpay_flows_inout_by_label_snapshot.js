@@ -23,6 +23,7 @@ const metric = {
       if(from_label = 'gpay', -amount_usd, amount_usd) AS amount_usd
     FROM dbt.api_execution_gpay_flows_snapshot
     WHERE (from_label != 'gpay' OR to_label != 'gpay') AND abs(amount_usd) > 0.01
+    ORDER BY multiIf(window = '30D', 0, window = '7D', 1, window = '90D', 2, window = '1D', 3, 4), abs(amount_usd) DESC
   `
 };
 

@@ -1,4 +1,0 @@
-{
-  "id": "overview_sector_bridges",
-  "query": "SELECT today() AS date, value\n    FROM dbt.api_bridges_kpi_volume_7d"
-}

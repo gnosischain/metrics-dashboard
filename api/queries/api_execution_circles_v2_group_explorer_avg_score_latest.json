@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_avg_score_latest",
+  "query": "SELECT round(avg(score), 1) AS value\n    FROM dbt.api_execution_circles_v2_group_member_scores\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/"
+}

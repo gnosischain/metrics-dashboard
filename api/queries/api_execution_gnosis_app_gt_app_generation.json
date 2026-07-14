@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_app_generation",
+  "query": "SELECT app_generation, toInt64(count()) AS value FROM dbt.fct_execution_gnosis_app_gt_wallet_metrics_public WHERE is_registered_active GROUP BY app_generation ORDER BY value DESC"
+}

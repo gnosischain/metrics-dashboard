@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_kpi_new_registrations",
+  "query": "SELECT toInt64(new_registrations) AS value FROM dbt.fct_execution_gnosis_app_gt_registrations_monthly WHERE month < toStartOfMonth(today()) ORDER BY month DESC LIMIT 1"
+}

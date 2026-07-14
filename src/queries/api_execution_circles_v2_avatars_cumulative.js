@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_avatars_cumulative',
   name: 'Avatars Cumulative',
   description: 'Cumulative avatars by type over time',
-  metricDescription: 'Cumulative total of registered Circles v2 avatars, stacked by avatar type (Human, Group, Org).',
+  metricDescription: `Running cumulative total of registered Circles v2 avatars over time, stacked by \`avatar_type\`. Each avatar is one on-chain Hub registration event: **Human** (\`RegisterHuman\`), **Group** (\`RegisterGroup\`), or **Org** (\`RegisterOrganization\`); the total only grows since registrations are never removed. Daily grain; the current (incomplete) day is excluded.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

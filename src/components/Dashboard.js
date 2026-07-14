@@ -210,7 +210,9 @@ const Dashboard = () => {
     let cancelled = false;
     setActiveTabConfigsLoaded(false);
 
-    const ids = rawTabMetrics.map((m) => m.id).filter(Boolean);
+    // Load each card's default id AND its non-default-chain variant (`celoId`)
+    // so the per-tab chain toggle swaps data without a skeleton flash.
+    const ids = rawTabMetrics.flatMap((m) => [m.id, m.celoId]).filter(Boolean);
     metricsService.loadMetricConfigs(ids).then(() => {
       if (!cancelled) setActiveTabConfigsLoaded(true);
 
@@ -573,6 +575,12 @@ const Dashboard = () => {
   );
   const activeDashboardPalette = activeDashboardConfig?.palette || null;
 
+  // Multi-chain dashboards no longer split their tabs across the sidebar or
+  // carry a dashboard-level chain switcher. Chain selection is now a per-tab
+  // control rendered inside MetricGrid (tabs list `chains:` and each card a
+  // `celoId`), so toggling a chain swaps only the current tab's card data and
+  // the menu stays stable. The sidebar therefore lists every tab as-is.
+
   const getActiveDashboardName = () => {
     return activeDashboardConfig ? activeDashboardConfig.name : '';
   };
@@ -626,6 +634,11 @@ const Dashboard = () => {
       ...dashboard,
       tabs: (dashboard.tabs || []).map((tab) => ({
         ...tab,
+        // Disambiguate same-named tabs across chains in search results
+        // (e.g. "Overview · Celo" vs "Overview").
+        name: tab.chain && tab.chainLabel && dashboard.defaultChain && tab.chain !== dashboard.defaultChain
+          ? `${tab.name} · ${tab.chainLabel}`
+          : tab.name,
         metrics: metricsService.resolveTabMetrics(tab.metrics || [])
       }))
     }));

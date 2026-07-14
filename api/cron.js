@@ -156,9 +156,11 @@ class CronManager {
       // Execute query against ClickHouse
       const result = await this.executeClickHouseQuery(queryStr);
       
-      // Save to cache
+      // Save to cache under the same composite key the request path reads
+      // (metricId + query hash), so a query change invalidates the warmed
+      // cache too. `query` here is the raw pre-substitution string.
       if (result && result.length > 0) {
-        cacheManager.setCache(metricId, result);
+        cacheManager.setCache(`${metricId}|q=${cacheManager.queryHash(query)}`, result);
         return true;
       }
       

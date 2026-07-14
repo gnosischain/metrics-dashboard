@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_balance_cohorts_daily",
+  "query": "SELECT date,\n           balance_bucket     AS label,\n           holder_count       AS value,\n           round(total_balance, 2) AS value_balance\n    FROM dbt.api_execution_circles_v2_balance_cohorts_daily\n    ORDER BY date,\n             multiIf(balance_bucket = '0-1',      1,\n                     balance_bucket = '1-10',     2,\n                     balance_bucket = '10-100',   3,\n                     balance_bucket = '100-1k',   4,\n                     balance_bucket = '1k-10k',   5,\n                     balance_bucket = '10k-100k', 6,\n                     balance_bucket = '100k+',    7, 8)"
+}

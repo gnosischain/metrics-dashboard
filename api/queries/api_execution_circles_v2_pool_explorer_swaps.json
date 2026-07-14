@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_pool_explorer_swaps",
+  "query": "SELECT\n      ts,\n      token_sold,\n      round(amount_sold, 6)   AS amount_sold,\n      token_bought,\n      round(amount_bought, 6) AS amount_bought,\n      round(amount_usd, 2)    AS amount_usd,\n      trader,\n      tx_hash\n    FROM dbt.api_execution_circles_v2_pool_explorer_swaps\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY ts DESC\n    LIMIT 200"
+}

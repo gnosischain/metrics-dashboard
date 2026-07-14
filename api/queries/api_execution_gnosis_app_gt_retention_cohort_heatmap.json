@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gt_retention_cohort_heatmap",
+  "query": "SELECT toString(month_index) AS x, toString(cohort_month) AS y, round(retention_pct*100,1) AS retention_pct, toInt64(retained_wallets) AS value_abs FROM dbt.fct_execution_gnosis_app_gt_wallet_cohort_retention_monthly WHERE basis='app_tagged' ORDER BY y ASC, month_index ASC"
+}

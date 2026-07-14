@@ -504,6 +504,39 @@
   }
 }
 
+@media (max-width: 1024px) {
+  /* Strip and overview KPI cards use explicit gridRow/gridColumn set in JS.
+     On a 6-col grid (≤1024px), cards assigned to cols 7-12 create implicit
+     auto-tracks that consume container space, leaving fr-tracks near zero.
+     Removing explicit placement lets cards reflow: 2×2 for the strip, 2×3
+     for the overview KPI row. !important is needed to beat the inline
+     gridTemplateRows style injected by MetricGrid. */
+  .landing-strip .metrics-grid-positioned,
+  .landing-overview-grid .metrics-grid-positioned {
+    grid-template-rows: auto !important;
+  }
+
+  .landing-strip .metrics-grid-positioned .grid-item {
+    grid-column: span 3 !important;
+    grid-row: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .landing-overview-grid .metrics-grid-positioned .grid-item {
+    grid-column: span 2 !important;
+    grid-row: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-sector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .landing-sector-grid {
     grid-template-columns: 1fr;

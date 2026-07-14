@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_circles_v2_group_explorer_members",
+  "query": "SELECT\n      group_address,\n      member,\n      display_name,\n      preview_image_url,\n      member_since,\n      is_mutual,\n      score\n    FROM dbt.api_execution_circles_v2_group_members\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY member_since DESC\n    LIMIT 500"
+}

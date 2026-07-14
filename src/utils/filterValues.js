@@ -18,7 +18,8 @@ export const normalizeFilterValue = (fieldName, value) => {
     return trimmedValue.toLowerCase();
   }
 
-  if (fieldName === 'avatar' && ADDRESS_LIKE_VALUE_PATTERN.test(trimmedValue)) {
+  if ((fieldName === 'avatar' || fieldName === 'group_address' || fieldName === 'pool_address')
+      && ADDRESS_LIKE_VALUE_PATTERN.test(trimmedValue)) {
     return trimmedValue.toLowerCase();
   }
 

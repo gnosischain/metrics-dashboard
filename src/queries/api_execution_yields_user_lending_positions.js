@@ -5,7 +5,7 @@ const metric = {
   name: 'Lending Positions',
   description: 'Lending supply balances on Gnosis (Aave V3 & SparkLend)',
   metricDescription:
-    'Current supply positions across Gnosis lending markets (Aave V3 and SparkLend) ' +
+    'Current supply positions (value above $0.01) across Gnosis lending markets (Aave V3 and SparkLend) ' +
     'for the selected wallet, with current supply APY. A wallet holding the same ' +
     'asset on both protocols produces two rows, one per protocol.',
   chartType: 'table',
