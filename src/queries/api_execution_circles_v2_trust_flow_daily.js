@@ -7,7 +7,7 @@ const metric = {
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',
-  showTotal: true,
+  showTotal: false,
   xField: 'date',
   yField: 'value',
   seriesField: 'label',

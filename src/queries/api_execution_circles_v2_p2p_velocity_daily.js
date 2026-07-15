@@ -1,9 +1,9 @@
 const metric = {
   id: 'api_execution_circles_v2_p2p_velocity_daily',
-  name: 'P2P Velocity',
-  description: 'Peer-to-peer transfer activity per day',
-  metricDescription: `Daily peer-to-peer Circles v2 transfer activity. **p2p** is the residual \`transfer_category\` — every transfer that is *not* a \`mint\`, \`burn\`, \`wrap\`, or \`unwrap\` (i.e. neither the \`from\` nor the \`to\` side is the zero address). Toggle units between \`n_transfers\` (transfer count), \`n_senders\` / \`n_receivers\` (distinct addresses active that day), and \`amount\` (total CRC moved, raw / 1e18, nominal — not demurrage-adjusted). The current incomplete day is excluded; p2p is not yet subdivided into direct vs matrix-routed transfers (pending \`StreamCompleted\` decoding).`,
-  chartType: 'line',
+  name: 'Peer-to-Peer Transfers',
+  description: 'Daily wallet-to-wallet CRC activity',
+  metricDescription: `Daily count and volume of genuine wallet-to-wallet Circles v2 transfers. **p2p** is the residual \`transfer_category\`: every transfer where **both** sides are real wallets — it excludes protocol supply events (**mint** = from the zero address, **burn** = to the zero address) and ERC-20 **wrap**/**unwrap** conversions. Toggle the measure between \`n_transfers\` (transfer count), \`n_senders\` / \`n_receivers\` (distinct wallets active that day), and \`amount\` (total CRC moved, raw / 1e18, nominal — not demurrage-adjusted). The current incomplete day is excluded; p2p is not yet subdivided into direct vs matrix-routed transfers (pending \`StreamCompleted\` decoding).`,
+  chartType: 'area',
   isTimeSeries: true,
   enableZoom: true,
   format: 'formatNumber',

@@ -6,7 +6,7 @@ const metric = {
   chartType: 'numberDisplay',
   format: 'formatNumber',
   valueField: 'value',
-  changeData: { enabled: true, field: 'change_pct', period: 'from 7d ago' },
+  changeData: { enabled: true, field: 'change_pct', period: 'new vs prior 7d' },
   query: `SELECT value, new_last_7d, change_pct FROM dbt.api_execution_circles_v2_kpi_total_depositors_latest`,
 };
 export default metric;

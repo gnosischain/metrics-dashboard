@@ -53,8 +53,9 @@ tabs:
         gridRow: 2
         gridColumn: 9 / span 4
         minHeight: 120px
-      # WAU = the Gnosis-Pay-inclusive definition (counts card-wallet transactions as active)
-      - id: api_execution_gnosis_app_weekly_active_users_incl_gpay
+      # Active Users = the Gnosis-Pay-inclusive definition (counts card-wallet transactions as
+      # active); Daily / Weekly / Monthly via the section resolution toggle.
+      - id: api_execution_gnosis_app_active_users_incl_gpay_weekly
         gridRow: 3
         gridColumn: 1 / span 6
         minHeight: 440px

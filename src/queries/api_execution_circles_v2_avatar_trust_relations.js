@@ -53,9 +53,9 @@ const metric = {
           const v = String(cell.getValue() || '').trim();
           if (!v) return '-';
           const colors = {
-            outgoing: { text: '#0E9384', bg: 'rgba(14, 147, 132, 0.12)', border: 'rgba(14, 147, 132, 0.24)' },
-            incoming: { text: '#175CD3', bg: 'rgba(23, 92, 211, 0.12)', border: 'rgba(23, 92, 211, 0.24)' },
-            mutual:   { text: '#7C3AED', bg: 'rgba(124, 58, 237, 0.12)', border: 'rgba(124, 58, 237, 0.28)' },
+            outgoing: { text: '#22c55e', bg: 'rgba(34, 197, 94, 0.12)', border: 'rgba(34, 197, 94, 0.24)' },
+            incoming: { text: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)', border: 'rgba(59, 130, 246, 0.24)' },
+            mutual:   { text: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.28)' },
           };
           const c = colors[v] || { text: 'var(--color-text-secondary)', bg: 'var(--color-accent-softer)', border: 'var(--color-border)' };
           return `<span class="action-chip" style="color:${c.text};background:${c.bg};border-color:${c.border}">${v}</span>`;

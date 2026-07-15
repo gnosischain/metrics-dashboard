@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_swaps_by_solver_weekly",
-  "query": "WITH top_solvers AS (\n      SELECT solver\n      FROM dbt.api_execution_gnosis_app_swaps_by_solver_daily\n      GROUP BY solver\n      ORDER BY sum(n_swaps_filled) DESC\n      LIMIT 10\n    )\n    SELECT toStartOfWeek(date, 1) AS date, solver AS label, sum(n_swaps_filled) AS n_swaps_filled\n    FROM dbt.api_execution_gnosis_app_swaps_by_solver_daily\n    WHERE solver IN (SELECT solver FROM top_solvers)\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
+  "query": "WITH top_solvers AS (\n      SELECT solver\n      FROM dbt.api_execution_gnosis_app_swaps_by_solver_daily\n      GROUP BY solver\n      ORDER BY sum(n_swaps_filled) DESC\n      LIMIT 10\n    )\n    SELECT toStartOfWeek(date, 1) AS date, solver AS label, sum(n_swaps_filled) AS n_swaps_filled\n    FROM dbt.api_execution_gnosis_app_swaps_by_solver_daily\n    WHERE solver IN (SELECT solver FROM top_solvers)\n      AND date < toStartOfWeek(today(), 1)\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
 }

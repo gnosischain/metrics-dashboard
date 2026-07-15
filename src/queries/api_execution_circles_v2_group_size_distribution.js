@@ -8,6 +8,6 @@ const metric = {
   xField: 'bucket',
   yField: 'n_groups',
   preserveOrder: true,
-  query: `SELECT bucket, bucket_order, n_groups FROM dbt.api_execution_circles_v2_group_size_distribution ORDER BY bucket_order`,
+  query: `SELECT substring(bucket, position(bucket, '. ') + 2) AS bucket, bucket_order, n_groups FROM dbt.api_execution_circles_v2_group_size_distribution ORDER BY bucket_order`,
 };
 export default metric;

@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_avatar_mint_activity_daily",
-  "query": "SELECT avatar, date, mint_events, amount_minted\n    FROM dbt.api_execution_circles_v2_avatar_mint_activity_daily\n    WHERE date BETWEEN toDate('{from}') AND toDate('{to}')\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
+  "query": "SELECT avatar, date, mint_events, amount_minted\n    FROM dbt.api_execution_circles_v2_avatar_mint_activity_daily\n    WHERE 1 = 1\n      /*__FILTER_CONDITIONS__*/\n    ORDER BY date"
 }

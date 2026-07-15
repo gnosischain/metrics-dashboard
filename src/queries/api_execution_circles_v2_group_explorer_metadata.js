@@ -75,7 +75,7 @@ const metric = {
   id: 'api_execution_circles_v2_group_explorer_metadata',
   name: 'Group Identity',
   description: 'Registration, profile and on-chain handlers for the selected group',
-  metricDescription: `Registration facts, profile, and on-chain handlers (\`owner\`, \`treasury_address\`, \`mint_handler\`, \`redemption_handler\`) for the selected Circles v2 group. Each handler is resolved from the group's settings-update history using its last **non-empty** value, so some group types (e.g. score-based) may leave them empty. Name/image are the group's latest avatar metadata, and \`Members\` is the size of its current outgoing trust list.`,
+  metricDescription: `Registration facts, profile, and on-chain roles (\`owner\`, \`treasury_address\`) for the selected Circles v2 group. Each value is resolved from the group's settings-update history using its last **non-empty** value, so some group types (e.g. score-based) may leave them empty. Name/image are the group's latest avatar metadata, and \`Members\` is the size of its current outgoing trust list.`,
   chartType: 'table',
   globalFilterField: 'group_address',
   useCached: false,

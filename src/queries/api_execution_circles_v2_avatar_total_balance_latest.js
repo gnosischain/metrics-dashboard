@@ -1,6 +1,7 @@
 const metric = {
   id: 'api_execution_circles_v2_avatar_total_balance_latest',
   name: 'Total CRC (Demurraged)',
+  description: 'All CRC held, demurrage-adjusted',
   metricDescription: 'Sum of all CRC tokens held by the avatar, with the Circles demurrage applied.',
   chartType: 'numberDisplay',
   globalFilterField: 'avatar',

@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_minter_cohort_daily',
   name: 'Minter Cohort Distribution',
   description: 'Avatars by 14-day mint coverage cohort',
-  metricDescription: `Daily count of Circles v2 personal minters, split into cohorts by how fully they minted. Only avatars that minted on **every one** of the trailing 14 days (\`mint_days_14dw = 14\`) are included; each is bucketed by its actual 14-day mint total (\`mint_14dw\`) as a share of **336 CRC** — the theoretical maximum (24 CRC/day over 14 days). Buckets: \`<1%\`, \`[1%, 20%[\`, \`[20%, 40%[\`, \`[40%, 60%[\`, \`[60%, 80%[\`, \`+80%\`. Blacklisted avatars (per the \`circles_blacklisted\` snapshot) are excluded, and the current incomplete day is dropped.`,
+  metricDescription: `Daily count of Circles v2 personal minters, split into cohorts by how fully they minted. Only avatars that minted on **every one** of the trailing 14 days (\`mint_days_14dw = 14\`) are included; each is bucketed by its actual 14-day mint total (\`mint_14dw\`) as a share of **336 CRC** — the theoretical maximum (24 CRC/day over 14 days). Buckets: \`<1%\`, \`[1%, 20%[\`, \`[20%, 40%[\`, \`[40%, 60%[\`, \`[60%, 80%[\`, \`+80%\`. Blacklisted avatars (per the \`circles_blacklisted\` snapshot) are excluded, and the current incomplete day is dropped. Note: the sibling **Active Minters (daily)** chart uses the same threshold but does *not* exclude blacklisted avatars, so its line can sit slightly above this chart's \`+80%\` cohort.`,
   chartType: 'area',
   isTimeSeries: true,
   stacked: true,

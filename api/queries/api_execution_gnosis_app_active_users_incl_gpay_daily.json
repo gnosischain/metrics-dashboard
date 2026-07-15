@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_active_users_incl_gpay_daily",
+  "query": "SELECT * FROM (\n      SELECT toDate(date) AS date, 'New'         AS label, new_users         AS value, active_users AS active FROM dbt.api_execution_gnosis_app_active_users_incl_gpay_daily\n      UNION ALL SELECT toDate(date), 'Returning',   returning_users,   active_users FROM dbt.api_execution_gnosis_app_active_users_incl_gpay_daily\n      UNION ALL SELECT toDate(date), 'Reactivated', reactivated_users, active_users FROM dbt.api_execution_gnosis_app_active_users_incl_gpay_daily\n    )\n    ORDER BY date ASC, label ASC"
+}

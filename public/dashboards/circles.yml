@@ -191,7 +191,7 @@ tabs:
         minHeight: 360px
 
   - name: Activity
-    description: Hub events, transfers, velocity and weekly active users
+    description: Hub events, peer-to-peer transfers and weekly active users
     order: 5
     icon: 📈
     iconClass: chart-line
@@ -206,7 +206,7 @@ tabs:
         gridRow: 1
         gridColumn: 7 / span 6
         minHeight: 440px
-      # Transfers & velocity
+      # Transfers
       - id: api_execution_circles_v2_transfers_daily
         gridRow: 2
         gridColumn: 1 / span 6

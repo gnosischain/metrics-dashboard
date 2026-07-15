@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_mints_daily",
-  "query": "SELECT\n      date,\n      n_mint_events,\n      n_minters,\n      amount_minted\n    FROM dbt.api_execution_circles_v2_mints_daily\n    ORDER BY date"
+  "query": "SELECT\n      date,\n      sum(n_mint_events) AS n_mint_events,\n      sum(n_minters)     AS n_minters,\n      sum(amount_minted) AS amount_minted\n    FROM dbt.api_execution_circles_v2_mints_daily\n    GROUP BY date\n    ORDER BY date"
 }

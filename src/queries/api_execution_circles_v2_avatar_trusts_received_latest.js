@@ -1,6 +1,7 @@
 const metric = {
   id: 'api_execution_circles_v2_avatar_trusts_received_latest',
   name: 'Trusts Received',
+  description: 'Incoming trusts',
   metricDescription: 'Incoming trust relationships the avatar has received from other Circles avatars.',
   chartType: 'numberDisplay',
   globalFilterField: 'avatar',

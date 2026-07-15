@@ -2,7 +2,7 @@ const metric = {
   id: 'api_execution_circles_v2_pools_activity_daily',
   name: 'Pool Activity (daily)',
   description: 'Volume, swaps or traders per pool over time',
-  metricDescription: `Daily trading activity in the main Circles DEX pools (Uniswap V3), stacked by pool, with a metric toggle. **Volume (USD)** is the USD value of every swap (priced via the sDAI/EURe leg); **Swaps** counts Swap events; **Traders** counts distinct takers (Swap recipient, falling back to the tx signer) per pool per day. Pools: **s-CBG/sDAI**, **s-gCRC/sDAI**, **EURe/s-gCRC**. The current incomplete day is excluded. (TVL/reserves are tracked separately once the CRC-token pricing/reserve model lands.)`,
+  metricDescription: `Daily trading activity in the main Circles DEX pools (Uniswap V3 + Balancer V3), stacked by pool, with a metric toggle. **Volume (USD)** is the USD value of every swap (priced via the sDAI/EURe leg); **Swaps** counts Swap events; **Traders** counts distinct takers (Swap recipient, falling back to the tx signer) per pool per day. Pools: **s-CBG/sDAI**, **s-gCRC/sDAI**, **EURe/s-gCRC**, **s-gCRC/sDAI (Balancer)**. The current incomplete day is excluded.`,
   chartType: 'bar',
   isTimeSeries: true,
   stacked: true,

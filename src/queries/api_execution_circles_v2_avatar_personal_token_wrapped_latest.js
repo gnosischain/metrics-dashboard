@@ -1,6 +1,7 @@
 const metric = {
   id: 'api_execution_circles_v2_avatar_personal_token_wrapped_latest',
   name: 'Wrapped (ERC-20)',
+  description: 'Own CRC held as ERC-20',
   metricDescription: 'Amount of the selected avatar\'s own CRC currently locked inside their ERC-20 wrapper contracts (demurrage + inflation). A higher share means more of the avatar\'s personal token is circulating as ERC-20 rather than native ERC-1155.',
   chartType: 'numberDisplay',
   globalFilterField: 'avatar',
