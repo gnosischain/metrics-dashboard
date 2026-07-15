@@ -47,6 +47,7 @@ const metric = {
           SELECT date, pool_address FROM dbt.api_execution_circles_v2_pool_explorer_swaps_daily
           UNION DISTINCT
           SELECT toDate(ts) AS date, pool_address FROM dbt.api_execution_circles_v2_pool_explorer_liquidity_events
+          WHERE toDate(ts) < today()
         )
       ) d
       LEFT JOIN dbt.api_execution_circles_v2_pool_explorer_swaps_daily sw
@@ -58,6 +59,7 @@ const metric = {
           sumIf(amount_usd, event_kind = 'Add')    AS liq_usd_add,
           sumIf(amount_usd, event_kind = 'Remove') AS liq_usd_remove
         FROM dbt.api_execution_circles_v2_pool_explorer_liquidity_events
+        WHERE toDate(ts) < today()
         GROUP BY date, pool_address
       ) lq ON lq.date = d.date AND lq.pool_address = d.pool_address
     ) t

@@ -21,7 +21,23 @@ const metric = {
   ],
   defaultValueMode: 'n_events',
   query: `
-    SELECT toDate(week) AS date, activity_kind AS label, n_events, n_users
+    SELECT
+      toDate(week) AS date,
+      multiIf(
+        activity_kind = 'swap_signed', 'CoW swap (signed)',
+        activity_kind = 'swap_filled', 'CoW swap (filled)',
+        activity_kind = 'topup', 'Gnosis Pay top-up',
+        activity_kind = 'marketplace_buy', 'Marketplace buy',
+        activity_kind = 'token_offer_claim', 'Token offer claim',
+        activity_kind = 'circles_trust', 'Circles trust',
+        activity_kind = 'circles_personal_mint', 'Circles personal mint',
+        activity_kind = 'circles_register_human', 'Circles register human',
+        activity_kind = 'circles_invite_human', 'Circles invite human',
+        activity_kind = 'circles_fee', 'Circles fee',
+        activity_kind
+      ) AS label,
+      n_events,
+      n_users
     FROM dbt.api_execution_gnosis_app_activity_by_action_weekly
     WHERE activity_kind != 'onboard'
     ORDER BY date ASC, label ASC

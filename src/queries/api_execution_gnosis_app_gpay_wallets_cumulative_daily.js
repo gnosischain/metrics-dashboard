@@ -12,7 +12,7 @@ const metric = {
   format: 'formatNumber',
   query: `
     SELECT toDate(date) AS date,
-           onboarding_class AS label,
+           multiIf(onboarding_class = 'onboarded_via_ga', 'Onboarded via GA', 'Imported') AS label,
            n_ga_wallets_cumulative AS value
     FROM dbt.api_execution_gnosis_app_gpay_wallets_daily
     ORDER BY date ASC, label ASC

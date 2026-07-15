@@ -1,4 +1,4 @@
 {
   "id": "api_execution_circles_v2_backing_events_daily",
-  "query": "SELECT date, lifecycle_stage, n_events\n    FROM dbt.api_execution_circles_v2_backing_events_daily\n    ORDER BY date"
+  "query": "SELECT\n      date,\n      multiIf(\n        lifecycle_stage = 'initiated', 'Initiated',\n        lifecycle_stage = 'deployed', 'Deployed',\n        lifecycle_stage = 'lbp_deployed', 'LBP Deployed',\n        lifecycle_stage = 'completed', 'Completed',\n        lifecycle_stage = 'released', 'Released',\n        lifecycle_stage = 'asset_status_updated', 'Asset Status Updated',\n        lifecycle_stage = 'global_release_updated', 'Global Release Updated',\n        lifecycle_stage\n      ) AS lifecycle_stage,\n      n_events\n    FROM dbt.api_execution_circles_v2_backing_events_daily\n    ORDER BY date"
 }

@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_circles_v2_crc20_price_daily',
-  name: 'CRC20 DEX Market (daily)',
+  name: 'CRC20 DEX Market',
   description: 'Daily CRC20 trading volume, swaps and USD price',
   metricDescription: `Daily DEX market activity for **CRC20 wrapper tokens**, consolidated across every pool and every CRC20 token that traded. Circles personal/group tokens each wrap to their own ERC-20 (\`crc20_token\`) and trade against backing assets. The default view is **Volume (CRC)** — total CRC20 tokens traded per day — the clearest read on market activity. Toggle **Trades** (swap transactions), **Tokens traded** (distinct CRC20 tokens with at least one trade), or **Price (USD)**. The price series is a cross-token, cross-pool **volume-weighted average** (\`sum(price_vwap_usd × total_crc_volume) / sum(total_crc_volume)\`), i.e. "what a traded CRC was worth in USD" — not the price of any single token; because different personal/group tokens genuinely trade at very different prices it is inherently choppy, so read it as an order-of-magnitude index (~\$0.01), not a precise quote. Token-days with **under 100 CRC of volume are excluded** as dust; the current incomplete day is excluded.`,
   chartType: 'bar',

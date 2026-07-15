@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_gpay_topups_by_token_weekly",
-  "query": "SELECT toStartOfWeek(date, 1) AS date,\n           coalesce(token_bought_symbol, 'unknown') AS label,\n           sum(n_topups) AS n_topups\n    FROM dbt.api_execution_gnosis_app_gpay_topups_by_token_daily\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
+  "query": "SELECT toStartOfWeek(date, 1) AS date,\n           coalesce(token_bought_symbol, 'unknown') AS label,\n           sum(n_topups) AS n_topups\n    FROM dbt.api_execution_gnosis_app_gpay_topups_by_token_daily\n    WHERE date < toStartOfWeek(today(), 1)\n    GROUP BY date, label\n    ORDER BY date ASC, label ASC"
 }

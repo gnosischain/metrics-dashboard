@@ -36,7 +36,6 @@ const LANDING_RESOURCE_GROUPS = [
 
 const LANDING_OVERVIEW_METRIC_IDS = [
   'overview_kpi_transactions',
-  'overview_kpi_active_accounts',
   'overview_kpi_staked_gno',
   'overview_kpi_validators',
   'overview_kpi_stablecoin_supply',
@@ -45,8 +44,8 @@ const LANDING_OVERVIEW_METRIC_IDS = [
 
 const STRIP_METRIC_IDS = [
   'overview_kpi_transactions',
-  'overview_kpi_active_accounts',
   'overview_kpi_staked_gno',
+  'overview_kpi_validators',
   'overview_kpi_stablecoin_supply'
 ];
 

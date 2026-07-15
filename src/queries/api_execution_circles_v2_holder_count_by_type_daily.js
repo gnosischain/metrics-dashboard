@@ -12,6 +12,14 @@ const metric = {
   yField: 'value',
   seriesField: 'label',
   labelField: 'label',
+  seriesColorsByName: {
+    Human: '#7B3FE4',
+    Group: '#3b82f6',
+    Org: '#22c55e',
+    DEX: '#f59e0b',
+    'Wallets and AA': '#06b6d4',
+    Other: '#94a3b8',
+  },
   legend: { top: 'top', type: 'scroll' },
   query: `SELECT date, label, holder_count AS value FROM dbt.api_execution_circles_v2_supply_by_holder_type_daily`,
 };

@@ -61,7 +61,7 @@ const metric = {
   id: 'api_execution_circles_v2_inviters_ranking',
   name: 'Top Inviters',
   description: 'Leaderboard of top inviters by humans invited',
-  metricDescription: `**Top Inviters.** Leaderboard of avatars ranked by how many \`Human\` avatars registered in Circles v2 citing them as inviter. \`invite_count\` = distinct humans whose on-chain \`invited_by\` equals this address; self-invites and the zero address are excluded, and only \`avatar_type = 'Human'\` invitees are counted (invited groups/orgs are not). \`Blacklisted\` marks inviters currently on the Circles hub blacklist. \`First\`/\`Last invite\` are the timestamps of that inviter's earliest and latest invited registration. Top 100 by invite count.`,
+  metricDescription: `**Top Inviters.** Leaderboard of avatars ranked by how many \`Human\` avatars registered in Circles v2 citing them as inviter. \`invite_count\` = distinct humans whose on-chain \`invited_by\` equals this address; the zero address is excluded, and only \`avatar_type = 'Human'\` invitees are counted (invited groups/orgs are not). \`Blacklisted\` marks inviters currently on the Circles hub blacklist. \`First\`/\`Last invite\` are the timestamps of that inviter's earliest and latest invited registration. Top 100 by invite count.`,
   chartType: 'table',
   tableConfig: {
     layout: 'fitColumns',

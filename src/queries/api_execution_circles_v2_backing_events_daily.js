@@ -14,7 +14,19 @@ const metric = {
   tooltipOrder: 'valueDesc',
   showTotal: true,
   query: `
-    SELECT date, lifecycle_stage, n_events
+    SELECT
+      date,
+      multiIf(
+        lifecycle_stage = 'initiated', 'Initiated',
+        lifecycle_stage = 'deployed', 'Deployed',
+        lifecycle_stage = 'lbp_deployed', 'LBP Deployed',
+        lifecycle_stage = 'completed', 'Completed',
+        lifecycle_stage = 'released', 'Released',
+        lifecycle_stage = 'asset_status_updated', 'Asset Status Updated',
+        lifecycle_stage = 'global_release_updated', 'Global Release Updated',
+        lifecycle_stage
+      ) AS lifecycle_stage,
+      n_events
     FROM dbt.api_execution_circles_v2_backing_events_daily
     ORDER BY date
   `,
