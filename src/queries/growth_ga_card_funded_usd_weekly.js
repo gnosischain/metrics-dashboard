@@ -9,6 +9,7 @@ const metric = {
   "xField": "date",
   "yField": "value",
   "seriesField": "label",
+  "seriesColorsByName": { "Onboarded via GA": "#7B3FE4", "Imported": "#FF8A3D" },
   "format": "formatCurrency",
   "query": "SELECT toString(toStartOfWeek(date, 1)) AS date, multiIf(onboarding_class = 'onboarded_via_ga', 'Onboarded via GA', 'Imported') AS label, toInt64(round(sum(funded_volume_usd))) AS value FROM dbt.api_execution_gnosis_app_gpay_volume_daily WHERE date >= '2024-01-01' AND toStartOfWeek(date, 1) < toStartOfWeek(today(), 1) GROUP BY date, label ORDER BY date"
 };

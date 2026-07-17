@@ -37,15 +37,14 @@ const LANDING_RESOURCE_GROUPS = [
 const LANDING_OVERVIEW_METRIC_IDS = [
   'overview_kpi_transactions',
   'overview_kpi_staked_gno',
-  'overview_kpi_validators',
-  'overview_kpi_stablecoin_supply',
-  'overview_kpi_gpay_volume'
+  'overview_kpi_gpay_volume',
+  'overview_kpi_stablecoin_supply'
 ];
 
 const STRIP_METRIC_IDS = [
   'overview_kpi_transactions',
   'overview_kpi_staked_gno',
-  'overview_kpi_validators',
+  'overview_kpi_gpay_volume',
   'overview_kpi_stablecoin_supply'
 ];
 
@@ -81,8 +80,19 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
       return [];
     }
     const all = dashboardsService.getTabMetrics('overview', 'main') || [];
-    const included = new Set(LANDING_OVERVIEW_METRIC_IDS);
-    return metricsService.resolveTabMetrics(all.filter((m) => included.has(m.id)));
+    const resolved = metricsService.resolveTabMetrics(all);
+    const map = new Map(resolved.map((m) => [m.id, m]));
+    // Single row: each card spans 3 of 12 columns, in LANDING_OVERVIEW_METRIC_IDS order.
+    return LANDING_OVERVIEW_METRIC_IDS.map((id, idx) => {
+      const base = map.get(id);
+      if (!base) return null;
+      return {
+        ...base,
+        gridRow: 1,
+        gridColumn: `${idx * 3 + 1} / span 3`,
+        minHeight: '150px'
+      };
+    }).filter(Boolean);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboards, isBootLoading, metricsCacheVersion]);
 

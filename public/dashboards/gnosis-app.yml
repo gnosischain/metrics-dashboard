@@ -146,19 +146,33 @@ tabs:
     metrics:
       - id: api_execution_gnosis_app_kpi_gp_wallets_latest
         gridRow: 1
-        gridColumn: 1 / span 4
+        gridColumn: 1 / span 3
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_gp_wallets_onboarded
         gridRow: 1
-        gridColumn: 5 / span 4
+        gridColumn: 4 / span 3
         minHeight: 120px
       - id: api_execution_gnosis_app_kpi_gp_wallets_imported
         gridRow: 1
-        gridColumn: 9 / span 4
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: growth_ga_card_spend_total_usd
+        gridRow: 1
+        gridColumn: 10 / span 3
         minHeight: 120px
       - id: api_execution_gnosis_app_gpay_wallets_cumulative_daily
         gridRow: 2
         gridColumn: 1 / span 12
+        minHeight: 440px
+      # Row 3 — GA-controlled card money (funding loaded vs spend), by onboarding class.
+      # GA-scoped (is_currently_ga_owned) — the all-GP totals live on the gnosis-pay dashboard.
+      - id: growth_ga_card_funded_usd_weekly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 440px
+      - id: growth_ga_card_spend_usd_weekly
+        gridRow: 3
+        gridColumn: 7 / span 6
         minHeight: 440px
 
   - name: Marketplace
@@ -388,16 +402,7 @@ tabs:
         gridRow: 2
         gridColumn: 1 / span 12
         minHeight: 440px
-      # Row 3 — GA-CONTROLLED card money (funding loaded vs spend), by onboarding class.
-      # GA-scoped (is_currently_ga_owned) — the all-GP totals live on the gnosis-pay dashboard.
-      - id: growth_ga_card_funded_usd_weekly
-        gridRow: 3
-        gridColumn: 1 / span 6
-        minHeight: 440px
-      - id: growth_ga_card_spend_usd_weekly
-        gridRow: 3
-        gridColumn: 7 / span 6
-        minHeight: 440px
+      # (GA card funding/spend moved to the GP Wallets tab.)
       # Row 4 — campaign-attributed app conversions (sparse by design: ~4-7% attribute)
     #  - id: growth_app_topup_by_campaign_weekly
     #    gridRow: 4
