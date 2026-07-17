@@ -144,28 +144,31 @@ tabs:
     icon: 🏦
     iconClass: vault
     metrics:
-      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
+      # Row 1 — KPIs: all-architectures link total, total card payments, legacy on-chain count.
+      - id: growth_ga_linked_cards_total
         gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_gp_wallets_onboarded
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_gnosis_app_kpi_gp_wallets_imported
-        gridRow: 1
-        gridColumn: 7 / span 3
+        gridColumn: 1 / span 4
         minHeight: 120px
       - id: growth_ga_card_spend_total_usd
         gridRow: 1
-        gridColumn: 10 / span 3
+        gridColumn: 5 / span 4
         minHeight: 120px
+      - id: api_execution_gnosis_app_kpi_gp_wallets_latest
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      # Row 2 — module-agnostic GA↔GP-card LINK (all architectures, primary) alongside the smaller
+      # frozen DelayModule-only onboarding split (plateaus after the June-2026 migration).
+      - id: api_execution_gnosis_app_gp_card_ga_link_daily
+        gridRow: 2
+        gridColumn: 1 / span 8
+        minHeight: 440px
       - id: api_execution_gnosis_app_gpay_wallets_cumulative_daily
         gridRow: 2
-        gridColumn: 1 / span 12
+        gridColumn: 9 / span 4
         minHeight: 440px
-      # Row 3 — GA-controlled card money (funding loaded vs spend), by onboarding class.
-      # GA-scoped (is_currently_ga_owned) — the all-GP totals live on the gnosis-pay dashboard.
+      # Row 3 — GA-linked card money (funding loaded vs spend), by link source.
+      # GA-scoped — the all-GP totals live on the gnosis-pay dashboard.
       - id: growth_ga_card_funded_usd_weekly
         gridRow: 3
         gridColumn: 1 / span 6

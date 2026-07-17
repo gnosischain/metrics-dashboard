@@ -1,0 +1,4 @@
+{
+  "id": "growth_ga_linked_cards_total",
+  "query": "SELECT toInt64(sum(cum_now)) AS value, round(100.0 * (sum(cum_now) - sum(cum_prev)) / nullIf(sum(cum_prev), 0), 2) AS change_pct FROM (SELECT link_source, argMax(n_cards_cumulative, date) AS cum_now, argMaxIf(n_cards_cumulative, date, date <= today() - 30) AS cum_prev FROM dbt.api_execution_gnosis_app_gp_card_ga_link_daily GROUP BY link_source)"
+}

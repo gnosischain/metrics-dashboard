@@ -1,0 +1,4 @@
+{
+  "id": "api_execution_gnosis_app_gp_card_ga_link_daily",
+  "query": "SELECT toDate(date) AS date,\n           multiIf(link_source = 'mixpanel_pay', 'App profile (Mixpanel)',\n                   link_source = 'delay_module', 'Delay module (legacy)',\n                   link_source = 'topup_funder', 'Top-up funder',\n                   link_source = 'cashback',     'Cashback',\n                   link_source) AS label,\n           n_cards_cumulative AS value\n    FROM dbt.api_execution_gnosis_app_gp_card_ga_link_daily\n    ORDER BY date ASC, label ASC"
+}
