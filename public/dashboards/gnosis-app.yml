@@ -297,7 +297,7 @@ tabs:
 
 #  - name: Retention
 #    description: Cohort heatmap and monthly churn rates
-#    order: 9
+#    order: 10
 #    icon: 🔁
 #    iconClass: rotate
 #    metrics:
@@ -317,7 +317,7 @@ tabs:
   # June-2026 Gnosis Pay exploit -> Safe migration recovery + reactivation
 #  - name: Migration
 #    description: Card recovery, reactivation and stranded funds
-#    order: 10
+#    order: 11
 #    icon: 🔀
 #    iconClass: shuffle
 #    metrics:
@@ -381,7 +381,7 @@ tabs:
 
   - name: Growth
     description: Active users, card money and campaign attribution
-    order: 11
+    order: 9
     icon: 📈
     iconClass: trending-up
     resolutionToggle: false

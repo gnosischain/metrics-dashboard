@@ -1,6 +1,7 @@
 tabs:
   - name: Overview
     description: Volume, netflow and bridge activity KPIs and trends
+    order: 1
     icon: 📊
     iconClass: chart-line
     metrics:
@@ -34,6 +35,7 @@ tabs:
         minHeight: 120px
   - name: Flows
     description: Inbound and outbound bridge flow Sankey diagrams
+    order: 2
     icon: 🌊
     iconClass: flow
     metrics:
@@ -47,6 +49,7 @@ tabs:
         minHeight: 625px
   - name: Token Flows
     description: Token-level inflows, outflows and daily netflow by bridge
+    order: 3
     icon: 💱
     iconClass: token-dot
     metrics:

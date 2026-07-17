@@ -1,7 +1,7 @@
 const metric = {
   id: 'text_revenue_methodology',
-  name: 'Methodology — Gnosis Revenue Program',
-  description: 'Assumptions, data flow, and how active users are computed across sectors.',
+  name: 'Methodology — Revenue Drivers',
+  description: 'Assumptions, data flow, and how active users are computed across sectors. Values are potential (imputed) revenue drivers, not recognized DAO revenue.',
   chartType: 'text',
   content: `
 ## Goal

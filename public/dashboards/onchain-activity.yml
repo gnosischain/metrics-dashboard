@@ -31,7 +31,7 @@ tabs:
         minHeight: 1200px
   - name: Transactions
     description: Counts by project and sector over time
-    order: 3
+    order: 2
     icon: 🔁
     iconClass: transaction
     metrics:
@@ -61,7 +61,7 @@ tabs:
         minHeight: 420px
   - name: Gas & Fees
     description: Native fees and gas used by project and sector
-    order: 4
+    order: 3
     icon: ⛽️
     iconClass: gas-usage
     metrics:
@@ -95,7 +95,7 @@ tabs:
         minHeight: 420px
   - name: Initiator Accounts
     description: Active sending accounts by project and sector
-    order: 5
+    order: 4
     icon: 👥
     iconClass: users
     metrics:

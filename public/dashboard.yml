@@ -63,7 +63,7 @@ Tokens:
   source: /dashboards/tokens.yml
 OnChainActivity:
   name: OnChain Activity
-  order: 30
+  order: 35
   icon: ⛓️
   iconClass: link
   tagline: Transactions, accounts, gas, and contract usage.
@@ -104,11 +104,11 @@ Yields:
   tagline: Lending, staking, and DeFi yield opportunities.
   source: /dashboards/yields.yml
 GnosisRevenue:
-  name: Gnosis Revenue
+  name: Revenue Drivers
   order: 85
   icon: 💰
   iconClass: coins
-  tagline: DAO-accruable revenue streams — holdings interest, sDAI share, Gnosis Pay fees, and cross-stream active users.
+  tagline: Potential revenue drivers — imputed holdings interest, sDAI share, Gnosis Pay fees, and cross-stream active users. Not recognized DAO revenue.
   source: /dashboards/gnosis-revenue.yml
 DaoTreasury:
   name: DAO Treasury
