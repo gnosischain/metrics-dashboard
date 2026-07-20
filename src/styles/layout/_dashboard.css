@@ -334,6 +334,18 @@
   color: var(--color-text-primary);
 }
 
+/* Chain has no data on this tab: keep the segment visible for consistent
+   placement, but make it clearly non-interactive so the active chain reads
+   unambiguously. */
+.chain-switcher-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chain-switcher-btn:disabled:hover {
+  color: var(--color-text-secondary);
+}
+
 .chain-switcher-btn.active {
   background: var(--color-surface);
   color: var(--color-text-primary);

@@ -132,15 +132,28 @@ const MetricGrid = ({
   // chains (each card carries a `celoId`). State is per-tab and resets on tab
   // change, so the toggle affects ONLY the current tab — the sidebar menu never
   // changes. Cards without a variant for the selected chain are hidden.
-  const tabChainIds = Array.isArray(tabConfig?.chains) ? tabConfig.chains : null;
+  //
+  // The switcher renders on EVERY tab of a multi-chain dashboard (consistent
+  // placement, so the active chain is always visible). A non-default chain is
+  // only *selectable* on tabs that actually have data for it — i.e. at least
+  // one card carries a variant id (`celoId`). On tabs without that data the
+  // segment renders disabled, so you can always tell you're on the default
+  // (Gnosis) chain rather than the control silently disappearing.
   const dashboardChains = Array.isArray(dashboard?.chains) ? dashboard.chains : null;
-  const hasChainToggle = !!(tabChainIds && tabChainIds.length > 1 && dashboardChains);
-  const defaultChainId = dashboard?.defaultChain || (tabChainIds ? tabChainIds[0] : null);
+  const hasChainToggle = !!(dashboardChains && dashboardChains.length > 1);
+  const defaultChainId = dashboard?.defaultChain || (dashboardChains ? dashboardChains[0]?.id : null);
+  const nonDefaultChainAvailable = useMemo(
+    () => Array.isArray(metrics) && metrics.some((m) => m && m.celoId),
+    [metrics]
+  );
   const [selectedChain, setSelectedChain] = useState(defaultChainId);
   const chainOptions = useMemo(() => {
     if (!hasChainToggle) return [];
-    return tabChainIds.map((id) => dashboardChains.find((c) => c.id === id) || { id, label: id, color: null });
-  }, [hasChainToggle, tabChainIds, dashboardChains]);
+    return dashboardChains.map((chain) => ({
+      ...chain,
+      available: chain.id === defaultChainId || nonDefaultChainAvailable
+    }));
+  }, [hasChainToggle, dashboardChains, defaultChainId, nonDefaultChainAvailable]);
   const isNonDefaultChain = hasChainToggle && !!selectedChain && selectedChain !== defaultChainId;
   const explicitFilterEmptyState = useMemo(
     () => resolveExplicitFilterEmptyState(tabConfig, explicitFilterValidationState),
@@ -705,16 +718,18 @@ const MetricGrid = ({
             <div className="chain-switcher" role="group" aria-label="Chain">
               {chainOptions.map((chain) => {
                 const isActive = selectedChain === chain.id;
+                const isDisabled = !chain.available;
                 return (
                   <button
                     key={chain.id}
                     type="button"
-                    className={`chain-switcher-btn${isActive ? ' active' : ''}`}
+                    className={`chain-switcher-btn${isActive ? ' active' : ''}${isDisabled ? ' disabled' : ''}`}
                     aria-pressed={isActive}
+                    disabled={isDisabled}
                     style={isActive && chain.color
                       ? { background: chain.color, color: readableTextOn(chain.color) }
                       : undefined}
-                    onClick={() => setSelectedChain(chain.id)}
+                    onClick={() => { if (!isDisabled) setSelectedChain(chain.id); }}
                   >
                     {chain.color && !isActive && (
                       <span
