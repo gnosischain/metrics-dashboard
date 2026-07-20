@@ -11,7 +11,7 @@ import Landing from './Landing';
 import dashboardsService from '../services/dashboards';
 import metricsService from '../services/metrics';
 import dashboardConfig from '../utils/dashboardConfig';
-import { buildMetricSearchIndex } from '../utils/metricSearch';
+import { buildMetricSearchIndex, mergeRegistryMetadata } from '../utils/metricSearch';
 import { normalizeFilterValue } from '../utils/filterValues';
 import {
   EMPTY_VALIDATOR_EXPLORER_STATE,
@@ -152,6 +152,9 @@ const Dashboard = () => {
   const [configLoaded, setConfigLoaded] = useState(false);
   const [activeTabConfigsLoaded, setActiveTabConfigsLoaded] = useState(false);
   const [metricsCacheVersion, setMetricsCacheVersion] = useState(0);
+  // Build-time metric metadata (id -> { name, description, metricDescription })
+  // used to make header search cover metrics whose configs aren't loaded yet.
+  const [searchRegistry, setSearchRegistry] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
     return window.innerWidth <= 768;
@@ -198,6 +201,23 @@ const Dashboard = () => {
       setMetricsCacheVersion(version);
     });
     return unsubscribe;
+  }, []);
+
+  // Load the build-time search registry once. Search still works without it
+  // (falling back to loaded configs + metric ids), so failures are non-fatal.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/search-registry.json')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((registry) => {
+        if (!cancelled && registry && typeof registry === 'object') {
+          setSearchRegistry(registry);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Preload the active tab's metric configs before rendering MetricGrid.
@@ -639,12 +659,18 @@ const Dashboard = () => {
         name: tab.chain && tab.chainLabel && dashboard.defaultChain && tab.chain !== dashboard.defaultChain
           ? `${tab.name} · ${tab.chainLabel}`
           : tab.name,
-        metrics: metricsService.resolveTabMetrics(tab.metrics || [])
+        // The registry backfills names/descriptions for metrics whose lazy
+        // config chunk hasn't loaded yet, so search covers all dashboards
+        // without downloading every metric module.
+        metrics: mergeRegistryMetadata(
+          metricsService.resolveTabMetrics(tab.metrics || []),
+          searchRegistry
+        )
       }))
     }));
     return buildMetricSearchIndex(enriched);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dashboards, metricsCacheVersion]);
+  }, [dashboards, metricsCacheVersion, searchRegistry]);
 
   const handleCustomTabStateChange = useCallback((nextStateOrUpdater) => {
     if (!activeTabFilterKey || !activeTabConfig?.customView) {

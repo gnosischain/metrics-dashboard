@@ -246,6 +246,20 @@ const getEntryScore = (entry, queryNormalized, queryTokens) => {
   return metricNameScore + metricIdScore + tabScore + dashboardScore + detailsScore;
 };
 
+/**
+ * Fill in name/description/metricDescription for layout-only metric entries
+ * from the build-time search registry (public/search-registry.json). Fields
+ * already present on the metric (i.e. its config chunk is loaded) win over
+ * registry values.
+ */
+export const mergeRegistryMetadata = (metrics = [], registry = null) => {
+  if (!registry || !Array.isArray(metrics)) return metrics;
+  return metrics.map((metric) => {
+    const meta = metric && typeof metric.id === 'string' ? registry[metric.id] : null;
+    return meta ? { ...meta, ...metric } : metric;
+  });
+};
+
 export const buildMetricSearchIndex = (dashboards = []) => {
   if (!Array.isArray(dashboards)) return [];
 
