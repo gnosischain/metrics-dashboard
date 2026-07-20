@@ -387,6 +387,34 @@
 }
 
 /* ==================
+   Card Footer (trust layer: data-through / freshness)
+   ================== */
+
+.card-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: 0.2rem 0.75rem;
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: 0.65rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  background-color: transparent;
+}
+
+.card-footer-data-through {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark-mode .card-footer {
+  border-top-color: var(--color-border);
+}
+
+/* ==================
    Number Display Card — header/content layout
    (chrome handled by .metric-card / .card--ghost / .card--outline)
    ================== */

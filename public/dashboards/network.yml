@@ -86,7 +86,6 @@ tabs:
       - id: text_gnosis_chain_forks_history
         gridRow: 3
         gridColumn: 1 / span 12
-        minHeight: 1060px
   - name: Probelab
     description: Crawler client versions, QUIC, cloud and geography
     order: 4
@@ -127,11 +126,9 @@ tabs:
       - id: text_network_protocols_overview
         gridRow: 1 / span 1
         gridColumn: 1 / span 12
-        minHeight: 800px
       - id: text_network_methodology
         gridRow: 2
         gridColumn: 1 / span 12
-        minHeight: 4300px
   - name: Glossary
     description: Field definitions and terminology
     order: 6
@@ -141,4 +138,3 @@ tabs:
       - id: text_network_glossary
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 1200px

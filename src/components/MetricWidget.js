@@ -32,6 +32,49 @@ const findScrollableAncestor = (node) => {
 const RESOLUTION_LABELS = { daily: 'D', weekly: 'W', monthly: 'M' };
 const UNIT_LABELS = { native: 'Native', usd: 'USD' };
 
+// Candidate columns for the "Data through" card footer, checked in order when
+// the metric config does not declare an explicit xField.
+const DATE_FIELD_CANDIDATES = ['date', 'day', 'week', 'month', 'hour', 'timestamp', 'time', 'block_date'];
+// Only trust ISO-like values (ClickHouse date/datetime output). Bare numbers
+// (e.g. an `hour` column holding 0-23) must not be parsed as dates.
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}/;
+
+const resolveDataThrough = (rows, explicitField) => {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  const firstRow = rows.find((row) => row && typeof row === 'object');
+  if (!firstRow) return null;
+
+  const candidates = explicitField ? [explicitField, ...DATE_FIELD_CANDIDATES] : DATE_FIELD_CANDIDATES;
+  const field = candidates.find(
+    (name) => name && typeof firstRow[name] === 'string' && ISO_DATE_PATTERN.test(firstRow[name])
+  );
+  if (!field) return null;
+
+  let maxValue = null;
+  rows.forEach((row) => {
+    const value = row?.[field];
+    if (typeof value === 'string' && ISO_DATE_PATTERN.test(value) && (maxValue === null || value > maxValue)) {
+      maxValue = value;
+    }
+  });
+  if (!maxValue) return null;
+
+  const parsed = new Date(maxValue.includes('T') ? maxValue : maxValue.replace(' ', 'T'));
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  // Values with an explicit timezone (Z / +00:00) are formatted in UTC so the
+  // footer matches the chart's UTC axis labels instead of the viewer's clock.
+  const hasExplicitTz = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(maxValue);
+  const tzOption = hasExplicitTz ? { timeZone: 'UTC' } : {};
+  const dateLabel = parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', ...tzOption });
+  // Show the time component only when the source value carries one (hourly data).
+  const hasTime = /[T ]\d{2}:\d{2}/.test(maxValue) && !/[T ]00:00(:00)?(?:Z|[+-]\d{2}:?\d{2})?$/i.test(maxValue);
+  if (!hasTime) return dateLabel;
+  const hh = String(hasExplicitTz ? parsed.getUTCHours() : parsed.getHours()).padStart(2, '0');
+  const mm = String(hasExplicitTz ? parsed.getUTCMinutes() : parsed.getMinutes()).padStart(2, '0');
+  return `${dateLabel} ${hh}:${mm}`;
+};
+
 const getDisplayUnitLabel = (unitKey, unitConfig, firstRow) => {
   if (!unitKey) return null;
   return (unitConfig?.labelField && firstRow?.[unitConfig.labelField]) || unitConfig?.label || UNIT_LABELS[unitKey] || unitKey;
@@ -790,6 +833,21 @@ const MetricWidget = ({
     return { ...filteredData, data: filtered };
   }, [filteredData, effectiveTimeRange, widgetConfig.config?.xField, widgetConfig.config?.categoryField, widgetConfig.config?.isTimeSeries]);
 
+  // "Data through" trust footer: latest date present in the raw (un-zoomed)
+  // dataset. Charts and tables only — KPI/number cards are too compact.
+  const dataThroughLabel = useMemo(() => {
+    if (widgetConfig.type !== 'chart' && widgetConfig.type !== 'table') return null;
+    return resolveDataThrough(data?.data, widgetConfig.config?.xField);
+  }, [data, widgetConfig.type, widgetConfig.config?.xField]);
+
+  const cardFooter = dataThroughLabel
+    ? (
+      <span className="card-footer-data-through" title="Most recent datapoint in this dataset">
+        Data through {dataThroughLabel}
+      </span>
+    )
+    : null;
+
   // Keep ref current so stale-closure callbacks (buildMetricRequestParams) can
   // always read the latest effective time range without needing it in their dep array.
   effectiveTimeRangeRef.current = effectiveTimeRange;
@@ -1434,6 +1492,7 @@ const MetricWidget = ({
       chartType={widgetConfig.chartType}
       titleFontSize={widgetConfig.titleFontSize}
       cardVariant={widgetConfig.cardVariant}
+      footer={cardFooter}
     >
       {/* Loading overlay shown during refetch (when we have data but are loading new data) */}
       {loading && data && (

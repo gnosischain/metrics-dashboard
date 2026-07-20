@@ -28,7 +28,6 @@ tabs:
       - id: text_onchain_projects_sectors_glossary
         gridRow: 3
         gridColumn: 1 / span 12
-        minHeight: 1200px
   - name: Transactions
     description: Counts by project and sector over time
     order: 2

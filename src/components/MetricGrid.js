@@ -242,6 +242,9 @@ const MetricGrid = ({
   const processGridStructure = (metrics) => {
     let maxRow = 1;
     let rowHeights = {};
+    // Rows whose height came only from text cards can grow with their content
+    // (minmax) instead of clipping long markdown at a fixed pixel height.
+    let rowHasNonTextHeight = {};
 
     // First pass: determine max row and collect height information
     metrics.forEach(metric => {
@@ -264,6 +267,9 @@ const MetricGrid = ({
         // If this is a single row item, record its height
         if (rowSpan === 1 && metric.minHeight) {
           rowHeights[rowStart] = metric.minHeight;
+          if (metric.chartType !== 'text') {
+            rowHasNonTextHeight[rowStart] = true;
+          }
         }
       }
     });
@@ -271,7 +277,13 @@ const MetricGrid = ({
     // Generate template rows with explicit heights where available
     const templateRows = [];
     for (let i = 1; i <= maxRow; i++) {
-      templateRows.push(rowHeights[i] || 'auto');
+      if (!rowHeights[i]) {
+        templateRows.push('auto');
+      } else if (rowHasNonTextHeight[i]) {
+        templateRows.push(rowHeights[i]);
+      } else {
+        templateRows.push(`minmax(${rowHeights[i]}, auto)`);
+      }
     }
 
     return {
@@ -757,7 +769,13 @@ const MetricGrid = ({
             if (metric.gridRow) metricStyle.gridRow = metric.gridRow;
             if (metric.gridColumn) metricStyle.gridColumn = metric.gridColumn;
             if (metric.gridRow && metric.gridRow.toString().includes('span') && metric.minHeight) {
-              metricStyle.height = metric.minHeight;
+              // Text cards keep a floor but grow with their content; fixed
+              // heights would clip long markdown/glossary documents.
+              if (metric.chartType === 'text') {
+                metricStyle.minHeight = metric.minHeight;
+              } else {
+                metricStyle.height = metric.minHeight;
+              }
             }
 
             const spanMatch = metric.gridColumn ? metric.gridColumn.toString().match(/span\s+(\d+)/) : null;
