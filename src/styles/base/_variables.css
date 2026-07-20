@@ -14,7 +14,9 @@
   --primary-blue-active: #3730a3;
 
   /* Neutral Colors - Light Mode */
-  --color-background: #f8f9fb;
+  /* Warm off-white toward the Gnosis brand's cream (was #f8f9fb, a cool gray).
+     Kept subtle so text contrast and white card surfaces are unaffected. */
+  --color-background: #f7f6f2;
   --color-surface: #ffffff;
   --color-border: #eef0f3;
   --color-border-subtle: #f3f4f6;
@@ -65,6 +67,11 @@
      ================== */
 
   --font-family-base: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Display face for expressive headings (page + card titles). Single hook so a
+     licensed condensed brand face can be swapped in later without touching
+     every heading rule. Currently maps to the base family, expressed via
+     heavier weight + tighter tracking in the heading rules. */
+  --font-family-display: var(--font-family-base);
   --font-family-mono: "Monaco", "Consolas", "Courier New", monospace;
 
   --font-size-xs: 0.6875rem; /* 11px */
@@ -98,8 +105,8 @@
 
   --border-radius-sm: 4px;
   --border-radius-base: 8px;
-  --border-radius-lg: 12px;
-  --border-radius-xl: 16px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
   --border-radius-full: 9999px;
 
   /* ==================
@@ -134,10 +141,14 @@
 
 /* Dark Mode Variables */
 .dark-mode {
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-border-hover: #475569;
+  /* Nudged from cool slate (#0f172a / #1e293b) toward a *hint* of the Gnosis
+     brand's indigo-navy — enough to read as "Gnosis" rather than generic slate,
+     but kept near-neutral so it stays a quiet canvas that doesn't distort chart
+     series colors (simultaneous contrast). Luminance ~matches the originals. */
+  --color-background: #0f1226;
+  --color-surface: #1b1e3a;
+  --color-border: #2f3352;
+  --color-border-hover: #454a6e;
   --color-border-subtle: rgba(148, 163, 184, 0.18);
 
   --color-text-primary: #e2e8f0;
