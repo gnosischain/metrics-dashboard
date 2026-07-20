@@ -83,6 +83,9 @@ class DashboardService {
       id: key.toLowerCase().replace(/\s+/g, '-'),
       name: dashboardConfig.name,
       order: dashboardConfig.order || 999,
+      // Optional sidebar group label; consecutive dashboards sharing a group
+      // render under one section header (see TabNavigation).
+      group: dashboardConfig.group || null,
       icon: dashboardConfig.icon || '', // Emoji fallback
       iconClass: dashboardConfig.iconClass || '', // Icon class for SVG icon
       tagline: dashboardConfig.tagline || '',

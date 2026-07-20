@@ -5,17 +5,42 @@ Overview:
   iconClass: chart-line
   tagline: High-level KPIs and trends across the full Gnosis ecosystem.
   source: /dashboards/overview.yml
-"Account Portfolio":
-  name: Account Portfolio
-  order: 5
-  icon: 🔎
-  iconClass: user
-  tagline: Per-address lens — tokens, safes, circles, gnosis pay, and validators in one view.
-  hasDefaultTab: true
-  source: /dashboards/accounts.yml
+OnChainActivity:
+  name: OnChain Activity
+  order: 10
+  group: Ecosystem
+  icon: ⛓️
+  iconClass: link
+  tagline: Transactions, accounts, gas, and contract usage.
+  source: /dashboards/onchain-activity.yml
+Tokens:
+  name: Tokens
+  order: 11
+  group: Ecosystem
+  icon: 🪙
+  iconClass: token-dot
+  tagline: Token supply, holders, and on-chain circulation.
+  source: /dashboards/tokens.yml
+Trades:
+  name: Trades
+  order: 12
+  group: Ecosystem
+  icon: "⚡"
+  iconClass: swap
+  tagline: DEX trade activity on Gnosis Chain — live feed and historical stats.
+  source: /dashboards/trades.yml
+Bridges:
+  name: Bridges
+  order: 13
+  group: Ecosystem
+  icon: 🌉
+  iconClass: bridge
+  tagline: Cross-chain flows and bridged asset reserves.
+  source: /dashboards/bridges.yml
 GnosisPay:
   name: Gnosis Pay
-  order: 10
+  order: 20
+  group: Products
   icon: 💳
   iconClass: credit-card
   tagline: Card issuance, spend volume, and merchant activity — on Gnosis Chain, and on Celo with MiniPay.
@@ -31,7 +56,8 @@ GnosisPay:
   source: /dashboards/gnosis-pay.yml
 GnosisApp:
   name: Gnosis App
-  order: 13
+  order: 21
+  group: Products
   icon: 📱
   iconClass: gnosis-app
   tagline: Self-custodial wallet adoption and user flows.
@@ -40,72 +66,50 @@ GnosisApp:
   source: /dashboards/gnosis-app.yml
 Circles:
   name: Circles
-  order: 16
+  order: 22
+  group: Products
   icon: 🔵
   iconClass: circles
   tagline: Personal currency network growth and trust graph.
   palette: circles
   brand: circles
   source: /dashboards/circles.yml
-Trades:
-  name: Trades
-  order: 20
-  icon: "⚡"
-  iconClass: swap
-  tagline: DEX trade activity on Gnosis Chain — live feed and historical stats.
-  source: /dashboards/trades.yml
-Tokens:
-  name: Tokens
-  order: 30
-  icon: 🪙
-  iconClass: token-dot
-  tagline: Token supply, holders, and on-chain circulation.
-  source: /dashboards/tokens.yml
-OnChainActivity:
-  name: OnChain Activity
-  order: 35
-  icon: ⛓️
-  iconClass: link
-  tagline: Transactions, accounts, gas, and contract usage.
-  source: /dashboards/onchain-activity.yml
 Consensus:
   name: Consensus
-  order: 40
+  order: 30
+  group: Chain & Infrastructure
   icon: 🔄
   iconClass: check-circle
   tagline: Validator participation, attestations, and finality.
   source: /dashboards/consensus.yml
 Network:
   name: Network
-  order: 50
+  order: 31
+  group: Chain & Infrastructure
   icon: 🌐
   iconClass: globe
   tagline: Peer distribution, client diversity, and geography.
   source: /dashboards/network.yml
-Bridges:
-  name: Bridges
-  order: 60
-  icon: 🌉
-  iconClass: bridge
-  tagline: Cross-chain flows and bridged asset reserves.
-  source: /dashboards/bridges.yml
 ESG:
   name: ESG
-  order: 70
+  order: 32
+  group: Chain & Infrastructure
   icon: 🌱
   iconClass: leaf
   tagline: Energy footprint and sustainability metrics.
   source: /dashboards/esg.yml
 Yields:
   name: Yields
-  order: 80
+  order: 40
+  group: Capital & Economics
   icon: "📈"
   iconClass: yield
   tagline: Lending, staking, and DeFi yield opportunities.
   source: /dashboards/yields.yml
 GnosisRevenue:
   name: Revenue Drivers
-  order: 85
+  order: 41
+  group: Capital & Economics
   icon: 💰
   iconClass: coins
   tagline: Potential revenue drivers — imputed holdings interest, sDAI share, Gnosis Pay fees, and cross-stream active users. Not recognized DAO revenue.
@@ -113,8 +117,17 @@ GnosisRevenue:
 DaoTreasury:
   name: DAO Treasury
   enabled: false
-  order: 86
+  order: 42
+  group: Capital & Economics
   icon: 🏛️
   iconClass: landmark
   tagline: GnosisDAO on-chain holdings and asset allocation on Gnosis Chain.
   source: /dashboards/dao-treasury.yml
+"Account Portfolio":
+  name: Account Portfolio
+  order: 90
+  icon: 🔎
+  iconClass: user
+  tagline: Per-address lens — tokens, safes, circles, gnosis pay, and validators in one view.
+  hasDefaultTab: true
+  source: /dashboards/accounts.yml

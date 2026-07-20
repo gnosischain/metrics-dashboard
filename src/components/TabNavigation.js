@@ -13,7 +13,8 @@ import IconComponent from './IconComponent';
  * @returns {JSX.Element} Tab navigation component
  */
 const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigation, isCollapsed }) => {
-  // Track expanded state for dashboards
+  // Manual expand/collapse overrides on top of the accordion default
+  // (only the active dashboard's tab list is open).
   const [expandedDashboards, setExpandedDashboards] = useState({});
   const navRef = useRef(null);
 
@@ -31,21 +32,28 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
       sidebar.scrollTop += elRect.top - sidebarRect.top - 80;
     }
   }, [activeDashboard, activeTab]);
-  
-  // Toggle dashboard expansion
-  const toggleDashboard = (dashboardId) => {
-    setExpandedDashboards(prev => ({
-      ...prev,
-      [dashboardId]: !(prev[dashboardId] ?? true)
-    }));
-  };
 
-  // Determine if a dashboard should be expanded (all expanded by default)
+  // Navigating to another sector resets manual overrides so the sidebar
+  // returns to the clean accordion state (only the new sector open).
+  useEffect(() => {
+    setExpandedDashboards({});
+  }, [activeDashboard]);
+
+  // Determine if a dashboard's tab list is open. Accordion default: only the
+  // active dashboard is expanded; manual toggles override until navigation.
   const isDashboardExpanded = (dashboardId) => {
     if (expandedDashboards[dashboardId] !== undefined) {
       return expandedDashboards[dashboardId];
     }
-    return true;
+    return dashboardId === activeDashboard;
+  };
+
+  // Toggle dashboard expansion
+  const toggleDashboard = (dashboardId) => {
+    setExpandedDashboards(prev => ({
+      ...prev,
+      [dashboardId]: !(prev[dashboardId] ?? (dashboardId === activeDashboard))
+    }));
   };
   
   // Get the first tab ID for a dashboard
@@ -55,36 +63,65 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
     }
     return '';
   };
-  
+
+  // Consecutive dashboards sharing a `group` render under one section label
+  // (expanded sidebar) or after a thin divider (collapsed sidebar). Ungrouped
+  // dashboards that follow a group get a divider so they read as standalone.
+  const buildNavEntries = () => {
+    const entries = [];
+    let previousGroup = null;
+    dashboards.forEach((dashboard, index) => {
+      const group = dashboard.group || null;
+      if (group !== previousGroup) {
+        if (group) {
+          entries.push({ type: 'group', name: group, key: `group-${group}` });
+        } else if (index > 0) {
+          entries.push({ type: 'divider', key: `divider-${dashboard.id}` });
+        }
+        previousGroup = group;
+      }
+      entries.push({ type: 'dashboard', dashboard, key: dashboard.id });
+    });
+    return entries;
+  };
+
+  const navEntries = buildNavEntries();
+
   // If collapsed, show only icons
   if (isCollapsed) {
     return (
       <div className="tab-navigation collapsed" ref={navRef}>
         <ul className="dashboard-list">
-          {dashboards.map(dashboard => (
-            <li key={dashboard.id} className="dashboard-item">
-              <div 
-                className={`dashboard-header icon-only ${activeDashboard === dashboard.id ? 'active' : ''}`}
-                onClick={() => {
-                  // For all dashboards, navigate to first tab
-                  const firstTabId = getFirstTabId(dashboard);
-                  if (firstTabId) {
-                    onNavigation(dashboard.id, firstTabId);
-                  }
-                }}
-                title={dashboard.name}
-              >
-                <span className="dashboard-icon">
-                  <IconComponent 
-                    name={dashboard.iconClass} 
-                    fallback={dashboard.icon || dashboard.name.charAt(0)} 
-                    size="md"
-                    color="currentColor"
-                  />
-                </span>
-              </div>
-            </li>
-          ))}
+          {navEntries.map(entry => {
+            if (entry.type === 'group' || entry.type === 'divider') {
+              return <li key={entry.key} className="nav-group-divider" aria-hidden="true" />;
+            }
+            const { dashboard } = entry;
+            return (
+              <li key={entry.key} className="dashboard-item">
+                <div 
+                  className={`dashboard-header icon-only ${activeDashboard === dashboard.id ? 'active' : ''}`}
+                  onClick={() => {
+                    // For all dashboards, navigate to first tab
+                    const firstTabId = getFirstTabId(dashboard);
+                    if (firstTabId) {
+                      onNavigation(dashboard.id, firstTabId);
+                    }
+                  }}
+                  title={dashboard.name}
+                >
+                  <span className="dashboard-icon">
+                    <IconComponent 
+                      name={dashboard.iconClass} 
+                      fallback={dashboard.icon || dashboard.name.charAt(0)} 
+                      size="md"
+                      color="currentColor"
+                    />
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     );
@@ -94,7 +131,14 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
   return (
     <div className="tab-navigation" ref={navRef}>
       <ul className="dashboard-list">
-        {dashboards.map(dashboard => {
+        {navEntries.map(entry => {
+          if (entry.type === 'group') {
+            return <li key={entry.key} className="nav-group-label">{entry.name}</li>;
+          }
+          if (entry.type === 'divider') {
+            return <li key={entry.key} className="nav-group-divider" aria-hidden="true" />;
+          }
+          const { dashboard } = entry;
           // Get the first tab for this dashboard
           const firstTabId = getFirstTabId(dashboard);
           
@@ -106,21 +150,13 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
               <div 
                 className={`dashboard-header ${activeDashboard === dashboard.id ? 'active' : ''}`}
                 onClick={() => {
-                  // Handle dashboard click
-                  if (isTablessDashboard) {
-                    // For tabless dashboards, navigate directly to first tab
-                    if (firstTabId) {
-                      onNavigation(dashboard.id, firstTabId);
-                    }
-                  } else {
-                    // For regular dashboards, toggle expansion
+                  // Header click navigates: inactive sectors open on their
+                  // first tab (which also expands them via the accordion),
+                  // the active sector just toggles its tab list.
+                  if (dashboard.id !== activeDashboard && firstTabId) {
+                    onNavigation(dashboard.id, firstTabId);
+                  } else if (!isTablessDashboard) {
                     toggleDashboard(dashboard.id);
-                    
-                    // On mobile, also navigate to the first tab if clicking on an inactive dashboard
-                    const isMobile = window.innerWidth <= 768;
-                    if (isMobile && dashboard.id !== activeDashboard && firstTabId) {
-                      onNavigation(dashboard.id, firstTabId);
-                    }
                   }
                 }}
               >
@@ -138,7 +174,15 @@ const TabNavigation = ({ dashboards, activeDashboard, tabs, activeTab, onNavigat
                 
                 {/* Only show expand icon for dashboards with tabs */}
                 {!isTablessDashboard && (
-                  <span className="expand-icon">
+                  <span 
+                    className="expand-icon"
+                    title={isDashboardExpanded(dashboard.id) ? 'Collapse tabs' : 'Show tabs'}
+                    onClick={(event) => {
+                      // Chevron peeks at a sector's tabs without navigating.
+                      event.stopPropagation();
+                      toggleDashboard(dashboard.id);
+                    }}
+                  >
                     <IconComponent 
                       name={isDashboardExpanded(dashboard.id) ? 'chevron-down' : 'chevron-right'} 
                       size="sm"

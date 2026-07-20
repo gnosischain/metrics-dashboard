@@ -69,6 +69,33 @@
   margin: 0;
 }
 
+/* ==================
+   Sidebar Group Labels & Dividers
+   ================== */
+
+.nav-group-label {
+  padding: 16px 12px 5px;
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-group-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 10px 12px 8px;
+}
+
+.tab-navigation.collapsed .nav-group-divider {
+  margin: 8px 10px;
+}
+
 .dashboard-item {
   margin-bottom: var(--spacing-xs);
 }
@@ -201,9 +228,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px; /* Reduced from 16px */
-  height: 14px; /* Reduced from 16px */
-  transition: transform var(--transition-base);
+  /* Clickable on its own (peek at tabs without navigating): give it a
+     slightly larger hit area than the 14px glyph. */
+  width: 22px;
+  height: 22px;
+  border-radius: var(--border-radius-sm);
+  transition: transform var(--transition-base), background-color var(--transition-base);
+}
+
+.expand-icon:hover {
+  background-color: var(--color-hover-background);
 }
 
 .dashboard-header.active .expand-icon {
