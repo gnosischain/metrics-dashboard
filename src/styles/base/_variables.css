@@ -141,14 +141,12 @@
 
 /* Dark Mode Variables */
 .dark-mode {
-  /* Nudged from cool slate (#0f172a / #1e293b) toward a *hint* of the Gnosis
-     brand's indigo-navy — enough to read as "Gnosis" rather than generic slate,
-     but kept near-neutral so it stays a quiet canvas that doesn't distort chart
-     series colors (simultaneous contrast). Luminance ~matches the originals. */
-  --color-background: #0f1226;
-  --color-surface: #1b1e3a;
-  --color-border: #2f3352;
-  --color-border-hover: #454a6e;
+  /* Cool slate canvas — quieter for long chart reading than a tinted indigo.
+     Matches prod; brand identity lives in accents, not the page background. */
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-border-hover: #475569;
   --color-border-subtle: rgba(148, 163, 184, 0.18);
 
   --color-text-primary: #e2e8f0;
