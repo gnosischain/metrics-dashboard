@@ -75,6 +75,22 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
     [dashboards, isBootLoading]
   );
 
+  // Same consecutive-group rule as the sidebar: shared `group` labels become
+  // section headings; ungrouped sectors (e.g. Account Portfolio) stay alone.
+  const sectorGroups = useMemo(() => {
+    const groups = [];
+    sectorCards.forEach((dashboard) => {
+      const name = dashboard.group || null;
+      const last = groups[groups.length - 1];
+      if (last && last.name === name) {
+        last.dashboards.push(dashboard);
+      } else {
+        groups.push({ name, dashboards: [dashboard] });
+      }
+    });
+    return groups;
+  }, [sectorCards]);
+
   const overviewMetrics = useMemo(() => {
     if (isBootLoading) {
       return [];
@@ -210,29 +226,41 @@ const Landing = ({ dashboards = [], onNavigate, isDarkMode, isBootLoading = fals
               Every corner of the Gnosis ecosystem, one click away.
             </p>
           </div>
-          <div className="landing-sector-grid">
-            {sectorCards.map((d) => (
-              <button
-                type="button"
-                key={d.id}
-                className="landing-sector-card"
-                onClick={() => handleSectorClick(d.id)}
+          <div className="landing-sector-groups">
+            {sectorGroups.map((group, index) => (
+              <div
+                key={group.name || `ungrouped-${index}`}
+                className="landing-sector-group"
               >
-                <div className="landing-sector-icon" aria-hidden="true">
-                  {d.iconClass
-                    ? <IconComponent name={d.iconClass} size="lg" />
-                    : (d.icon || <IconComponent name="chart-line" size="lg" />)}
+                {group.name && (
+                  <h3 className="landing-sector-group-label">{group.name}</h3>
+                )}
+                <div className="landing-sector-grid">
+                  {group.dashboards.map((d) => (
+                    <button
+                      type="button"
+                      key={d.id}
+                      className="landing-sector-card"
+                      onClick={() => handleSectorClick(d.id)}
+                    >
+                      <div className="landing-sector-icon" aria-hidden="true">
+                        {d.iconClass
+                          ? <IconComponent name={d.iconClass} size="lg" />
+                          : (d.icon || <IconComponent name="chart-line" size="lg" />)}
+                      </div>
+                      <div className="landing-sector-body">
+                        <div className="landing-sector-name">{d.name}</div>
+                        <div className="landing-sector-tagline">
+                          {d.tagline || 'Dive into metrics for this sector.'}
+                        </div>
+                      </div>
+                      <div className="landing-sector-arrow" aria-hidden="true">
+                        <IconComponent name="chevron-right" size="sm" />
+                      </div>
+                    </button>
+                  ))}
                 </div>
-                <div className="landing-sector-body">
-                  <div className="landing-sector-name">{d.name}</div>
-                  <div className="landing-sector-tagline">
-                    {d.tagline || 'Dive into metrics for this sector.'}
-                  </div>
-                </div>
-                <div className="landing-sector-arrow" aria-hidden="true">
-                  <IconComponent name="chevron-right" size="sm" />
-                </div>
-              </button>
+              </div>
             ))}
           </div>
         </section>

@@ -126,6 +126,7 @@ DaoTreasury:
 "Account Portfolio":
   name: Account Portfolio
   order: 90
+  group: Tools
   icon: 🔎
   iconClass: user
   tagline: Per-address lens — tokens, safes, circles, gnosis pay, and validators in one view.
