@@ -40,6 +40,12 @@ export class PieChart extends BaseChart {
     const colors = this.resolveSeriesPalette(config, processedData.data.length, isDarkMode);
     const totalValue = processedData.data.reduce((sum, item) => sum + Number(item.value || 0), 0);
     const tokenRichStyles = this.buildTokenRichStyles(processedData.data.map(d => d.name));
+    // Default on; metrics can set showLabels: false for dense top-N pies (legend + tooltip only).
+    const showLabels = config.showLabels !== false;
+    // Optional: only draw callouts for slices at/above this percent; legend still lists all.
+    const minLabelPercent = Number.isFinite(Number(config.minLabelPercent))
+      ? Number(config.minLabelPercent)
+      : 0;
 
     return {
       ...this.getBaseOptions(isDarkMode),
@@ -59,14 +65,29 @@ export class PieChart extends BaseChart {
       
       series: [{
         type: 'pie',
+        // Only use explicit radius; ignore legacy `donut: true` flags that were never applied.
         radius: config.radius || '70%',
         center: config.center || ['50%', '50%'],
-        data: processedData.data.map((item, index) => ({
-          ...item,
-          itemStyle: {
-            color: colors[index]
-          }
-        })),
+        avoidLabelOverlap: showLabels && minLabelPercent > 0,
+        data: processedData.data.map((item, index) => {
+          const value = Number(item.value || 0);
+          const percent = totalValue > 0 ? (value / totalValue) * 100 : 0;
+          const hasName = Boolean(item.name) && item.name !== '—';
+          // Per-slice: hide both label text AND leader line below the threshold.
+          // Returning '' from the formatter alone still leaves empty labelLines.
+          const showItemLabel = showLabels
+            && hasName
+            && value > 0
+            && (minLabelPercent <= 0 || percent >= minLabelPercent);
+          return {
+            ...item,
+            itemStyle: {
+              color: colors[index]
+            },
+            label: { show: showItemLabel },
+            labelLine: { show: showItemLabel },
+          };
+        }),
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
@@ -77,13 +98,8 @@ export class PieChart extends BaseChart {
         label: {
           color: isDarkMode ? '#e5e7eb' : '#374151',
           fontSize: 12,
-          // Hide labels for empty/zero/unnamed slices to avoid label spaghetti
-          // (e.g. "Unknown: 0" radiating from every slice of an empty dataset).
-          show: true,
+          show: showLabels,
           formatter: (params) => {
-            const hasName = params.name && params.name !== 'Unknown' && params.name !== '—';
-            const hasValue = Number(params.value) > 0;
-            if (!hasName || !hasValue) return '';
             if (config.pieLabelValue === false) {
               return PieChart.formatLabelWithIcon(params.name, null);
             }
@@ -97,13 +113,14 @@ export class PieChart extends BaseChart {
           }
         },
         labelLine: {
-          show: true,
+          show: showLabels,
           showAbove: false,
           smooth: true,
           lineStyle: {
             color: isDarkMode ? '#6b7280' : '#9ca3af'
           }
-        }
+        },
+        labelLayout: showLabels && minLabelPercent > 0 ? { hideOverlap: true } : undefined,
       }],
       
       tooltip: {

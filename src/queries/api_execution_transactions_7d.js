@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_7d',
-  name: 'Transactions Count',
+  name: 'Transactions',
   description: 'Last 7 days',
   format: 'formatNumber',
   valueField: 'value',

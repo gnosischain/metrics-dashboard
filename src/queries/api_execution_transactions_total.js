@@ -1,6 +1,6 @@
 const metric = {
   id: 'api_execution_transactions_total',
-  name: 'Transactions Count',
+  name: 'Transactions',
   description: 'All-time',
   format: 'formatNumber',
   valueField: 'value',
