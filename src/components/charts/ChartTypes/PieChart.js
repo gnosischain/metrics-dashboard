@@ -68,7 +68,9 @@ export class PieChart extends BaseChart {
         // Only use explicit radius; ignore legacy `donut: true` flags that were never applied.
         radius: config.radius || '70%',
         center: config.center || ['50%', '50%'],
-        avoidLabelOverlap: showLabels && minLabelPercent > 0,
+        // Keep ECharts default collision avoidance for all labeled pies (Tokens, etc.).
+        // minLabelPercent only decides which slices get a callout — it must not disable this.
+        avoidLabelOverlap: showLabels,
         data: processedData.data.map((item, index) => {
           const value = Number(item.value || 0);
           const percent = totalValue > 0 ? (value / totalValue) * 100 : 0;
@@ -120,7 +122,6 @@ export class PieChart extends BaseChart {
             color: isDarkMode ? '#6b7280' : '#9ca3af'
           }
         },
-        labelLayout: showLabels && minLabelPercent > 0 ? { hideOverlap: true } : undefined,
       }],
       
       tooltip: {
