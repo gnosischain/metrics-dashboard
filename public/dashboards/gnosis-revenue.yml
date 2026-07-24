@@ -129,4 +129,3 @@ tabs:
       - id: text_revenue_methodology
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 3000px

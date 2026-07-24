@@ -49,4 +49,3 @@ tabs:
       - id: text_esg_methodology
         gridRow: 1
         gridColumn: 1 / span 12
-        minHeight: 12100px

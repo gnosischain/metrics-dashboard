@@ -134,6 +134,8 @@
 
 /* Dark Mode Variables */
 .dark-mode {
+  /* Cool slate canvas — quieter for long chart reading than a tinted indigo.
+     Matches prod; brand identity lives in accents, not the page background. */
   --color-background: #0f172a;
   --color-surface: #1e293b;
   --color-border: #334155;

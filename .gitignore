@@ -18,6 +18,9 @@
 .env.test.local
 .env.production.local
 
+# generated at build time by scripts/build-search-registry.js
+/public/search-registry.json
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

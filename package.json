@@ -42,14 +42,15 @@
     }
   },
   "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "vite build",
+    "start": "node scripts/build-search-registry.js && vite",
+    "dev": "node scripts/build-search-registry.js && vite",
+    "build": "node scripts/build-search-registry.js && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "vercel-build": "pnpm build",
     "export-queries": "node scripts/export-queries.js",
+    "build-search-registry": "node scripts/build-search-registry.js",
     "copy-config": "node scripts/copy-config.js"
   },
   "eslintConfig": {

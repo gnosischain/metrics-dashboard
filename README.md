@@ -18,14 +18,20 @@ A modular analytics dashboard for Gnosis metrics built with React, ECharts, YAML
 Configured areas live in YAML and currently include:
 
 - Overview
+- Account Portfolio
 - Gnosis Pay
+- Gnosis App
+- Circles
+- Trades
+- Tokens
 - OnChain Activity
 - Consensus
 - Network
 - Bridges
-- Tokens
-- Yields
 - ESG
+- Yields
+- Revenue Drivers
+- DAO Treasury (disabled)
 
 ## Architecture
 
@@ -196,7 +202,7 @@ Notes:
 
 Dashboards opt into named palette presets in `public/dashboard.yml`.
 All palette definitions are centralized in:
-`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js`
+`src/utils/dashboardPalettes.js`
 
 ### Named palette example
 
@@ -227,7 +233,7 @@ This is fully config-driven:
 
 1. Adding new dashboards/tabs/metrics in YAML requires no code changes to inherit palette behavior.
 2. Any metric placed in YAML under a dashboard automatically receives that dashboard palette fallback.
-3. New palette presets are added once in `/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/utils/dashboardPalettes.js` and then referenced by name in YAML.
+3. New palette presets are added once in `src/utils/dashboardPalettes.js` and then referenced by name in YAML.
 
 ## How Dashboard Rendering Works
 
@@ -295,7 +301,7 @@ The header search is designed for fast tab jumps.
 
 The top-bar `Resources` menu is fully config-driven from:
 
-`/Users/hugser/Documents/Gnosis/repos/metrics-dashboard/src/config/headerLinks.js`
+`src/config/headerLinks.js`
 
 To add or update links, edit `HEADER_RESOURCE_LINKS` using the grouped structure below:
 

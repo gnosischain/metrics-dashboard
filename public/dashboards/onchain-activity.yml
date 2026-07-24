@@ -1,52 +1,24 @@
 tabs:
-  - name: Overview
-    description: Projects, sectors, transactions and active accounts
-    order: 1
-    icon: 📊
-    iconClass: chart-line
-    metrics:
-      - id: api_crawlers_data_distinct_projects_total
-        gridRow: 1
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_crawlers_data_distinct_sectors_total
-        gridRow: 1
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: api_execution_transactions_total
-        gridRow: 2
-        gridColumn: 1 / span 3
-        minHeight: 120px
-      - id: api_execution_transactions_active_accounts_total
-        gridRow: 2
-        gridColumn: 4 / span 3
-        minHeight: 120px
-      - id: text_onchain_projects_sectors_overview_info
-        gridRow: 1 / span 2
-        gridColumn: 7 / span 6
-        minHeight: 252px
-      - id: text_onchain_projects_sectors_glossary
-        gridRow: 3
-        gridColumn: 1 / span 12
-        minHeight: 1200px
+  # No Overview tab — the three lenses are the product. Land on Transactions.
+  # Methodology holds labeling definitions so Project/Sector stay explainable.
   - name: Transactions
     description: Counts by project and sector over time
-    order: 3
+    order: 1
     icon: 🔁
     iconClass: transaction
     metrics:
       - id: api_execution_transactions_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 252px
+        minHeight: 316px
       - id: api_execution_transactions_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6
@@ -59,24 +31,25 @@ tabs:
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 420px
+
   - name: Gas & Fees
     description: Native fees and gas used by project and sector
-    order: 4
+    order: 2
     icon: ⛽️
     iconClass: gas-usage
     metrics:
       - id: api_execution_transactions_fees_native_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_fees_native_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_fees_native_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 252px
+        minHeight: 316px
       - id: api_execution_transactions_fees_native_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6
@@ -93,24 +66,25 @@ tabs:
         gridRow: 5
         gridColumn: 1 / span 12
         minHeight: 420px
+
   - name: Initiator Accounts
     description: Active sending accounts by project and sector
-    order: 5
+    order: 3
     icon: 👥
     iconClass: users
     metrics:
       - id: api_execution_transactions_active_accounts_7d
         gridRow: 1
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_active_accounts_total
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 120px
+        minHeight: 150px
       - id: api_execution_transactions_active_accounts_by_project_ranges_top20
         gridRow: 1 / span 2
         gridColumn: 7 / span 6
-        minHeight: 252px
+        minHeight: 316px
       - id: api_execution_transactions_active_accounts_by_project_monthly_top5
         gridRow: 3
         gridColumn: 1 / span 6
@@ -123,3 +97,24 @@ tabs:
         gridRow: 4
         gridColumn: 1 / span 12
         minHeight: 420px
+
+  - name: Methodology
+    description: How projects, sectors and initiator accounts are defined
+    order: 4
+    icon: 📘
+    iconClass: file-text
+    metrics:
+      - id: api_crawlers_data_distinct_projects_total
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_crawlers_data_distinct_sectors_total
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: text_onchain_projects_sectors_overview_info
+        gridRow: 2
+        gridColumn: 1 / span 12
+      - id: text_onchain_projects_sectors_glossary
+        gridRow: 3
+        gridColumn: 1 / span 12

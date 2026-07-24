@@ -14,7 +14,8 @@ const Card = forwardRef(({
   cardVariant = 'default',
   minimal = false,
   contentClassName = '',
-  titleFontSize = null
+  titleFontSize = null,
+  footer = null
 }, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -91,6 +92,7 @@ const Card = forwardRef(({
         <div className={`card-content ${contentClassName}`}>
           {children}
         </div>
+        {footer && <div className="card-footer">{footer}</div>}
       </div>
       {expandable && !isNumberDisplay && (
         <ChartModal 

@@ -238,6 +238,28 @@
 }
 
 /* ========== Sector grid ========== */
+.landing-sector-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.landing-sector-group-label {
+  margin: 0 0 14px;
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* Incomplete final rows (e.g. 2 cards in a 3-col grid) must not visually
+   absorb the next group's first card — keep groups clearly stacked. */
+.landing-sector-group + .landing-sector-group {
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
 .landing-sector-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

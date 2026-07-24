@@ -1001,21 +1001,15 @@ async function fetchMetricData(metricId, queries, availableMetrics, useMock = fa
       }
     }
     
-    // Scoped account/profile requests must not silently become empty rows. The
-    // frontend needs to distinguish "true no data" from ClickHouse errors,
-    // missing tables, and memory-limit failures.
-    if (looksLikeMissingTable || String(metricId || '').startsWith('api_execution_account_') || isScopedFilterFailure) {
-      // Override any axios-provided code (e.g. ERR_BAD_REQUEST) so the
-      // frontend can distinguish permanent "no data for this address"
-      // states from transient failures.
-      error.status = error?.response?.status || error.status || 502;
-      error.code = looksLikeMissingTable ? 'MissingMetricSource' : 'MetricQueryFailed';
-      throw error;
-    }
-
-    // If all else fails, try to generate mock data based on the metricId
-    metricLog(`Generating fallback mock data for ${metricId}`);
-    return generateMockData(query, metricId);
+    // Never invent series on failure. Mock is only for explicit USE_MOCK_DATA /
+    // useMock=true — a ClickHouse OOM (e.g. revenue weekly active-users view)
+    // used to return generateMockData() here, which BarChart happily plotted
+    // via date/value field fallback and looked like a flat "real" chart.
+    // Override any axios-provided code so the UI can distinguish permanent
+    // "no data for this address" states from transient failures.
+    error.status = error?.response?.status || error.status || 502;
+    error.code = looksLikeMissingTable ? 'MissingMetricSource' : 'MetricQueryFailed';
+    throw error;
   }
 }
 
