@@ -4,13 +4,13 @@ This directory contains the metric definitions for the ClickHouse Metrics Dashbo
 
 ## Adding a New Metric
 
-To add a new metric to the dashboard:
+See **[AGENTS.md](AGENTS.md)** for the procedure. This file is the reference for metric config
+fields, chart types and query shapes.
 
-1. Create a new JavaScript file in this directory (e.g., `userSignups.js`)
-2. Define your metric using one of the template structures
-3. Run `npm run export-queries` to update the API with your new query
-
-Your metric will be automatically detected and added to the dashboard without modifying any other files.
+The workflow used to be documented here as three steps ending in "your metric will be
+automatically detected without modifying any other files". That was wrong: a metric with no
+placement in `public/dashboards/*.yml` renders nowhere and is absent from header search, with
+no error to tell you. Keeping one copy of the procedure is how that stops recurring.
 
 ## Metric Types
 

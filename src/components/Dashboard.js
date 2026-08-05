@@ -151,6 +151,9 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [activeTabConfigsLoaded, setActiveTabConfigsLoaded] = useState(false);
+  // Once the grid has rendered, changing tabs must not swap it back out for a placeholder:
+  // that unmounts every widget and refetches their data. Only the very first render waits.
+  const [gridEverShown, setGridEverShown] = useState(false);
   const [metricsCacheVersion, setMetricsCacheVersion] = useState(0);
   // Build-time metric metadata (id -> { name, description, metricDescription })
   // used to make header search cover metrics whose configs aren't loaded yet.
@@ -195,6 +198,10 @@ const Dashboard = () => {
   );
   const knownFilterFields = useMemo(() => getKnownFilterFields(dashboards), [dashboards]);
 
+  useEffect(() => {
+    if (activeTabConfigsLoaded) setGridEverShown(true);
+  }, [activeTabConfigsLoaded]);
+
   // Subscribe to metric-config cache updates so memos re-resolve once configs land.
   useEffect(() => {
     const unsubscribe = metricsService.subscribe((version) => {
@@ -222,6 +229,14 @@ const Dashboard = () => {
 
   // Preload the active tab's metric configs before rendering MetricGrid.
   useEffect(() => {
+    // rawTabMetrics is also [] while the dashboard or tab is still being resolved, which is a
+    // different thing from a tab that genuinely has no metrics. Declaring "loaded" in that
+    // window mounts MetricGrid with zero metrics, and the real metrics then unmount and
+    // remount it — remounting every widget and refetching all of their data.
+    if (!activeDashboard || !activeTab) {
+      return undefined;
+    }
+
     if (!rawTabMetrics || rawTabMetrics.length === 0) {
       setActiveTabConfigsLoaded(true);
       return undefined;
@@ -256,7 +271,7 @@ const Dashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [rawTabMetrics]);
+  }, [activeDashboard, activeTab, rawTabMetrics]);
 
   // Note: we no longer eagerly load every metric config in the background.
   // Doing so on idle at boot pulled ~500 JS chunks the user may never need
@@ -922,7 +937,7 @@ const Dashboard = () => {
                       onPortfolioStateChange={handleCustomTabStateChange}
                     />
                   </Suspense>
-                ) : !activeTabConfigsLoaded ? (
+                ) : !activeTabConfigsLoaded && !gridEverShown ? (
                   <div className="loading-indicator">Loading metrics...</div>
                 ) : (
                   <MetricGrid

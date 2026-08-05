@@ -134,18 +134,24 @@ describe('accountPortfolio service helpers', () => {
   });
 
   it('uses composed account movements as the canonical movement source', async () => {
+    // getMovements drops anything older than 90 days, so fixed calendar dates make this test
+    // expire rather than fail: it passed until March 2026 fell out of the window. Stay relative.
+    const daysAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const outflowDate = daysAgo(3);
+    const inflowDate = daysAgo(2);
+
     const originalGetRows = accountPortfolioService.getRows;
     accountPortfolioService.getRows = vi.fn((metricId) => {
       if (metricId === 'api_execution_account_movements_composed') {
         return Promise.resolve([
           {
-            date: '2026-03-02',
+            date: outflowDate,
             symbol: 'GNO',
             token_class: 'governance',
             net_delta: -1.5,
           },
           {
-            date: '2026-03-03',
+            date: inflowDate,
             symbol: 'USDC.e',
             token_class: 'stablecoin',
             net_delta: 2,
@@ -163,14 +169,14 @@ describe('accountPortfolio service helpers', () => {
 
       expect(rows).toHaveLength(2);
       expect(rows[0]).toEqual(expect.objectContaining({
-        date: '2026-03-03',
+        date: inflowDate,
         direction: 'inflow',
         source: 'transfer',
         symbol: 'USDC.e',
         amount: 2,
       }));
       expect(rows[1]).toEqual(expect.objectContaining({
-        date: '2026-03-02',
+        date: outflowDate,
         direction: 'outflow',
         source: 'transfer',
         symbol: 'GNO',

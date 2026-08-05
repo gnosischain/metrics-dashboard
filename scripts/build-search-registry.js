@@ -39,6 +39,9 @@ const extractField = (content, field) => {
   const value = match[2]
     .replace(new RegExp(`\\\\\\${delimiter}`, 'g'), delimiter)
     .replace(/\\n/g, '\n')
+    // Sources are checked out CRLF wherever git's core.autocrlf is on, so without this the
+    // registry payload differs between a Windows and a Linux build.
+    .replace(/\r\n?/g, '\n')
     .trim();
   return value || null;
 };

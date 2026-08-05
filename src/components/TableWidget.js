@@ -618,7 +618,9 @@ const createTableConfig = (data, columns, config, isDarkMode, height, callbacks 
       index: config.indexField || undefined,
       height: height, // Use the provided height (not 'auto')
       layout: config.layout || 'fitColumns',
-      ...(config.responsiveLayout ? { responsiveLayout: config.responsiveLayout } : {}),
+      // Forwarded even when false: tables that declare responsiveLayout: false are asking for
+      // a fixed column set, and dropping the key left that decision invisible in the config.
+      responsiveLayout: config.responsiveLayout ?? false,
       
       
       pagination: config.pagination !== false ? (isRemote || (data && data.length > 0) ? true : false) : false,

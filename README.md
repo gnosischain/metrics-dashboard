@@ -441,48 +441,15 @@ If you encounter issues:
 
 ## Adding New Metrics
 
-To add a new metric:
+The procedure lives in **[`src/queries/AGENTS.md`](src/queries/AGENTS.md)** — one copy, next to
+the files it describes. It covers the four required steps, the two that fail silently when
+skipped, and how to verify with `pnpm run check`.
 
-1. Add a new metric query file in `src/queries/`:
-   ```javascript
-   // src/queries/newMetric.js
-   const newMetric = {
-     id: 'newMetricId',
-     name: 'New Metric Name',
-     description: 'Description of the new metric',
-     format: 'formatNumber', // Use existing formatter or add new in formatter.js
-     chartType: 'line',
-     color: '#00BCD4',
-     query: `
-       SELECT
-         toDate(event_time) AS date,
-         count() AS value
-       FROM your_table
-       WHERE event_time BETWEEN '{from}' AND '{to} 23:59:59'
-       GROUP BY date
-       ORDER BY date
-     `
-   };
+Deploying afterwards is unchanged:
 
-   export default newMetric;
-   ```
-
-2. Ensure the metric is placed in dashboard YAML so it becomes visible and searchable:
-   - Add it to `public/dashboards/<sector>.yml` under a `metrics` list in the target tab.
-   - Metrics not placed in YAML are not rendered and are not included in header search.
-   - If the metric should participate in a tab-level global filter, make sure its filtering field matches the tab `globalFilterField` or set `globalFilterField` explicitly in the metric config.
-   - If the metric should inherit a tab-level unit toggle, define `unitFilterField` or `unitFields`.
-   - If the metric should show token icons in dropdowns, use `labelField: 'token'`.
-
-3. Run the export script to update the API:
-   ```bash
-   pnpm run export-queries
-   ```
-
-4. Deploy your changes to Vercel:
-   ```bash
-   vercel --prod
-   ```
+```bash
+vercel --prod
+```
 
 ## Development Mode
 

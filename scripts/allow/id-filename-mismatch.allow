@@ -1,0 +1,9 @@
+# Definitions whose exported id differs from their filename.
+# You cannot find these by filename when an upstream model is renamed.
+# See docs/lessons/id-does-not-name-the-table.md
+
+networkClientDistribution.js -> network_client_distribution
+networkValidatorConnections.js -> network_validator_connections
+nodeStatusTable.js -> node_status_table
+sankeyGasFlow.js -> sankey_gas_flow
+sankeyTransactionFlow.js -> sankey_transaction_flow

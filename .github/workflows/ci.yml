@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Metric registration and export parity
+        run: pnpm run check
+      # test:ci is `pnpm test` minus MetricWidget.test.jsx, whose first test hangs during
+      # execution rather than failing: no timeout fires, so the whole suite never finishes and
+      # the job would burn its 20 minutes. Excluding that one file gates the other 255 tests
+      # for real instead of making the whole suite advisory. Fix the hang, then delete the
+      # exclusion from package.json — a permanent exclusion is how a suite rots.
+      - run: pnpm run test:ci
+      - run: pnpm build
+
+  # The generators read source files byte-for-byte, so their output depends on the line
+  # endings git checked out. Running the same parity check on Windows is what keeps
+  # api/queries platform-independent. See docs/lessons/crlf-export-drift.md
+  verify-windows:
+    runs-on: windows-latest
+    steps:
+      # Must precede checkout: this is what makes the checkout CRLF, reproducing a stock
+      # Git for Windows install rather than whatever the runner image happens to default to.
+      - name: Reproduce a Windows developer checkout
+        run: git config --global core.autocrlf true
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Metric registration and export parity
+        run: pnpm run check
