@@ -55,7 +55,10 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
 - **Scoped metrics need `/*__FILTER_CONDITIONS__*/`** in their SQL, or the export fails. The
   filter is injected there at query time.
 - **Do not fix a line-ending diff with `.gitattributes`.** It cannot work here; the fix is
-  already in the generators. See `docs/lessons/crlf-export-drift.md`.
+  already in the generators. Equally, do not remove the `normalizeNewlines` calls in
+  `scripts/export-queries.js` or `scripts/build-search-registry.js` — they are no-ops on macOS
+  and Linux, load-bearing on Windows, and nothing in CI catches their removal. Each carries a
+  comment saying so. See `docs/lessons/crlf-export-drift.md`.
 - **`pnpm test` currently hangs** on `src/components/MetricWidget.test.jsx`, and neither
   `--testTimeout` nor `--hookTimeout` bounds it. Use `pnpm run test:ci`, which excludes that
   file. Details in `src/components/AGENTS.md`.

@@ -17,6 +17,7 @@ const inlineFilterMarker = '/*__FILTER_CONDITIONS__*/';
 
 const checkOnly = process.argv.includes('--check');
 
+// Do not remove — load-bearing on Windows only, and nothing in CI will catch its removal.
 // Source files are checked out with CRLF wherever git's core.autocrlf is on, and the query
 // regex captures the file's bytes verbatim — so without this the platform's line endings end
 // up escaped inside the JSON "query" value. That is data, not file line endings, so neither
@@ -135,6 +136,9 @@ queryFiles.forEach(file => {
 
     const desired = serializeQuery(id, query);
     const outputPath = path.join(apiQueriesDir, `${id}.json`);
+    // Do not remove the normalisation here either — it reads as a no-op on macOS and Linux,
+    // but on a Windows checkout git gives these JSON files CRLF on disk and every one of them
+    // would compare as stale, making `pnpm run check` fail wholesale for Windows developers.
     const existing = fs.existsSync(outputPath)
       ? normalizeNewlines(fs.readFileSync(outputPath, 'utf8'))
       : null;

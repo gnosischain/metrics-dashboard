@@ -13,7 +13,7 @@ evidence:
   - 'scripts/export-queries.js — the query regex captures the file substring verbatim; `.trim()` only touches the ends'
   - 'measured 2026-08-05 on a Windows checkout with core.autocrlf=true: 636 of 636 src/queries/*.js contain CRLF, and 0 of the committed api/queries/*.json contain an escaped CR'
   - '`git check-attr text eol -- src/queries/<file>.js` returns unspecified for both — there is no .gitattributes, so autocrlf governs'
-  - '.github/workflows/ci.yml — the verify-windows job sets core.autocrlf=true before checkout and runs the same parity check'
+  - 'no automated check covers this: a windows-latest CI leg was written and then removed on 2026-08-05 as disproportionate, and no unit test replaced it'
 ---
 ## Symptom
 
@@ -54,9 +54,13 @@ because the two will drift.
 `pnpm run check` runs `export-queries.js --check`, which regenerates in memory and compares
 without writing. Anything out of sync is listed by id.
 
-Because the fault is platform-dependent, the check also runs on `windows-latest` in CI with
-`core.autocrlf=true` forced before checkout. A normalisation regression fails there while
-the Linux leg stays green.
+**That only detects it on a Windows machine.** CI runs on Ubuntu, where git checks everything
+out with LF, so both normalisation calls are no-ops and the check passes whether they are
+present or not. The Linux leg cannot fail from this fault — its passing says nothing about it.
+
+So the first report will be a human on Windows seeing hundreds of files rewritten with only
+`\r` in the diff. If that is what you are looking at, check that the two `normalizeNewlines`
+calls in `scripts/export-queries.js` are still there before looking anywhere else.
 
 ## Safe remediation
 
@@ -73,6 +77,20 @@ ignore trailing whitespace, since hand-maintained JSON carries a trailing newlin
 
 ## Enforcement
 
-The normalisation is in `scripts/export-queries.js` and `scripts/build-search-registry.js`;
-the parity check runs on both Ubuntu and Windows in `.github/workflows/ci.yml`. Status
-moves to `enforced` once that workflow has run on `main`.
+**None, deliberately.** The normalisation lives in `scripts/export-queries.js` (two calls) and
+`scripts/build-search-registry.js` (one), and nothing verifies it stays. A `windows-latest` CI
+leg reproducing a CRLF checkout was written on 2026-08-05 and removed the same day as
+disproportionate to a one-line `.replace()`; no unit test was added in its place.
+
+The accepted risk is specific. All three calls read as dead code to anyone on macOS or Linux,
+where they provably do nothing, so they are plausible tidy-up targets. Each carries a
+"do not remove" comment, which is the whole of the guard. Removing the one at the `--check`
+comparison is the worse case: it does not corrupt output, it makes `pnpm run check` report all
+635 files as stale for Windows developers only, and a gate that cries wolf stops being run —
+which leaves `docs/lessons/export-queries-drift.md` unguarded, the fault that had two metrics
+serving wrong numbers for months.
+
+If this recurs, that is the evidence the comments were not enough, and the cheap fix is a unit
+test asserting CRLF input yields LF output on both the write and the compare path. It runs
+anywhere and needs no Windows runner. Status stays `observed`: the fault is fixed, but nothing
+holds it fixed.

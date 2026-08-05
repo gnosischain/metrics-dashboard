@@ -65,5 +65,6 @@ product-visible change and deserves that level of evidence.
 
 ## Enforcement
 
-`pnpm run check` in `.github/workflows/ci.yml`, on both Ubuntu and Windows. Status moves to
-`enforced` once that workflow has run on `main`.
+`pnpm run check` in `.github/workflows/ci.yml`. This fault is platform-independent, so the
+Ubuntu job catches it wherever it originates. Status moves to `enforced` once that workflow has
+run on `main`.
