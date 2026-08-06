@@ -21,7 +21,7 @@ const metric = {
   labelField: 'scope',
   query: `
     SELECT scope, toDate(month) AS date, 'Churn Rate' AS label, churn_rate AS value
-    FROM playground_max.api_celo_gpay_churn_rates_monthly
+    FROM dbt.api_celo_gpay_churn_rates_monthly
 
     UNION ALL
 

@@ -50,6 +50,11 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
   free to rename everything else. 42 metrics already break this rule in feature areas that
   have no `api_` model, and they are recorded in `scripts/allow/non-contract-dbt-reads.allow`.
   Do not add a 43rd. See `docs/lessons/non-contract-dbt-reads.md`.
+- **Read the `dbt` database and nothing else.** `playground_max` is the shared development
+  target — anyone's dbt run can rebuild or drop what a live card depends on, and the
+  `CLICKHOUSE_DBT_SCHEMA` override rewrites only the `dbt.` prefix, so a foreign reference
+  escapes it. If production data is wrong, fix the dbt model; never point a card at dev.
+  `pnpm run check` fails on any non-`dbt` reference and there are no exemptions.
 - **Name the file after the metric id.** Ids are what the YAML, the API and the search
   registry key on. Five legacy camelCase files predate this and are ratcheted.
 - **Scoped metrics need `/*__FILTER_CONDITIONS__*/`** in their SQL, or the export fails. The

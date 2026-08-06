@@ -75,13 +75,16 @@ for (const file of fs.readdirSync(srcQueriesDir).sort()) {
   const isText = /chartType['"]?\s*:\s*['"]text['"]/.test(content);
 
   const dbtRefs = new Set();
+  const foreignRefs = new Set();
   if (query) {
-    for (const match of query.matchAll(/\b(?:FROM|JOIN)\s+dbt\.(\w+)/gi)) {
-      dbtRefs.add(match[1]);
+    for (const match of query.matchAll(/\b(?:FROM|JOIN)\s+(\w+)\.(\w+)/gi)) {
+      const [, database, table] = match;
+      if (database.toLowerCase() === 'dbt') dbtRefs.add(table);
+      else foreignRefs.add(`${database}.${table}`);
     }
   }
 
-  definitions.push({ file, stem, id, isText, hasQuery: Boolean(query), dbtRefs });
+  definitions.push({ file, stem, id, isText, hasQuery: Boolean(query), dbtRefs, foreignRefs });
 }
 
 const definitionsById = new Map();
@@ -157,6 +160,16 @@ const nonContractReads = definitions
   .map((def) => def.id)
   .sort();
 
+// Production may only read the production database, with no exemptions. `playground_max` is
+// the shared development target, so anyone's dbt run can rebuild or drop what a live card
+// depends on, and api/cron.js rewrites only the `dbt.` prefix when CLICKHOUSE_DBT_SCHEMA is
+// set — a foreign reference silently escapes the dev/prod switch too. Wrong data in
+// production is a dbt fix, never a redirect to dev.
+const foreignDatabaseReads = definitions
+  .filter((def) => def.foreignRefs.size > 0)
+  .map((def) => `${def.id} -> ${[...def.foreignRefs].sort().join(', ')}`)
+  .sort();
+
 if (updateMode) {
   writeAllow(
     'unplaced-metrics.allow',
@@ -223,6 +236,14 @@ if (danglingPlacements.length) {
     'Dashboard YAML references ids with no definition',
     danglingPlacements,
     'The card renders empty. Remove the placement or add the definition.',
+  ]);
+}
+
+if (foreignDatabaseReads.length) {
+  failures.push([
+    'Metrics reading a database other than dbt',
+    foreignDatabaseReads,
+    'Production reads dbt only. If the data is wrong, fix the dbt model — do not point a card at playground_max.',
   ]);
 }
 
