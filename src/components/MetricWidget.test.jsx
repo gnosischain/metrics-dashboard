@@ -15,16 +15,27 @@ vi.mock('../services/metrics', () => ({
   }
 }));
 
-vi.mock('./index', () => ({
-  Card: ({ children, headerControls }) => (
+// Mocked per module rather than via './index': MetricWidget imports these four directly,
+// because importing the barrel from a module the barrel imports deadlocks the test file.
+vi.mock('./Card', () => ({
+  default: ({ children, headerControls }) => (
     <div>
       <div data-testid="header-controls">{headerControls}</div>
       <div data-testid="card-children">{children}</div>
     </div>
-  ),
-  NumberWidget: () => <div data-testid="number-widget"></div>,
-  TextWidget: () => <div data-testid="text-widget"></div>,
-  TableWidget: ({ config = {}, height }) => (
+  )
+}));
+
+vi.mock('./NumberWidget', () => ({
+  default: () => <div data-testid="number-widget"></div>
+}));
+
+vi.mock('./TextWidget', () => ({
+  default: () => <div data-testid="text-widget"></div>
+}));
+
+vi.mock('./TableWidget', () => ({
+  default: ({ config = {}, height }) => (
     <div
       data-testid="table-widget"
       data-height={height || ''}

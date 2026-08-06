@@ -164,6 +164,12 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/test/setupTests.js',
       css: true,
+      // The repo-wide integrity scans in src/services/dashboards.test.js read all 635 metric
+      // definitions plus every dashboard YAML. On an unloaded dev machine the slowest takes
+      // ~3.9s, which leaves no margin against vitest's 5s default: under a loaded pool, or on
+      // a 2-core CI runner, they time out and read as real failures. Their cost also grows with
+      // the repo, so the default would expire on its own eventually.
+      testTimeout: 20000,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html']

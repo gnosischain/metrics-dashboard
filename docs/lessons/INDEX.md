@@ -31,10 +31,21 @@ The dashboard has three places a metric must be registered, and two of them fail
 |---|---|---|---|
 | [tests-that-expire-instead-of-failing](tests-that-expire-instead-of-failing.md) | test-suite | observed | a long-passing test fails and `git log` shows no relevant change |
 
+### "It hangs, and no timeout fires"
+
+Both of these present as silence. A timeout races a pending operation, so it cannot fire when
+the runner is awaiting a module that never loads or a render that never yields.
+
+| Lesson | Layer | Status | Reach for it when |
+|---|---|---|---|
+| [barrel-import-cycle-hangs-tests](barrel-import-cycle-hangs-tests.md) | widget-ui | observed | a test file prints the RUN banner and nothing else, ever |
+| [effect-oscillation-hangs-render](effect-oscillation-hangs-render.md) | widget-ui | observed | one widget config never finishes rendering, and logs before it vanish |
+
 ### "Upstream moved and nothing warned us"
 
 | Lesson | Layer | Status | Reach for it when |
 |---|---|---|---|
+| [upstream-rename-breaks-a-card](upstream-rename-breaks-a-card.md) | query-definition | observed | a card broke with no commit here and every dbt test upstream is green |
 | [non-contract-dbt-reads](non-contract-dbt-reads.md) | query-definition | observed | a card broke after a dbt change that broke no contract |
 | [id-does-not-name-the-table](id-does-not-name-the-table.md) | query-definition | observed | you need to know who reads a model, or a rename found no consumers |
 

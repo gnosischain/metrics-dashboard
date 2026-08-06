@@ -36,7 +36,7 @@ and vanish on cold start; treat them as opportunistic, never as a store.
 
 ```bash
 pnpm run check      # includes export parity, so it catches a stale api/queries
-pnpm run test:ci
+pnpm test
 ```
 
 Tests for this directory live beside the code (`api/cache.test.js`,

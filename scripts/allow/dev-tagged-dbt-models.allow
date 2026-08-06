@@ -1,0 +1,8 @@
+# Rendered cards reading a model dbt tags `dev`. The production run builds
+# tag:production and excludes tag:dev from docs, so no dbt test and no Elementary
+# monitor covers these — the card can go wrong with nothing upstream noticing.
+# Cards staged behind a disabled sector or tab are not listed: that is the correct
+# way to hold a feature, and they fail this check when the sector is enabled.
+# See docs/lessons/upstream-rename-breaks-a-card.md
+
+api_execution_yields_lending_top_lenders_latest -> dbt.api_execution_lending_top_lenders_latest

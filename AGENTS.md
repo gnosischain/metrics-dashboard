@@ -7,7 +7,7 @@ pnpm 10.29.3, Node 22.
 Read this before changing anything. For a metric, then read `src/queries/AGENTS.md`, which
 is the canonical procedure — this file does not repeat it.
 
-Last verified: 2026-08-05.
+Last verified: 2026-08-06.
 
 ## The one thing that will catch you out
 
@@ -26,11 +26,15 @@ See `docs/lessons/export-queries-drift.md`.
 
 ```bash
 pnpm run check      # export parity + metric registration. Fast, no network, no writes.
-pnpm run test:ci    # 255 tests, ~45s
+pnpm test           # 288 tests in 32 files, ~80s unloaded
+pnpm run check:dbt  # every dbt reference still exists upstream. Fetches a public manifest.
 ```
 
 `pnpm run check` is the gate that catches the silent failures. Run it after touching
 anything under `src/queries/`, `api/queries/`, or `public/dashboards/`.
+
+`pnpm run check:dbt` answers a different question — whether the models your SQL names still
+exist in dbt. It also runs daily in CI, because that reference can break with no commit here.
 
 ## Three places, two of which fail silently
 
@@ -64,9 +68,13 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
   `scripts/export-queries.js` or `scripts/build-search-registry.js` — they are no-ops on macOS
   and Linux, load-bearing on Windows, and nothing in CI catches their removal. Each carries a
   comment saying so. See `docs/lessons/crlf-export-drift.md`.
-- **`pnpm test` currently hangs** on `src/components/MetricWidget.test.jsx`, and neither
-  `--testTimeout` nor `--hookTimeout` bounds it. Use `pnpm run test:ci`, which excludes that
-  file. Details in `src/components/AGENTS.md`.
+- **Never import from `./index` inside a module that `./index` imports.** That cycle turns any
+  module-level throw in the barrel into a test run that hangs with no error and no timeout —
+  it cost the suite `MetricWidget.test.jsx` for months. See
+  `docs/lessons/barrel-import-cycle-hangs-tests.md`.
+- **If a test run hangs, cap the workers first.** `--poolOptions.forks.maxForks=1
+  --no-file-parallelism` turns an unreadable stall into a real timeout. Both hang lessons under
+  `docs/lessons/INDEX.md` → "It hangs, and no timeout fires" start there.
 
 ## Layout
 
@@ -78,7 +86,7 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
 | `src/components/` | widgets and chart types; `MetricWidget` and `MetricGrid` are the hubs |
 | `src/services/` | config resolution, metric loading, account portfolio |
 | `api/` | Vercel functions; `api/metrics.js` executes the queries and caches results |
-| `scripts/` | the generators and `check-metrics.js`; `scripts/allow/` holds the ratchets |
+| `scripts/` | the generators, `check-metrics.js`, `check-dbt-contract.js`; `scripts/allow/` holds the ratchets |
 | `docs/lessons/` | recorded mistake classes — read by symptom, see `INDEX.md` |
 
 Three directories carry their own `AGENTS.md` with what is specific to them:
@@ -99,8 +107,15 @@ Read-only ClickHouse. Production data lives in the `dbt` database; never write t
 run through `api/metrics.js`, which caches by metric id and parameters. Placeholders `{from}`
 and `{to}` are substituted per request.
 
-For dbt model semantics, the model SQL in the `dbt-cerebro` checkout is authoritative — column
-descriptions can lag it. Reconcile against the warehouse before changing a metric's meaning.
+For dbt model semantics, the model SQL in the `dbt-cerebro` checkout is authoritative. Its
+documented column names are **not**: `dbt.api_esg_cif_network_vs_countries_daily` documents
+`carbon_intensity` while the view returns `carbon_intensity_gco2_kwh`. Reconcile against the
+warehouse itself before changing a metric's meaning.
+
+What dbt currently publishes is readable without credentials at
+`https://gnosischain.github.io/dbt-cerebro/manifest.json` — model and seed names, tags, and
+lineage. `catalog.json` alongside it is published with zero model nodes, so it is not a source
+of real column lists. `pnpm run check:dbt` uses the manifest.
 
 ## Known debt, deliberately recorded
 
@@ -111,6 +126,7 @@ count can only shrink.
 |---|---|---|
 | definitions placed in no YAML | 181 | `scripts/allow/unplaced-metrics.allow` |
 | non-contract dbt reads | 42 | `scripts/allow/non-contract-dbt-reads.allow` |
+| rendered card on a `dev`-tagged dbt model | 1 | `scripts/allow/dev-tagged-dbt-models.allow` |
 | filename ≠ id | 5 | `scripts/allow/id-filename-mismatch.allow` |
 
 `api/metrics.js` also carries a `getDefaultQueries()` fallback holding five legacy queries. It

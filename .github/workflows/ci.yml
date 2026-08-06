@@ -4,9 +4,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The dbt contract can break with no commit here: someone renames a model in
+  # dbt-cerebro and a card goes silently empty. Only a scheduled run catches that.
+  schedule:
+    - cron: '17 6 * * *'
 
 jobs:
   verify:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -19,10 +24,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Metric registration and export parity
         run: pnpm run check
-      # test:ci is `pnpm test` minus MetricWidget.test.jsx, which hangs and takes the whole
-      # suite with it — neither --testTimeout nor --hookTimeout bounds it, so the job would
-      # burn its 20 minutes. Excluding that one file gates the other 255 tests for real
-      # instead of making the whole suite advisory. Fix the hang, then delete the exclusion
-      # from package.json — a permanent exclusion is how a suite rots.
-      - run: pnpm run test:ci
+      - run: pnpm test
       - run: pnpm build
+
+  dbt-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Reads dbt's public manifest from gh-pages — no warehouse credentials, no secrets.
+      # A fetch failure is reported and passes; only a resolved mismatch fails the job.
+      - name: dbt contract
+        run: pnpm run check:dbt

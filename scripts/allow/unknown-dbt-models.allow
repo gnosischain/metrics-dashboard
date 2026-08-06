@@ -1,0 +1,4 @@
+# Metrics reading a dbt relation absent from the published manifest.
+# Either it was renamed or dropped upstream, or it is newer than the last
+# gh-pages publish. See docs/lessons/upstream-rename-breaks-a-card.md
+

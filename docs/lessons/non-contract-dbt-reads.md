@@ -64,6 +64,8 @@ explicitly rather than silently.
 ## Enforcement
 
 `scripts/check-metrics.js` via `pnpm run check` in CI, ratcheted at the 42 pre-existing cases.
-Status moves to `enforced` once that workflow has run on `main`. Column-level breakage is not
-covered by any static check; that needs the query smoke test described in
-`docs/workflows/incident.md`.
+Status moves to `enforced` once that workflow has run on `main`.
+
+Whether the model still *exists* upstream is a separate gate: `pnpm run check:dbt`, which also
+runs daily. Column-level breakage remains uncovered, and not for want of trying — no published
+dbt artifact carries real column names. See `upstream-rename-breaks-a-card.md`.

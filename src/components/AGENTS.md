@@ -27,24 +27,25 @@ decision invisible in the resulting config.
 ## Testing conventions
 
 Component tests mock heavy children rather than rendering them — see the mock block at the top
-of `MetricWidget.test.jsx` for the pattern (`echarts`, `./index`, `EChartsContainer`,
-`LabelSelector`, `InfoPopover`, the metrics service). Follow it: an unmocked chart or markdown
-subtree makes a test slow and brittle.
+of `MetricWidget.test.jsx` for the pattern (`echarts`, the metrics service, `EChartsContainer`,
+`LabelSelector`, `InfoPopover`, and `./Card` / `./NumberWidget` / `./TextWidget` /
+`./TableWidget` individually). Follow it: an unmocked chart or markdown subtree makes a test
+slow and brittle.
 
-Use `pnpm run test:ci`, not `pnpm test`. `MetricWidget.test.jsx` hangs and takes the whole
-suite with it. What is known as of 2026-08-05: run in isolation it prints the `RUN` banner and
-nothing else, and neither `--testTimeout=15000` nor `--hookTimeout=20000` bounds it — it was
-still running at 7 minutes with both set. Since vitest applies those bounds to test bodies and
-to hooks respectively, the stall is outside both, which points at module transform, environment
-setup, or teardown rather than at any assertion. It leaves orphaned node workers behind, so
-kill them after an attempt.
+Mock those four per module, never via `./index`. The barrel imports `MetricWidget`, so a
+component reaching back into it closes a cycle — see the rule in the root `AGENTS.md`.
 
-Do not read the absence of per-test output as evidence about *where* it stalls: piped
-(non-TTY) output makes the reporter buffer everything until the file finishes, so a file that
-never finishes prints nothing regardless of cause.
+`pnpm test` runs everything: 288 tests in 32 files, ~80s unloaded as of 2026-08-06. There is no
+`test:ci` variant any more, and a run that does not finish is a real fault rather than a slow
+test. `MetricWidget.test.jsx` hung the suite until 2026-08-06 for two compounding reasons, both
+recorded: a module-level throw inside a circular barrel import
+(`docs/lessons/barrel-import-cycle-hangs-tests.md`) and an effect that re-rendered forever
+(`docs/lessons/effect-oscillation-hangs-render.md`).
 
-`test:ci` excludes that one file so the other 255 tests still gate. Fixing the hang and
-deleting the exclusion is open work.
+If a run stalls, cap the workers before anything else — `--poolOptions.forks.maxForks=1
+--no-file-parallelism`. The default pool spawns roughly 30 workers here, and while they thrash
+the reporter emits nothing at all, which is why this went undiagnosed. Those workers survive
+killing the parent, so clean them up after an attempt.
 
 Do not use fixed calendar dates in fixtures for code that filters relative to now — the test
 will expire instead of failing. See `docs/lessons/tests-that-expire-instead-of-failing.md`.

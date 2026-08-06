@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import * as echarts from 'echarts';
-import { Card, NumberWidget, TextWidget, TableWidget } from './index';
+// Imported from their own modules, not from './index'. The barrel imports MetricWidget, so
+// pulling it in from here closed a cycle: under vitest an `import('./MetricWidget')` then
+// waited on a barrel that was waiting on it, and the promise never settled — the whole test
+// file hung with no error and no timeout. See docs/lessons/barrel-import-cycle-hangs-tests.md
+import Card from './Card';
+import NumberWidget from './NumberWidget';
+import TextWidget from './TextWidget';
+import TableWidget from './TableWidget';
 import EChartsContainer from './charts/ChartTypes/EChartsContainer';
 import LabelSelector from './LabelSelector';
 import TOKEN_ICON_URLS, { formatTokenSymbol } from '../utils/tokenIcons.js';
@@ -706,7 +713,14 @@ const MetricWidget = ({
           nextSelections[fieldName] = nextValue;
         }
 
-        if (nextValue !== previousValue) {
+        // Compare normalised: with no options yet, nextValue is '' while previousValue is
+        // undefined. Treating that as a change made this effect assign a fresh `{}` on every
+        // pass, which re-ran the options memo below, which re-ran this effect — an endless
+        // re-render for the whole time `data` is null. In the browser it spins until the
+        // fetch lands; under React's act() it is a synchronous loop that never yields, so the
+        // fetch never resolves and the test file hangs with no error and no timeout.
+        // See docs/lessons/effect-oscillation-hangs-render.md
+        if (nextValue !== (previousValue || '')) {
           hasChanges = true;
         }
       });
