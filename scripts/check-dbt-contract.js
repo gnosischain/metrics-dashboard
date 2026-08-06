@@ -20,8 +20,13 @@
  * lists columns that schema.yml *documents*, which is not the same as the columns the table
  * has — dbt.api_esg_cif_network_vs_countries_daily documents `carbon_intensity` while the
  * view actually returns `carbon_intensity_gco2_kwh`. A column rule built on this flags
- * correct metrics, and the artifact that would carry real columns (catalog.json) is
- * published with zero model nodes. Revisit if catalog.json is ever fixed upstream.
+ * correct metrics.
+ *
+ * The artifact that would carry real columns, catalog.json, is published with zero model
+ * nodes, and that is not a build waiting to be fixed: dbt-cerebro records it as known
+ * dbt-clickhouse adapter behaviour and tells consumers not to build tooling on model-level
+ * catalog entries (its own semantic pipeline is manifest-only). Column-level validation is
+ * out of reach from a public artifact, so do not plan around it returning.
  *
  * Usage:
  *   node scripts/check-dbt-contract.js              check, exit 1 on violations
@@ -58,6 +63,9 @@ const STALE_MANIFEST_DAYS = 14;
  * "untagged" would flag plenty of healthy references.
  */
 const DEV_TAG = 'dev';
+
+// Fields that name a metric outside a `metrics:` array. Kept in step with check-metrics.js.
+const METRIC_REFERENCE_FIELDS = ['globalFilterSourceMetric', 'explicitFilterValidationMetric'];
 
 const refreshMode = process.argv.includes('--refresh');
 const updateMode = process.argv.includes('--update');
@@ -185,7 +193,11 @@ const collectRenderedIds = () => {
   return rendered;
 };
 
-/** Ids from every `metrics:` array below a node. Other arrays carry unrelated ids. */
+/**
+ * Ids from every `metrics:` array below a node, plus the two fields that name a metric
+ * without placing it in one — an explorer tab's search box is fetched at runtime, so a
+ * dev-tagged model behind it is just as live as a card. Other arrays carry unrelated ids.
+ */
 const collectMetricIds = (node, into) => {
   if (Array.isArray(node)) {
     node.forEach((entry) => collectMetricIds(entry, into));
@@ -200,6 +212,9 @@ const collectMetricIds = (node, into) => {
           into.add(entry.id);
         }
       }
+    }
+    if (METRIC_REFERENCE_FIELDS.includes(key) && typeof value === 'string') {
+      into.add(value);
     }
     collectMetricIds(value, into);
   }

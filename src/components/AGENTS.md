@@ -35,7 +35,7 @@ slow and brittle.
 Mock those four per module, never via `./index`. The barrel imports `MetricWidget`, so a
 component reaching back into it closes a cycle — see the rule in the root `AGENTS.md`.
 
-`pnpm test` runs everything: 288 tests in 32 files, ~80s unloaded as of 2026-08-06. There is no
+`pnpm test` runs everything: 289 tests in 33 files, ~80s unloaded as of 2026-08-06. There is no
 `test:ci` variant any more, and a run that does not finish is a real fault rather than a slow
 test. `MetricWidget.test.jsx` hung the suite until 2026-08-06 for two compounding reasons, both
 recorded: a module-level throw inside a circular barrel import

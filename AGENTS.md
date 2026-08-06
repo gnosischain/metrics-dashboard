@@ -26,7 +26,7 @@ See `docs/lessons/export-queries-drift.md`.
 
 ```bash
 pnpm run check      # export parity + metric registration. Fast, no network, no writes.
-pnpm test           # 288 tests in 32 files, ~80s unloaded
+pnpm test           # 289 tests in 33 files, ~80s unloaded
 pnpm run check:dbt  # every dbt reference still exists upstream. Fetches a public manifest.
 ```
 
@@ -70,7 +70,8 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
   comment saying so. See `docs/lessons/crlf-export-drift.md`.
 - **Never import from `./index` inside a module that `./index` imports.** That cycle turns any
   module-level throw in the barrel into a test run that hangs with no error and no timeout —
-  it cost the suite `MetricWidget.test.jsx` for months. See
+  it cost the suite `MetricWidget.test.jsx` for months. Enforced by
+  `scripts/__tests__/no-self-barrel-imports.test.js`; see
   `docs/lessons/barrel-import-cycle-hangs-tests.md`.
 - **If a test run hangs, cap the workers first.** `--poolOptions.forks.maxForks=1
   --no-file-parallelism` turns an unreadable stall into a real timeout. Both hang lessons under
@@ -115,7 +116,9 @@ warehouse itself before changing a metric's meaning.
 What dbt currently publishes is readable without credentials at
 `https://gnosischain.github.io/dbt-cerebro/manifest.json` — model and seed names, tags, and
 lineage. `catalog.json` alongside it is published with zero model nodes, so it is not a source
-of real column lists. `pnpm run check:dbt` uses the manifest.
+of real column lists — that is known dbt-clickhouse behaviour, recorded upstream in
+`dbt-cerebro/docs/lessons/docs-catalog-zero-nodes.md`, and not something to wait on.
+`pnpm run check:dbt` uses the manifest.
 
 ## Known debt, deliberately recorded
 
@@ -124,7 +127,7 @@ count can only shrink.
 
 | Debt | Count | Where |
 |---|---|---|
-| definitions placed in no YAML | 181 | `scripts/allow/unplaced-metrics.allow` |
+| definitions placed in no YAML | 175 | `scripts/allow/unplaced-metrics.allow` |
 | non-contract dbt reads | 42 | `scripts/allow/non-contract-dbt-reads.allow` |
 | rendered card on a `dev`-tagged dbt model | 1 | `scripts/allow/dev-tagged-dbt-models.allow` |
 | filename ≠ id | 5 | `scripts/allow/id-filename-mismatch.allow` |

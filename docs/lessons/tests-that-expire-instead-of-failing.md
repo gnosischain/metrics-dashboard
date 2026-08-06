@@ -71,3 +71,10 @@ None. No gate can distinguish a meaningful date literal from an expiring one, so
 the safeguard: the 9 files listed in the evidence are the places to check first when a test
 fails for no apparent reason. That changes if fixture dates ever move behind a shared helper,
 which could then be required by lint.
+
+One test here does fail on the calendar deliberately, and it is not an instance of this fault:
+`scripts/__tests__/lessons.test.js` rejects any lesson whose `last_verified` is more than 400
+days old, so an unmaintained record stops the build instead of quietly becoming folklore. The
+expiry *is* the assertion there, and the failure message says to re-verify and bump the date. Do
+that rather than raising `MAX_AGE_DAYS`, which would turn a deliberate deadline into exactly the
+silent decay described above.

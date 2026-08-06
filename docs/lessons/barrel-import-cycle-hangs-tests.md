@@ -75,10 +75,18 @@ throw to find.
 
 ## Enforcement
 
-None static. `MetricWidget.test.jsx` is back in `pnpm test`, which CI runs on every PR, so
-the specific regression fails loudly — the whole suite hanging is unmistakable. That is
-coverage of the instance, not of the class: a new barrel import in another component would
-recreate it.
+`scripts/__tests__/no-self-barrel-imports.test.js`, in `pnpm test` on every PR. It reads each
+`index.js` under `src/`, resolves the modules it imports, and fails if any of them imports the
+barrel back — naming both files. Verified against a planted cycle, because a structural test
+that cannot fail is decoration.
 
-The suite completes in ~80s unloaded (32 files, 288 tests) as of 2026-08-06, and took 178s on a
+It is scoped to modules the barrel imports, so a test file or any other consumer importing
+`./index` stays legal. That is what a barrel is for.
+
+Do not rely on the suite hanging as the alarm, which an earlier version of this record did. The
+hang needed the cycle *and* a module-scope throw; the canvas stub in `setupTests.js` removed the
+throw, so a reintroduced cycle would now sit there silently until the next module-level throw
+found it. The static check is the only thing covering the class.
+
+The suite completes in ~80s unloaded (33 files, 289 tests) as of 2026-08-06, and took 178s on a
 loaded machine. A run that does not finish at all is this class of fault, not a slow test.

@@ -16,7 +16,9 @@ evidence:
   - '8 references point at models tagged `dev`, which the production run (`--select tag:production`, `docs generate --exclude tag:dev`) does not build, test, or Elementary-monitor; all 8 were verified to return rows'
   - "7 of those 8 are the DaoTreasury sector, which carries `enabled: false` in public/dashboard.yml, so they render nowhere — staging a WIP feature that way is the intended workflow, and gnosis-revenue.yml states the reason outright: `enabled: false  # models not yet in prod`"
   - 'the 8th, api_execution_yields_lending_top_lenders_latest, sits in Yields -> Lending, a tab with no disable flag, so it is the one rendered card with no upstream quality gate behind it'
-  - 'the published catalog.json — the only artifact generated from the database rather than from docs — ships with zero model nodes (96 sources, 0 nodes), so no public artifact carries real column lists'
+  - 'the published catalog.json — the only artifact generated from the database rather than from docs — ships with zero model nodes (96 sources, 0 nodes, re-checked 2026-08-06), so no public artifact carries real column lists'
+  - "that catalog is not a broken build waiting to be fixed: dbt-cerebro records it as known dbt-clickhouse adapter behaviour in its own corpus (docs/lessons/docs-catalog-zero-nodes.md, 'don't build tooling that assumes model-level catalog entries exist'), and its semantic pipeline runs manifest-only for the same reason"
+  - 'the manifest is republished only by dbt-cerebro pushing to main (build-and-release.yaml has no schedule of its own), which is also the event that lands a rename — so it is freshest exactly when it matters'
   - 'manifest columns are the ones schema.yml documents, and they demonstrably drift: dbt.api_esg_cif_network_vs_countries_daily documents `carbon_intensity` while `describe_table` shows the view returns `carbon_intensity_gco2_kwh`. A column rule built on the manifest flags a correct metric.'
   - '`dbt.tokens_whitelist` is a seed, not a model; an existence check that indexes only resource_type=model reports a false positive for it'
 ---
@@ -44,8 +46,13 @@ Do not build a column-level check on the manifest. Its `columns` are what `schem
 *documents*, which is not what the table returns:
 `dbt.api_esg_cif_network_vs_countries_daily` documents `carbon_intensity` while the view
 returns `carbon_intensity_gco2_kwh`. A rule on that data fails correct metrics, and a
-ratchet entry that silences a correct metric teaches people the gate lies. The artifact that
-would carry real columns, `catalog.json`, is published with zero model nodes.
+ratchet entry that silences a correct metric teaches people the gate lies.
+
+Nor is the alternative coming. `catalog.json` is the artifact that would carry real columns, and
+it is published with zero model nodes — which dbt-cerebro records as known dbt-clickhouse
+behaviour, with an explicit instruction not to build tooling that assumes model-level catalog
+entries. Treat column-level validation as permanently out of reach from a public artifact,
+not as blocked on an upstream fix.
 
 Do not treat "missing the `production` tag" as a violation either. Live models carry
 `tag:live` and are built on their own schedule, and intermediate models arrive as
@@ -72,10 +79,20 @@ It runs as its own CI job on every PR **and on a daily schedule**, because the i
 case has no commit here to trigger on. The manifest is cached locally for 12 hours;
 `--refresh` forces a re-fetch and `DBT_MANIFEST_PATH` points it at a local file.
 
+The daily run is what makes this work, because dbt republishes only when it pushes to `main` —
+the same event that lands a rename. A manifest that looks stale therefore usually means nobody
+merged anything upstream, which is also when nothing can have been renamed.
+
 ## Safe remediation
 
 For an unknown relation, find the current name in the manifest and update the query — the ids
 do not name their tables, so grep the SQL (see `id-does-not-name-the-table.md`).
+
+If the model is unknown because it is *new* — you are adding a card for a dbt PR that has not
+merged — the fix is to land that PR first. The manifest republishes on dbt-cerebro's push to
+`main`, so merging upstream is what makes the reference resolvable. Do not add a ratchet line to
+get the PR through: the entry outlives the situation, and the card would ship against a table
+production does not have.
 
 For a `dev`-tagged model there are two remediations, and the cheap one is local: set
 `enabled: false` on the tab or sector until the model is promoted, which is what the DAO

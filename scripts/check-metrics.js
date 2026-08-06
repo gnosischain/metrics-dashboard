@@ -31,6 +31,12 @@ const updateMode = process.argv.includes('--update');
 // Layout-only entries that never resolve to a metric definition.
 const PSEUDO_METRIC_IDS = new Set(['global_filter']);
 
+// A tab can name a metric outside its `metrics:` array: these two fields populate the search
+// box and validate what the user typed on the explorer tabs. They are real placements — the
+// metric is fetched at runtime — so a typo here breaks the tab's search with nothing else in
+// the repo noticing, and treating them as unplaced also misfiles 6 live metrics as debt.
+const METRIC_REFERENCE_FIELDS = ['globalFilterSourceMetric', 'explicitFilterValidationMetric'];
+
 // Only dbt.api_* is a declared contract surface. See docs/lessons/non-contract-dbt-reads.md
 const CONTRACT_PREFIX = 'api_';
 
@@ -117,6 +123,9 @@ const collectIds = (node) => {
           placedIds.add(entry.id);
         }
       }
+    }
+    if (METRIC_REFERENCE_FIELDS.includes(key) && typeof value === 'string') {
+      placedIds.add(value);
     }
     collectIds(value);
   }
