@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_funnel_cohorts_monthly",
+  "query": "-- Rates are 0-1 in dbt; multiply to percent to match formatPercentageInt\n    -- (same scale as api_celo_gpay_churn_rates_monthly).\n    SELECT toDate(month) AS date, 'Funded in 30d' AS label, funded_rate_30d * 100 AS value\n    FROM dbt.api_celo_gpay_funnel_cohorts_monthly\n    WHERE funded_rate_30d IS NOT NULL\n\n    UNION ALL\n\n    SELECT toDate(month) AS date, 'Activated in 30d' AS label, activated_rate_30d * 100 AS value\n    FROM dbt.api_celo_gpay_funnel_cohorts_monthly\n    WHERE activated_rate_30d IS NOT NULL\n\n    UNION ALL\n\n    SELECT toDate(month) AS date, 'Spend given funded (30d)' AS label, spend_rate_of_funded_30d * 100 AS value\n    FROM dbt.api_celo_gpay_funnel_cohorts_monthly\n    WHERE spend_rate_of_funded_30d IS NOT NULL\n\n    ORDER BY date, label"
+}

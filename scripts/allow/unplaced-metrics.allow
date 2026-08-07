@@ -2,6 +2,8 @@
 # They render nowhere and are absent from header search.
 # See docs/lessons/yaml-placement-gate.md
 
+api_celo_gpay_activated_addresses_daily
+api_celo_gpay_activated_addresses_monthly
 api_celo_gpay_active_users_7d
 api_celo_gpay_activity_by_action_daily
 api_celo_gpay_activity_by_action_monthly

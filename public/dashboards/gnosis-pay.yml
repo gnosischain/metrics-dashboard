@@ -3,6 +3,8 @@ tabs:
   # chain toggle swaps only that tab's card data (api_execution_gpay_* ↔
   # api_celo_gpay_*) — the sidebar menu never changes. Gnosis-only tabs
   # (Cashback / User Portfolio / Flows) omit `chains` and show no toggle.
+  # Celo-only cards use `celoOnly: true` with an `api_celo_*` id (no Gnosis twin);
+  # they hide on Gnosis the same way omitting `celoId` hides a card on Celo.
   - name: Overview
     chains: [gnosis, celo]
     description: Payment volume, counts and token mix
@@ -46,7 +48,7 @@ tabs:
 
   - name: Activity
     chains: [gnosis, celo]
-    description: Funded wallets, active users and hourly activity
+    description: Funded wallets, active users, funnel and settlement (Celo)
     order: 2
     icon: 👥
     iconClass: users
@@ -55,11 +57,19 @@ tabs:
     metrics:
       - id: api_execution_gpay_total_funded
         celoId: api_celo_gpay_total_funded
+        # On Celo, shrink so Activated can sit between Funded and Active Users.
+        celoGridColumn: 7 / span 2
         gridRow: 1
         gridColumn: 7 / span 3
         minHeight: 120px
+      - id: api_celo_gpay_total_activated
+        celoOnly: true
+        gridRow: 1
+        gridColumn: 9 / span 2
+        minHeight: 120px
       - id: api_execution_gpay_active_users_7d
         celoId: api_celo_gpay_active_users_7d
+        celoGridColumn: 11 / span 2
         gridRow: 1
         gridColumn: 10 / span 3
         minHeight: 120px
@@ -78,6 +88,33 @@ tabs:
         gridRow: 3
         gridColumn: 1 / span 12
         minHeight: 450px
+      # Celo-only cards (celoOnly: true) — hidden on Gnosis. No Gnosis twin exists
+      # for activated / funnel / settlement cost / first-fund channel.
+      - id: api_celo_gpay_activated_addresses_weekly
+        celoOnly: true
+        gridRow: 4 / span 2
+        gridColumn: 1 / span 6
+        minHeight: 432px
+      - id: api_celo_gpay_funnel_cohorts_monthly
+        celoOnly: true
+        gridRow: 4 / span 2
+        gridColumn: 7 / span 6
+        minHeight: 432px
+      - id: api_celo_gpay_settlement_cost_monthly
+        celoOnly: true
+        gridRow: 6
+        gridColumn: 1 / span 6
+        minHeight: 400px
+      - id: api_celo_gpay_settlement_fee_bps_monthly
+        celoOnly: true
+        gridRow: 6
+        gridColumn: 7 / span 6
+        minHeight: 400px
+      - id: api_celo_gpay_first_fund_by_channel
+        celoOnly: true
+        gridRow: 7
+        gridColumn: 1 / span 12
+        minHeight: 360px
 
   - name: KPI
     chains: [gnosis, celo]

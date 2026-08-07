@@ -129,21 +129,24 @@ const MetricGrid = ({
   const hasUnitToggle = tabConfig?.unitToggle === true;
 
   // Per-tab chain toggle: swap each card's data source between the dashboard's
-  // chains (each card carries a `celoId`). State is per-tab and resets on tab
-  // change, so the toggle affects ONLY the current tab — the sidebar menu never
-  // changes. Cards without a variant for the selected chain are hidden.
+  // chains. State is per-tab and resets on tab change, so the toggle affects
+  // ONLY the current tab — the sidebar menu never changes.
+  //
+  // Availability per card:
+  //   * `celoId`     — twin on Celo; omit to hide the card on Celo (Gnosis-only)
+  //   * `celoOnly`   — Celo-only card (id is already a Celo metric); hide on Gnosis
   //
   // The switcher renders on EVERY tab of a multi-chain dashboard (consistent
   // placement, so the active chain is always visible). A non-default chain is
   // only *selectable* on tabs that actually have data for it — i.e. at least
-  // one card carries a variant id (`celoId`). On tabs without that data the
+  // one card carries `celoId` or `celoOnly`. On tabs without that data the
   // segment renders disabled, so you can always tell you're on the default
   // (Gnosis) chain rather than the control silently disappearing.
   const dashboardChains = Array.isArray(dashboard?.chains) ? dashboard.chains : null;
   const hasChainToggle = !!(dashboardChains && dashboardChains.length > 1);
   const defaultChainId = dashboard?.defaultChain || (dashboardChains ? dashboardChains[0]?.id : null);
   const nonDefaultChainAvailable = useMemo(
-    () => Array.isArray(metrics) && metrics.some((m) => m && m.celoId),
+    () => Array.isArray(metrics) && metrics.some((m) => m && (m.celoId || m.celoOnly)),
     [metrics]
   );
   const [selectedChain, setSelectedChain] = useState(defaultChainId);
@@ -347,19 +350,26 @@ const MetricGrid = ({
     return renderedMetrics.filter(metric => metric.id === 'global_filter');
   }, [renderedMetrics, showExplicitFilterEmptyState, globalControlsPlacement]);
 
-  // Resolve each card to the selected chain's variant: swap `id` → `celoId` (and
-  // apply `celoGridColumn` if set); drop cards that have no variant for the
-  // selected chain. On the default chain this is a no-op.
+  // Resolve each card to the selected chain's variant.
+  //   Gnosis (default): drop celoOnly cards; leave everything else as-is.
+  //   Celo: keep celoOnly as-is; swap id→celoId (+ celoGridColumn); drop
+  //         cards with neither (Gnosis-only).
   const chainResolvedMetrics = useMemo(() => {
-    if (!isNonDefaultChain) return metricsToRender;
+    if (!hasChainToggle) return metricsToRender;
+    if (!isNonDefaultChain) {
+      return metricsToRender.filter(
+        (metric) => metric.id === 'global_filter' || !metric.celoOnly
+      );
+    }
     return metricsToRender
       .map((metric) => {
         if (metric.id === 'global_filter') return metric;
+        if (metric.celoOnly) return metric;
         if (!metric.celoId) return null;
         return { ...metric, id: metric.celoId, gridColumn: metric.celoGridColumn || metric.gridColumn };
       })
       .filter(Boolean);
-  }, [metricsToRender, isNonDefaultChain]);
+  }, [metricsToRender, hasChainToggle, isNonDefaultChain]);
 
   // Real metrics (excluding the global_filter pseudo-metric) for filter option fetching
   const realMetrics = useMemo(() => metrics.filter(m => m.id !== 'global_filter'), [metrics]);

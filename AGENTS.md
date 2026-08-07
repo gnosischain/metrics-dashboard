@@ -61,6 +61,10 @@ Only the first is obvious when missing. `pnpm run check` covers the other two.
   `pnpm run check` fails on any non-`dbt` reference and there are no exemptions.
 - **Name the file after the metric id.** Ids are what the YAML, the API and the search
   registry key on. Five legacy camelCase files predate this and are ratcheted.
+- **Gnosis Pay dual-chain cards:** shared metrics use `id` (Gnosis) + `celoId` (Celo).
+  Omit `celoId` to hide on Celo (Gnosis-only). Use `celoOnly: true` with an `api_celo_*`
+  `id` for Celo-only cards (no Gnosis twin) — they hide on Gnosis. Do not invent empty
+  Gnosis stubs just to satisfy a twin.
 - **Scoped metrics need `/*__FILTER_CONDITIONS__*/`** in their SQL, or the export fails. The
   filter is injected there at query time.
 - **Do not fix a line-ending diff with `.gitattributes`.** It cannot work here; the fix is

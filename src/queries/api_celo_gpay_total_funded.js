@@ -3,9 +3,13 @@ const metric = {
   name: 'Funded Cards',
   description: 'All-time',
   metricDescription: `
-  Total Gnosis Pay card Safes that have made at least one card payment on Celo.
+  Total Gnosis Pay card Safes on Celo that have ever __received__ money (any
+  inbound Top-up / Reversal / Cashback).
 
-  A card is counted as __funded__ from the date of its first payment.`,
+  Distinct from Activated Cards, which counts first spend. A card can be funded
+  without activating. Not comparable to the Gnosis Chain "Funded" tile, which is
+  still payment-derived.
+  `,
   chartType: 'numberDisplay',
   variant: 'default',
   format: 'formatNumber',

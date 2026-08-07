@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_settlement_fee_bps_monthly",
+  "query": "SELECT toDate(month) AS date, fee_bps_of_volume AS value\n    FROM dbt.api_celo_gpay_settlement_cost_monthly\n    ORDER BY date"
+}

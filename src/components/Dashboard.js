@@ -245,8 +245,9 @@ const Dashboard = () => {
     let cancelled = false;
     setActiveTabConfigsLoaded(false);
 
-    // Load each card's default id AND its non-default-chain variant (`celoId`)
-    // so the per-tab chain toggle swaps data without a skeleton flash.
+    // Load each card's default id AND its non-default-chain variant (`celoId`),
+    // plus celoOnly ids (already Celo metrics), so the per-tab chain toggle
+    // swaps data without a skeleton flash.
     const ids = rawTabMetrics.flatMap((m) => [m.id, m.celoId]).filter(Boolean);
     metricsService.loadMetricConfigs(ids).then(() => {
       if (!cancelled) setActiveTabConfigsLoaded(true);

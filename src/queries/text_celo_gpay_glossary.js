@@ -68,7 +68,9 @@ Safes are grouped by the month of their first card payment (activation cohort). 
 
 | Concept | Definition |
 |---------|-----------|
-| **Funded Card** | A card Safe that has made at least one card payment. Counted from the date of its first payment. This is a cumulative, monotonically increasing metric. |
+| **Funded Card** | A card Safe that has ever **received** money (any inbound top-up). Counted from the date of its first inbound transfer. Cumulative and monotonically increasing. Not the same as the Gnosis Chain "Funded" tile, which is still payment-derived. |
+| **Activated Card** | A card Safe that has ever **spent** (settled at least one Payment to a settlement contract). Strictly ≤ Funded. |
+| **Funding channel** | Shape of how a card was funded (\`cip64_direct_solo\`, \`hub\`, \`mediated\`, …) — not a MiniPay identity label. CIP-64 alone is not MiniPay. |
 | **Balance (net-flow method)** | Per-Safe, per-token balance computed as cumulative tracked inflows minus tracked outflows. Because Gnosis Pay Safes on Celo start empty and the tracked transfer set captures their USDC/USDT movements, this closely reflects the on-chain balance for the two tracked tokens. |
 | **Balance Cohorts** | Safes grouped by their balance tier (e.g., 0–10, 10–100, 100–1K). Shows distribution of holders and value across tiers. |
 

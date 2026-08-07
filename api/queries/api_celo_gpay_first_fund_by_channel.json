@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_first_fund_by_channel",
+  "query": "SELECT\n      concat(\n        label,\n        '  ',\n        toString(round(100.0 * value / sum(value) OVER (), 1)),\n        '%'\n      ) AS label,\n      toInt64(value) AS value\n    FROM dbt.api_celo_gpay_first_fund_by_channel\n    ORDER BY value DESC"
+}

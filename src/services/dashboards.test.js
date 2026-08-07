@@ -235,6 +235,9 @@ GnosisPay:
           gridColumn: 1 / span 3
         - id: api_execution_gpay_gno_total_balance
           gridColumn: 4 / span 3
+        - id: api_celo_gpay_total_activated
+          celoOnly: true
+          gridColumn: 7 / span 3
     - name: Cashback
       order: 2
       metrics:
@@ -255,6 +258,13 @@ GnosisPay:
     });
     // A card with no celo variant is null (hidden when Celo is selected).
     expect(balances.metrics[1].celoId).toBeNull();
+    expect(balances.metrics[1].celoOnly).toBe(false);
+    // Celo-only card: id is the Celo metric; hidden on Gnosis by MetricGrid.
+    expect(balances.metrics[2]).toMatchObject({
+      id: 'api_celo_gpay_total_activated',
+      celoOnly: true,
+      celoId: null,
+    });
 
     // Gnosis-only tabs carry no chains and no toggle.
     const cashback = dashboardsService.getTab('gnosispay', 'cashback');
@@ -358,22 +368,49 @@ describe('dashboard config integrity', () => {
       const n = s.match(/^(\d+)$/);
       return n ? { start: +n[1], span: 1 } : { start: 1, span: 1 };
     };
+    // Multi-chain tabs can place celoOnly cards in cells that dual-chain cards
+    // only vacate via celoGridColumn — so check each chain's visible layout.
+    const layoutsFor = (m) => {
+      const gnosis =
+        m.celoOnly === true || m.celoOnly === 'true'
+          ? null
+          : { col: m.gridColumn, row: m.gridRow };
+      const onCelo =
+        m.celoOnly === true || m.celoOnly === 'true' || m.celoId
+          ? {
+              col: m.celoGridColumn || m.gridColumn,
+              row: m.celoGridRow || m.gridRow,
+            }
+          : null;
+      return { gnosis, celo: onCelo };
+    };
     const bad = [];
     for (const file of fs.readdirSync(DASH).filter((f) => f.endsWith('.yml'))) {
       const doc = yaml.load(fs.readFileSync(path.join(DASH, file), 'utf8')) || {};
       const tabs = Array.isArray(doc.tabs) ? doc.tabs : [{ name: 'main', metrics: doc.metrics }];
       for (const tab of tabs) {
         if (tab.enabled === false) continue;
-        const cells = new Map();
-        for (const m of tab.metrics || []) {
-          if (!m || !m.id) continue;
-          const c = span(m.gridColumn);
-          const r = span(m.gridRow);
-          for (let rr = r.start; rr < r.start + r.span; rr += 1) {
-            for (let cc = c.start; cc < c.start + c.span; cc += 1) {
-              const k = `${rr}:${cc}`;
-              if (cells.has(k)) bad.push({ file, tab: tab.name, cell: k, a: cells.get(k), b: m.id });
-              else cells.set(k, m.id);
+        for (const chain of ['gnosis', 'celo']) {
+          const cells = new Map();
+          for (const m of tab.metrics || []) {
+            if (!m || !m.id) continue;
+            const layout = layoutsFor(m)[chain];
+            if (!layout) continue;
+            const c = span(layout.col);
+            const r = span(layout.row);
+            for (let rr = r.start; rr < r.start + r.span; rr += 1) {
+              for (let cc = c.start; cc < c.start + c.span; cc += 1) {
+                const k = `${chain}:${rr}:${cc}`;
+                if (cells.has(k)) {
+                  bad.push({
+                    file,
+                    tab: tab.name,
+                    cell: k,
+                    a: cells.get(k),
+                    b: m.id,
+                  });
+                } else cells.set(k, m.id);
+              }
             }
           }
         }

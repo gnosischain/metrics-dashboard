@@ -180,6 +180,8 @@ class DashboardService {
           metrics: (tab.metrics || []).map(metric => ({
             id: metric.id,
             celoId: metric.celoId || null, // Non-default-chain variant id for the per-tab chain toggle
+            // Celo-only card: shown on Celo, hidden on Gnosis. Inverse of omitting celoId.
+            celoOnly: metric.celoOnly === true || metric.celoOnly === 'true',
             gridRow: metric.gridRow,
             gridColumn: metric.gridColumn,
             celoGridColumn: metric.celoGridColumn || null, // Optional column override when the non-default chain is selected
