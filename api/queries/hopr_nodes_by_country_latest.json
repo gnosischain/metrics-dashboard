@@ -1,0 +1,4 @@
+{
+  "id": "hopr_nodes_by_country_latest",
+  "query": "SELECT\n      country_code AS country,\n      toInt64(sum(nodes)) AS value\n    FROM dbt.api_hopr_nodes_by_country_latest\n    GROUP BY country\n    ORDER BY value DESC\n    LIMIT 25"
+}

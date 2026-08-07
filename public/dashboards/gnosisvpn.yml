@@ -1,0 +1,82 @@
+# GnosisVPN / HOPR — the mixnet on Gnosis Chain and the VPN client it carries.
+#
+# Layout intent: the Network tab leads with the registered-vs-online divergence because that
+# single chart is what stops the section being read as a vanity node count. KPI row above it
+# deliberately places "nodes online" and "nodes ever registered" next to each other for the
+# same reason.
+#
+# What is NOT here yet, and why:
+#   - per-node latency / availability distributions (boxplot, quantile bands): the prober
+#     feed has days of history, not weeks. Two snapshots is not a distribution.
+#   - hourly online heatmap: needs an hourly api_ model; the daily grain is served today.
+#   - GnosisVPN exit-node activity: its dbt model is deliberately unserved while the product
+#     is in closed beta, so exits appear here through node_class counts instead.
+tabs:
+  - name: Network
+    description: How many nodes exist on paper, and how many are actually running
+    order: 1
+    icon: 🛡️
+    iconClass: globe
+    metrics:
+      - id: hopr_kpi_nodes_online
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: hopr_kpi_nodes_registered
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: hopr_kpi_distinct_hosts
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: hopr_registered_vs_online_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 420px
+      - id: text_hopr_methodology
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 320px
+
+  - name: Geography & Hosting
+    description: Where the nodes are, who hosts them, and how many machines that really is
+    order: 2
+    icon: 🌍
+    iconClass: globe
+    metrics:
+      - id: hopr_node_map_latest
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 520px
+      - id: hopr_nodes_by_country_latest
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 380px
+      - id: hopr_nodes_by_hosting_latest
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 380px
+
+  - name: Economics
+    description: What the network pays out, and how much of it is HOPR paying itself
+    order: 3
+    icon: 💰
+    iconClass: coins
+    metrics:
+      - id: hopr_kpi_payout_per_ticket
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: hopr_tickets_cover_traffic_daily
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: hopr_wxhopr_paid_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: hopr_committed_wxhopr_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 360px

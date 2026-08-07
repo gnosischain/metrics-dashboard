@@ -111,6 +111,14 @@
     border-bottom: 1px solid var(--color-border);
     background-color: transparent;
   }
+
+  /* Keep number/KPI tiles lineless in dark mode too — see _cards.css. */
+  .dark-mode .metric-card.number-display-card .card-header,
+  .dark-mode .metric-card[data-chart-type="numberDisplay"] .card-header,
+  .dark-mode .metric-card[data-chart-type="kpi"] .card-header,
+  .dark-mode .metric-card[data-chart-type="number"] .card-header {
+    border-bottom: none !important;
+  }
   
   .dark-mode .card-title {
     color: var(--color-text-primary);

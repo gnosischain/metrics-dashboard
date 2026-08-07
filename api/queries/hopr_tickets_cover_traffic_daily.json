@@ -1,0 +1,4 @@
+{
+  "id": "hopr_tickets_cover_traffic_daily",
+  "query": "-- One row per series, not one column per series: the chart maps a single value column\n    -- plus a label.\n    SELECT date, label, value\n    FROM (\n      SELECT\n        date,\n        'Cover traffic' AS label,\n        toInt64(sumIf(tickets_redeemed, is_cover_traffic = 1)) AS value,\n        1 AS seq\n      FROM dbt.api_hopr_channel_activity_daily\n      WHERE date BETWEEN '{from}' AND '{to}'\n      GROUP BY date\n      UNION ALL\n      SELECT\n        date,\n        'Other traffic' AS label,\n        toInt64(sumIf(tickets_redeemed, is_cover_traffic = 0)) AS value,\n        2 AS seq\n      FROM dbt.api_hopr_channel_activity_daily\n      WHERE date BETWEEN '{from}' AND '{to}'\n      GROUP BY date\n    )\n    ORDER BY date, seq"
+}

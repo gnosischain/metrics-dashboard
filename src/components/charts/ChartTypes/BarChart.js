@@ -248,7 +248,10 @@ export class BarChart extends BaseChart {
       return [...categories];
     }
 
-    if (config?.categorySort === 'absNetDesc' && seriesField) {
+    // Single-series bars need this as much as multi-series ones: a `LIMIT 25` ranking
+    // otherwise selects the top 25 by value and then displays them alphabetically, which
+    // reads as if the order meant nothing.
+    if (config?.categorySort === 'absNetDesc') {
       const categorySums = {};
       data.forEach((item) => {
         const category = item[xField];

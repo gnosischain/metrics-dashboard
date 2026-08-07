@@ -1,0 +1,4 @@
+{
+  "id": "hopr_node_map_latest",
+  "query": "SELECT\n      city,\n      country_code,\n      latitude,\n      longitude,\n      toInt64(sum(nodes))          AS nodes,\n      toInt64(sum(live_nodes))     AS live_nodes,\n      toInt64(sum(distinct_hosts)) AS distinct_hosts,\n      any(top_hosting_provider)    AS top_hosting_provider\n    FROM dbt.api_hopr_node_locations_latest\n    GROUP BY city, country_code, latitude, longitude\n    ORDER BY nodes DESC"
+}

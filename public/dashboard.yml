@@ -74,6 +74,19 @@ Circles:
   palette: circles
   brand: circles
   source: /dashboards/circles.yml
+# Third-party networks that run on Gnosis Chain, as distinct from the Products above, which
+# Gnosis builds and operates. HOPR is a Swiss project whose mixnet settles its payment
+# channels here; Gnosis VPN is a DAO-funded product built on top of that mixnet (GIP-98,
+# GIP-122, GIP-129) and belongs in Products once its own metrics are served.
+# Band 25-29 is reserved for this group, so Swarm or POAP can slot in without renumbering.
+GnosisVPN:
+  name: GnosisVPN
+  order: 25
+  group: Built on Gnosis
+  icon: 🛡️
+  iconClass: globe
+  tagline: The HOPR mixnet on Gnosis Chain, and the GnosisVPN client it carries.
+  source: /dashboards/gnosisvpn.yml
 Consensus:
   name: Consensus
   order: 30

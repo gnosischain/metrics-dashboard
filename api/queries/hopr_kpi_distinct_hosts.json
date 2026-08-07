@@ -1,0 +1,4 @@
+{
+  "id": "hopr_kpi_distinct_hosts",
+  "query": "SELECT sum(distinct_hosts) AS value\n    FROM dbt.api_hopr_nodes_hosting_latest"
+}

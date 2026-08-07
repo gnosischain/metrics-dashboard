@@ -118,8 +118,16 @@ export class Geo2DMapChart {
       containerWidth = null
     } = config;
 
-    // Validate required fields
-    if (!peerLatField || !peerLonField || !neighborLatField || !neighborLonField) {
+    // Two shapes are valid. A topology has an edge per row and needs all four coordinate
+    // fields; a point set (one location per row, no edges) declares only the peer pair.
+    // Declaring one neighbour field without the other is a config mistake, not a point set.
+    const hasNeighborFields = !!(neighborLatField || neighborLonField);
+    const pointsOnly = !hasNeighborFields;
+
+    if (!peerLatField || !peerLonField) {
+      return this.getErrorOptions('Missing required latitude/longitude fields');
+    }
+    if (hasNeighborFields && !(neighborLatField && neighborLonField)) {
       return this.getErrorOptions('Missing required latitude/longitude fields');
     }
 
@@ -171,7 +179,8 @@ export class Geo2DMapChart {
       peerNameField,
       neighborNameField,
       peerTooltipFields,
-      neighborTooltipFields
+      neighborTooltipFields,
+      pointsOnly
     });
 
     // Get unique categories for coloring (from the category field, not label field)
@@ -567,6 +576,16 @@ export class Geo2DMapChart {
             tooltipData: this.extractTooltipData(row, fields.peerTooltipFields),
             type: 'peer'
           });
+        }
+
+        // A topology accumulates a node's value from the edges below. A point set has no
+        // edges, so the row's own value is the only thing that can size the marker —
+        // without this every point renders at nodeMinSize.
+        if (fields.pointsOnly && fields.valueField) {
+          const rowValue = parseFloat(row[fields.valueField]);
+          if (!isNaN(rowValue)) {
+            nodesMap.get(peerId).value += rowValue;
+          }
         }
       }
 

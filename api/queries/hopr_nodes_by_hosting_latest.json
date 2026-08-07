@@ -1,0 +1,4 @@
+{
+  "id": "hopr_nodes_by_hosting_latest",
+  "query": "WITH by_provider AS (\n      SELECT\n        hosting_provider             AS provider,\n        toInt64(sum(nodes))          AS nodes,\n        toInt64(sum(distinct_hosts)) AS hosts\n      FROM dbt.api_hopr_nodes_hosting_latest\n      GROUP BY provider\n      ORDER BY nodes DESC\n      LIMIT 20\n    )\n    -- One row per series, not one column per series: the chart maps a single value column\n    -- plus a label. seq only orders the series so colors[] lands on the intended bar.\n    SELECT provider, label, value\n    FROM (\n      SELECT provider, 'Nodes' AS label, nodes AS value, nodes AS rank, 1 AS seq FROM by_provider\n      UNION ALL\n      SELECT provider, 'Hosts' AS label, hosts AS value, nodes AS rank, 2 AS seq FROM by_provider\n    )\n    ORDER BY rank DESC, seq"
+}

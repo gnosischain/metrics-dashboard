@@ -1,0 +1,4 @@
+{
+  "id": "hopr_kpi_payout_per_ticket",
+  "query": "SELECT toFloat64(payout_per_winning_ticket_wxhopr) AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    WHERE payout_per_winning_ticket_wxhopr IS NOT NULL\n    ORDER BY date DESC\n    LIMIT 1"
+}
