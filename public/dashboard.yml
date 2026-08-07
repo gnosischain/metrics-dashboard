@@ -123,6 +123,19 @@ DaoTreasury:
   iconClass: landmark
   tagline: GnosisDAO on-chain holdings and asset allocation on Gnosis Chain.
   source: /dashboards/dao-treasury.yml
+# Snapshot/forum/delegation marts exist in playground_max and are tagged production in
+# dbt-cerebro, but are not in prod `dbt` / the published manifest yet. Keep disabled until
+# that lands — then flip enabled. Local preview: set enabled: true and
+# CLICKHOUSE_DBT_SCHEMA=playground_max.
+Governance:
+  name: Governance
+  enabled: true
+  order: 43
+  group: Capital & Economics
+  icon: 🏛️
+  iconClass: users
+  tagline: GnosisDAO Snapshot signaling, forum deliberation, and voting power — not on-chain execution.
+  source: /dashboards/governance.yml
 # Third-party projects that settle or run on Gnosis Chain — after Products, Infra and
 # Capital so the nav leads with what Gnosis builds and operates. HOPR is a Swiss project
 # whose mixnet settles payment channels here; Gnosis VPN is DAO-funded on top of that

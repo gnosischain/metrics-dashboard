@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_poll_disagreements",
+  "query": "SELECT\n      gip_number,\n      title,\n      poll_name,\n      round(poll_against_share * 100, 1) AS poll_against_pct,\n      round(vote_against_share_by_vp * 100, 1) AS vote_against_pct,\n      round(poll_minus_vote_vp * 100, 1) AS gap_pp,\n      abs(poll_minus_vote_vp) AS abs_gap\n    FROM dbt.api_governance_poll_vs_vote\n    WHERE is_pre_vote_check = 1\n      AND verdicts_disagree = 1\n      AND poll_minus_vote_vp IS NOT NULL\n    ORDER BY abs_gap DESC\n    LIMIT 20"
+}

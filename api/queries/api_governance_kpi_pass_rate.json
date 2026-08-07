@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_pass_rate",
+  "query": "SELECT round(gip_pass_rate * 100, 1) AS value\n    FROM dbt.api_governance_kpis_latest"
+}

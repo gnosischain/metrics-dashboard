@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_gip_proposals",
+  "query": "SELECT toUInt64(total_gip_proposals) AS value\n    FROM dbt.api_governance_kpis_latest"
+}

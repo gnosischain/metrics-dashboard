@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_turnout_monthly",
+  "query": "SELECT\n      date,\n      round(avg_turnout * 100, 2) AS value\n    FROM dbt.api_governance_turnout_monthly\n    WHERE date BETWEEN '{from}' AND '{to}'\n      AND avg_turnout IS NOT NULL\n    ORDER BY date"
+}

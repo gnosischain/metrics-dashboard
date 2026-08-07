@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_power_source_monthly",
+  "query": "SELECT\n      date,\n      label,\n      toFloat64(value) AS value\n    FROM dbt.api_governance_power_source_monthly\n    WHERE date BETWEEN '{from}' AND '{to}'\n    ORDER BY date, label"
+}

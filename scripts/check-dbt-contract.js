@@ -263,6 +263,7 @@ const collectDefinitions = () => {
   const renderedIds = collectRenderedIds();
 
   const unknownModels = [];
+  const stagedUnknownModels = [];
   const devModels = [];
   const stagedDevModels = [];
   let referenceCount = 0;
@@ -271,10 +272,14 @@ const collectDefinitions = () => {
     for (const ref of [...def.dbtRefs].sort()) {
       referenceCount += 1;
       const relation = relations.get(ref.toLowerCase());
+      const entry = `${def.id} -> dbt.${ref}`;
       if (!relation) {
-        unknownModels.push(`${def.id} -> dbt.${ref}`);
+        // Same staging rule as dev-tagged: a card behind enabled: false is the
+        // correct way to hold a feature whose models are not in the published
+        // manifest yet. Fail only when that card would actually render.
+        if (renderedIds.has(def.id)) unknownModels.push(entry);
+        else stagedUnknownModels.push(entry);
       } else if (relation.tags.has(DEV_TAG)) {
-        const entry = `${def.id} -> dbt.${ref}`;
         if (renderedIds.has(def.id)) devModels.push(entry);
         else stagedDevModels.push(entry);
       }
@@ -282,6 +287,7 @@ const collectDefinitions = () => {
   }
 
   unknownModels.sort();
+  stagedUnknownModels.sort();
   devModels.sort();
   stagedDevModels.sort();
 
@@ -346,6 +352,15 @@ const collectDefinitions = () => {
       `  manifest from ${origin}, generated ${generatedAt || 'unknown'}` +
       `${ageDays === null ? '' : ` (${ageDays}d ago)`}`
   );
+
+  if (stagedUnknownModels.length) {
+    console.log(
+      `  ${stagedUnknownModels.length} unknown-relation reference(s) staged behind a disabled sector or tab, ` +
+        'which is the intended workflow:'
+    );
+    for (const entry of stagedUnknownModels) console.log(`    - ${entry}`);
+    console.log('  These fail the check the moment that sector or tab is enabled.');
+  }
 
   if (stagedDevModels.length) {
     console.log(

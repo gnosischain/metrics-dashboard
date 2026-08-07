@@ -92,7 +92,9 @@ If the model is unknown because it is *new* — you are adding a card for a dbt 
 merged — the fix is to land that PR first. The manifest republishes on dbt-cerebro's push to
 `main`, so merging upstream is what makes the reference resolvable. Do not add a ratchet line to
 get the PR through: the entry outlives the situation, and the card would ship against a table
-production does not have.
+production does not have. Staging the sector or tab behind `enabled: false` is fine while you
+wire the cards: unknown references that do not render are reported as staged, not failures,
+and start failing the moment the sector is enabled.
 
 For a `dev`-tagged model there are two remediations, and the cheap one is local: set
 `enabled: false` on the tab or sector until the model is promoted, which is what the DAO

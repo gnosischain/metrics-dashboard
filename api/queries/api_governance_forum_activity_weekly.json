@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_forum_activity_weekly",
+  "query": "SELECT\n      date,\n      multiIf(\n        metric = 'topics_created', 'Topics created',\n        metric = 'posts_created', 'Posts created',\n        metric = 'active_users', 'Active users',\n        metric\n      ) AS label,\n      toFloat64(value) AS value\n    FROM dbt.api_governance_forum_activity_weekly\n    WHERE date BETWEEN '{from}' AND '{to}'\n    ORDER BY date, label"
+}

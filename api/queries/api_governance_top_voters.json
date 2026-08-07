@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_top_voters",
+  "query": "SELECT\n      voter,\n      proposals_voted,\n      total_vp_cast,\n      avg_vp\n    FROM dbt.api_governance_top_voters\n    ORDER BY proposals_voted DESC, total_vp_cast DESC\n    LIMIT 15"
+}

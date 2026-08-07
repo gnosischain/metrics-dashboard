@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_gip_funnel",
+  "query": "SELECT\n      stage,\n      toUInt64(gip_count) AS value\n    FROM dbt.api_governance_gip_funnel\n    ORDER BY\n      multiIf(\n        stage = 'Discussed on forum', 1,\n        stage = 'Reached Snapshot vote', 2,\n        stage = 'Passed or enacted', 3,\n        9\n      )"
+}

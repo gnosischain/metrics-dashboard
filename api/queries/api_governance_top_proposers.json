@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_top_proposers",
+  "query": "SELECT\n      author,\n      proposals_authored,\n      gips_authored,\n      enacted,\n      if(enactment_rate IS NULL, NULL, round(enactment_rate * 100, 0)) AS enactment_rate_pct\n    FROM dbt.api_governance_top_proposers\n    ORDER BY proposals_authored DESC, gips_authored DESC\n    LIMIT 15"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_whale_concentration_monthly",
+  "query": "WITH monthly AS (\n      SELECT\n        toStartOfMonth(created_at) AS date,\n        median(top1_share) AS med_top1,\n        median(top5_share) AS med_top5,\n        median(top10_share) AS med_top10\n      FROM dbt.api_governance_whale_concentration\n      WHERE is_gip = 1\n        AND top10_share IS NOT NULL\n        AND toDate(created_at) BETWEEN '{from}' AND '{to}'\n      GROUP BY date\n    )\n    SELECT date, label, value\n    FROM (\n      SELECT date, 'Top 1 share' AS label, round(med_top1 * 100, 1) AS value, 1 AS seq FROM monthly\n      UNION ALL\n      SELECT date, 'Top 5 share' AS label, round(med_top5 * 100, 1) AS value, 2 AS seq FROM monthly\n      UNION ALL\n      SELECT date, 'Top 10 share' AS label, round(med_top10 * 100, 1) AS value, 3 AS seq FROM monthly\n    )\n    ORDER BY date, seq"
+}

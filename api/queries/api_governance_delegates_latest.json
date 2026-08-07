@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_delegates_latest",
+  "query": "SELECT\n      delegate,\n      delegator_count,\n      formatDateTime(first_delegation_at, '%Y-%m-%d') AS first_delegation_at,\n      formatDateTime(last_delegation_at, '%Y-%m-%d') AS last_delegation_at\n    FROM dbt.api_governance_delegates_latest\n    ORDER BY delegator_count DESC, last_delegation_at DESC"
+}

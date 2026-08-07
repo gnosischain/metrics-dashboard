@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_median_turnout",
+  "query": "SELECT round(median(turnout) * 100, 2) AS value\n    FROM dbt.api_governance_turnout_latest\n    WHERE turnout IS NOT NULL"
+}

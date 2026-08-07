@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_activity_monthly",
+  "query": "SELECT\n      date,\n      multiIf(\n        metric = 'proposals_created', 'Proposals created',\n        metric = 'votes_cast', 'Votes cast',\n        metric = 'unique_voters', 'Unique voters',\n        metric\n      ) AS label,\n      toFloat64(value) AS value\n    FROM dbt.api_governance_activity_monthly\n    WHERE date BETWEEN '{from}' AND '{to}'\n    ORDER BY date, label"
+}

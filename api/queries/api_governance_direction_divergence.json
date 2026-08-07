@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_direction_divergence",
+  "query": "SELECT\n      gip_number,\n      title,\n      outcome,\n      voters,\n      round(against_share_by_head * 100, 1) AS against_head_pct,\n      round(against_share_by_vp * 100, 1) AS against_vp_pct,\n      round(head_minus_weight_against * 100, 1) AS gap_pp,\n      abs(head_minus_weight_against) AS abs_gap_pct\n    FROM dbt.api_governance_proposal_direction\n    WHERE is_gip = 1\n      AND directional = 1\n      AND voters >= 30\n      AND head_minus_weight_against IS NOT NULL\n    ORDER BY abs_gap_pct DESC\n    LIMIT 20"
+}

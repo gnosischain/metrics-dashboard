@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_electorate_vp_monthly",
+  "query": "SELECT\n      date,\n      toFloat64(median_vp_per_proposal) AS value\n    FROM dbt.api_governance_electorate_monthly\n    WHERE date BETWEEN '{from}' AND '{to}'\n    ORDER BY date"
+}

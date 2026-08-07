@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_outcomes_latest",
+  "query": "SELECT\n      outcome,\n      toUInt64(count()) AS value\n    FROM dbt.api_governance_proposals_latest\n    WHERE is_gip = 1\n    GROUP BY outcome\n    ORDER BY value DESC"
+}

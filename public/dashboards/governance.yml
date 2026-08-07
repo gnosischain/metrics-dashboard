@@ -1,0 +1,130 @@
+# GnosisDAO governance — Snapshot signaling, forum deliberation, voting power.
+#
+# Layout intent: Overview is the conversion + activity story; Participation is the
+# differentiator (people vs capital, turnout, whales); Contestation is where forum
+# and token-weight disagree; Forum & Delegation is the supporting surface.
+#
+# Not here (on purpose): proposal entity drill-down, vote trajectories, delegation
+# network graph, treasury holdings (see DAO Treasury), live "open votes" browser.
+# Those belong on the MCP Governance Explorer, not this SPA.
+tabs:
+  - name: Overview
+    description: Headline KPIs, activity, GIP funnel and outcomes
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    timeRanges: true
+    metrics:
+      - id: api_governance_kpi_gip_proposals
+        gridRow: 1
+        gridColumn: 1 / span 3
+        minHeight: 120px
+      - id: api_governance_kpi_pass_rate
+        gridRow: 1
+        gridColumn: 4 / span 3
+        minHeight: 120px
+      - id: api_governance_kpi_unique_voters
+        gridRow: 1
+        gridColumn: 7 / span 3
+        minHeight: 120px
+      - id: api_governance_kpi_followers
+        gridRow: 1
+        gridColumn: 10 / span 3
+        minHeight: 120px
+      - id: api_governance_activity_monthly
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_governance_gip_funnel
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 380px
+      - id: api_governance_outcomes_latest
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 380px
+      - id: text_governance_methodology
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 360px
+
+  - name: Participation
+    description: Electorate size, turnout, concentration and power sources
+    order: 2
+    icon: 👥
+    iconClass: users
+    timeRanges: true
+    metrics:
+      - id: api_governance_kpi_median_turnout
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      # People vs capital — separate cards on purpose. Voters (~tens) and VP (~1e5)
+      # cannot share one axis without flattening one series into noise.
+      - id: api_governance_electorate_voters_monthly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 400px
+      - id: api_governance_electorate_vp_monthly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 400px
+      - id: api_governance_turnout_monthly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 360px
+      - id: api_governance_whale_concentration_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 360px
+      - id: api_governance_power_source_monthly
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 380px
+      - id: api_governance_top_voters
+        gridRow: 5
+        gridColumn: 1 / span 6
+        minHeight: 420px
+      - id: api_governance_top_proposers
+        gridRow: 5
+        gridColumn: 7 / span 6
+        minHeight: 420px
+
+  - name: Contestation
+    description: Where headcount, capital, and forum polls diverge
+    order: 3
+    icon: ⚖️
+    iconClass: target
+    metrics:
+      - id: api_governance_poll_gap_bar
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 360px
+      - id: api_governance_poll_disagreements
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_governance_direction_divergence
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 420px
+      - id: api_governance_discussion_phases_median
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 360px
+
+  - name: Forum & Delegation
+    description: Discourse activity and on-chain delegates
+    order: 4
+    icon: 💬
+    iconClass: book-open
+    timeRanges: true
+    metrics:
+      - id: api_governance_forum_activity_weekly
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 400px
+      - id: api_governance_delegates_latest
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 480px
