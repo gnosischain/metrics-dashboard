@@ -12,6 +12,8 @@ would quietly shrink the denominator of every share read off this chart.
 Source: \`dbt.api_hopr_nodes_by_country_latest\`.`,
   chartType: 'bar',
   xField: 'country',
+  yField: 'value',
+  seriesName: 'Nodes',
   // The chart re-sorts categories itself, so the query's ORDER BY only decides which 25
   // countries are selected, not the order they are drawn in.
   categorySort: 'absNetDesc',

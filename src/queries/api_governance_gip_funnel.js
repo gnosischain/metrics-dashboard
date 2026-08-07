@@ -10,6 +10,7 @@ Source: \`dbt.api_governance_gip_funnel\`.`,
   stacked: false,
   xField: 'stage',
   yField: 'value',
+  seriesName: 'GIPs',
   preserveOrder: true,
   format: 'formatNumber',
   query: `

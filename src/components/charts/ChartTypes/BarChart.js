@@ -14,6 +14,10 @@ export class BarChart extends BaseChart {
     }
 
     const processedData = this.processData(data, config);
+
+    // Single-series bars return `values` with no series[].name — ECharts then invents
+    // "series0" in the tooltip. Prefer an explicit seriesName, then the metric title.
+    const singleSeriesName = config.seriesName || config.name || 'Value';
     
     // Analyze time granularity for smart formatting
     const timeAnalysis = BaseChart.analyzeTimeGranularity(processedData.categories);
@@ -22,7 +26,7 @@ export class BarChart extends BaseChart {
     const enhancedConfig = {
       ...config,
       timeContext: timeAnalysis,
-      _seriesNames: processedData.series?.map(s => s.name) || []
+      _seriesNames: processedData.series?.map(s => s.name) || [singleSeriesName]
     };
     
     const colors = this.resolveSeriesPalette(enhancedConfig, processedData.series?.length || 1, isDarkMode);
@@ -89,6 +93,7 @@ export class BarChart extends BaseChart {
           return seriesOpts;
         })
       : [{
+          name: singleSeriesName,
           type: 'bar',
           data: applyNegativeColor(processedData.values),
           itemStyle: {

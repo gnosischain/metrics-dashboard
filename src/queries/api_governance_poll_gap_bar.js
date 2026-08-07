@@ -14,6 +14,7 @@ Source: \`dbt.api_governance_poll_vs_vote\`.`,
   stacked: false,
   xField: 'label',
   yField: 'value',
+  seriesName: 'Gap',
   preserveOrder: true,
   format: 'formatPercentage',
   query: `

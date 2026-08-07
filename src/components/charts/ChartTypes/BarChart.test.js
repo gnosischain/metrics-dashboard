@@ -74,6 +74,33 @@ describe('BarChart custom series colors and category sorting', () => {
     expect(options.xAxis.data).toEqual(['A', 'B', 'C']);
   });
 
+  it('names a single-series bar from seriesName so tooltips are not series0', () => {
+    const options = BarChart.getOptions([
+      { label: 'GIP-1', value: -10 },
+      { label: 'GIP-2', value: 5 }
+    ], {
+      xField: 'label',
+      yField: 'value',
+      seriesName: 'Gap',
+      name: 'Largest forum–token gaps'
+    }, false);
+
+    expect(options.series).toHaveLength(1);
+    expect(options.series[0].name).toBe('Gap');
+  });
+
+  it('falls back to metric name when seriesName is absent on a single-series bar', () => {
+    const options = BarChart.getOptions([
+      { country: 'DE', value: 12 }
+    ], {
+      xField: 'country',
+      yField: 'value',
+      name: 'Nodes by country'
+    }, false);
+
+    expect(options.series[0].name).toBe('Nodes by country');
+  });
+
   it('paints only below-zero bars with negativeColor on a single series', () => {
     const options = BarChart.getOptions([
       { date: '2025-01-01', value: 5 },

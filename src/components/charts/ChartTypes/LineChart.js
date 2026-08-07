@@ -219,7 +219,9 @@ export class LineChart extends BaseChart {
         });
     } else {
         console.log('LineChart.processData: Processing single-series data');
-        const seriesName = config.seriesName || actualYField || 'Value';
+        // Prefer seriesName, then the metric title (config.name). Falling through to the
+        // y-field alone often yields the generic column alias "value" in tooltips.
+        const seriesName = config.seriesName || config.name || actualYField || 'Value';
         
         const dataMap = {};
         data.forEach(item => {
