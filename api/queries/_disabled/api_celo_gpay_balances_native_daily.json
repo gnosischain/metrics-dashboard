@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_balances_native_daily",
+  "query": "SELECT date, label as token, value\n    FROM dbt.api_celo_gpay_balances_native_daily"
+}

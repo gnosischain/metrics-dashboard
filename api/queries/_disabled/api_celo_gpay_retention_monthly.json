@@ -1,0 +1,4 @@
+{
+  "id": "api_celo_gpay_retention_monthly",
+  "query": "SELECT date, label, value\n    FROM dbt.api_celo_gpay_retention_monthly"
+}
