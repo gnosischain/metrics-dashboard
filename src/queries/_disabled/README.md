@@ -41,9 +41,19 @@ config there is public content, not an internal note.
 1. Move the configs back up one level:
    - `src/queries/_disabled/api_celo_gpay_*.js` and `text_celo_gpay_glossary.js` → `src/queries/`
    - `api/queries/_disabled/api_celo_gpay_*.json` → `api/queries/`
-2. Apply `gnosis-pay.celo-layout.yml` to `public/dashboard.yml` (the `chains:` block and
-   the tagline) and `public/dashboards/gnosis-pay.yml` (per-tab `chains:` key and per-card
-   `celoId:`). Re-place cards against the current grid — do not trust old `gridRow` values.
+2. Restore the YAML wiring. Try the patch first — it re-adds the `chains:` block, the
+   tagline, the 5 per-tab `chains:` keys and all 31 per-card `celoId:` lines in one step:
+
+   ```
+   git apply --check src/queries/_disabled/reinstate-yaml.patch   # dry run
+   git apply src/queries/_disabled/reinstate-yaml.patch
+   ```
+
+   If `public/dashboards/gnosis-pay.yml` has drifted since (it averages ~5 commits/month),
+   the patch will fail loudly and name the hunks — that is the point. Retry with
+   `git apply -3 ...` for a three-way merge, or fall back to `gnosis-pay.celo-layout.yml`
+   in this folder, which lists each `celoId` against its parent card id and survives any
+   amount of drift. Do not trust the old `gridRow` / `gridColumn` values either way.
 3. Revert `includeFiles` in `vercel.json` to `api/queries/**`, or leave it as
    `api/queries/*.json` if you keep a `_disabled/` folder around.
 4. Run `pnpm build-search-registry`, then `pnpm build`, and confirm the toggle appears on
