@@ -1,11 +1,10 @@
 # Celo Gnosis Pay dashboard layout - DISABLED, kept for reinstatement
 #
 # Nothing reads this file. It is a paste-back reference for the two YAML files under
-# public/, which are deployed verbatim and served on the public dashboard domain -
-# which is why these lines live here rather than commented out in place.
+# public/, which are deployed verbatim and served publicly - which is why these lines live
+# here rather than commented out in place.
 #
-# Extracted from commit 59b924c (the state immediately before removal).
-# Reinstatement procedure: see README.md in this folder.
+# Use this only if reinstate-yaml.patch no longer applies. Full procedure: README.md.
 
 # ============================================================================
 # 1) public/dashboard.yml - the GnosisPay: entry

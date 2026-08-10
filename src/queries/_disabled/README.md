@@ -1,68 +1,45 @@
-# Disabled metrics — Celo / Gnosis Pay
+# Celo / Gnosis Pay — disabled
 
-The Gnosis Pay dashboard used to carry a per-tab chain toggle that swapped its cards
-between Gnosis Chain and Celo. The Celo half was switched off in August 2026. The work is
-kept here, intact, so it can be reinstated without digging through git history.
+The Gnosis Pay dashboard had a per-tab toggle that switched its cards between Gnosis Chain
+and Celo. The Celo half is disabled. Everything needed to bring it back exactly as it was is
+in this folder and in `api/queries/_disabled/`.
 
-Nothing in this folder is loaded, bundled, served, or queried. That is not an accident of
-naming — every scanner in the repo reads only the top level of its directory:
+Nothing here runs. The metric loader, the search-registry builder and the query loader all
+read only the top level of their directory, and `vercel.json` limits the deployed function to
+`api/queries/*.json`. Don't widen that to `api/queries/**`, and check those four before
+renaming or moving either `_disabled/` folder.
 
-| Scanner | Pattern | Sees this folder? |
-| --- | --- | --- |
-| `src/queries/index.js` | `import.meta.glob('./*.js')` | no — non-recursive |
-| `scripts/build-search-registry.js` | `readdirSync` + `.endsWith('.js')` | no |
-| `scripts/export-queries.js` | `readdirSync` + `.endsWith('.js')` | no |
-| `api/metrics.js` (`loadQueries`) | `readdirSync` + `.endsWith('.json')` | no |
-| `vercel.json` `includeFiles` | `api/queries/*.json` | no — narrowed for this reason |
+## Restore
 
-So these files cost nothing at runtime: no chunks emitted, no entries in the search
-registry, no ids served by `/api/metrics/<id>`, and nothing uploaded into the serverless
-function.
+**Step 1 before step 2.** Card variants are preloaded regardless of which chain is selected,
+so YAML pointing at metrics still sitting in `_disabled/` breaks the Gnosis Pay tabs.
 
-**If you move or rename this folder, check that list first.** In particular, the
-`includeFiles` narrowing in `vercel.json` is what keeps `api/queries/_disabled/` out of the
-deployed function — widening it back to `api/queries/**` would ship these files to
-production even though nothing reads them.
-
-## Contents
-
-- `api_celo_gpay_*.js` (38) — frontend metric configs: title, chart type, formatting, SQL
-- `text_celo_gpay_glossary.js` — the Celo glossary card
-- `api_celo_gpay_*.json` (38) — lives in `api/queries/_disabled/`, the backend SQL by id
-- `gnosis-pay.celo-layout.yml` — the YAML lines that wired the above into the dashboard
-
-The layout lives in this folder rather than commented out in `public/dashboards/gnosis-pay.yml`
-for a specific reason: everything under `public/` is deployed verbatim and served openly
-(`https://metrics.gnosischain.com/dashboards/gnosis-pay.yml` returns 200), so commented-out
-config there is public content, not an internal note.
-
-## Reinstating
-
-1. Move the configs back up one level:
+1. Move up one level:
    - `src/queries/_disabled/api_celo_gpay_*.js` and `text_celo_gpay_glossary.js` → `src/queries/`
    - `api/queries/_disabled/api_celo_gpay_*.json` → `api/queries/`
-2. Restore the YAML wiring. Try the patch first — it re-adds the `chains:` block, the
-   tagline, the 5 per-tab `chains:` keys and all 31 per-card `celoId:` lines in one step:
+   - leave this README, the patch and the layout file behind
+
+2. Restore the dashboard wiring — the `chains:` block, the tagline, the 5 per-tab `chains:`
+   keys and all 31 per-card `celoId:` lines:
 
    ```
-   git apply --check src/queries/_disabled/reinstate-yaml.patch   # dry run
    git apply src/queries/_disabled/reinstate-yaml.patch
    ```
 
-   If `public/dashboards/gnosis-pay.yml` has drifted since (it averages ~5 commits/month),
-   the patch will fail loudly and name the hunks — that is the point. Retry with
-   `git apply -3 ...` for a three-way merge, or fall back to `gnosis-pay.celo-layout.yml`
-   in this folder, which lists each `celoId` against its parent card id and survives any
-   amount of drift. Do not trust the old `gridRow` / `gridColumn` values either way.
-3. Revert `includeFiles` in `vercel.json` to `api/queries/**`, or leave it as
-   `api/queries/*.json` if you keep a `_disabled/` folder around.
-4. Run `pnpm build-search-registry`, then `pnpm build`, and confirm the toggle appears on
-   the Gnosis Pay tabs.
+   If it no longer applies, `gnosis-pay.celo-layout.yml` lists the same lines against each
+   card id — re-place them against the current grid rather than the old `gridRow` values.
 
-The mechanism itself was never removed — `chains:` parsing in `src/services/dashboards.js`,
-the toggle in `src/components/MetricGrid.js`, and variant preloading in
-`src/components/Dashboard.js` are all still in place and covered by tests. It supports one
-default chain plus one variant (`celoId`), not an arbitrary list.
+3. Set `includeFiles` back to `api/queries/**` in `vercel.json`, or leave it if you keep a
+   `_disabled/` folder around.
 
-Upstream, the `dbt.api_celo_gpay_*` models these read from live in `dbt-cerebro` and were
-not touched, so the SQL here has real tables behind it as long as those models still build.
+4. `pnpm build-search-registry && pnpm build`, then confirm the toggle appears on the
+   Gnosis Pay tabs.
+
+The toggle mechanism was never removed — `chains:` parsing in `src/services/dashboards.js`,
+the toggle in `src/components/MetricGrid.js` and variant preloading in
+`src/components/Dashboard.js` are all in place and tested — so behaviour is identical once
+the above is done. The `dbt.api_celo_gpay_*` models these query were not touched.
+
+Note: the `chore/gates` branch holds 8 further Celo metrics (activated addresses, funnel
+cohorts, first-fund by channel, settlement cost and fee bps) that were never live. Pull them
+from there if you want those too.
