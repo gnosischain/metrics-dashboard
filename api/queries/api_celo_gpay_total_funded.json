@@ -1,4 +1,0 @@
-{
-  "id": "api_celo_gpay_total_funded",
-  "query": "SELECT value FROM dbt.api_celo_gpay_total_funded"
-}
