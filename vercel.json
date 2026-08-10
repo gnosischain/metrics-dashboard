@@ -7,7 +7,7 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 60,
-      "includeFiles": "api/queries/**"
+      "includeFiles": "api/queries/*.json"
     }
   },
   "rewrites": [

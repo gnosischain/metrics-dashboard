@@ -1,0 +1,116 @@
+# Celo Gnosis Pay dashboard layout - DISABLED, kept for reinstatement
+#
+# Nothing reads this file. It is a paste-back reference for the two YAML files under
+# public/, which are deployed verbatim and served publicly - which is why these lines live
+# here rather than commented out in place.
+#
+# Use this only if reinstate-yaml.patch no longer applies. Full procedure: README.md.
+
+# ============================================================================
+# 1) public/dashboard.yml - the GnosisPay: entry
+# ============================================================================
+#
+# Re-add the second chain. The per-tab toggle renders only when more than one
+# chain is listed (MetricGrid.js: hasChainToggle = chains.length > 1), so this
+# block alone controls whether the section is visible at all.
+#
+#   chains:
+#     - id: gnosis
+#       label: Gnosis Chain
+#       color: "#3E6957"
+#     - id: celo
+#       label: Celo
+#       color: "#FCFF52"
+#
+# The tagline also referenced both chains:
+#
+# tagline: Card issuance, spend volume, and merchant activity — on Gnosis Chain, and on Celo with MiniPay.
+
+# ============================================================================
+# 2) public/dashboards/gnosis-pay.yml - per tab and per card
+# ============================================================================
+#
+# gridRow / gridColumn values are deliberately NOT reproduced here. That file
+# averages ~5 commits/month, so positions will have drifted; re-place the cards
+# against the layout as it exists then, not as it was.
+
+# --- tab: Overview --------------------------------------------
+#     tab-level key:   chains: [gnosis, celo]
+#     under  - id: api_execution_gpay_total_volume
+#         celoId: api_celo_gpay_total_volume
+#     under  - id: api_execution_gpay_volume_7d
+#         celoId: api_celo_gpay_volume_7d
+#     under  - id: api_execution_gpay_total_payments
+#         celoId: api_celo_gpay_total_payments
+#     under  - id: api_execution_gpay_payments_7d
+#         celoId: api_celo_gpay_payments_7d
+#     under  - id: api_execution_gpay_volume_payments_by_token_weekly
+#         celoId: api_celo_gpay_volume_payments_by_token_weekly
+#     under  - id: api_execution_gpay_payments_by_token_weekly
+#         celoId: api_celo_gpay_payments_by_token_weekly
+
+# --- tab: Activity --------------------------------------------
+#     tab-level key:   chains: [gnosis, celo]
+#     under  - id: api_execution_gpay_total_funded
+#         celoId: api_celo_gpay_total_funded
+#     under  - id: api_execution_gpay_active_users_7d
+#         celoId: api_celo_gpay_active_users_7d
+#     under  - id: api_execution_gpay_funded_addresses_weekly
+#         celoId: api_celo_gpay_funded_addresses_weekly
+#     under  - id: api_execution_gpay_payments_hourly
+#         celoId: api_celo_gpay_payments_hourly
+#     under  - id: api_execution_gpay_activity_by_action_weekly
+#         celoId: api_celo_gpay_activity_by_action_weekly
+
+# --- tab: KPI -------------------------------------------------
+#     tab-level key:   chains: [gnosis, celo]
+#     under  - id: api_execution_gpay_kpi_mau_latest
+#         celoId: api_celo_gpay_kpi_mau_latest
+#     under  - id: api_execution_gpay_kpi_payment_volume_latest
+#         celoId: api_celo_gpay_kpi_payment_volume_latest
+#     under  - id: api_execution_gpay_kpi_arpu_latest
+#         celoId: api_celo_gpay_kpi_arpu_latest
+#     under  - id: api_execution_gpay_kpi_repeat_purchase_rate_latest
+#         celoId: api_celo_gpay_kpi_repeat_purchase_rate_latest
+#     under  - id: api_execution_gpay_kpi_activity_monthly
+#         celoId: api_celo_gpay_kpi_activity_monthly
+#     under  - id: api_execution_gpay_kpi_flows_monthly
+#         celoId: api_celo_gpay_kpi_flows_monthly
+#     under  - id: api_execution_gpay_churn_monthly
+#         celoId: api_celo_gpay_churn_monthly
+#     under  - id: api_execution_gpay_churn_rates_monthly
+#         celoId: api_celo_gpay_churn_rates_monthly
+#     under  - id: api_execution_gpay_retention_pct_monthly
+#         celoId: api_celo_gpay_retention_pct_monthly
+#     under  - id: api_execution_gpay_retention_monthly
+#         celoId: api_celo_gpay_retention_monthly
+#     under  - id: api_execution_gpay_retention_volume_monthly
+#         celoId: api_celo_gpay_retention_volume_monthly
+#     under  - id: api_execution_gpay_retention_by_action_users_monthly
+#         celoId: api_celo_gpay_retention_by_action_users_monthly
+#     under  - id: api_execution_gpay_retention_by_action_monthly
+#         celoId: api_celo_gpay_retention_by_action_monthly
+
+# --- tab: Balances --------------------------------------------
+#     tab-level key:   chains: [gnosis, celo]
+#     under  - id: api_execution_gpay_total_balance
+#         celoId: api_celo_gpay_total_balance
+#         celoGridColumn: 1 / span 6
+#     under  - id: api_execution_gpay_wallet_balance_composition
+#         celoId: api_celo_gpay_wallet_balance_composition
+#     under  - id: api_execution_gpay_balances_usd_daily
+#         celoId: api_celo_gpay_balances_usd_daily
+#     under  - id: api_execution_gpay_balances_native_daily
+#         celoId: api_celo_gpay_balances_native_daily
+#     under  - id: api_execution_gpay_balance_cohorts_holders_daily
+#         celoId: api_celo_gpay_balance_cohorts_holders_daily
+#     under  - id: api_execution_gpay_balance_cohorts_value_daily
+#         celoId: api_celo_gpay_balance_cohorts_value_daily
+
+# --- tab: Glossary --------------------------------------------
+#     tab-level key:   chains: [gnosis, celo]
+#     under  - id: text_gpay_glossary
+#         celoId: text_celo_gpay_glossary
+
+# Tabs absent from the list above (Cashback / User Portfolio / Flows) were
+# Gnosis-only, carried no chains: key, and need no change.
