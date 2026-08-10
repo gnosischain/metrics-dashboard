@@ -122,6 +122,16 @@ export const formatNumberWithGNO = (value) => {
   return `${full} GNO`;
 };
 
+// wxHOPR — the wrapped HOPR token that pays relayers on Gnosis Chain. Same shape as the
+// GNO/xDAI formatters above so the unit reads with the number rather than being parked in
+// the card title. Intl's default 3-fraction-digit cap also absorbs the float noise that
+// comes out of reconstructing payouts from channel balance diffs (2.5000000000668887).
+export const formatNumberWithWXHOPR = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 wxHOPR';
+  const full = new Intl.NumberFormat('en-US').format(Number(value));
+  return `${full} wxHOPR`;
+};
+
 export const formatPercentageInt = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '0%';
   return Math.round(value) + '%';
@@ -212,6 +222,10 @@ const formatters = {
   formatNumberWithXDAI,
   formatNumberWithUSD,
   formatNumberWithGNO,
+  // Must be registered here as well as exported: NumberWidget/TableWidget/chartUtils all
+  // resolve a metric's `format` string via formatters[name], and an unregistered name
+  // falls through to the raw value with no warning.
+  formatNumberWithWXHOPR,
   formatCurrency,
   formatCurrencyCompact,
   formatNumberCompact,

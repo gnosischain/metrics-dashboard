@@ -1,6 +1,7 @@
 const metric = {
   id: 'hopr_kpi_nodes_online',
-  name: 'HOPR nodes online',
+  name: 'Nodes online',
+  description: 'dufour, latest observed day',
   chartType: 'numberDisplay',
   variant: 'compact',
   valueField: 'value',

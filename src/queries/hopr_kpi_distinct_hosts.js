@@ -1,6 +1,7 @@
 const metric = {
   id: 'hopr_kpi_distinct_hosts',
   name: 'Distinct hosts',
+  description: 'dufour, current',
   chartType: 'numberDisplay',
   variant: 'compact',
   valueField: 'value',
@@ -11,6 +12,9 @@ Nodes routinely share a machine, so this sits well below the node count — the 
   query: `
     SELECT sum(distinct_hosts) AS value
     FROM dbt.api_hopr_nodes_hosting_latest
+    -- dufour, so every card on this tab counts the same population as the chart below it.
+    -- jura's nodes appear on the Geography and Economics tabs.
+    WHERE network = 'dufour'
   `,
 };
 

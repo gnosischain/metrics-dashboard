@@ -1,6 +1,7 @@
 const metric = {
   id: 'hopr_kpi_nodes_registered',
   name: 'Nodes ever registered',
+  description: 'dufour, cumulative',
   chartType: 'numberDisplay',
   variant: 'compact',
   valueField: 'value',
@@ -19,6 +20,10 @@ Deliberately NOT labelled "network size". On-chain registration never expires, s
         date,
         toInt64(sum(nodes_registered_cumulative)) AS value
       FROM dbt.api_hopr_network_health_daily
+      -- dufour, matching the chart beside it. Unscoped this summed both networks, so it read
+      -- 1,219 on days jura had a spine row and 1,169 on days it did not -- a KPI that
+      -- disagrees with its own chart on some days and not others.
+      WHERE network = 'dufour'
       GROUP BY date
     ),
     bounds AS (

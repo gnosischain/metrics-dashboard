@@ -1,0 +1,4 @@
+{
+  "id": "hopr_kpi_wxhopr_paid_30d",
+  "query": "SELECT toFloat64(sum(redeemed_wxhopr)) AS value\n    FROM dbt.api_hopr_channel_activity_daily\n    WHERE date >= today() - INTERVAL 30 DAY"
+}

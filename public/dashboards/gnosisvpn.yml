@@ -11,9 +11,12 @@
 #   - hourly online heatmap: needs an hourly api_ model; the daily grain is served today.
 #   - GnosisVPN exit-node activity: its dbt model is deliberately unserved while the product
 #     is in closed beta, so exits appear here through node_class counts instead.
+#   - wxHOPR staked/locked (api_hopr_protocol_params_daily): blokli is forward-only and has
+#     a single snapshot so far. A line through one point is not a chart. Re-add once the
+#     click-runner cron has given it a few weeks of history; the dbt model already serves it.
 tabs:
   - name: Network
-    description: How many nodes exist on paper, and how many are actually running
+    description: How many nodes exist on paper, and how many are actually running — dufour, the network with liveness data
     order: 1
     icon: 🛡️
     iconClass: globe
@@ -64,9 +67,17 @@ tabs:
     icon: 💰
     iconClass: coins
     metrics:
-      - id: hopr_kpi_payout_per_ticket
+      - id: hopr_kpi_cover_traffic_share_30d
         gridRow: 1
         gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: hopr_kpi_wxhopr_paid_30d
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: hopr_kpi_payout_per_ticket
+        gridRow: 1
+        gridColumn: 9 / span 4
         minHeight: 120px
       - id: hopr_tickets_cover_traffic_daily
         gridRow: 2
@@ -74,9 +85,5 @@ tabs:
         minHeight: 400px
       - id: hopr_wxhopr_paid_daily
         gridRow: 3
-        gridColumn: 1 / span 6
-        minHeight: 360px
-      - id: hopr_committed_wxhopr_daily
-        gridRow: 3
-        gridColumn: 7 / span 6
+        gridColumn: 1 / span 12
         minHeight: 360px

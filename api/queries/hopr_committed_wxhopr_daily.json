@@ -1,4 +1,0 @@
-{
-  "id": "hopr_committed_wxhopr_daily",
-  "query": "-- One row per series, not one column per series: the chart maps a single value column\n    -- plus a label. seq only orders the series so colors[] lands on the intended line.\n    SELECT date, label, value\n    FROM (\n      SELECT\n        date,\n        'In Safes' AS label,\n        toFloat64(sum(safes_balance_wxhopr)) AS value,\n        1 AS seq\n      FROM dbt.api_hopr_protocol_params_daily\n      WHERE date BETWEEN '{from}' AND '{to}'\n      GROUP BY date\n      UNION ALL\n      SELECT\n        date,\n        'In open channels' AS label,\n        toFloat64(sum(channels_open_balance_wxhopr)) AS value,\n        2 AS seq\n      FROM dbt.api_hopr_protocol_params_daily\n      WHERE date BETWEEN '{from}' AND '{to}'\n      GROUP BY date\n    )\n    ORDER BY date, seq"
-}

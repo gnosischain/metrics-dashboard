@@ -1,10 +1,11 @@
 const metric = {
   id: 'hopr_kpi_payout_per_ticket',
   name: 'Payout per winning ticket',
+  description: 'jura, latest snapshot',
   chartType: 'numberDisplay',
   variant: 'compact',
   valueField: 'value',
-  format: 'formatNumber',
+  format: 'formatNumberWithWXHOPR',
   metricDescription: `What a winning ticket is worth in wxHOPR, on the jura network.
 
 HOPR pays relayers **probabilistically**: a ticket wins with some probability and pays the ticket

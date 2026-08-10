@@ -1,0 +1,4 @@
+{
+  "id": "hopr_kpi_cover_traffic_share_30d",
+  "query": "SELECT\n      round(100 * sumIf(tickets_redeemed, is_cover_traffic = 1)\n                / nullIf(sum(tickets_redeemed), 0), 1) AS value\n    FROM dbt.api_hopr_channel_activity_daily\n    WHERE date >= today() - INTERVAL 30 DAY"
+}
