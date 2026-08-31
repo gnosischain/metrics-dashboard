@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_gip_pipeline_phases",
+  "query": "SELECT\n      phase,\n      if(is_dormant = 1, 'Dormant >45d', 'Active') AS status,\n      toFloat64(count()) AS value\n    FROM dbt.api_governance_gip_pipeline_latest\n    GROUP BY phase, is_dormant\n    ORDER BY phase, status"
+}

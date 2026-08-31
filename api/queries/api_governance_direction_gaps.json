@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_direction_gaps",
+  "query": "SELECT\n      substring(title, 1, 60) AS label,\n      round(toFloat64(head_minus_weight_against) * 100, 1) AS value\n    FROM dbt.api_governance_proposal_direction\n    WHERE is_gip = 1 AND voters >= 30 AND directional = 1\n      AND head_minus_weight_against IS NOT NULL\n    ORDER BY abs(value) DESC\n    LIMIT 15"
+}

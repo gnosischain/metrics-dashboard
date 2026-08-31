@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_power_source_monthly",
+  "query": "SELECT date, label, value\n    FROM dbt.api_governance_power_source_monthly\n    ORDER BY date, label"
+}

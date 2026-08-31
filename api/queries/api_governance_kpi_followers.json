@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_followers",
+  "query": "SELECT followers AS value\n    FROM dbt.api_governance_kpis_latest"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_whale_share_per_gip",
+  "query": "SELECT toDate(created_at) AS date, tpl.1 AS series, round(tpl.2 * 100, 1) AS value\n    FROM dbt.api_governance_whale_concentration\n    ARRAY JOIN [\n      ('Top 1', toFloat64(ifNull(top1_share, 0))),\n      ('Top 5', toFloat64(ifNull(top5_share, 0))),\n      ('Top 10', toFloat64(ifNull(top10_share, 0)))\n    ] AS tpl\n    WHERE is_gip = 1 AND total_vp > 0\n    ORDER BY date, series"
+}

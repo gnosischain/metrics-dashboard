@@ -37,6 +37,14 @@ Bridges:
   iconClass: bridge
   tagline: Cross-chain flows and bridged asset reserves.
   source: /dashboards/bridges.yml
+Governance:
+  name: Governance
+  order: 14
+  group: Ecosystem
+  icon: 🏛️
+  iconClass: landmark
+  tagline: GnosisDAO governance — GIPs, Snapshot voting, delegation, and forum health.
+  source: /dashboards/governance.yml
 GnosisPay:
   name: Gnosis Pay
   order: 20

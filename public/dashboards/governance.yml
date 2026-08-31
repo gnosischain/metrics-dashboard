@@ -1,0 +1,127 @@
+tabs:
+  - name: Overview
+    description: GIP volume, outcomes, participation and turnout
+    order: 1
+    icon: 📊
+    iconClass: chart-line
+    timeRanges: true
+    metrics:
+      - id: api_governance_kpi_total_gips
+        gridRow: 1
+        gridColumn: 1 / span 2
+        minHeight: 120px
+      - id: api_governance_kpi_pass_rate
+        gridRow: 1
+        gridColumn: 3 / span 2
+        minHeight: 120px
+      - id: api_governance_kpi_unique_voters
+        gridRow: 1
+        gridColumn: 5 / span 2
+        minHeight: 120px
+      - id: api_governance_kpi_avg_voters_per_gip
+        gridRow: 1
+        gridColumn: 7 / span 2
+        minHeight: 120px
+      - id: api_governance_kpi_followers
+        gridRow: 1
+        gridColumn: 9 / span 2
+        minHeight: 120px
+      - id: api_governance_kpi_latest_turnout
+        gridRow: 1
+        gridColumn: 11 / span 2
+        minHeight: 120px
+      - id: api_governance_activity_monthly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_turnout_monthly
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_governance_electorate_voters_monthly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_electorate_vp_monthly
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_governance_gip_funnel
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_proposals_live
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 460px
+  - name: Voting Power
+    description: Concentration, whale share, power sources and delegation
+    order: 2
+    icon: ⚖️
+    iconClass: scale
+    timeRanges: true
+    metrics:
+      - id: api_governance_concentration_latest
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_whale_share_per_gip
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_governance_power_source_monthly
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_direction_gaps
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 500px
+      - id: api_governance_delegation_events_monthly
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_delegation_cumulative_net
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_governance_delegates_latest
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 460px
+  - name: Forum & Pipeline
+    description: Forum health, discussion phases and the GIP pipeline
+    order: 3
+    icon: 💬
+    iconClass: chat
+    timeRanges: true
+    metrics:
+      - id: api_governance_forum_activity_weekly
+        gridRow: 1
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_governance_discussion_phases
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_governance_gip_pipeline_phases
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_governance_poll_vs_vote_reversals
+        gridRow: 3
+        gridColumn: 1 / span 12
+        minHeight: 460px
+      - id: api_governance_contributors_latest
+        gridRow: 4
+        gridColumn: 1 / span 12
+        minHeight: 460px
+  - name: Methodology
+    description: The filtering rules, floors, and vocabulary behind every metric
+    order: 4
+    icon: 📖
+    iconClass: book
+    metrics:
+      - id: text_governance_methodology
+        gridRow: 1
+        gridColumn: 1 / span 12

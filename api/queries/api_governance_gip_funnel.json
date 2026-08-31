@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_gip_funnel",
+  "query": "SELECT\n      concat(toString(stage_order), '. ', stage) AS stage,\n      toFloat64(gip_count) AS value\n    FROM dbt.api_governance_gip_funnel\n    ORDER BY stage"
+}

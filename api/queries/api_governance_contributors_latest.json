@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_contributors_latest",
+  "query": "SELECT\n      toString(contributor_key) AS contributor,\n      posts,\n      topics_started,\n      likes_received,\n      likes_given,\n      trust_level\n    FROM dbt.api_governance_contributors_latest\n    ORDER BY posts DESC\n    LIMIT 200"
+}

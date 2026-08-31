@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_proposals_live",
+  "query": "SELECT\n      gip_number AS gip,\n      title,\n      toString(end_at) AS end_at,\n      hours_left,\n      votes_count,\n      quorum_status\n    FROM dbt.api_governance_proposals_live\n    ORDER BY end_at"
+}

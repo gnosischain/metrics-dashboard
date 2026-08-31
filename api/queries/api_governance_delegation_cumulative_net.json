@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_delegation_cumulative_net",
+  "query": "SELECT date, sum(v) OVER (ORDER BY date) AS value\n    FROM (\n      SELECT date, toFloat64(value) AS v\n      FROM dbt.api_governance_delegation_activity_monthly\n      WHERE metric = 'net_change' AND date IS NOT NULL\n      ORDER BY date\n    )\n    ORDER BY date"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_unique_voters",
+  "query": "SELECT unique_voters AS value\n    FROM dbt.api_governance_kpis_latest"
+}

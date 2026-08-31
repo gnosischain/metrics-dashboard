@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_delegation_events_monthly",
+  "query": "SELECT\n      date,\n      multiIf(\n        metric = 'new_delegators', 'New delegators',\n        metric = 'repointed', 'Repointed',\n        metric = 'clear_events', 'Cleared',\n        metric\n      ) AS series,\n      value\n    FROM dbt.api_governance_delegation_activity_monthly\n    WHERE date IS NOT NULL\n      AND metric IN ('new_delegators', 'repointed', 'clear_events')\n    ORDER BY date, series"
+}

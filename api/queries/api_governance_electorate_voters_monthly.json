@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_electorate_voters_monthly",
+  "query": "SELECT date, tpl.1 AS series, tpl.2 AS value\n    FROM dbt.api_governance_electorate_monthly\n    ARRAY JOIN [\n      ('Median', toFloat64(median_voters_per_proposal)),\n      ('Min', toFloat64(min_voters_per_proposal)),\n      ('Max', toFloat64(max_voters_per_proposal))\n    ] AS tpl\n    ORDER BY date, series"
+}

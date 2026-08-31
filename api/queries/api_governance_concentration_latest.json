@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_concentration_latest",
+  "query": "SELECT\n      multiIf(\n        population = 'voters_by_vp', 'Voters by VP',\n        population = 'voters_by_votes', 'Voters by ballots',\n        population = 'delegates_by_delegators', 'Delegates by delegators',\n        population\n      ) AS population,\n      concat('Top ', toString(tier)) AS tier,\n      round(toFloat64(ifNull(share, 0)) * 100, 1) AS value\n    FROM dbt.api_governance_concentration_latest\n    ORDER BY population, tier"
+}
