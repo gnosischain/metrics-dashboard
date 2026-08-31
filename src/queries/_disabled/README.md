@@ -43,3 +43,13 @@ the above is done. The `dbt.api_celo_gpay_*` models these query were not touched
 Note: the `chore/gates` branch holds 8 further Celo metrics (activated addresses, funnel
 cohorts, first-fund by channel, settlement cost and fee bps) that were never live. Pull them
 from there if you want those too.
+
+## Also archived here (not part of the Celo section)
+
+`api_execution_state_full_size_daily.js` ("EL State Growth") — retired 2026-08 because its
+dbt source chain is deprecated: `execution.storage_diffs` ingestion ended 2026-01-30, so the
+series is permanently frozen at that date. It sat on no dashboard YAML (search-only). The
+dbt endpoint still serves the frozen history; the dbt models are tagged `deprecated` (see
+their schema.yml descriptions in dbt-cerebro, models/execution/state/). Restoring the tile
+requires re-sourcing the dbt chain first; then move the pair up one level as with the Celo
+files.
