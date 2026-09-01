@@ -19,7 +19,7 @@ const metric = {
   yField: 'supply',
   seriesField: 'label',
 
-  query: `SELECT * FROM dbt.api_crawlers_data_gno_supply_daily`,
+  query: `SELECT * FROM dbt.api_gno_supply_daily`,
 };
 
 export default metric;

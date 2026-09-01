@@ -37,6 +37,22 @@ Bridges:
   iconClass: bridge
   tagline: Cross-chain flows and bridged asset reserves.
   source: /dashboards/bridges.yml
+Governance:
+  name: Governance
+  order: 14
+  group: Ecosystem
+  icon: 🏛️
+  iconClass: landmark
+  tagline: GnosisDAO governance — GIPs, Snapshot voting, delegation, and forum health.
+  source: /dashboards/governance.yml
+Hopr:
+  name: HOPR
+  order: 15
+  group: Ecosystem
+  icon: 📡
+  iconClass: hopr
+  tagline: HOPR mixnet health, ticket economics, and GnosisVPN usage.
+  source: /dashboards/hopr.yml
 GnosisPay:
   name: Gnosis Pay
   order: 20
@@ -49,8 +65,8 @@ GnosisPay:
   source: /dashboards/gnosis-pay.yml
 GnosisApp:
   name: Gnosis App
-  order: 21
-  group: Products
+  order: 16
+  group: Ecosystem
   icon: 📱
   iconClass: gnosis-app
   tagline: Self-custodial wallet adoption and user flows.

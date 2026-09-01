@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_jura_channels",
+  "query": "SELECT date, tpl.1 AS series, tpl.2 AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    ARRAY JOIN [\n      ('Open', toFloat64(channels_open)),\n      ('Total (incl. closed)', toFloat64(channels_total))\n    ] AS tpl\n    WHERE network = 'jura'\n    ORDER BY date, series"
+}

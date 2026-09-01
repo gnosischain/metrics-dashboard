@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_electorate_vp_monthly",
+  "query": "SELECT date, median_vp_per_proposal AS value\n    FROM dbt.api_governance_electorate_monthly\n    ORDER BY date"
+}

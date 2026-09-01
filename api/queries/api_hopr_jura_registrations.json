@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_jura_registrations",
+  "query": "SELECT date, tpl.1 AS series, tpl.2 AS value\n    FROM dbt.api_hopr_network_health_daily\n    ARRAY JOIN [\n      ('Registered (cumulative)', toFloat64(nodes_registered_cumulative)),\n      ('New that day', toFloat64(nodes_registered_new))\n    ] AS tpl\n    WHERE network = 'jura'\n    ORDER BY date, series"
+}

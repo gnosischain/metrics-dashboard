@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_avg_voters_per_gip",
+  "query": "SELECT round(avg_voters_per_gip_proposal, 0) AS value\n    FROM dbt.api_governance_kpis_latest"
+}

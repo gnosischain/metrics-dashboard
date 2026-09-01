@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_latest_turnout",
+  "query": "SELECT round(toFloat64(turnout) * 100, 2) AS value\n    FROM dbt.api_governance_turnout_latest\n    WHERE is_gip = 1 AND turnout IS NOT NULL\n    ORDER BY created_at DESC\n    LIMIT 1"
+}

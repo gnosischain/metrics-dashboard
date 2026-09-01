@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_delegates_latest",
+  "query": "SELECT\n      delegate,\n      delegator_count,\n      toString(toDate(first_delegation_at)) AS first_delegation,\n      toString(toDate(last_delegation_at)) AS last_delegation\n    FROM dbt.api_governance_delegates_latest\n    ORDER BY delegator_count DESC\n    LIMIT 25"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_gnosisvpn_exit_tickets_daily",
+  "query": "SELECT date, exit_label, toFloat64(sum(tickets_redeemed)) AS value\n    FROM dbt.api_gnosisvpn_exit_activity_daily\n    GROUP BY date, exit_label\n    ORDER BY date, exit_label"
+}

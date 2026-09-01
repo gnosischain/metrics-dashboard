@@ -1,0 +1,119 @@
+tabs:
+  - name: Network
+    description: Node registrations, liveness and geography across dufour and jura
+    order: 1
+    icon: 📡
+    iconClass: globe
+    timeRanges: true
+    metrics:
+      - id: api_hopr_kpi_dufour_online
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_hopr_kpi_dufour_registered
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_hopr_kpi_jura_registered
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_hopr_dufour_registered_vs_online
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_jura_registrations
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_hopr_dufour_availability
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_new_registrations_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_hopr_nodes_by_country
+        gridRow: 4
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_hosting_concentration
+        gridRow: 4
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_hopr_node_locations
+        gridRow: 5
+        gridColumn: 1 / span 12
+        minHeight: 460px
+  - name: Economics & Channels
+    description: Ticket economics and payment-channel activity
+    order: 2
+    icon: 🎟️
+    iconClass: coins
+    timeRanges: true
+    metrics:
+      - id: api_hopr_kpi_effective_ticket_cost
+        gridRow: 1
+        gridColumn: 1 / span 4
+        minHeight: 120px
+      - id: api_hopr_kpi_ticket_price
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_hopr_kpi_win_probability
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_hopr_protocol_params
+        gridRow: 2
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_jura_channels
+        gridRow: 2
+        gridColumn: 7 / span 6
+        minHeight: 450px
+      - id: api_hopr_channels_opened_closed_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_tickets_redeemed_daily
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+  - name: GnosisVPN
+    description: Production GnosisVPN usage and exit activity
+    order: 3
+    icon: 🔒
+    iconClass: vpn
+    timeRanges: true
+    metrics:
+      - id: api_hopr_kpi_vpn_mau
+        gridRow: 1
+        gridColumn: 1 / span 6
+        minHeight: 120px
+      - id: api_hopr_kpi_vpn_exits
+        gridRow: 1
+        gridColumn: 7 / span 6
+        minHeight: 120px
+      - id: api_hopr_gnosisvpn_mau_wau_dau
+        gridRow: 2
+        gridColumn: 1 / span 12
+        minHeight: 450px
+      - id: api_hopr_gnosisvpn_exit_tickets_daily
+        gridRow: 3
+        gridColumn: 1 / span 6
+        minHeight: 450px
+      - id: api_hopr_gnosisvpn_exits_totals
+        gridRow: 3
+        gridColumn: 7 / span 6
+        minHeight: 450px
+  - name: Methodology
+    description: The coverage rules and definitions behind every metric
+    order: 4
+    icon: 📖
+    iconClass: book
+    metrics:
+      - id: text_hopr_methodology
+        gridRow: 1
+        gridColumn: 1 / span 12

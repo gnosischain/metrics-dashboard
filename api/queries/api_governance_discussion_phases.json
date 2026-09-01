@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_discussion_phases",
+  "query": "SELECT\n      multiIf(\n        phase = 'pre_discussion', '1. Pre-discussion',\n        phase = 'pre_vote', '2. Pre-vote',\n        phase = 'voting', '3. Voting',\n        phase = 'post_close', '4. Post-close',\n        phase\n      ) AS phase,\n      toFloat64(sum(posts)) AS value\n    FROM dbt.api_governance_discussion_phases\n    WHERE is_gip = 1\n    GROUP BY phase\n    ORDER BY phase"
+}

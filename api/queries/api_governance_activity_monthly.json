@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_activity_monthly",
+  "query": "SELECT\n      date,\n      multiIf(\n        metric = 'proposals_created', 'Proposals created',\n        metric = 'votes_cast', 'Votes cast',\n        metric = 'unique_voters', 'Unique voters',\n        metric\n      ) AS series,\n      value\n    FROM dbt.api_governance_activity_monthly\n    ORDER BY date, series"
+}

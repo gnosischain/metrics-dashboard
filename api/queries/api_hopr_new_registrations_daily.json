@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_new_registrations_daily",
+  "query": "SELECT date, network, toFloat64(nodes_registered_new) AS value\n    FROM dbt.api_hopr_network_health_daily\n    WHERE network IN ('dufour', 'jura') AND nodes_registered_new > 0\n    ORDER BY date, network"
+}

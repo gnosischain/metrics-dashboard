@@ -76,6 +76,12 @@ export class LineChart extends BaseChart {
                 }
                 Object.assign(seriesOpts.lineStyle, style.lineStyle || {});
                 if (style.symbolSize !== undefined) seriesOpts.symbolSize = style.symbolSize;
+                // Mixed-type charts: a series may render as bars inside a line
+                // chart (daily deltas under a cumulative line).
+                if (style.type) {
+                  seriesOpts.type = style.type;
+                  if (style.type === 'bar') seriesOpts.barMaxWidth = style.barMaxWidth || 14;
+                }
                 break;
               }
             }
@@ -105,6 +111,25 @@ export class LineChart extends BaseChart {
         // UNIVERSAL zoom configuration - same for all chart types
         ...this.getDataZoomConfig(enhancedConfig)
       };
+
+      // Optional dual y-axis: series named in config.y2Series render on a
+      // right-hand value axis so a large-magnitude series cannot flatten a
+      // small one (daily vs cumulative, price vs probability). Matching is by
+      // exact series name first, then substring. Right axis drops gridlines so
+      // the plot keeps a single ruled scale.
+      if (Array.isArray(config.y2Series) && config.y2Series.length > 0) {
+        const onY2 = (name) => config.y2Series.some(p => name === p || String(name).includes(p));
+        chartOptions.yAxis = [
+          { ...chartOptions.yAxis, name: config.y1AxisName || '' },
+          {
+            type: 'value',
+            ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig),
+            name: config.y2AxisName || '',
+            splitLine: { show: false }
+          }
+        ];
+        chartOptions.series = chartOptions.series.map(s => (onY2(s.name) ? { ...s, yAxisIndex: 1 } : s));
+      }
 
       console.log('LineChart: Final chart options created successfully');
       return chartOptions;

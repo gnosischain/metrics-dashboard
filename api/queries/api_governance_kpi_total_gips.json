@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_kpi_total_gips",
+  "query": "SELECT total_gips AS value\n    FROM dbt.api_governance_kpis_latest"
+}

@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_node_locations",
+  "query": "SELECT network, country_code, city, nodes, live_nodes, gnosisvpn_exit_nodes, distinct_operators, top_hosting_provider\n    FROM dbt.api_hopr_node_locations_latest\n    WHERE network IN ('dufour', 'jura')\n    ORDER BY nodes DESC"
+}

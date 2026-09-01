@@ -1,0 +1,4 @@
+{
+  "id": "api_governance_poll_vs_vote_reversals",
+  "query": "SELECT\n      gip_number AS gip,\n      title,\n      outcome,\n      round(toFloat64(poll_against_share) * 100, 1) AS poll_against_pct,\n      round(toFloat64(vote_against_share_by_vp) * 100, 1) AS vote_against_pct,\n      poll_voters,\n      vote_voters\n    FROM dbt.api_governance_poll_vs_vote\n    WHERE verdicts_disagree = 1 AND decisive_votes >= 10 AND is_pre_vote_check = 1\n    ORDER BY proposal_created_at DESC"
+}
