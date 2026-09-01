@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_hosting_concentration",
+  "query": "SELECT label, round(v / sum(v) OVER () * 100, 1) AS value\n    FROM (\n      SELECT ifNull(hosting_provider, 'UNRESOLVED') AS label, toFloat64(sum(nodes)) AS v\n      FROM dbt.api_hopr_nodes_hosting_latest\n      WHERE network = 'dufour'\n      GROUP BY hosting_provider\n    )\n    ORDER BY value DESC"
+}

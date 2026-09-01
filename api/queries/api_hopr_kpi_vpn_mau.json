@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_kpi_vpn_mau",
+  "query": "SELECT toFloat64(argMax(active_users_30d, date)) AS value\n    FROM dbt.api_hopr_gnosisvpn_users_daily\n    WHERE network = 'jura'"
+}

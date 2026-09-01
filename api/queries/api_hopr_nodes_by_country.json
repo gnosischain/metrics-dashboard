@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_nodes_by_country",
+  "query": "SELECT country_code AS label, toFloat64(nodes) AS value\n    FROM dbt.api_hopr_nodes_by_country_latest\n    WHERE network = 'dufour' AND country_code != 'UNKNOWN'\n    ORDER BY value DESC\n    LIMIT 12"
+}

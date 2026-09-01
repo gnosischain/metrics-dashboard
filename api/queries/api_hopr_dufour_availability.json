@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_dufour_availability",
+  "query": "SELECT date, round(toFloat64(avg_availability_24h) * 100, 2) AS value\n    FROM dbt.api_hopr_network_health_daily\n    WHERE network = 'dufour' AND avg_availability_24h IS NOT NULL\n    ORDER BY date"
+}

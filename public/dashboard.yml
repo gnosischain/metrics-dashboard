@@ -45,6 +45,14 @@ Governance:
   iconClass: landmark
   tagline: GnosisDAO governance — GIPs, Snapshot voting, delegation, and forum health.
   source: /dashboards/governance.yml
+Hopr:
+  name: HOPR
+  order: 15
+  group: Ecosystem
+  icon: 📡
+  iconClass: hopr
+  tagline: HOPR mixnet health, ticket economics, and GnosisVPN usage.
+  source: /dashboards/hopr.yml
 GnosisPay:
   name: Gnosis Pay
   order: 20

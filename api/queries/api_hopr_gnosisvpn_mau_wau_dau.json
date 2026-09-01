@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_gnosisvpn_mau_wau_dau",
+  "query": "SELECT date, tpl.1 AS series, tpl.2 AS value\n    FROM dbt.api_hopr_gnosisvpn_users_daily\n    ARRAY JOIN [\n      ('MAU (30d)', toFloat64(active_users_30d)),\n      ('WAU (7d)', toFloat64(active_users_7d)),\n      ('DAU (1d)', toFloat64(active_users_1d))\n    ] AS tpl\n    WHERE network = 'jura'\n    ORDER BY date, series"
+}

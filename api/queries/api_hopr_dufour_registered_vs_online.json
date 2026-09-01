@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_dufour_registered_vs_online",
+  "query": "SELECT * FROM (\n      SELECT date, 'Registered (cumulative)' AS series, toFloat64(nodes_registered_cumulative) AS value\n      FROM dbt.api_hopr_network_health_daily\n      WHERE network = 'dufour'\n      UNION ALL\n      SELECT date, 'Online (daily avg)' AS series, toFloat64(nodes_online_avg) AS value\n      FROM dbt.api_hopr_network_health_daily\n      WHERE network = 'dufour' AND nodes_online_avg IS NOT NULL\n    ) ORDER BY date, series"
+}

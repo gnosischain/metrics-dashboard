@@ -320,7 +320,7 @@ describe('dashboard config integrity', () => {
   const QDIR = path.join(ROOT, 'src/queries');
   const ADIR = path.join(ROOT, 'api/queries');
   const DASH = path.join(ROOT, 'public/dashboards');
-  const OWNED = new Set(['circles.yml', 'gnosis-app.yml', 'governance.yml']); // sectors this plan owns
+  const OWNED = new Set(['circles.yml', 'gnosis-app.yml', 'governance.yml', 'hopr.yml']); // sectors this plan owns
 
   const readSrc = (id) => {
     const f = path.join(QDIR, `${id}.js`);

@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_channels_opened_closed_daily",
+  "query": "SELECT date, concat(network, ' ', tpl.1) AS series, tpl.2 AS value\n    FROM dbt.api_hopr_channel_activity_daily\n    ARRAY JOIN [\n      ('opened', toFloat64(channels_opened)),\n      ('closed', toFloat64(channels_closed))\n    ] AS tpl\n    WHERE network IN ('dufour', 'jura') AND is_cover_traffic = 0\n    ORDER BY date, series"
+}

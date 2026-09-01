@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_tickets_redeemed_daily",
+  "query": "SELECT date, concat(network, if(is_cover_traffic = 1, ' (cover traffic)', ' (organic)')) AS series, toFloat64(sum(tickets_redeemed)) AS value\n    FROM dbt.api_hopr_channel_activity_daily\n    WHERE network IN ('dufour', 'jura')\n    GROUP BY date, series\n    ORDER BY date, series"
+}

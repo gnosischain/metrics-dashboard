@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_kpi_dufour_online",
+  "query": "SELECT toFloat64(argMax(nodes_online_avg, date)) AS value\n    FROM dbt.api_hopr_network_health_daily\n    WHERE network = 'dufour' AND hours_observed >= 20 AND nodes_online_avg IS NOT NULL"
+}

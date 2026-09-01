@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_effective_ticket_value",
+  "query": "SELECT date, round(toFloat64(ticket_price_wxhopr) / min_ticket_winning_probability, 4) AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    WHERE network = 'jura' AND ticket_price_wxhopr IS NOT NULL AND min_ticket_winning_probability > 0\n    ORDER BY date"
+}
