@@ -106,6 +106,25 @@ export class LineChart extends BaseChart {
         ...this.getDataZoomConfig(enhancedConfig)
       };
 
+      // Optional dual y-axis: series named in config.y2Series render on a
+      // right-hand value axis so a large-magnitude series cannot flatten a
+      // small one (daily vs cumulative, price vs probability). Matching is by
+      // exact series name first, then substring. Right axis drops gridlines so
+      // the plot keeps a single ruled scale.
+      if (Array.isArray(config.y2Series) && config.y2Series.length > 0) {
+        const onY2 = (name) => config.y2Series.some(p => name === p || String(name).includes(p));
+        chartOptions.yAxis = [
+          { ...chartOptions.yAxis, name: config.y1AxisName || '' },
+          {
+            type: 'value',
+            ...this.getAxisConfig(isDarkMode, 'value', enhancedConfig),
+            name: config.y2AxisName || '',
+            splitLine: { show: false }
+          }
+        ];
+        chartOptions.series = chartOptions.series.map(s => (onY2(s.name) ? { ...s, yAxisIndex: 1 } : s));
+      }
+
       console.log('LineChart: Final chart options created successfully');
       return chartOptions;
     } catch (error) {

@@ -10,6 +10,9 @@ const metric = {
   xField: 'date',
   yField: 'value',
   seriesField: 'series',
+  y2Series: ['New that day'],
+  y1AxisName: 'cumulative',
+  y2AxisName: 'new / day',
   query: `
     SELECT date, tpl.1 AS series, tpl.2 AS value
     FROM dbt.api_hopr_network_health_daily
