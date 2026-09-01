@@ -76,6 +76,12 @@ export class LineChart extends BaseChart {
                 }
                 Object.assign(seriesOpts.lineStyle, style.lineStyle || {});
                 if (style.symbolSize !== undefined) seriesOpts.symbolSize = style.symbolSize;
+                // Mixed-type charts: a series may render as bars inside a line
+                // chart (daily deltas under a cumulative line).
+                if (style.type) {
+                  seriesOpts.type = style.type;
+                  if (style.type === 'bar') seriesOpts.barMaxWidth = style.barMaxWidth || 14;
+                }
                 break;
               }
             }

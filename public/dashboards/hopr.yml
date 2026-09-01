@@ -57,25 +57,29 @@ tabs:
         gridRow: 1
         gridColumn: 1 / span 4
         minHeight: 120px
-      - id: api_hopr_ticket_price_probability
+      - id: api_hopr_kpi_ticket_price
+        gridRow: 1
+        gridColumn: 5 / span 4
+        minHeight: 120px
+      - id: api_hopr_kpi_win_probability
+        gridRow: 1
+        gridColumn: 9 / span 4
+        minHeight: 120px
+      - id: api_hopr_protocol_params
         gridRow: 2
         gridColumn: 1 / span 6
-        minHeight: 450px
-      - id: api_hopr_effective_ticket_value
-        gridRow: 2
-        gridColumn: 7 / span 6
         minHeight: 450px
       - id: api_hopr_jura_channels
-        gridRow: 3
-        gridColumn: 1 / span 6
+        gridRow: 2
+        gridColumn: 7 / span 6
         minHeight: 450px
       - id: api_hopr_channels_opened_closed_daily
         gridRow: 3
-        gridColumn: 7 / span 6
+        gridColumn: 1 / span 6
         minHeight: 450px
       - id: api_hopr_tickets_redeemed_daily
-        gridRow: 4
-        gridColumn: 1 / span 12
+        gridRow: 3
+        gridColumn: 7 / span 6
         minHeight: 450px
   - name: GnosisVPN
     description: Production GnosisVPN usage and exit activity

@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_kpi_ticket_price",
+  "query": "SELECT round(toFloat64(ticket_price_wxhopr) * 1e6, 2) AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    WHERE network = 'jura' AND ticket_price_wxhopr IS NOT NULL\n    ORDER BY date DESC\n    LIMIT 1"
+}

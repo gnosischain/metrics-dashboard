@@ -1,4 +1,0 @@
-{
-  "id": "api_hopr_ticket_price_probability",
-  "query": "SELECT date, tpl.1 AS series, tpl.2 AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    ARRAY JOIN [\n      ('Ticket price (µwxHOPR)', round(toFloat64(ifNull(ticket_price_wxhopr, 0)) * 1e6, 3)),\n      ('Win probability (per million)', round(min_ticket_winning_probability * 1e6, 3))\n    ] AS tpl\n    WHERE network = 'jura'\n    ORDER BY date, series"
-}

@@ -1,0 +1,4 @@
+{
+  "id": "api_hopr_kpi_win_probability",
+  "query": "SELECT round(min_ticket_winning_probability * 1e6, 2) AS value\n    FROM dbt.api_hopr_protocol_params_daily\n    WHERE network = 'jura'\n    ORDER BY date DESC\n    LIMIT 1"
+}
