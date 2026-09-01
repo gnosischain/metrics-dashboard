@@ -240,6 +240,33 @@ const IconComponent = ({ name, fallback = '•', size = 'md', color = 'currentCo
             <image href="/imgs/brand/circles.png" x="2" y="2" width="20" height="20"></image>
           </svg>
         ),
+        // HOPR brand — official icon from hoprnet.org/assets/icons/hopr_icon.svg,
+        // served as an asset so the yellow-disc/blue-h artwork stays verbatim.
+        'hopr': (
+          <svg xmlns="http://www.w3.org/2000/svg" width={pixelSize} height={pixelSize} viewBox="0 0 24 24" role="img" aria-label="HOPR">
+            <image href="/imgs/brand/hopr.svg" x="1" y="1" width="22" height="22"></image>
+          </svg>
+        ),
+        // GnosisVPN — shield-with-keyhole in the house stroked-vector style.
+        'vpn': (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={pixelSize}
+            height={pixelSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            role="img"
+            aria-label="VPN"
+          >
+            <path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z" />
+            <circle cx="12" cy="10.5" r="2" />
+            <path d="M12 12.5v3.5" />
+          </svg>
+        ),
         'bot': (
           <svg
             xmlns="http://www.w3.org/2000/svg"
