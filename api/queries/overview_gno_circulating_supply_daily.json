@@ -1,0 +1,4 @@
+{
+  "id": "overview_gno_circulating_supply_daily",
+  "query": "SELECT date, supply FROM dbt.api_gno_supply_daily\nWHERE label = 'Total Circ. Supply'\nORDER BY date"
+}
