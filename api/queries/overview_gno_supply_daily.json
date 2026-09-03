@@ -1,4 +1,4 @@
 {
   "id": "overview_gno_supply_daily",
-  "query": "SELECT * FROM dbt.api_gno_supply_daily"
+  "query": "SELECT * FROM dbt.api_gno_supply_daily\nWHERE label IN ('Ethereum Circ. Supply', 'Gnosis Circ. Supply', 'Non-Circ. Supply')"
 }
