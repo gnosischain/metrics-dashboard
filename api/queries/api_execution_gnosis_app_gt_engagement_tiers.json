@@ -1,4 +1,4 @@
 {
   "id": "api_execution_gnosis_app_gt_engagement_tiers",
-  "query": "SELECT engagement_tier, toInt64(count()) AS value FROM dbt.fct_execution_gnosis_app_gt_wallet_metrics_public GROUP BY engagement_tier ORDER BY value DESC"
+  "query": "SELECT engagement_tier, toInt64(count()) AS value FROM dbt.fct_execution_gnosis_app_gt_wallet_metrics_public GROUP BY engagement_tier ORDER BY multiIf(engagement_tier = 'power', 0, engagement_tier = 'core', 1, engagement_tier = 'casual', 2, engagement_tier = 'inactive', 3, 99)"
 }
