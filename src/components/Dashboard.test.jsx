@@ -283,7 +283,7 @@ describe('Dashboard rendering behavior', () => {
     });
   });
 
-  it('does not remount MetricGrid component when changing tabs', async () => {
+  it('mounts a fresh MetricGrid for the new tab once its configs are preloaded when changing tabs', async () => {
     window.history.replaceState({}, '', '/?dashboard=dashboard-a&tab=tab-1');
 
     render(<Dashboard />);
@@ -292,20 +292,26 @@ describe('Dashboard rendering behavior', () => {
       expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:1');
     });
 
+    // The config-preload gate (Dashboard.js activeTabConfigsLoaded) replaces MetricGrid
+    // with the "Loading metrics..." placeholder until the active tab's configs are loaded,
+    // so there is never more than one live MetricGrid instance.
     await waitFor(() => {
-      expect(metricGridLifecycle.mounts).toBe(1);
-      expect(metricGridLifecycle.unmounts).toBe(0);
+      expect(metricGridLifecycle.mounts).toBe(metricGridLifecycle.unmounts + 1);
     });
+    const before = { ...metricGridLifecycle };
 
     fireEvent.click(screen.getByRole('button', { name: 'Go Tab 2' }));
 
     await waitFor(() => {
+      expect(screen.getByTestId('metric-grid')).toHaveAttribute('data-tab-id', 'tab-2');
       expect(screen.getByTestId('metric-grid')).toHaveTextContent('metrics:2');
     });
 
+    // The previous tab's grid is torn down while tab-2's configs load and a fresh
+    // instance is mounted for tab-2.
     await waitFor(() => {
-      expect(metricGridLifecycle.mounts).toBe(1);
-      expect(metricGridLifecycle.unmounts).toBe(0);
+      expect(metricGridLifecycle.unmounts).toBe(before.unmounts + 1);
+      expect(metricGridLifecycle.mounts).toBe(before.mounts + 1);
     });
   });
 

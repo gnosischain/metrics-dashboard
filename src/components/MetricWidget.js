@@ -706,7 +706,9 @@ const MetricWidget = ({
           nextSelections[fieldName] = nextValue;
         }
 
-        if (nextValue !== previousValue) {
+        // '' (no options yet) and undefined (never selected) are the same state; treating them as
+        // different returned a fresh object on every pass and re-rendered forever until data arrived.
+        if ((nextValue || '') !== (previousValue || '')) {
           hasChanges = true;
         }
       });

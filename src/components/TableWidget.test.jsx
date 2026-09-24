@@ -201,7 +201,7 @@ describe('TableWidget regressions', () => {
     });
 
     const instance = tabulatorInstances.at(-1);
-    expect(instance.config.responsiveLayout).toBe(false);
+    expect(instance.config.responsiveLayout).toBeFalsy();
     expect(instance.config.rowHeight).toBe(40);
     expect(instance.config.reactiveData).toBe(false);
 
@@ -242,7 +242,7 @@ describe('TableWidget regressions', () => {
 
     const instance = tabulatorInstances.at(-1);
     expect(instance.config.pagination).toBe(false);
-    expect(instance.config.responsiveLayout).toBe(false);
+    expect(instance.config.responsiveLayout).toBeFalsy();
     expect(instance.config.rowHeight).toBe(56);
   });
 

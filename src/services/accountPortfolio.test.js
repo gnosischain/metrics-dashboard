@@ -134,6 +134,10 @@ describe('accountPortfolio service helpers', () => {
   });
 
   it('uses composed account movements as the canonical movement source', async () => {
+    // getMovements drops rows older than 90 days (accountPortfolio.js getMovements cutoffDate);
+    // pin the clock so the fixed fixture dates below stay inside that window.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-10T12:00:00Z'));
     const originalGetRows = accountPortfolioService.getRows;
     accountPortfolioService.getRows = vi.fn((metricId) => {
       if (metricId === 'api_execution_account_movements_composed') {
@@ -195,6 +199,7 @@ describe('accountPortfolio service helpers', () => {
       );
     } finally {
       accountPortfolioService.getRows = originalGetRows;
+      vi.useRealTimers();
     }
   });
 });

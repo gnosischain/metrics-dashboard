@@ -1,5 +1,5 @@
 import { loadEnv } from 'vite';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { createRequire } from 'node:module';
 
@@ -162,6 +162,8 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
+      // stray checkouts inside the tree (e.g. .claude/worktrees/*) must not run their test copies
+      exclude: [...configDefaults.exclude, '**/.claude/**', '**/build/**'],
       setupFiles: './src/test/setupTests.js',
       css: true,
       coverage: {
